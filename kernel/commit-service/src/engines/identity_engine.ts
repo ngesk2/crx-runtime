@@ -1,5 +1,5 @@
 import crypto from "crypto"
-import { canonicalize } from "./touch src/engines/canonical_engine"
+import { canonicalize } from "./canonical_engine"
 
 export function computeCanonicalHash(input: any): string {
   const canonical = canonicalize(input)
