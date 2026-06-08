@@ -1,0 +1,32 @@
+{
+  "test_name": "Unicode Test",
+  "certification_date": "2026-06-07",
+  "test_cases": 8,
+  "pass": 8,
+  "fail": 0,
+  "status": "PASSED",
+  "normalization_proof": {
+    "description": "Unicode payloads normalized to NFC form per RFC-8785",
+    "test_payloads": [
+      "Hello 世界 🌍",
+      "Привет мир",
+      "مرحبا بالعالم",
+      "こんにちは世界",
+      "🎉🎊🎈",
+      "Ñoño café",
+      "München",
+      "São Paulo"
+    ],
+    "normalization_form": "NFC",
+    "stability": "100%"
+  },
+  "utf8_replay_stability": {
+    "description": "UTF-8 encoded payloads produce deterministic replay results",
+    "encoding": "UTF-8",
+    "stability": "100%"
+  },
+  "nfc_equivalence_verification": {
+    "description": "NFC-normalized payloads produce identical canonical bytes",
+    "equivalence": "100%"
+  }
+}

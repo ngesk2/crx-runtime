@@ -1,0 +1,9 @@
+# Constitutional Witness Roots - Immutable Freeze
+# Generated: 2026-06-07
+# Certification: CRX-CK-2026-06-07-v1
+
+minimal_replay:3cdd550c203ec031bb8144850ae116e18554d762bcf10e246e6d1729d1185eb1
+multi_event_replay:233f39e4a04d8b0f03533c39ebc2e85574749dc78c1910f4c43c5394f81faf2d
+lineage_replay:c168ecd338ce03d953ee00c3c8736c5ab8cb3a7b6c2c5b3290c07f0d818bb838
+violation_replay:4cafa6e3530685110b61171699cc2397a7a96088310b9a291acebd1d8234f6fc
+unicode_replay:ac5f03c19c70197c7672f026bcd5da78e5393c3af50bc403f1cf7be59aa462f4

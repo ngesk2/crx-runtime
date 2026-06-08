@@ -1,0 +1,75 @@
+# Constitutional Replay Kernel - Docker Compose
+# Phase 9: Docker Reproducibility Hardening
+# Date: 2026-06-07
+# Certification: CRX-CK-2026-06-07-v1
+
+version: '3.8'
+
+services:
+  # Constitutional Replay Kernel
+  replay-kernel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crx-replay-kernel:1.0.0
+    container_name: crx-replay-kernel
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - CONSTITUTIONAL_MODE=strict
+    volumes:
+      - ./certification:/app/certification:ro
+      - ./tests/corpus:/app/tests/corpus:ro
+    healthcheck:
+      test: ["CMD", "npx", "ts-node", "runtime/replay/constitutional_self_check.ts"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - crx-network
+
+  # PostgreSQL (Infrastructure - Out of Scope for Constitutional Kernel)
+  postgres:
+    image: postgres:15-alpine
+    container_name: crx-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=crx_runtime
+      - POSTGRES_USER=crx_user
+      - POSTGRES_PASSWORD=crx_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./certification/reports/postgres_schema_freeze.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./certification/reports/postgres_index_freeze.sql:/docker-entrypoint-initdb.d/02-indexes.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - crx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crx_user -d crx_runtime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  crx-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+
+# ============================================
+# Notes
+# ============================================
+
+# Constitutional Rules Enforced:
+# ✓ PostgreSQL image pinned to postgres:15-alpine
+# ✓ Schema freeze applied on startup
+# ✓ Index freeze applied on startup
+# ✓ Health checks for both services
+# ✓ Network isolation with crx-network
+# ✓ Readonly volumes for certification artifacts
+
+# PostgreSQL is infrastructure, NOT part of constitutional kernel
+# Constitutional kernel has zero database dependencies

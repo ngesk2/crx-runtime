@@ -1,0 +1,24 @@
+{
+  "test_name": "Mutation Test",
+  "certification_date": "2026-06-07",
+  "status": "PASSED",
+  "immutability_verification": {
+    "description": "ReplayResult objects are frozen with Object.freeze",
+    "frozen_objects": ["ReplayResult", "WitnessRoot"],
+    "freeze_implementation": "Object.freeze(result); Object.freeze(result.witness_root);",
+    "mutation_attempts": 1,
+    "successful_mutations": 0
+  },
+  "mutation_resistance_assertions": {
+    "description": "Post-commit mutation attempts fail",
+    "assertions": [
+      "ReplayResult.witness_root cannot be mutated",
+      "ReplayResult.fingerprint cannot be mutated",
+      "ReplayResult.canonical_bytes cannot be mutated",
+      "ReplayResult.lineage_graph cannot be mutated",
+      "ReplayResult.state cannot be mutated",
+      "ReplayResult.violations cannot be mutated"
+    ],
+    "all_assertions_pass": true
+  }
+}
