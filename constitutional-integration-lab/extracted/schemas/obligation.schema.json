@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crx.local/schema/obligation.schema.json",
+  "title": "CRX Constitutional Obligation",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "type",
+    "version",
+    "trigger",
+    "requiredAction",
+    "status",
+    "lifecycle",
+    "effectiveFrom",
+    "provenance",
+    "hash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "obligation.v0.1" },
+    "id": { "type": "string", "pattern": "^OBL-[0-9]{8}-[a-z0-9-]+-[0-9]{3}$" },
+    "type": { "const": "obligation" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "trigger": { "type": "string" },
+    "requiredAction": { "type": "string" },
+    "assigneeRole": { "type": "string" },
+    "due": { "type": ["string", "null"] },
+    "status": { "enum": ["open", "satisfied", "expired", "superseded", "waived"] },
+    "satisfiedBy": { "type": ["string", "null"] },
+    "waiverRequiresCapability": { "type": ["string", "null"] },
+    "lifecycle": {
+      "enum": ["draft", "active", "superseded", "deprecated", "archived"]
+    },
+    "effectiveFrom": { "$ref": "#/$defs/effectivePoint" },
+    "effectiveTo": {
+      "anyOf": [{ "$ref": "#/$defs/effectivePoint" }, { "type": "null" }]
+    },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "hash": { "type": "string", "pattern": "^sha256:.+" }
+  },
+  "$defs": {
+    "effectivePoint": {
+      "type": "object",
+      "required": ["eventId", "sequence"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eventId", "eventHash", "actor"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventHash": { "type": "string", "pattern": "^sha256:.+" },
+        "actor": { "type": "string" },
+        "capabilityId": { "type": "string" },
+        "bundleId": { "type": "string" }
+      }
+    }
+  }
+}

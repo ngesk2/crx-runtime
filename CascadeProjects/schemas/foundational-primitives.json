@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Foundational Primitives",
+  "description": "Canonical schemas for the five foundational primitives: Provenance, Claims, Decisions, Facts, Rules",
+  "definitions": {
+    "Provenance": {
+      "type": "object",
+      "description": "What happened?",
+      "required": ["event_id", "timestamp", "actor_id", "action_type"],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actor_id": {
+          "type": "string"
+        },
+        "action_type": {
+          "type": "string"
+        },
+        "context": {
+          "type": "object"
+        }
+      }
+    },
+    "Claim": {
+      "type": "object",
+      "description": "What is asserted?",
+      "required": ["claim_id", "claim_key", "claim_value", "source_event_id", "claim_status"],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "claim_key": {
+          "type": "string"
+        },
+        "claim_value": {
+          "type": "object"
+        },
+        "source_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "claim_status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "rejected"]
+        },
+        "validation_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reasoning": {
+          "type": "string"
+        }
+      }
+    },
+    "Decision": {
+      "type": "object",
+      "description": "What was accepted?",
+      "required": ["decision_id", "decision_type", "decision_value", "deciding_event_id"],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "decision_type": {
+          "type": "string"
+        },
+        "decision_value": {
+          "type": "string",
+          "enum": ["accept", "reject", "modify", "defer"]
+        },
+        "deciding_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "alternatives_considered": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    },
+    "Fact": {
+      "type": "object",
+      "description": "What is currently true?",
+      "required": ["fact_id", "fact_key", "fact_value", "source_event_id", "is_current"],
+      "properties": {
+        "fact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fact_key": {
+          "type": "string"
+        },
+        "fact_value": {
+          "type": "object"
+        },
+        "source_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "is_current": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Rule": {
+      "type": "object",
+      "description": "What constrains truth?",
+      "required": ["rule_id", "rule_key", "rule_definition", "rule_version", "is_active"],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "rule_key": {
+          "type": "string"
+        },
+        "rule_definition": {
+          "type": "object"
+        },
+        "rule_version": {
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

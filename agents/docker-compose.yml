@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Planner Agent - Proposes changes without executing
+  planner-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.planner
+    container_name: crx-planner-agent
+    volumes:
+      - ./authoritative:/crx/authoritative:ro
+      - ./derived:/crx/derived:ro
+      - ./experimental:/crx/experimental:rw
+      - ./logs:/crx/logs
+    environment:
+      - AGENT_TYPE=planner
+      - AGENT_ID=planner-1
+      - LOG_LEVEL=INFO
+    networks:
+      - crx-network
+    restart: unless-stopped
+
+  # Refactor Agent - Modifies experimental code
+  refactor-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.refactor
+    container_name: crx-refactor-agent
+    volumes:
+      - ./authoritative:/crx/authoritative:ro
+      - ./derived:/crx/derived:ro
+      - ./experimental:/crx/experimental:rw
+      - ./logs:/crx/logs
+    environment:
+      - AGENT_TYPE=refactor
+      - AGENT_ID=refactor-1
+      - LOG_LEVEL=INFO
+    networks:
+      - crx-network
+    depends_on:
+      - planner-agent
+    restart: unless-stopped
+
+  # Documentation Agent - Updates derived documentation
+  documentation-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.documentation
+    container_name: crx-documentation-agent
+    volumes:
+      - ./authoritative:/crx/authoritative:ro
+      - ./derived:/crx/derived:rw
+      - ./experimental:/crx/experimental:ro
+      - ./logs:/crx/logs
+    environment:
+      - AGENT_TYPE=documentation
+      - AGENT_ID=documentation-1
+      - LOG_LEVEL=INFO
+    networks:
+      - crx-network
+    restart: unless-stopped
+
+  # Governance Agent - Generates audits
+  governance-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.governance
+    container_name: crx-governance-agent
+    volumes:
+      - ./authoritative:/crx/authoritative:rw
+      - ./derived:/crx/derived:ro
+      - ./experimental:/crx/experimental:ro
+      - ./logs:/crx/logs
+    environment:
+      - AGENT_TYPE=governance
+      - AGENT_ID=governance-1
+      - LOG_LEVEL=INFO
+    networks:
+      - crx-network
+    restart: unless-stopped
+
+networks:
+  crx-network:
+    driver: bridge
+
+volumes:
+  logs:

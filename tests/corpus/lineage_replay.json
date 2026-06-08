@@ -1,0 +1,67 @@
+{
+  "name": "lineage_replay",
+  "description": "Events with parent-child lineage relationships",
+  "event_stream": [
+    {
+      "event_id": "evt-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-001",
+        "artifact_content": "root"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    },
+    {
+      "event_id": "evt-002",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:01:00Z",
+      "payload": {
+        "artifact_id": "artifact-002",
+        "artifact_content": "child"
+      },
+      "lineage": {
+        "parent_event_ids": [
+          "artifact-001"
+        ]
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    },
+    {
+      "event_id": "evt-003",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:02:00Z",
+      "payload": {
+        "artifact_id": "artifact-003",
+        "artifact_content": "grandchild"
+      },
+      "lineage": {
+        "parent_event_ids": [
+          "artifact-002"
+        ]
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "expected_vectors": {
+    "canonical_bytes": "W3siYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDEiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6InJvb3QiLCJhcnRpZmFjdF9pZCI6ImFydGlmYWN0LTAwMSJ9LCJwb2xpY3lfdmVyc2lvbiI6IjEuMCIsInJlcGxheV92ZXJzaW9uIjoiMS4wIiwic2NoZW1hX3ZlcnNpb24iOiIxLjAiLCJ0aW1lc3RhbXAiOiIyMDI2LTA2LTA3VDAwOjAwOjAwWiJ9LHsiYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDIiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbImFydGlmYWN0LTAwMSJdfSwicGF5bG9hZCI6eyJhcnRpZmFjdF9jb250ZW50IjoiY2hpbGQiLCJhcnRpZmFjdF9pZCI6ImFydGlmYWN0LTAwMiJ9LCJwb2xpY3lfdmVyc2lvbiI6IjEuMCIsInJlcGxheV92ZXJzaW9uIjoiMS4wIiwic2NoZW1hX3ZlcnNpb24iOiIxLjAiLCJ0aW1lc3RhbXAiOiIyMDI2LTA2LTA3VDAwOjAxOjAwWiJ9LHsiYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDMiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbImFydGlmYWN0LTAwMiJdfSwicGF5bG9hZCI6eyJhcnRpZmFjdF9jb250ZW50IjoiZ3JhbmRjaGlsZCIsImFydGlmYWN0X2lkIjoiYXJ0aWZhY3QtMDAzIn0sInBvbGljeV92ZXJzaW9uIjoiMS4wIiwicmVwbGF5X3ZlcnNpb24iOiIxLjAiLCJzY2hlbWFfdmVyc2lvbiI6IjEuMCIsInRpbWVzdGFtcCI6IjIwMjYtMDYtMDdUMDA6MDI6MDBaIn1d",
+    "fingerprint": "sha256:c5dd9427a8329996f396f3ddd7060bf2f3ea2808b3f555e4c41ce6bbe31a6612",
+    "witness_root": "c168ecd338ce03d953ee00c3c8736c5ab8cb3a7b6c2c5b3290c07f0d818bb838",
+    "leaf_count": 14,
+    "tree_height": 4,
+    "state_version": "1.0",
+    "artifact_count": 3
+  }
+}

@@ -1,0 +1,54 @@
+name: Constitutional CI
+
+
+on:
+  push:
+  pull_request:
+
+
+jobs:
+  constitutional:
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - uses: actions/checkout@v4
+
+
+      - name: Install Dependencies
+        run: npm install
+
+
+      - name: Domain Lock Enforcement
+        run: node core/domain_lock_enforcer.js
+
+
+      - name: Lockfile Fingerprint Verification
+        run: node core/domain_lockfile_fingerprint_guard.js
+
+
+      - name: Domain Usage Static Analysis
+        run: node core/domain_usage_static_analyzer.js
+
+
+      - name: Build
+        run: npm run build
+
+
+      - name: Structural Identity Tests
+        run: node test/structural_identity_stability_test_suite.js
+
+
+      - name: Deterministic Replay Tests
+        run: node test/deterministic_replay_harness.js
+
+
+      - name: Entropy Budget Tests
+        run: node test/entropy_budget_guard.js
+
+
+      - name: Formal Invariant Graph Verification
+        run: node core/formal_invariant_graph_verifier.js
+
+
+merkle_anchor_adapter_misuse_tests.js

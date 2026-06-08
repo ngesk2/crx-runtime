@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claim Schema",
+  "description": "A claim is a proposed assertion about state that requires validation",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "proposer",
+    "scope",
+    "assertion",
+    "evidence_refs",
+    "requested_authority",
+    "risk_level",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the claim"
+    },
+    "proposer": {
+      "type": "string",
+      "description": "ID of the authority or entity proposing the claim"
+    },
+    "scope": {
+      "type": "string",
+      "description": "What domain or entity this claim applies to"
+    },
+    "assertion": {
+      "type": "string",
+      "description": "The actual claim being made"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "References to events, documents, or other evidence supporting the claim"
+    },
+    "requested_authority": {
+      "type": "string",
+      "description": "ID of the authority that should review and decide this claim"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Risk level if this claim is incorrectly accepted"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the claim was created"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional timestamp when the claim expires"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "under_review", "decided", "withdrawn"],
+      "description": "Current status of the claim"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": ["state_change", "fact_assertion", "rule_proposal", "authority_request"],
+      "description": "Type of claim"
+    },
+    "priority": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Priority for review (1-10, higher is more urgent)"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Claim IDs that must be decided before this claim"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Arbitrary contextual data"
+    }
+  }
+}

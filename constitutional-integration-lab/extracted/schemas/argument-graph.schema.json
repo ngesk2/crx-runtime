@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "crx-authority: AUTHORITATIVE | layer: cos-schema | modify: AMEND+APPROVE | crx-enforcement: modify=Owner | record=AUD-XXX | evidence=template validates | freeze=no | status=MISSING-until-first-ARG",
+  "title": "CRX Argument Graph",
+  "type": "object",
+  "required": ["id", "source", "compiledAt", "compilerVersion", "nodes", "edges", "conclusion"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ARG-\\d{3}$" },
+    "source": {
+      "type": "object",
+      "required": ["type", "ref", "hash"],
+      "properties": {
+        "type": { "enum": ["conversation", "document", "tool-output"] },
+        "ref": { "type": "string" },
+        "hash": { "type": "string" }
+      }
+    },
+    "compiledAt": { "type": "string", "format": "date-time" },
+    "compilerVersion": { "type": "string" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "enum": ["claim", "evidence", "assumption", "counterargument", "verification", "decision", "openQuestion", "actor"] },
+          "text": { "type": "string" },
+          "epistemicStatus": { "enum": ["KNOWN", "INFERRED", "UNKNOWN", "SPECULATIVE"] }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "type"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "type": { "enum": ["supports", "refutes", "assumes", "contradicts", "requires", "resolves", "derives", "rejects"] }
+        }
+      }
+    },
+    "conclusion": {
+      "type": "object",
+      "required": ["type", "ref"],
+      "properties": {
+        "type": { "enum": ["DEC", "OQ"] },
+        "ref": { "type": "string" }
+      }
+    },
+    "manualOverrides": { "type": "array" }
+  }
+}

@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+LABEL maintainer="CRX KnowledgeOS"
+LABEL description="Governance Agent - Generates audits"
+
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /crx
+
+COPY authoritative/ /crx/authoritative/
+COPY derived/ /crx/derived/
+COPY experimental/ /crx/experimental/
+
+# Create directories for governance outputs
+RUN mkdir -p /crx/authoritative/audits
+
+COPY requirements.txt /crx/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agents/governance/ /crx/agents/governance/
+
+ENV PYTHONPATH=/crx
+ENV AGENT_TYPE=governance
+ENV AGENT_PERMISSIONS=read,audit,validate
+
+CMD ["python", "-m", "agents.governance.main"]

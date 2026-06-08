@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+LABEL maintainer="CRX KnowledgeOS"
+LABEL description="Refactor Agent - Modifies experimental code"
+
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /crx
+
+COPY authoritative/ /crx/authoritative/
+COPY derived/ /crx/derived/
+COPY experimental/ /crx/experimental/
+
+# Create directories for refactor outputs
+RUN mkdir -p /crx/experimental/refactor /crx/experimental/tests
+
+COPY requirements.txt /crx/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agents/refactor/ /crx/agents/refactor/
+
+ENV PYTHONPATH=/crx
+ENV AGENT_TYPE=refactor
+ENV AGENT_PERMISSIONS=read,modify_experimental,test
+
+CMD ["python", "-m", "agents.refactor.main"]

@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+LABEL maintainer="CRX KnowledgeOS"
+LABEL description="Planner Agent - Proposes changes without executing"
+
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /crx
+
+# Copy workspace with read-only mounts configured in docker-compose
+COPY authoritative/ /crx/authoritative/
+COPY derived/ /crx/derived/
+COPY experimental/ /crx/experimental/
+
+# Create directories for planner outputs
+RUN mkdir -p /crx/experimental/proposals /crx/derived/analysis
+
+# Install dependencies
+COPY requirements.txt /crx/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy planner agent code
+COPY agents/planner/ /crx/agents/planner/
+
+ENV PYTHONPATH=/crx
+ENV AGENT_TYPE=planner
+ENV AGENT_PERMISSIONS=read,analyze,propose
+
+CMD ["python", "-m", "agents.planner.main"]
