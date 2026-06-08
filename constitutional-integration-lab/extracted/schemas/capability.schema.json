@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crx.local/schema/capability.schema.json",
+  "title": "CRX Constitutional Capability",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "type",
+    "version",
+    "subject",
+    "action",
+    "scope",
+    "constraints",
+    "lifecycle",
+    "effectiveFrom",
+    "provenance",
+    "hash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "capability.v0.1" },
+    "id": { "type": "string", "pattern": "^CAP-[0-9]{8}-[a-z0-9-]+-[0-9]{3}$" },
+    "type": { "const": "capability" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "subject": { "type": "string" },
+    "action": { "type": "string" },
+    "scope": {
+      "type": "object",
+      "required": ["weightClasses", "paths"],
+      "properties": {
+        "weightClasses": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "predicate"],
+        "properties": {
+          "id": { "type": "string" },
+          "predicate": { "type": "string" }
+        }
+      }
+    },
+    "delegable": { "type": "boolean", "default": false },
+    "revokedBy": { "type": ["string", "null"] },
+    "lifecycle": {
+      "enum": ["draft", "active", "superseded", "revoked", "deprecated", "archived"]
+    },
+    "effectiveFrom": { "$ref": "#/$defs/effectivePoint" },
+    "effectiveTo": {
+      "anyOf": [{ "$ref": "#/$defs/effectivePoint" }, { "type": "null" }]
+    },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "hash": { "type": "string", "pattern": "^sha256:.+" }
+  },
+  "$defs": {
+    "effectivePoint": {
+      "type": "object",
+      "required": ["eventId", "sequence"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eventId", "eventHash", "actor"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventHash": { "type": "string", "pattern": "^sha256:.+" },
+        "actor": { "type": "string" },
+        "grantingCapabilityId": { "type": "string" },
+        "bundleId": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crx.local/schema/fact.schema.json",
+  "title": "CRX Constitutional Fact",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "type",
+    "version",
+    "predicate",
+    "subject",
+    "value",
+    "lifecycle",
+    "effectiveFrom",
+    "provenance",
+    "hash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "fact.v0.1" },
+    "id": { "type": "string", "pattern": "^FACT-[0-9]{8}-[a-z0-9-]+-[0-9]{3}$" },
+    "type": { "const": "fact" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "predicate": { "type": "string" },
+    "subject": { "type": "string" },
+    "value": {},
+    "confidence": { "enum": ["machine-verified", "human-asserted", "derived", "unknown"] },
+    "lifecycle": {
+      "enum": ["draft", "active", "canonical", "superseded", "deprecated", "archived"]
+    },
+    "effectiveFrom": { "$ref": "#/$defs/effectivePoint" },
+    "effectiveTo": {
+      "anyOf": [{ "$ref": "#/$defs/effectivePoint" }, { "type": "null" }]
+    },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "proofObligations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "hash": { "type": "string", "pattern": "^sha256:.+" }
+  },
+  "$defs": {
+    "effectivePoint": {
+      "type": "object",
+      "required": ["eventId", "sequence"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eventId", "eventHash", "actor"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventHash": { "type": "string", "pattern": "^sha256:.+" },
+        "actor": { "type": "string" },
+        "capabilityId": { "type": "string" },
+        "bundleId": { "type": "string" },
+        "humanJudgmentRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "crx-authority: AUTHORITATIVE | layer: cos-schema | modify: AMEND+APPROVE | crx-enforcement: modify=Owner | record=AUD-XXX | evidence=events.jsonl validates | freeze=no | status=EXPLICIT-via-PROP-001",
+  "title": "CRX Audit Event",
+  "type": "object",
+  "required": ["id", "timestamp", "actor", "action", "artifactType", "artifactId"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^AUD-\\d{3}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "actor": { "type": "string" },
+    "action": { "enum": ["create", "update", "approve", "reject", "execute", "archive", "amend", "block", "clear"] },
+    "artifactType": { "enum": ["proposal", "thesis", "argument", "decision", "experiment", "execution", "amendment", "artifact", "deprecation"] },
+    "artifactId": { "type": "string" },
+    "payloadHash": { "type": "string" },
+    "justification": { "type": "string" }
+  }
+}

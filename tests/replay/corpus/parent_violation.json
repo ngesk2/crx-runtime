@@ -1,0 +1,49 @@
+{
+  "INPUT_STREAM": [
+    {
+      "event_id": "evt-parent-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-parent-001",
+        "artifact_content": "test"
+      },
+      "lineage": {
+        "parent_event_ids": ["evt-nonexistent-001"]
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "EXPECTED_HASH": {
+    "hash": "sha256:placeholder_hash_parent_violation",
+    "hash_algorithm": "sha256",
+    "hash_version": "1.0"
+  },
+  "EXPECTED_LINEAGE_RESULT": {
+    "edges": [],
+    "graph_version": "1.0"
+  },
+  "EXPECTED_REPLAY_STATE": {
+    "artifacts": {},
+    "state_version": "1.0"
+  },
+  "EXPECTED_WITNESS_ROOT": {
+    "witness_root": "placeholder_witness_root_parent_violation",
+    "witness_algorithm": "merkle_sha256_v1",
+    "witness_version": "1.0"
+  },
+  "EXPECTED_VIOLATIONS": [
+    {
+      "invariant_id": "PARENT_EXISTENCE",
+      "violation_type": "MISSING_PARENT",
+      "violation_details": {
+        "artifact_id": "artifact-parent-001",
+        "missing_parent": "evt-nonexistent-001"
+      }
+    }
+  ],
+  "EXPECTED_ERROR": "Parent artifact evt-nonexistent-001 does not exist. Constitutional violation: parent existence invariant."
+}

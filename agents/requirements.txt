@@ -1,0 +1,29 @@
+# CRX Agent Dependencies
+
+# Core
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# File processing
+watchdog==3.0.0
+pathlib==1.0.1
+
+# Logging
+structlog==23.2.0
+
+# HTTP/API
+httpx==0.25.2
+fastapi==0.109.0
+uvicorn==0.27.0
+
+# Data processing
+jsonschema==4.20.0
+pyyaml==6.0.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Code analysis
+ast==0.5.0

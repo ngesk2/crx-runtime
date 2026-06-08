@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crx.local/schema/invariant.schema.json",
+  "title": "CRX Constitutional Invariant",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "type",
+    "version",
+    "name",
+    "predicate",
+    "severity",
+    "lifecycle",
+    "effectiveFrom",
+    "provenance",
+    "hash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "invariant.v0.1" },
+    "id": { "type": "string", "pattern": "^INV-[0-9]{8}-[a-z0-9-]+-[0-9]{3}$" },
+    "type": { "const": "invariant" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "name": { "type": "string" },
+    "predicate": { "type": "string" },
+    "severity": { "enum": ["critical", "high", "medium", "low"] },
+    "appliesTo": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failureEffect": { "enum": ["halt", "block", "warn"] },
+    "lifecycle": {
+      "enum": ["draft", "active", "canonical", "superseded", "deprecated", "archived"]
+    },
+    "effectiveFrom": { "$ref": "#/$defs/effectivePoint" },
+    "effectiveTo": {
+      "anyOf": [{ "$ref": "#/$defs/effectivePoint" }, { "type": "null" }]
+    },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "hash": { "type": "string", "pattern": "^sha256:.+" }
+  },
+  "$defs": {
+    "effectivePoint": {
+      "type": "object",
+      "required": ["eventId", "sequence"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eventId", "eventHash", "actor"],
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventHash": { "type": "string", "pattern": "^sha256:.+" },
+        "actor": { "type": "string" },
+        "capabilityId": { "type": "string" },
+        "bundleId": { "type": "string" }
+      }
+    }
+  }
+}

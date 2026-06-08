@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crx.local/schema/constitutional-state.schema.json",
+  "title": "CRX Constitutional State",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "stateId",
+    "computedAtSequence",
+    "computedFrom",
+    "facts",
+    "capabilities",
+    "invariants",
+    "obligations",
+    "validity",
+    "stateHash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "constitutional-state.v0.1" },
+    "stateId": { "type": "string" },
+    "computedAtSequence": { "type": "integer", "minimum": 0 },
+    "computedFrom": {
+      "type": "object",
+      "required": ["eventHash", "replayProtocolHash", "schemaRegistryHash"],
+      "properties": {
+        "eventHash": { "type": "string", "pattern": "^sha256:.+" },
+        "replayProtocolHash": { "type": "string", "pattern": "^sha256:.+" },
+        "schemaRegistryHash": { "type": "string", "pattern": "^sha256:.+" },
+        "snapshotHash": { "type": ["string", "null"] }
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": { "$ref": "fact.schema.json" }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "$ref": "capability.schema.json" }
+    },
+    "invariants": {
+      "type": "array",
+      "items": { "$ref": "invariant.schema.json" }
+    },
+    "obligations": {
+      "type": "array",
+      "items": { "$ref": "obligation.schema.json" }
+    },
+    "validity": {
+      "type": "object",
+      "required": [
+        "status",
+        "invariantViolations",
+        "openObligations",
+        "capabilityConflicts",
+        "unjustifiedFacts",
+        "humanJudgmentRefs"
+      ],
+      "properties": {
+        "status": { "enum": ["valid", "degraded", "invalid", "unknown"] },
+        "invariantViolations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "openObligations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "capabilityConflicts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unjustifiedFacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "humanJudgmentRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "stateHash": { "type": "string", "pattern": "^sha256:.+" }
+  }
+}

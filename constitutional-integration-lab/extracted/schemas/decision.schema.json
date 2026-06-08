@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Decision Schema",
+  "description": "A decision is an authority's judgment on a claim",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "review_authority",
+    "claim_id",
+    "outcome",
+    "justification",
+    "accepted_claims",
+    "rejected_claims",
+    "decided_at"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the decision"
+    },
+    "review_authority": {
+      "type": "string",
+      "description": "ID of the authority making the decision"
+    },
+    "claim_id": {
+      "type": "string",
+      "description": "ID of the claim being decided"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["accept", "reject", "defer", "withdraw"],
+      "description": "Decision outcome"
+    },
+    "justification": {
+      "type": "string",
+      "description": "Reasoning for the decision"
+    },
+    "accepted_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Claim IDs accepted as part of this decision"
+    },
+    "rejected_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Claim IDs rejected as part of this decision"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the decision was made"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional timestamp when the decision expires"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Conditions that must hold for this decision to remain valid"
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Obligation IDs created by this decision"
+    },
+    "authority_delegation": {
+      "type": "object",
+      "description": "If this decision delegates authority to another entity"
+    },
+    "review_references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related decision IDs"
+    }
+  }
+}

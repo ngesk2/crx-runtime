@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+LABEL maintainer="CRX KnowledgeOS"
+LABEL description="Documentation Agent - Updates derived documentation"
+
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /crx
+
+COPY authoritative/ /crx/authoritative/
+COPY derived/ /crx/derived/
+COPY experimental/ /crx/experimental/
+
+# Create directories for documentation outputs
+RUN mkdir -p /crx/derived/docs /crx/derived/diagrams
+
+COPY requirements.txt /crx/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agents/documentation/ /crx/agents/documentation/
+
+ENV PYTHONPATH=/crx
+ENV AGENT_TYPE=documentation
+ENV AGENT_PERMISSIONS=read,document,diagram
+
+CMD ["python", "-m", "agents.documentation.main"]
