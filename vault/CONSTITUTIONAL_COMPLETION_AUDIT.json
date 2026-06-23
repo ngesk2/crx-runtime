@@ -1,0 +1,82 @@
+{
+  "phase1_event_store_sovereignty": {
+    "append_event": 28,
+    "create_event": 24,
+    "insert_event": 8,
+    "save_event": 8,
+    "write_event": 8
+  },
+  "phase2_secret_authority": {
+    "OPENAI_API_KEY": {
+      "total": 24,
+      "authorized": 6,
+      "unauthorized": 18
+    },
+    "QDRANT_API_KEY": {
+      "total": 274,
+      "authorized": 34,
+      "unauthorized": 240
+    },
+    "DB_PASSWORD": {
+      "total": 8,
+      "authorized": 0,
+      "unauthorized": 8
+    },
+    "JWT_SECRET": {
+      "total": 68,
+      "authorized": 10,
+      "unauthorized": 58
+    },
+    "SECRET_KEY": {
+      "total": 60,
+      "authorized": 2,
+      "unauthorized": 58
+    }
+  },
+  "phase3_capability_enforcement": {
+    "requires_capability": 12,
+    "Capability": 1065,
+    "PolicyEngine": 40
+  },
+  "phase4_jwt_trust_boundary": {
+    "jwt_auth": 25,
+    "JWTAuth": 15,
+    "verify_token": 15,
+    "extract_identity": 15
+  },
+  "phase5_event_signature": {
+    "Ed25519": 37,
+    "SigningKey": 21,
+    "VerifyKey": 17,
+    "verify_signature": 37
+  },
+  "phase6_projection_integrity": {
+    "ProjectionIntegrity": 9,
+    "verify_projection": 35
+  },
+  "phase7_vault_operational": {
+    "config_files": 11,
+    "vault_running": "TODO - requires manual check"
+  },
+  "phase8_memory_readiness": {
+    "DocumentImported": 6,
+    "DocumentEmbedded": 10,
+    "ProjectionCreated": 6,
+    "Qdrant": 857
+  },
+  "phase9_mission_control_knowledge": {
+    "/knowledge/search": 10,
+    "/knowledge/related": 10,
+    "/knowledge/lineage": 10,
+    "/knowledge/research": 9,
+    "/knowledge/documents": 9
+  },
+  "summary": {
+    "secret_sovereignty_score": "12.0%",
+    "capability_enforcement": 1117,
+    "jwt_implementation": 70,
+    "signature_implementation": 112,
+    "projection_integrity": 44,
+    "vault_config_files": 11
+  }
+}
