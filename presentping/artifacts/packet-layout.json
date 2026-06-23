@@ -1,0 +1,659 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-20T21:10:44.403Z",
+  "routes": [
+    {
+      "from": "gateway",
+      "to": "witness",
+      "path": {
+        "start": {
+          "x": 5,
+          "y": 1.25
+        },
+        "end": {
+          "x": 7.165,
+          "y": 2.5
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 5.2829999999999995,
+            "y": 1.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "External",
+            "CLAIM": "Event Received",
+            "EVIDENCE": "Hash 0xABC",
+            "CONFIDENCE": "100%",
+            "STATUS": "Received",
+            "TIMESTAMP": "T+0"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 5.715999999999999,
+            "y": 1.65
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "External",
+            "CLAIM": "Event Received",
+            "EVIDENCE": "Hash 0xABC",
+            "CONFIDENCE": "100%",
+            "STATUS": "Received",
+            "TIMESTAMP": "T+0"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 6.148999999999999,
+            "y": 1.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "External",
+            "CLAIM": "Event Received",
+            "EVIDENCE": "Hash 0xABC",
+            "CONFIDENCE": "100%",
+            "STATUS": "Received",
+            "TIMESTAMP": "T+0"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 6.582,
+            "y": 2.15
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "External",
+            "CLAIM": "Event Received",
+            "EVIDENCE": "Hash 0xABC",
+            "CONFIDENCE": "100%",
+            "STATUS": "Received",
+            "TIMESTAMP": "T+0"
+          }
+        }
+      ]
+    },
+    {
+      "from": "witness",
+      "to": "bedrock",
+      "path": {
+        "start": {
+          "x": 7.165,
+          "y": 2.5
+        },
+        "end": {
+          "x": 7.165,
+          "y": 5
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 7.015,
+            "y": 2.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "State Validated",
+            "EVIDENCE": "Hash 0x91A",
+            "CONFIDENCE": "99.8%",
+            "STATUS": "Verified",
+            "TIMESTAMP": "T+184"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 7.015,
+            "y": 3.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "State Validated",
+            "EVIDENCE": "Hash 0x91A",
+            "CONFIDENCE": "99.8%",
+            "STATUS": "Verified",
+            "TIMESTAMP": "T+184"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 7.015,
+            "y": 3.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "State Validated",
+            "EVIDENCE": "Hash 0x91A",
+            "CONFIDENCE": "99.8%",
+            "STATUS": "Verified",
+            "TIMESTAMP": "T+184"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 7.015,
+            "y": 4.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "State Validated",
+            "EVIDENCE": "Hash 0x91A",
+            "CONFIDENCE": "99.8%",
+            "STATUS": "Verified",
+            "TIMESTAMP": "T+184"
+          }
+        }
+      ]
+    },
+    {
+      "from": "bedrock",
+      "to": "replay",
+      "path": {
+        "start": {
+          "x": 7.165,
+          "y": 5
+        },
+        "end": {
+          "x": 5,
+          "y": 6.25
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 6.582,
+            "y": 5.15
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "Canonical State Stored",
+            "EVIDENCE": "Hash 0xDEF",
+            "CONFIDENCE": "100%",
+            "STATUS": "Stored",
+            "TIMESTAMP": "T+190"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 6.148999999999999,
+            "y": 5.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "Canonical State Stored",
+            "EVIDENCE": "Hash 0xDEF",
+            "CONFIDENCE": "100%",
+            "STATUS": "Stored",
+            "TIMESTAMP": "T+190"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 5.715999999999999,
+            "y": 5.65
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "Canonical State Stored",
+            "EVIDENCE": "Hash 0xDEF",
+            "CONFIDENCE": "100%",
+            "STATUS": "Stored",
+            "TIMESTAMP": "T+190"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 5.2829999999999995,
+            "y": 5.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Kernel",
+            "CLAIM": "Canonical State Stored",
+            "EVIDENCE": "Hash 0xDEF",
+            "CONFIDENCE": "100%",
+            "STATUS": "Stored",
+            "TIMESTAMP": "T+190"
+          }
+        }
+      ]
+    },
+    {
+      "from": "replay",
+      "to": "builder",
+      "path": {
+        "start": {
+          "x": 5,
+          "y": 6.25
+        },
+        "end": {
+          "x": 2.835,
+          "y": 5
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 4.417,
+            "y": 5.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-RX",
+            "CLAIM": "Historical State Reconstructed",
+            "EVIDENCE": "Hash 0xGHI",
+            "CONFIDENCE": "95.5%",
+            "STATUS": "Reconstructed",
+            "TIMESTAMP": "T+500"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 3.9840000000000004,
+            "y": 5.65
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-RX",
+            "CLAIM": "Historical State Reconstructed",
+            "EVIDENCE": "Hash 0xGHI",
+            "CONFIDENCE": "95.5%",
+            "STATUS": "Reconstructed",
+            "TIMESTAMP": "T+500"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 3.551,
+            "y": 5.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-RX",
+            "CLAIM": "Historical State Reconstructed",
+            "EVIDENCE": "Hash 0xGHI",
+            "CONFIDENCE": "95.5%",
+            "STATUS": "Reconstructed",
+            "TIMESTAMP": "T+500"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 3.118,
+            "y": 5.15
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-RX",
+            "CLAIM": "Historical State Reconstructed",
+            "EVIDENCE": "Hash 0xGHI",
+            "CONFIDENCE": "95.5%",
+            "STATUS": "Reconstructed",
+            "TIMESTAMP": "T+500"
+          }
+        }
+      ]
+    },
+    {
+      "from": "builder",
+      "to": "governance",
+      "path": {
+        "start": {
+          "x": 2.835,
+          "y": 5
+        },
+        "end": {
+          "x": 2.835,
+          "y": 2.5
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 2.685,
+            "y": 4.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-BX",
+            "CLAIM": "Artifact Generated",
+            "EVIDENCE": "Hash 0xJKL",
+            "CONFIDENCE": "98.2%",
+            "STATUS": "Generated",
+            "TIMESTAMP": "T+750"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 2.685,
+            "y": 3.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-BX",
+            "CLAIM": "Artifact Generated",
+            "EVIDENCE": "Hash 0xJKL",
+            "CONFIDENCE": "98.2%",
+            "STATUS": "Generated",
+            "TIMESTAMP": "T+750"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 2.685,
+            "y": 3.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-BX",
+            "CLAIM": "Artifact Generated",
+            "EVIDENCE": "Hash 0xJKL",
+            "CONFIDENCE": "98.2%",
+            "STATUS": "Generated",
+            "TIMESTAMP": "T+750"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 2.685,
+            "y": 2.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Agent-BX",
+            "CLAIM": "Artifact Generated",
+            "EVIDENCE": "Hash 0xJKL",
+            "CONFIDENCE": "98.2%",
+            "STATUS": "Generated",
+            "TIMESTAMP": "T+750"
+          }
+        }
+      ]
+    },
+    {
+      "from": "governance",
+      "to": "gateway",
+      "path": {
+        "start": {
+          "x": 2.835,
+          "y": 2.5
+        },
+        "end": {
+          "x": 5,
+          "y": 1.25
+        }
+      },
+      "capsules": [
+        {
+          "index": 0,
+          "position": {
+            "x": 3.118,
+            "y": 2.15
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Constitution",
+            "CLAIM": "Constraint Approved",
+            "EVIDENCE": "Hash 0xMNO",
+            "CONFIDENCE": "100%",
+            "STATUS": "Approved",
+            "TIMESTAMP": "T+900"
+          }
+        },
+        {
+          "index": 1,
+          "position": {
+            "x": 3.551,
+            "y": 1.9
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Constitution",
+            "CLAIM": "Constraint Approved",
+            "EVIDENCE": "Hash 0xMNO",
+            "CONFIDENCE": "100%",
+            "STATUS": "Approved",
+            "TIMESTAMP": "T+900"
+          }
+        },
+        {
+          "index": 2,
+          "position": {
+            "x": 3.9840000000000004,
+            "y": 1.65
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Constitution",
+            "CLAIM": "Constraint Approved",
+            "EVIDENCE": "Hash 0xMNO",
+            "CONFIDENCE": "100%",
+            "STATUS": "Approved",
+            "TIMESTAMP": "T+900"
+          }
+        },
+        {
+          "index": 3,
+          "position": {
+            "x": 4.417,
+            "y": 1.4
+          },
+          "bounds": {
+            "w": 0.3,
+            "h": 0.2
+          },
+          "packet": {
+            "OWNER": "Constitution",
+            "CLAIM": "Constraint Approved",
+            "EVIDENCE": "Hash 0xMNO",
+            "CONFIDENCE": "100%",
+            "STATUS": "Approved",
+            "TIMESTAMP": "T+900"
+          }
+        }
+      ]
+    },
+    {
+      "from": "witness",
+      "to": "rejected",
+      "type": "failure",
+      "path": {
+        "start": {
+          "x": 7.165,
+          "y": 2.5
+        },
+        "mid": {
+          "x": 7.8325,
+          "y": 3.5
+        },
+        "end": {
+          "x": 8.5,
+          "y": 6
+        }
+      },
+      "capsules": []
+    },
+    {
+      "from": "governance",
+      "to": "rollback",
+      "type": "failure",
+      "path": {
+        "start": {
+          "x": 2.835,
+          "y": 2.5
+        },
+        "mid": {
+          "x": 1.6675,
+          "y": 1.5
+        },
+        "end": {
+          "x": 0.5,
+          "y": 6
+        }
+      },
+      "capsules": []
+    },
+    {
+      "from": "governance",
+      "to": "constraint_violation",
+      "type": "failure",
+      "path": {
+        "start": {
+          "x": 2.835,
+          "y": 2.5
+        },
+        "mid": {
+          "x": 3.6675,
+          "y": 3.5
+        },
+        "end": {
+          "x": 4.5,
+          "y": 7.5
+        }
+      },
+      "capsules": []
+    },
+    {
+      "from": "witness",
+      "to": "ownership_conflict",
+      "type": "failure",
+      "path": {
+        "start": {
+          "x": 7.165,
+          "y": 2.5
+        },
+        "mid": {
+          "x": 4.8325,
+          "y": 3.5
+        },
+        "end": {
+          "x": 2.5,
+          "y": 7.5
+        }
+      },
+      "capsules": []
+    },
+    {
+      "from": "builder",
+      "to": "verification_failure",
+      "type": "failure",
+      "path": {
+        "start": {
+          "x": 2.835,
+          "y": 5
+        },
+        "mid": {
+          "x": 4.6675,
+          "y": 6
+        },
+        "end": {
+          "x": 6.5,
+          "y": 7.5
+        }
+      },
+      "capsules": []
+    }
+  ],
+  "packets": {}
+}

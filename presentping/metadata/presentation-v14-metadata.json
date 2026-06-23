@@ -1,0 +1,4695 @@
+{
+  "slides": [
+    {
+      "number": 1,
+      "name": "Gateway Chamber",
+      "description": "The constitutional enforcement gateway at Layer 0",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "rect",
+          "name": "portal_left_pillar",
+          "isHero": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "portal_right_pillar",
+          "isHero": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "portal_arch",
+          "isHero": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "portal_glow",
+          "isHero": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "portal_frame",
+          "isHero": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "pulse_ring_0",
+          "animation": "pulse",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "pulse_ring_1",
+          "animation": "pulse",
+          "delay": 0.3
+        },
+        {
+          "type": "ellipse",
+          "name": "pulse_ring_2",
+          "animation": "pulse",
+          "delay": 0.6
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_0",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_1",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_2",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_3",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_4",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_base",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "default_shape",
+          "isSupporting": true,
+          "semanticType": "EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "layer_0_indicator",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "provider_status",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Claim"
+        },
+        {
+          "type": "rect",
+          "name": "icon_claim"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line1"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line2"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_0"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_0"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Code"
+        },
+        {
+          "type": "text",
+          "name": "icon_code"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_1"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_1"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Runtime"
+        },
+        {
+          "type": "triangle",
+          "name": "icon_runtime"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_2"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_2"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Evidence"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_evidence_glass"
+        },
+        {
+          "type": "line",
+          "name": "icon_evidence_handle"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_3"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_3"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Verification"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_2"
+        },
+        {
+          "type": "text",
+          "name": "evidence_title"
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "rect",
+          "name": "group_boundary_GATEWAY",
+          "isGroupBoundary": true
+        },
+        {
+          "type": "text",
+          "name": "group_label_GATEWAY",
+          "isMetadata": true
+        },
+        {
+          "type": "ellipse",
+          "name": "group_edit_indicator_GATEWAY",
+          "isEditIndicator": true
+        }
+      ],
+      "phase": 1
+    },
+    {
+      "number": 2,
+      "name": "Authority Archive",
+      "description": "The constitutional policy enforcement archive",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_3",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_4",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_5",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_6",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_7",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_8",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_9",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_10",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_11",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_12",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_13",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_14",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_0",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_1",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_2",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_3",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_4",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_core",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_0",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_1",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_2",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_3",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_4",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_5",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_6",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_7",
+          "isHero": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "emerge_core",
+          "animation": "emerge",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "emerge_wave_0",
+          "animation": "emerge",
+          "delay": 0.5
+        },
+        {
+          "type": "ellipse",
+          "name": "emerge_wave_1",
+          "animation": "emerge",
+          "delay": 0.8
+        },
+        {
+          "type": "ellipse",
+          "name": "emerge_wave_2",
+          "animation": "emerge",
+          "delay": 1.1
+        },
+        {
+          "type": "ellipse",
+          "name": "emerge_wave_3",
+          "animation": "emerge",
+          "delay": 1.4
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_AUTHORITY"
+        },
+        {
+          "type": "rect",
+          "name": "default_shape",
+          "isSupporting": true,
+          "semanticType": "EVIDENCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_dome",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_0",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_1",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_2",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_3",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "rect",
+          "name": "observatory_base",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_status",
+          "isSupporting": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "text",
+          "name": "constitutional_rules",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "compliance_metrics",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Claim"
+        },
+        {
+          "type": "rect",
+          "name": "icon_claim"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line1"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line2"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_0"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_0"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Code"
+        },
+        {
+          "type": "text",
+          "name": "icon_code"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_1"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_1"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Runtime"
+        },
+        {
+          "type": "triangle",
+          "name": "icon_runtime"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_2"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_2"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Evidence"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_evidence_glass"
+        },
+        {
+          "type": "line",
+          "name": "icon_evidence_handle"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_3"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_3"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Verification"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_2"
+        },
+        {
+          "type": "text",
+          "name": "evidence_title"
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 2
+    },
+    {
+      "number": 3,
+      "name": "Execution Reactor",
+      "description": "The MCP agent orchestration and execution core",
+      "objects": [
+        {
+          "type": "line",
+          "name": "environmental_grid_v_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_3",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_4",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_5",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_6",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_7",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_8",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_9",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_10",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_11",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_12",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_13",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_14",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_15",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_16",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_17",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_18",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_19",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_v_20",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_3",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_4",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_5",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_6",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_7",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_8",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_9",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_10",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_11",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_12",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_13",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_14",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "line",
+          "name": "environmental_grid_h_15",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "execution_core",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "execution_cooling_0",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "execution_cooling_1",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_0",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_1",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_2",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_3",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_4",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_5",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_6",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "execution_flow_7",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "rect",
+          "name": "execution_barrier",
+          "isHero": true,
+          "semanticType": "EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "flow_stream_0",
+          "animation": "flow",
+          "delay": 0
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_0_0",
+          "animation": "flow",
+          "delay": 0
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_0_1",
+          "animation": "flow",
+          "delay": 0.1
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_0_2",
+          "animation": "flow",
+          "delay": 0.2
+        },
+        {
+          "type": "line",
+          "name": "flow_stream_1",
+          "animation": "flow",
+          "delay": 0.2
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_1_0",
+          "animation": "flow",
+          "delay": 0.2
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_1_1",
+          "animation": "flow",
+          "delay": 0.30000000000000004
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_1_2",
+          "animation": "flow",
+          "delay": 0.4
+        },
+        {
+          "type": "line",
+          "name": "flow_stream_2",
+          "animation": "flow",
+          "delay": 0.4
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_2_0",
+          "animation": "flow",
+          "delay": 0.4
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_2_1",
+          "animation": "flow",
+          "delay": 0.5
+        },
+        {
+          "type": "triangle",
+          "name": "flow_arrow_2_2",
+          "animation": "flow",
+          "delay": 0.6000000000000001
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_EXECUTION"
+        },
+        {
+          "type": "rect",
+          "name": "portal_left_pillar",
+          "isSupporting": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "portal_right_pillar",
+          "isSupporting": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "portal_arch",
+          "isSupporting": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "portal_glow",
+          "isSupporting": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "portal_frame",
+          "isSupporting": true,
+          "semanticType": "GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_0_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_0_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_1_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_1_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_2",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_2_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_2_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_2",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "line",
+          "name": "assembly_line_0",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "line",
+          "name": "assembly_line_1",
+          "isSupporting": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "text",
+          "name": "tool_registry",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "execution_metrics",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 3
+    },
+    {
+      "number": 4,
+      "name": "Observability Projection Layer",
+      "description": "The viewing window into the living system",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "hologram_main",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_beam_0",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_beam_1",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_beam_2",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_0",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_1",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_2",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_3",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_4",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "hologram_scan_5",
+          "isHero": true,
+          "semanticType": "PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "materialize_hologram",
+          "animation": "materialize",
+          "delay": 0
+        },
+        {
+          "type": "line",
+          "name": "materialize_scan_0",
+          "animation": "materialize",
+          "delay": 0.3
+        },
+        {
+          "type": "line",
+          "name": "materialize_scan_1",
+          "animation": "materialize",
+          "delay": 0.5
+        },
+        {
+          "type": "line",
+          "name": "materialize_scan_2",
+          "animation": "materialize",
+          "delay": 0.7
+        },
+        {
+          "type": "line",
+          "name": "materialize_scan_3",
+          "animation": "materialize",
+          "delay": 0.9000000000000001
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_dome"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_viewport"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Reality"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Reality"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Reality"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_world"
+        },
+        {
+          "type": "line",
+          "name": "icon_world_h"
+        },
+        {
+          "type": "line",
+          "name": "icon_world_v"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_0"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_0"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Events"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Events"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Events"
+        },
+        {
+          "type": "line",
+          "name": "icon_event_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_event_2"
+        },
+        {
+          "type": "line",
+          "name": "icon_event_3"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_1"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_1"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Canonical State"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Canonical State"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Canonical State"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_state_top"
+        },
+        {
+          "type": "rect",
+          "name": "icon_state_body"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_state_bottom"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_2"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_2"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Knowledge Graph"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Knowledge Graph"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Knowledge Graph"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node1"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node2"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node3"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn1"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn2"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn3"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_3"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_3"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Witness Layer"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Witness Layer"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Witness Layer"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_witness_eye"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_witness_pupil"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_4"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_4"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Projection Layer"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Projection Layer"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Projection Layer"
+        },
+        {
+          "type": "rect",
+          "name": "icon_projection_screen"
+        },
+        {
+          "type": "line",
+          "name": "icon_projection_stand"
+        },
+        {
+          "type": "line",
+          "name": "icon_projection_base"
+        },
+        {
+          "type": "line",
+          "name": "observability_connection_5"
+        },
+        {
+          "type": "triangle",
+          "name": "observability_arrow_5"
+        },
+        {
+          "type": "rect",
+          "name": "observability_layer_Human View"
+        },
+        {
+          "type": "text",
+          "name": "observability_label_Human View"
+        },
+        {
+          "type": "text",
+          "name": "observability_desc_Human View"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_human_head"
+        },
+        {
+          "type": "rect",
+          "name": "icon_human_body"
+        },
+        {
+          "type": "rect",
+          "name": "observatory_base"
+        },
+        {
+          "type": "text",
+          "name": "observatory_title"
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 4
+    },
+    {
+      "number": 5,
+      "name": "Agent Factory",
+      "description": "The autonomous agent workforce production line",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_3",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_4",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_5",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_6",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_7",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_8",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_9",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_10",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_11",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_12",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_13",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_particle_14",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_0_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_0_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_1_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_1_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "rect",
+          "name": "industrial_unit_2",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_2_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_port_2_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "industrial_indicator_2",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "line",
+          "name": "assembly_line_0",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "line",
+          "name": "assembly_line_1",
+          "isHero": true,
+          "semanticType": "AGENTS"
+        },
+        {
+          "type": "ellipse",
+          "name": "spawn_agent_0",
+          "animation": "spawn",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "spawn_agent_1",
+          "animation": "spawn",
+          "delay": 0.1
+        },
+        {
+          "type": "ellipse",
+          "name": "spawn_agent_2",
+          "animation": "spawn",
+          "delay": 0.2
+        },
+        {
+          "type": "ellipse",
+          "name": "spawn_agent_3",
+          "animation": "spawn",
+          "delay": 0.30000000000000004
+        },
+        {
+          "type": "ellipse",
+          "name": "spawn_agent_4",
+          "animation": "spawn",
+          "delay": 0.4
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_AGENTS"
+        },
+        {
+          "type": "rect",
+          "name": "default_shape",
+          "isSupporting": true,
+          "semanticType": "EVIDENCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "text",
+          "name": "agent_registry",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "performance_metrics",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "number": 6,
+      "name": "Replay Civilization",
+      "description": "The time-travel state reconstruction system",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_ring_0",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_ring_1",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_ring_2",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_ring_3",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_core",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "line",
+          "name": "orbital_stream_0",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "line",
+          "name": "orbital_stream_1",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "line",
+          "name": "orbital_stream_2",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_0",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_1",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_2",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_3",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_4",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_5",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_6",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbital_nav_7",
+          "isHero": true,
+          "semanticType": "REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_core",
+          "animation": "orbit",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_path_0",
+          "animation": "orbit",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_object_0",
+          "animation": "orbit",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_path_1",
+          "animation": "orbit",
+          "delay": 0.4
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_object_1",
+          "animation": "orbit",
+          "delay": 0.4
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_path_2",
+          "animation": "orbit",
+          "delay": 0.8
+        },
+        {
+          "type": "ellipse",
+          "name": "orbit_object_2",
+          "animation": "orbit",
+          "delay": 0.8
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_REPLAY"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_0",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_1",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_2",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_3",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_layer_4",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "rect",
+          "name": "archive_base",
+          "isSupporting": true,
+          "semanticType": "EVENT_LOG"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "text",
+          "name": "event_timeline",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "state_snapshots",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Claim"
+        },
+        {
+          "type": "rect",
+          "name": "icon_claim"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line1"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line2"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_0"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_0"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Code"
+        },
+        {
+          "type": "text",
+          "name": "icon_code"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_1"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_1"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Runtime"
+        },
+        {
+          "type": "triangle",
+          "name": "icon_runtime"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_2"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_2"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Evidence"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_evidence_glass"
+        },
+        {
+          "type": "line",
+          "name": "icon_evidence_handle"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_3"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_3"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Verification"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_2"
+        },
+        {
+          "type": "text",
+          "name": "evidence_title"
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 6
+    },
+    {
+      "number": 7,
+      "name": "Witness Observatory",
+      "description": "The constitutional compliance verification center",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_dome",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_0",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_1",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_2",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_port_3",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "rect",
+          "name": "observatory_base",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "observatory_status",
+          "isHero": true,
+          "semanticType": "WITNESS"
+        },
+        {
+          "type": "rect",
+          "name": "reveal_layer_0",
+          "animation": "reveal",
+          "delay": 0
+        },
+        {
+          "type": "rect",
+          "name": "reveal_layer_1",
+          "animation": "reveal",
+          "delay": 0.4
+        },
+        {
+          "type": "rect",
+          "name": "reveal_layer_2",
+          "animation": "reveal",
+          "delay": 0.8
+        },
+        {
+          "type": "rect",
+          "name": "reveal_layer_3",
+          "animation": "reveal",
+          "delay": 1.2000000000000002
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_0",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_1",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_2",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_3",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_4",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_core",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_0",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_1",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_2",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_3",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_4",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_5",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_6",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_7",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "rect",
+          "name": "default_shape",
+          "isSupporting": true,
+          "semanticType": "EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "constitutional_rules",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "action_log",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Claim"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Claim"
+        },
+        {
+          "type": "rect",
+          "name": "icon_claim"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line1"
+        },
+        {
+          "type": "line",
+          "name": "icon_claim_line2"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_0"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_0"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Code"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Code"
+        },
+        {
+          "type": "text",
+          "name": "icon_code"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_1"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_1"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Runtime"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Runtime"
+        },
+        {
+          "type": "triangle",
+          "name": "icon_runtime"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_2"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_2"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Evidence"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Evidence"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_evidence_glass"
+        },
+        {
+          "type": "line",
+          "name": "icon_evidence_handle"
+        },
+        {
+          "type": "line",
+          "name": "evidence_arrow_3"
+        },
+        {
+          "type": "triangle",
+          "name": "evidence_arrow_head_3"
+        },
+        {
+          "type": "rect",
+          "name": "evidence_step_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_label_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_desc_Verification"
+        },
+        {
+          "type": "text",
+          "name": "evidence_value_Verification"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_verified_2"
+        },
+        {
+          "type": "text",
+          "name": "evidence_title"
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 6
+    },
+    {
+      "number": 8,
+      "name": "Constitutional Governance Layer",
+      "description": "The self-improvement and governance architecture",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "governance_chamber",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "governance_ring_0",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "governance_ring_1",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "governance_ring_2",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "line",
+          "name": "governance_stream_0",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "line",
+          "name": "governance_stream_1",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "line",
+          "name": "governance_stream_2",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "line",
+          "name": "governance_stream_3",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_0",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_1",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_2",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_3",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_4",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "rect",
+          "name": "governance_display_5",
+          "isHero": true,
+          "semanticType": "GOVERNANCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolve_core",
+          "animation": "evolve",
+          "delay": 0
+        },
+        {
+          "type": "ellipse",
+          "name": "evolve_ring_0",
+          "animation": "evolve",
+          "delay": 0.5
+        },
+        {
+          "type": "ellipse",
+          "name": "evolve_ring_1",
+          "animation": "evolve",
+          "delay": 1
+        },
+        {
+          "type": "ellipse",
+          "name": "evolve_ring_2",
+          "animation": "evolve",
+          "delay": 1.5
+        },
+        {
+          "type": "ellipse",
+          "name": "animation_indicator_GOVERNANCE"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_core",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_4",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_5",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_6",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_7",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_8",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_9",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_4",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_5",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_6",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_7",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_8",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_9",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_4",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_5",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_6",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_7",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_8",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_9",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_4",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_0",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_1",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_2",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_3",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_4",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_5",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_6",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_7",
+          "isSupporting": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_0",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_1",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_2",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_3",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_ring_4",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_core",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_0",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_1",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_2",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_3",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_4",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_5",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_6",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "reactor_indicator_7",
+          "isSupporting": true,
+          "semanticType": "AUTHORITY"
+        },
+        {
+          "type": "text",
+          "name": "governance_rules",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "evolution_history",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 6
+    },
+    {
+      "number": 9,
+      "name": "Self-Improvement Engine",
+      "description": "The constitutional evolution and optimization system",
+      "objects": [
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_0",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_1",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "environmental_atmosphere_2",
+          "style": "ENVIRONMENTAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_core",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_ring_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_4",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_5",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_6",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_7",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_8",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_0_9",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_4",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_5",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_6",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_7",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_8",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_1_9",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_4",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_5",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_6",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_7",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_8",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_pattern_2_9",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "rect",
+          "name": "evolution_mutation_4",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_0",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_1",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_2",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_3",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_4",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_5",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_6",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "evolution_progress_7",
+          "isHero": true,
+          "semanticType": "SELF_IMPROVEMENT"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_0_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_1_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_node_2_3",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "knowledge_cluster_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_0",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_1",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "knowledge_relationship_2",
+          "isSupporting": true,
+          "semanticType": "KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_hub",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_0",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_0",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_1",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_1",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_2",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_2",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_3",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_3",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_4",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_4",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_5",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_5",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_6",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_6",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_node_7",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "neural_connection_7",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_pulse_0",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "neural_pulse_1",
+          "isSupporting": true,
+          "semanticType": "BRAIN"
+        },
+        {
+          "type": "text",
+          "name": "performance_metrics",
+          "isContext": true
+        },
+        {
+          "type": "text",
+          "name": "optimization_targets",
+          "isContext": true
+        },
+        {
+          "type": "rect",
+          "name": "architectural_frame_main",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_tr_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_bl_v",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_h",
+          "style": "ARCHITECTURAL"
+        },
+        {
+          "type": "line",
+          "name": "architectural_bracket_br_v",
+          "style": "ARCHITECTURAL"
+        }
+      ],
+      "phase": 6
+    },
+    {
+      "number": 10,
+      "name": "Full PING Civilization",
+      "description": "The complete constitutional civilization from orbit",
+      "objects": [
+        {
+          "type": "text",
+          "name": "civilization_title"
+        },
+        {
+          "type": "text",
+          "name": "civilization_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_neural_center"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_neural_node_0"
+        },
+        {
+          "type": "line",
+          "name": "icon_neural_conn_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_neural_node_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_neural_conn_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_neural_node_2"
+        },
+        {
+          "type": "line",
+          "name": "icon_neural_conn_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_neural_node_3"
+        },
+        {
+          "type": "line",
+          "name": "icon_neural_conn_3"
+        },
+        {
+          "type": "text",
+          "name": "district_name_BRAIN"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_BRAIN"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_observatory_dome"
+        },
+        {
+          "type": "rect",
+          "name": "icon_observatory_base"
+        },
+        {
+          "type": "text",
+          "name": "district_name_WITNESS"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_WITNESS"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_orbital_core"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_orbital_ring"
+        },
+        {
+          "type": "text",
+          "name": "district_name_REPLAY"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_REPLAY"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_core"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_ring_1"
+        },
+        {
+          "type": "text",
+          "name": "district_name_AUTHORITY"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_AUTHORITY"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_EXECUTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_core"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_reactor_ring_1"
+        },
+        {
+          "type": "text",
+          "name": "district_name_EXECUTION"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_EXECUTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_EXECUTION"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node1"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node2"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_graph_node3"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn1"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn2"
+        },
+        {
+          "type": "line",
+          "name": "icon_graph_conn3"
+        },
+        {
+          "type": "text",
+          "name": "district_name_KNOWLEDGE"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_KNOWLEDGE"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "icon_portal_left"
+        },
+        {
+          "type": "rect",
+          "name": "icon_portal_right"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_portal_arch"
+        },
+        {
+          "type": "text",
+          "name": "district_name_GATEWAY"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_GATEWAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_GATEWAY"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_hologram_main"
+        },
+        {
+          "type": "line",
+          "name": "icon_hologram_scan_0"
+        },
+        {
+          "type": "line",
+          "name": "icon_hologram_scan_1"
+        },
+        {
+          "type": "line",
+          "name": "icon_hologram_scan_2"
+        },
+        {
+          "type": "text",
+          "name": "district_name_PROJECTION"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_PROJECTION"
+        },
+        {
+          "type": "rect",
+          "name": "district_frame_EXTERNAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "icon_world"
+        },
+        {
+          "type": "line",
+          "name": "icon_world_h"
+        },
+        {
+          "type": "line",
+          "name": "icon_world_v"
+        },
+        {
+          "type": "text",
+          "name": "district_name_EXTERNAL"
+        },
+        {
+          "type": "text",
+          "name": "district_desc_EXTERNAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "district_status_EXTERNAL"
+        },
+        {
+          "type": "line",
+          "name": "connection_GATEWAY_AUTHORITY"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_GATEWAY_AUTHORITY"
+        },
+        {
+          "type": "line",
+          "name": "connection_GATEWAY_EXECUTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_GATEWAY_EXECUTION"
+        },
+        {
+          "type": "line",
+          "name": "connection_AUTHORITY_BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_AUTHORITY_BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "connection_EXECUTION_BRAIN"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_EXECUTION_BRAIN"
+        },
+        {
+          "type": "line",
+          "name": "connection_BRAIN_KNOWLEDGE"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_BRAIN_KNOWLEDGE"
+        },
+        {
+          "type": "line",
+          "name": "connection_BRAIN_WITNESS"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_BRAIN_WITNESS"
+        },
+        {
+          "type": "line",
+          "name": "connection_BRAIN_REPLAY"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_BRAIN_REPLAY"
+        },
+        {
+          "type": "line",
+          "name": "connection_KNOWLEDGE_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_KNOWLEDGE_PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "connection_WITNESS_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_WITNESS_PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "connection_REPLAY_PROJECTION"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_REPLAY_PROJECTION"
+        },
+        {
+          "type": "line",
+          "name": "connection_EXECUTION_EXTERNAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_EXECUTION_EXTERNAL"
+        },
+        {
+          "type": "line",
+          "name": "connection_KNOWLEDGE_EXTERNAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "connection_indicator_KNOWLEDGE_EXTERNAL"
+        },
+        {
+          "type": "ellipse",
+          "name": "atmospheric_glow_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "atmospheric_glow_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "atmospheric_glow_2"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_v_10"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "civ_grid_h_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_0"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_1"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_2"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_3"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_4"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_5"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_6"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_7"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "legend_icon_8"
+        },
+        {
+          "type": "text",
+          "name": "legend_text_8"
+        }
+      ],
+      "phase": 6
+    }
+  ],
+  "metadata": {
+    "version": "V14",
+    "title": "PING Constitutional Civilization",
+    "description": "Camera-based storytelling through a living constitutional AI civilization",
+    "timestamp": "2026-06-19T19:23:56.617Z"
+  }
+}

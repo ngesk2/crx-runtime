@@ -1,0 +1,28 @@
+worker:
+  name: graph-worker
+  type: graph
+
+capabilities:
+  - entity_relationships
+  - architecture_graphs
+  - dependency_maps
+
+graph:
+  type: neo4j
+  host: localhost
+  port: 7687
+  database: crx
+
+message_queue:
+  type: redis
+  host: localhost
+  port: 6379
+
+queue:
+  entities: graph:entities
+  relationships: graph:relationships
+  queries: graph:queries
+
+storage:
+  workspace: /workspace
+  artifacts: /artifacts/Knowledge Graph

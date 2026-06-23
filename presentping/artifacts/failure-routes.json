@@ -1,0 +1,166 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-20T21:10:44.404Z",
+  "failureRoutes": [
+    {
+      "from": "witness",
+      "to": "Rejection Sink",
+      "type": "rejected",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 2.5,
+          "y": 7.5
+        },
+        "bounds": {
+          "w": 2,
+          "h": 1.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF6347",
+          "accent": "#B22222"
+        },
+        "components": {
+          "flow": {
+            "type": "flow",
+            "position": "center"
+          },
+          "indicator": {
+            "type": "indicator",
+            "position": "top"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "governance",
+      "to": "Rollback",
+      "type": "rollback",
+      "destination": {
+        "id": "rollback_vault",
+        "position": {
+          "x": 0.5,
+          "y": 6
+        },
+        "bounds": {
+          "w": 2,
+          "h": 1.5
+        },
+        "visualIdentity": {
+          "shape": "vault",
+          "color": "#FF8C00",
+          "accent": "#FF4500"
+        },
+        "components": {
+          "door": {
+            "type": "door",
+            "position": "front"
+          },
+          "lock": {
+            "type": "lock",
+            "position": "center"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "governance",
+      "to": "Bedrock Violation Log",
+      "type": "constraint_violation",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 2.5,
+          "y": 7.5
+        },
+        "bounds": {
+          "w": 2,
+          "h": 1.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF6347",
+          "accent": "#B22222"
+        },
+        "components": {
+          "flow": {
+            "type": "flow",
+            "position": "center"
+          },
+          "indicator": {
+            "type": "indicator",
+            "position": "top"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "witness",
+      "to": "Failure Channel",
+      "type": "ownership_conflict",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 2.5,
+          "y": 7.5
+        },
+        "bounds": {
+          "w": 2,
+          "h": 1.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF6347",
+          "accent": "#B22222"
+        },
+        "components": {
+          "flow": {
+            "type": "flow",
+            "position": "center"
+          },
+          "indicator": {
+            "type": "indicator",
+            "position": "top"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "builder",
+      "to": "Verification Failure",
+      "type": "verification_failure",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 2.5,
+          "y": 7.5
+        },
+        "bounds": {
+          "w": 2,
+          "h": 1.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF6347",
+          "accent": "#B22222"
+        },
+        "components": {
+          "flow": {
+            "type": "flow",
+            "position": "center"
+          },
+          "indicator": {
+            "type": "indicator",
+            "position": "top"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    }
+  ]
+}
