@@ -1,0 +1,20 @@
+sources:
+  - name: "Hacker News"
+    url: "https://hnrss.org/frontpage"
+    type: "rss"
+  
+  - name: "ArXiv Computer Science"
+    url: "http://export.arxiv.org/rss/cs.AI"
+    type: "rss"
+  
+  - name: "ArXiv Machine Learning"
+    url: "http://export.arxiv.org/rss/cs.LG"
+    type: "rss"
+  
+  - name: "MIT Technology Review"
+    url: "https://www.technologyreview.com/feed/"
+    type: "rss"
+  
+  - name: "TechCrunch"
+    url: "https://techcrunch.com/feed/"
+    type: "rss"

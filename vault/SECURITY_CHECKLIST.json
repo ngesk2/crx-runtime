@@ -1,0 +1,38 @@
+{
+  "critical": [
+    "Disable dev mode in production",
+    "Enable TLS for all Vault communication",
+    "Use auto-unseal with AWS KMS or HSM",
+    "Enable audit logging",
+    "Implement AppRole rotation",
+    "Revoke root token after initial setup",
+    "Use least-privilege policies",
+    "Enable Vault UI only behind authentication",
+    "Configure backup and disaster recovery",
+    "Monitor Vault health and performance"
+  ],
+  "recommended": [
+    "Use Consul for HA cluster",
+    "Enable Vault replication for DR",
+    "Implement secret rate limiting",
+    "Use Vault Agent for applications",
+    "Configure Vault namespaces for multi-tenancy",
+    "Enable response wrapping",
+    "Use cubbyhole for temporary secrets",
+    "Implement secret versioning with KV v2",
+    "Configure Vault transit for encryption as a service",
+    "Set up Vault monitoring and alerting"
+  ],
+  "forbidden": [
+    "Never store root token in code",
+    "Never use dev mode in production",
+    "Never disable TLS",
+    "Never share AppRole secret_id in code",
+    "Never use default policies",
+    "Never disable audit logging in production",
+    "Never expose Vault UI to public internet",
+    "Never store secrets in git",
+    "Never use Vault without backup",
+    "Never skip secret rotation"
+  ]
+}

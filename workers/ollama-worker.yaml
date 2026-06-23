@@ -1,0 +1,33 @@
+worker:
+  name: ollama-worker
+  type: inference
+
+capabilities:
+  - local_inference
+  - embeddings
+  - summarization
+  - extraction
+
+ollama:
+  host: 0.0.0.0
+  port: 11434
+  model: qwen2.5-coder:14b
+
+models:
+  default: qwen2.5-coder:14b
+  embedding: nomic-embed-text
+  summarization: qwen2.5-coder:14b
+
+message_queue:
+  type: redis
+  host: localhost
+  port: 6379
+
+queue:
+  inference: ollama:inference
+  embeddings: ollama:embeddings
+  summarization: ollama:summarization
+
+storage:
+  workspace: /workspace
+  cache: /workspace/cache

@@ -1,0 +1,13 @@
+{
+  "name": "crx-monorepo",
+  "version": "1.0.0",
+  "description": "CRX Constitutional Repository",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter \"./gateway\" dev",
+    "dev:commit-service": "pnpm --filter \"./runtime/kernel/commit-service\" dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  }
+}

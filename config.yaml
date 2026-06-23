@@ -1,0 +1,32 @@
+storage:
+  google_drive:
+    enabled: true
+    credentials: ./credentials/client_secret.json
+    output_folder: Architecture Intelligence
+
+research:
+  github:
+    enabled: true
+
+  arxiv:
+    enabled: true
+
+  rfc:
+    enabled: true
+
+  papers:
+    enabled: true
+
+analysis:
+  architecture_comparison:
+    enabled: true
+
+  semantic_mapping:
+    enabled: true
+
+  adr_generation:
+    enabled: true
+
+models:
+  provider: ollama
+  model: qwen2.5-coder:14b

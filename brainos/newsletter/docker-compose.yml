@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  worker:
+    build: .
+    container_name: newsletter-brain-worker
+    volumes:
+      - ./newsletters.db:/app/newsletters.db
+      - ./knowledge:/app/knowledge
+      - ./digests:/app/digests
+    env_file:
+      - .env
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  dashboard:
+    build: .
+    container_name: newsletter-brain-dashboard
+    command: python dashboard.py
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./newsletters.db:/app/newsletters.db
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - worker

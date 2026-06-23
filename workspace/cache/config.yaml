@@ -1,0 +1,41 @@
+cache:
+  type: content_addressed
+  algorithm: sha256
+
+storage:
+  base_path: /workspace/cache
+  files: /workspace/cache/files
+  chunks: /workspace/cache/chunks
+  repos: /workspace/cache/repos
+  embeddings: /workspace/cache/embeddings
+  summaries: /workspace/cache/summaries
+
+hashing:
+  files:
+    enabled: true
+    algorithm: sha256
+    include_content: true
+    include_metadata: true
+  
+  chunks:
+    enabled: true
+    algorithm: sha256
+    chunk_size: 1000
+    overlap: 200
+  
+  repos:
+    enabled: true
+    algorithm: sha256
+    include_git_history: false
+    include_branches: true
+
+deduplication:
+  enabled: true
+  strategy: exact_match
+  similarity_threshold: 0.95
+
+persistence:
+  enabled: true
+  sync_interval: 300
+  backup_enabled: true
+  backup_interval: 3600

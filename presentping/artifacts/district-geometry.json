@@ -1,0 +1,80 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-20T21:10:44.402Z",
+  "districts": {
+    "gateway": {
+      "id": "gateway",
+      "scale": 3,
+      "visualIdentity": {
+        "shape": "massive_port_complex",
+        "silhouette": "civilization_interface",
+        "color": "#00E5FF",
+        "accent": "#008B8B",
+        "scale": "monumental"
+      },
+      "isFoundational": false
+    },
+    "witness": {
+      "id": "witness",
+      "scale": 8,
+      "visualIdentity": {
+        "shape": "mission_control_observatory",
+        "silhouette": "iconic_landmark",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "highest",
+        "scale": "monumental"
+      },
+      "isFoundational": false
+    },
+    "bedrock": {
+      "id": "bedrock",
+      "scale": 6,
+      "visualIdentity": {
+        "shape": "environmental_substrate",
+        "silhouette": "reality_foundation",
+        "color": "#404040",
+        "accent": "#505050",
+        "dominance": "environmental",
+        "scale": "substrate"
+      },
+      "isFoundational": false
+    },
+    "replay": {
+      "id": "replay",
+      "scale": 3.5,
+      "visualIdentity": {
+        "shape": "temporal_highway_complex",
+        "silhouette": "historical_reconstruction",
+        "color": "#C0C0C0",
+        "accent": "#808080",
+        "drama": "high"
+      },
+      "isFoundational": false
+    },
+    "builder": {
+      "id": "builder",
+      "scale": 3.2,
+      "visualIdentity": {
+        "shape": "industrial_production_complex",
+        "silhouette": "productive_facility",
+        "color": "#00FF00",
+        "accent": "#008000",
+        "activity": "high"
+      },
+      "isFoundational": false
+    },
+    "governance": {
+      "id": "governance",
+      "scale": 3.5,
+      "visualIdentity": {
+        "shape": "dangerous_authority_complex",
+        "silhouette": "intimidating_gates",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "danger": "high"
+      },
+      "isFoundational": false
+    }
+  }
+}

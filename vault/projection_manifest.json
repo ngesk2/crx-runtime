@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-06-23T03:55:33.180742",
+  "documents": 16,
+  "vault_path": "C:\\Users\\nolan\\PING\\vault",
+  "vault_hash": "44c1f27303e5199738c872eb5e225ee8e9b2af13ce522eeaf07726e8474049bc",
+  "qdrant_collection": "constitutional_documents",
+  "qdrant_hash": "QDRANT_HASH_PLACEHOLDER_REQUIRES_API",
+  "projection_worker": "brainos/orchestration/src/projection_worker/projection_worker.py",
+  "embedding_model": "nomic-embed-text",
+  "certification": "PENDING_REBUILD_VERIFICATION"
+}

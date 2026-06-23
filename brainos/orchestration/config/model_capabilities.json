@@ -1,0 +1,116 @@
+{
+  "models": {
+    "nomic-embed-text": {
+      "name": "nomic-embed-text",
+      "tag": "latest",
+      "capabilities": {
+        "embedding": true,
+        "completion": false,
+        "chat": false,
+        "tool_calling": false,
+        "reasoning": false
+      },
+      "context_length": 2048,
+      "embedding_length": 768,
+      "parameters": "137M",
+      "architecture": "nomic-bert",
+      "quantization": "F16",
+      "license": "Apache License 2.0",
+      "primary_use": "embedding",
+      "compatible_endpoints": ["/api/embed"],
+      "incompatible_endpoints": ["/api/chat", "/api/generate", "/api/completions"]
+    },
+    "llama3": {
+      "name": "llama3",
+      "tag": "latest",
+      "capabilities": {
+        "embedding": false,
+        "completion": true,
+        "chat": true,
+        "tool_calling": false,
+        "reasoning": true
+      },
+      "context_length": 8192,
+      "embedding_length": 4096,
+      "parameters": "8.0B",
+      "architecture": "llama",
+      "quantization": "Q4_0",
+      "license": "META LLAMA 3 COMMUNITY LICENSE AGREEMENT",
+      "primary_use": "chat",
+      "compatible_endpoints": ["/api/chat", "/api/generate", "/api/completions"],
+      "incompatible_endpoints": ["/api/embed"]
+    },
+    "qwen2.5-coder:7b": {
+      "name": "qwen2.5-coder",
+      "tag": "7b",
+      "capabilities": {
+        "embedding": false,
+        "completion": true,
+        "chat": true,
+        "tool_calling": true,
+        "reasoning": true,
+        "insert": true
+      },
+      "context_length": 32768,
+      "embedding_length": 5120,
+      "parameters": "7.8B",
+      "architecture": "qwen2",
+      "quantization": "Q4_K_M",
+      "license": "Apache License 2.0",
+      "primary_use": "chat",
+      "compatible_endpoints": ["/api/chat", "/api/generate", "/api/completions"],
+      "incompatible_endpoints": ["/api/embed"]
+    },
+    "qwen2.5-coder:14b": {
+      "name": "qwen2.5-coder",
+      "tag": "14b",
+      "capabilities": {
+        "embedding": false,
+        "completion": true,
+        "chat": true,
+        "tool_calling": true,
+        "reasoning": true,
+        "insert": true
+      },
+      "context_length": 32768,
+      "embedding_length": 5120,
+      "parameters": "14.8B",
+      "architecture": "qwen2",
+      "quantization": "Q4_K_M",
+      "license": "Apache License 2.0",
+      "primary_use": "chat",
+      "compatible_endpoints": ["/api/chat", "/api/generate", "/api/completions"],
+      "incompatible_endpoints": ["/api/embed"]
+    }
+  },
+  "capability_mapping": {
+    "embedding": ["nomic-embed-text"],
+    "chat": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+    "completion": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+    "tool_calling": ["qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+    "reasoning": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"]
+  },
+  "routing_rules": {
+    "embedding_endpoint": {
+      "allowed_models": ["nomic-embed-text"],
+      "blocked_models": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+      "fallback": null
+    },
+    "chat_endpoint": {
+      "allowed_models": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+      "blocked_models": ["nomic-embed-text"],
+      "fallback": "llama3"
+    },
+    "completion_endpoint": {
+      "allowed_models": ["llama3", "qwen2.5-coder:7b", "qwen2.5-coder:14b"],
+      "blocked_models": ["nomic-embed-text"],
+      "fallback": "llama3"
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2026-06-22",
+    "authority": "Mission Control",
+    "source": "Ollama API"
+  }
+}
