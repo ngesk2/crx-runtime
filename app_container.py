@@ -11,11 +11,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 import os
+import sys
+from pathlib import Path
 import psycopg2
 from datetime import datetime
 import requests
 from qdrant_client import QdrantClient
 import json
+
+# Add constitutional directory to path for SecretAdapter
+sys.path.append(str(Path(__file__).parent / 'runtime' / 'constitutional'))
+
+try:
+    from secret_adapter import get_secret_adapter
+    SECRET_ADAPTER_AVAILABLE = True
+except ImportError:
+    SECRET_ADAPTER_AVAILABLE = False
 
 app = FastAPI(title="PING Mission Control", version="1.0.0")
 
@@ -28,15 +39,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration
-POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
-POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
-POSTGRES_DB = os.getenv('POSTGRES_DB', 'crx_runtime')
-POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+# Configuration - Use SecretAdapter for all secrets
+if SECRET_ADAPTER_AVAILABLE:
+    secret_adapter = get_secret_adapter()
+    postgres_config = secret_adapter.get_postgres_config()
+    POSTGRES_HOST = postgres_config.get('host', 'localhost')
+    POSTGRES_PORT = postgres_config.get('port', '5432')
+    POSTGRES_DB = postgres_config.get('database', 'crx_runtime')
+    POSTGRES_USER = postgres_config.get('user', 'postgres')
+    POSTGRES_PASSWORD = postgres_config.get('password', '')
+    
+    qdrant_config = secret_adapter.get_qdrant_config()
+    QDRANT_URL = qdrant_config.get('url')
+    QDRANT_API_KEY = qdrant_config.get('api_key')
+else:
+    # Fallback to environment variables if SecretAdapter not available
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+    POSTGRES_DB = os.getenv('POSTGRES_DB', 'crx_runtime')
+    POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+    QDRANT_URL = os.getenv('QDRANT_URL')
+    QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
 
-QDRANT_URL = os.getenv('QDRANT_URL')
-QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
 QDRANT_COLLECTION = os.getenv('QDRANT_COLLECTION', 'constitutional_memory')
 CONSTITUTIONAL_COLLECTION = 'constitutional_documents'
 TIER2_OPERATIONAL = 'tier2_operational'
