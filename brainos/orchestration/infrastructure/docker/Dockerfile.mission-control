@@ -16,7 +16,11 @@ COPY brainos/orchestration/requirements-mission-control.txt .
 RUN pip install --no-cache-dir -r requirements-mission-control.txt
 
 # Copy application
-COPY brainos/orchestration/src/mission_control ./src/mission_control
+COPY brainos/orchestration/src ./src
+
+# Copy runtime modules needed by app.py (sys.path references)
+COPY runtime/constitutional ./runtime/constitutional
+COPY runtime/adapters ./runtime/adapters
 
 # Expose port
 EXPOSE 8000

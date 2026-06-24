@@ -58,7 +58,7 @@ class ConstitutionalRetrieval:
         try:
             import sys
             sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-            from inference_adapter import get_inference_adapter
+            from adapters.inference_adapter import get_inference_adapter
             inference_adapter = get_inference_adapter()
             embedding = inference_adapter.embed(text)
             
@@ -73,8 +73,10 @@ class ConstitutionalRetrieval:
     
     def ingest_document(self, doc_name: str, content: str, doc_type: str = "law"):
         """Ingest a constitutional document into Qdrant."""
-        # Generate document ID from content hash
-        doc_id = hashlib.sha256(content.encode()).hexdigest()
+        # Generate document ID from content hash (UUID format for Qdrant v1.12+)
+        import uuid
+        content_hash = hashlib.sha256(content.encode()).hexdigest()
+        doc_id = str(uuid.UUID(hex=content_hash[:32]))
         
         # Generate embedding
         embedding = self._generate_embedding(content)
