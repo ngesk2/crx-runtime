@@ -20,8 +20,10 @@ import json
 from pathlib import Path
 
 # Add constitutional path for SecretAdapter
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent / 'runtime' / 'constitutional'))
-from secret_adapter import get_secret_adapter
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'runtime' / 'adapters'))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'runtime'))
+from constitutional.secret_adapter import get_secret_adapter
+from security.projection_integrity import ProjectionIntegrity, ProjectionMetadata
 
 app = FastAPI(title="PING Mission Control", version="1.0.0")
 
@@ -35,18 +37,28 @@ app.add_middleware(
 )
 
 # Constitutional: Use SecretAdapter for secret access
-secret_adapter = get_secret_adapter()
+try:
+    secret_adapter = get_secret_adapter()
+    postgres_config = secret_adapter.get_postgres_config()
+    POSTGRES_HOST = postgres_config.get('host', os.getenv('POSTGRES_HOST', 'localhost'))
+    POSTGRES_PORT = postgres_config.get('port', os.getenv('POSTGRES_PORT', '5432'))
+    POSTGRES_DB = postgres_config.get('database', os.getenv('POSTGRES_DB', 'crx_runtime'))
+    POSTGRES_USER = postgres_config.get('user', os.getenv('POSTGRES_USER', 'postgres'))
+    POSTGRES_PASSWORD = postgres_config.get('password', os.getenv('POSTGRES_PASSWORD', ''))
+    _QDRANT_API_KEY = secret_adapter.get_qdrant_key()
+except Exception:
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+    POSTGRES_DB = os.getenv('POSTGRES_DB', 'crx_runtime')
+    POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+    _QDRANT_API_KEY = None
 
-# Configuration (with SecretAdapter fallback)
-postgres_config = secret_adapter.get_postgres_config()
-POSTGRES_HOST = postgres_config.get('host', os.getenv('POSTGRES_HOST', 'localhost'))
-POSTGRES_PORT = postgres_config.get('port', os.getenv('POSTGRES_PORT', '5432'))
-POSTGRES_DB = postgres_config.get('database', os.getenv('POSTGRES_DB', 'crx_runtime'))
-POSTGRES_USER = postgres_config.get('user', os.getenv('POSTGRES_USER', 'postgres'))
-POSTGRES_PASSWORD = postgres_config.get('password', os.getenv('POSTGRES_PASSWORD', ''))
+# Constitutional: Initialize projection integrity verifier
+projection_integrity = ProjectionIntegrity()
 
 QDRANT_URL = os.getenv('QDRANT_URL')
-QDRANT_API_KEY = secret_adapter.get_qdrant_key() or os.getenv('QDRANT_API_KEY')
+QDRANT_API_KEY = _QDRANT_API_KEY or os.getenv('QDRANT_API_KEY')
 QDRANT_COLLECTION = os.getenv('QDRANT_COLLECTION', 'constitutional_memory')
 MEMORY_COLLECTION = os.getenv('MEMORY_COLLECTION', 'memory')
 CONSTITUTIONAL_COLLECTION = 'constitutional_documents'
@@ -173,8 +185,8 @@ async def get_infrastructure_status():
     # Inference Provider
     try:
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         inference_adapter = get_inference_adapter()
         inference_status = "healthy" if inference_adapter.health() else "unhealthy"
     except:
@@ -367,8 +379,8 @@ async def search_memory(query: str, limit: int = 10):
         
         # Initialize inference authority for query embedding
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         
         inference_adapter = get_inference_adapter()
         
@@ -385,11 +397,46 @@ async def search_memory(query: str, limit: int = 10):
             limit=limit
         )
         
-        # Process results
+        # Process results with projection integrity verification
         results = []
         for result in search_results:
             payload = result.payload
             score = result.score
+            
+            # Constitutional: Verify projection integrity if metadata present
+            projection_verified = True
+            verification_reason = "No projection metadata"
+            
+            if all(key in payload for key in ['source_event_id', 'canonical_hash', 'embedding_hash', 'projection_signature']):
+                # Reconstruct projection metadata
+                projection_metadata = ProjectionMetadata(
+                    projection_id=payload.get("document_id", ""),
+                    source_event_id=payload.get("source_event_id", ""),
+                    canonical_hash=payload.get("canonical_hash", ""),
+                    embedding_hash=payload.get("embedding_hash", ""),
+                    projection_signature=payload.get("projection_signature", ""),
+                    generated_by_worker=payload.get("generated_by_worker", "unknown"),
+                    generated_at=payload.get("generated_at", "")
+                )
+                
+                # Verify projection
+                event_data = {
+                    "event_id": payload.get("event_id", ""),
+                    "document_id": payload.get("document_id", ""),
+                    "title": payload.get("title", ""),
+                    "content": payload.get("content", "")
+                }
+                embedding = result.vector if hasattr(result, 'vector') and result.vector else []
+                
+                projection_verified, verification_reason = projection_integrity.verify_projection(
+                    projection_metadata,
+                    event_data,
+                    embedding
+                )
+                
+                if not projection_verified:
+                    print(f"Projection integrity check failed for {payload.get('document_id')}: {verification_reason}")
+                    continue  # Skip unverified projections
             
             document_result = {
                 "document_id": payload.get("document_id"),
@@ -400,7 +447,9 @@ async def search_memory(query: str, limit: int = 10):
                 "updated_at": payload.get("updated_at"),
                 "content_hash": payload.get("content_hash"),
                 "event_id": payload.get("event_id"),
-                "score": score
+                "score": score,
+                "projection_verified": projection_verified,
+                "verification_reason": verification_reason
             }
             results.append(document_result)
         
@@ -454,8 +503,8 @@ async def get_inference_models():
     """Get inference provider model inventory."""
     try:
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         inference_adapter = get_inference_adapter()
         
         # Query provider's model list through authority
@@ -741,14 +790,14 @@ async def verify_restore(test_file: str = "VAULT_INDEX.md"):
 @app.get("/constitutional/ingest")
 async def ingest_constitutional_docs():
     """Ingest constitutional documents into Qdrant."""
-    from mission_control.constitutional_integration import ingest_constitutional_docs
+    from src.mission_control.constitutional_integration import ingest_constitutional_docs
     return ingest_constitutional_docs()
 
 
 @app.post("/constitutional/retrieve")
 async def retrieve_constitutional_context(question: str):
     """Retrieve constitutional context for a question."""
-    from mission_control.constitutional_integration import get_constitutional_context
+    from src.mission_control.constitutional_integration import get_constitutional_context
     return get_constitutional_context(question)
 
 
@@ -787,8 +836,8 @@ async def query_constitutional_memory(query: str, top_k: int = 5):
         
         # Initialize inference authority for query embedding
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         
         inference_adapter = get_inference_adapter()
         
@@ -815,12 +864,49 @@ async def query_constitutional_memory(query: str, top_k: int = 5):
             payload = result.payload
             score = result.score
             
+            # Constitutional: Verify projection integrity if metadata present
+            projection_verified = True
+            verification_reason = "No projection metadata"
+            
+            if all(key in payload for key in ['source_event_id', 'canonical_hash', 'embedding_hash', 'projection_signature']):
+                # Reconstruct projection metadata
+                projection_metadata = ProjectionMetadata(
+                    projection_id=payload.get("id", ""),
+                    source_event_id=payload.get("source_event_id", ""),
+                    canonical_hash=payload.get("canonical_hash", ""),
+                    embedding_hash=payload.get("embedding_hash", ""),
+                    projection_signature=payload.get("projection_signature", ""),
+                    generated_by_worker=payload.get("generated_by_worker", "unknown"),
+                    generated_at=payload.get("generated_at", "")
+                )
+                
+                # Verify projection
+                event_data = {
+                    "id": payload.get("id", ""),
+                    "content": payload.get("content", ""),
+                    "source": payload.get("source", ""),
+                    "document_path": payload.get("document_path", "")
+                }
+                embedding = result.vector if hasattr(result, 'vector') and result.vector else []
+                
+                projection_verified, verification_reason = projection_integrity.verify_projection(
+                    projection_metadata,
+                    event_data,
+                    embedding
+                )
+                
+                if not projection_verified:
+                    print(f"Projection integrity check failed for {payload.get('document_path')}: {verification_reason}")
+                    continue  # Skip unverified projections
+            
             snippet = {
                 "content": payload.get("content", ""),
                 "score": score,
                 "source": payload.get("source", ""),
                 "authority_level": payload.get("authority_level", ""),
-                "document_path": payload.get("document_path", "")
+                "document_path": payload.get("document_path", ""),
+                "projection_verified": projection_verified,
+                "verification_reason": verification_reason
             }
             snippets.append(snippet)
             
@@ -878,8 +964,8 @@ async def get_model_capabilities():
         else:
             # Fallback to live inference provider query through authority
             import sys
-            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-            from inference_adapter import get_inference_adapter
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+            from adapters.inference_adapter import get_inference_adapter
             inference_adapter = get_inference_adapter()
             
             models = inference_adapter.list_models()
@@ -978,8 +1064,8 @@ async def search_constitutional(query: str, limit: int = 5):
         
         # Get embedding for query using inference authority
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         inference_adapter = get_inference_adapter()
         embedding = inference_adapter.embed(query)
         
@@ -1209,8 +1295,8 @@ async def get_continuity_status():
     # Inference provider availability
     try:
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'runtime', 'adapters'))
-        from inference_adapter import get_inference_adapter
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'runtime'))
+        from adapters.inference_adapter import get_inference_adapter
         inference_adapter = get_inference_adapter()
         inference_healthy = inference_adapter.health()
         status["components"]["inference_provider"] = {

@@ -1,0 +1,24 @@
+{
+  "postgres_total": 1044,
+  "qdrant_total": 1044,
+  "missing": [],
+  "duplicates": [],
+  "status": "COMPLETE",
+  "checkpoint": "2026-06-23T02:48:10+00:00",
+  "migration_log": [
+    {"batch": 1, "events": 100, "result": "100/100 projected"},
+    {"batch": 2, "events": 100, "result": "100/100 projected"},
+    {"batch": 3, "events": 100, "result": "100/100 projected"},
+    {"batch": 4, "events": 100, "result": "100/100 projected"},
+    {"batch": 5, "events": 100, "result": "100/100 projected"},
+    {"batch": 6, "events": 100, "result": "100/100 projected"},
+    {"batch": 7, "events": 432, "result": "432/432 projected"}
+  ],
+  "throughput_metrics": {
+    "total_events": 1044,
+    "batches": 7,
+    "avg_batch_size": 149,
+    "all_batches_100_percent": true,
+    "zero_failures": true
+  }
+}

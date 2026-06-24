@@ -15,6 +15,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 from typing import List, Dict, Any, Optional
 import requests
+import hashlib
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -106,18 +108,31 @@ def verify_event_from_postgres(event_id: str) -> Optional[Dict[str, Any]]:
             FROM events
             WHERE id = %s
         """)
-        
+
         cursor.execute(query, (event_id,))
         row = cursor.fetchone()
-        
+
         if row:
+            payload = row[3]
+            # Compute canonical payload hash for verification
+            try:
+                canonical = json.dumps(payload, sort_keys=True, separators=(',', ':'))
+                computed_payload_hash = hashlib.sha256(canonical.encode()).hexdigest()
+            except Exception:
+                # Fallback if payload is already a JSON string
+                try:
+                    computed_payload_hash = hashlib.sha256(str(payload).encode()).hexdigest()
+                except Exception:
+                    computed_payload_hash = None
+
             event = {
                 'id': row[0],
                 'stream': row[1],
                 'event_type': row[2],
-                'payload': row[3],
+                'payload': payload,
                 'created_at': row[4],
-                'projected_to_qdrant': row[5]
+                'projected_to_qdrant': row[5],
+                'payload_hash': computed_payload_hash
             }
             conn.close()
             return event
@@ -179,20 +194,29 @@ def constitutional_search(query: str, limit: int = 10, stream_filter: Optional[s
             query_filter=search_filter
         )
         
-        # Extract event_ids from Qdrant results
-        event_ids = [result.payload.get('event_id') for result in search_results]
-        
-        # Verify each event in PostgreSQL
+        # Extract event_ids and compare payload hashes between Qdrant projection and Postgres event
         verified_events = []
-        for event_id in event_ids:
-            if not event_id:
-                continue
-            
-            verified_event = verify_event_from_postgres(event_id)
-            if verified_event:
-                verified_events.append(verified_event)
-            else:
-                logger.warning(f"Event {event_id} from Qdrant not verified in PostgreSQL")
+        for result in search_results:
+            try:
+                q_payload = result.payload or {}
+                event_id = q_payload.get('event_id')
+                q_payload_hash = q_payload.get('payload_hash')
+                if not event_id:
+                    continue
+
+                verified_event = verify_event_from_postgres(event_id)
+                if not verified_event:
+                    logger.warning(f"Event {event_id} from Qdrant not found in PostgreSQL")
+                    continue
+
+                pg_payload_hash = verified_event.get('payload_hash')
+                # Compare hashes; require match to consider projection authoritative
+                if q_payload_hash and pg_payload_hash and q_payload_hash == pg_payload_hash:
+                    verified_events.append(verified_event)
+                else:
+                    logger.warning(f"Projection mismatch for event {event_id}: qdrant={q_payload_hash} postgres={pg_payload_hash}")
+            except Exception as e:
+                logger.error(f"Error verifying result payload: {e}")
         
         logger.info(f"Search returned {len(verified_events)} verified events")
         return verified_events

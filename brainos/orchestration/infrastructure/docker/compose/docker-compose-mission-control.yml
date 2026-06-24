@@ -12,12 +12,13 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: crx_runtime
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      QDRANT_URL: ${QDRANT_URL}
-      QDRANT_API_KEY: ${QDRANT_API_KEY}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: cG96ZGV2ZWxvcG1lbnRAcGluZy5jb20uYXU6c3VwZXItc2ljcmV0LWtleS0xMjM0NTY=
       QDRANT_COLLECTION: constitutional_memory
       OLLAMA_BASE_URL: http://ollama:11434
+      INFERENCE_BASE_URL: http://ollama:11434
       YAHOO_EMAIL: ${YAHOO_EMAIL}
       YAHOO_APP_PASSWORD: ${YAHOO_APP_PASSWORD}
     ports:
@@ -37,9 +38,9 @@ services:
     container_name: brain-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: crx_runtime
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../../../../../brainos/orchestration/constitutional/canonical_state/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
@@ -57,7 +58,7 @@ services:
     container_name: brain-qdrant
     restart: unless-stopped
     environment:
-      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
+      QDRANT__SERVICE__API_KEY: cG96ZGV2ZWxvcG1lbnRAcGluZy5jb20uYXU6c3VwZXItc2ljcmV0LWtleS0xMjM0NTY=
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
@@ -109,6 +110,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Repository Runtime — read-only cognition layer for all agents
+  repo_runtime:
+    image: alpine:latest
+    container_name: brain-repo-runtime
+    restart: unless-stopped
+    read_only: true
+    volumes:
+      - ../../../../../:/repo/ping:ro
+      - ../../../../../vault:/repo/content:ro
+      - ../../../../../DriveMirror:/repo/drive:ro
+      - ../../../../../Artifacts:/repo/artifacts:ro
+      - ../../../../../Graphs:/repo/graphs
+      - ../../../../../Indexes:/repo/indexes
+    command: ["sleep", "infinity"]
+    networks:
+      - brain_internal
 
 networks:
   brain_internal:
