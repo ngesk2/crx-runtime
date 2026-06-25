@@ -5,11 +5,12 @@ All tools call existing Mission Control endpoints
 """
 
 import requests
+import os
 from typing import Optional, List, Dict, Any
 import json
 
 # Mission Control base URL
-MISSION_CONTROL_URL = "http://mission-control:8000"
+MISSION_CONTROL_URL = os.getenv("MISSION_CONTROL_URL", "http://mission-control:8000")
 
 
 def search_constitution(query: str, limit: int = 5) -> Dict[str, Any]:

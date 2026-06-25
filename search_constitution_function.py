@@ -1,4 +1,5 @@
 import requests
+import os
 
 def search_constitution(query: str, limit: int = 5):
     """
@@ -11,7 +12,7 @@ def search_constitution(query: str, limit: int = 5):
     Returns:
         List of constitutional documents with relevance scores
     """
-    MISSION_CONTROL_URL = "http://mission-control:8000"
+    MISSION_CONTROL_URL = os.getenv("MISSION_CONTROL_URL", "http://mission-control:8000")
     
     try:
         response = requests.get(
@@ -37,7 +38,7 @@ def get_constitution_doc(doc_id: str):
     Returns:
         Document metadata and content
     """
-    MISSION_CONTROL_URL = "http://mission-control:8000"
+    MISSION_CONTROL_URL = os.getenv("MISSION_CONTROL_URL", "http://mission-control:8000")
     
     try:
         response = requests.get(
@@ -59,7 +60,7 @@ def get_constitution_authority():
     Returns:
         Authority status and collection information
     """
-    MISSION_CONTROL_URL = "http://mission-control:8000"
+    MISSION_CONTROL_URL = os.getenv("MISSION_CONTROL_URL", "http://mission-control:8000")
     
     try:
         response = requests.get(
