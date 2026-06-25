@@ -1,5 +1,9 @@
 version: '3.8'
 
+# DEPRECATED: This service is deprecated and will be removed in future iterations.
+# Use canonical docker-compose-mission-control.yml instead.
+# This file is kept for backward compatibility only.
+
 services:
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -8,6 +12,8 @@ services:
       - "3001:8080"
     volumes:
       - open-webui-data:/app/backend/data
+    env_file:
+      - ../../.env.base
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
     restart: unless-stopped
@@ -21,7 +27,7 @@ services:
       - ./knowledge:/app/knowledge
       - ./knowledge.db:/app/knowledge.db
     env_file:
-      - .env
+      - ../../.env.base
     restart: unless-stopped
     depends_on:
       - open-webui

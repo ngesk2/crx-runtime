@@ -6,6 +6,8 @@ services:
     image: postgres:15-alpine
     container_name: brain-postgres
     restart: unless-stopped
+    env_file:
+      - ../../../../../../.env.base
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -28,8 +30,10 @@ services:
     image: qdrant/qdrant:latest
     container_name: brain-qdrant
     restart: unless-stopped
+    env_file:
+      - ../../../../../../.env.base
     environment:
-      QDRANT__SERVICE__API_KEY: ""
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
