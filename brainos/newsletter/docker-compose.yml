@@ -1,5 +1,9 @@
 version: '3.8'
 
+# DEPRECATED: This service is deprecated and will be removed in future iterations.
+# Use canonical docker-compose-mission-control.yml instead.
+# This file is kept for backward compatibility only.
+
 services:
   worker:
     build: .
@@ -9,7 +13,7 @@ services:
       - ./knowledge:/app/knowledge
       - ./digests:/app/digests
     env_file:
-      - .env
+      - ../../.env.base
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -23,7 +27,7 @@ services:
     volumes:
       - ./newsletters.db:/app/newsletters.db
     env_file:
-      - .env
+      - ../../.env.base
     restart: unless-stopped
     depends_on:
       - worker
