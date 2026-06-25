@@ -6,29 +6,26 @@ Emits PROJECTION_CREATED events.
 """
 
 import os
+import sys
 import psycopg2
 import json
 import uuid
 from datetime import datetime
 from typing import Dict, Any
+from pathlib import Path
 
-def get_postgres_config() -> Dict[str, Any]:
-    """Get PostgreSQL configuration from environment variables"""
-    return {
-        "host": os.getenv("POSTGRES_HOST", "localhost"),
-        "port": int(os.getenv("POSTGRES_PORT", "5432")),
-        "database": os.getenv("POSTGRES_DB", "crx_runtime"),
-        "user": os.getenv("POSTGRES_USER", "postgres"),
-        "password": os.getenv("POSTGRES_PASSWORD", "postgres")
-    }
+# Add constitutional path for shared configuration
+sys.path.append(str(Path(__file__).parent / 'runtime'))
+from configuration import get_configuration
 
 
 class ConstitutionalProjectionWorker:
     """Constitutional Projection Worker"""
     
-    def __init__(self, postgres_config: Dict[str, Any], qdrant_url: str = "http://localhost:6333"):
+    def __init__(self, postgres_config: Dict[str, Any], qdrant_url: str = None):
         self.postgres_config = postgres_config
-        self.qdrant_url = qdrant_url
+        self.configuration = get_configuration()
+        self.qdrant_url = qdrant_url or self.configuration.get_qdrant_config()["url"]
         
     def get_connection(self):
         """Get PostgreSQL connection"""
@@ -135,6 +132,7 @@ class ConstitutionalProjectionWorker:
 
 def main():
     """Main execution"""
+    from configuration import get_postgres_config
     postgres_config = get_postgres_config()
     
     worker = ConstitutionalProjectionWorker(postgres_config)
