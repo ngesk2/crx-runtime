@@ -23,9 +23,9 @@ from typing import Dict, List, Optional
 import psycopg2
 from psycopg2.extras import Json
 
-# Add constitutional path for SecretAdapter
-sys.path.append(str(Path(__file__).parent / 'runtime' / 'constitutional'))
-from secret_adapter import get_secret_adapter
+# Add constitutional path for shared configuration
+sys.path.append(str(Path(__file__).parent / 'runtime'))
+from configuration import get_postgres_config
 
 
 class RepositoryScanner:
@@ -207,15 +207,8 @@ def main():
     # Configuration
     repository_root = os.getenv("REPOSITORY_ROOT", "C:\\PING\\repositories\\drive")
     
-    # Constitutional: Use SecretAdapter for secret access
-    secret_adapter = get_secret_adapter()
-    postgres_config = {
-        "host": os.getenv("POSTGRES_HOST", "localhost"),
-        "port": int(os.getenv("POSTGRES_PORT", "5432")),
-        "database": os.getenv("POSTGRES_DB", "crx_runtime"),
-        "user": os.getenv("POSTGRES_USER", "postgres"),
-        "password": secret_adapter.get_postgres_password() or os.getenv("POSTGRES_PASSWORD", "postgres")
-    }
+    # Constitutional: Use shared configuration module
+    postgres_config = get_postgres_config()
     
     # Create scanner
     scanner = RepositoryScanner(repository_root, postgres_config)

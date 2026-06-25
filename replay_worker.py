@@ -15,20 +15,9 @@ from datetime import datetime
 from typing import Dict, Any
 from pathlib import Path
 
-# Add constitutional path for SecretAdapter
-sys.path.append(str(Path(__file__).parent / 'runtime' / 'constitutional'))
-from secret_adapter import get_secret_adapter
-
-def get_postgres_config() -> Dict[str, Any]:
-    """Get PostgreSQL configuration from SecretAdapter and environment variables"""
-    secret_adapter = get_secret_adapter()
-    return {
-        "host": os.getenv("POSTGRES_HOST", "localhost"),
-        "port": int(os.getenv("POSTGRES_PORT", "5432")),
-        "database": os.getenv("POSTGRES_DB", "crx_runtime"),
-        "user": os.getenv("POSTGRES_USER", "postgres"),
-        "password": secret_adapter.get_postgres_password() or os.getenv("POSTGRES_PASSWORD", "postgres")
-    }
+# Add constitutional path for shared configuration
+sys.path.append(str(Path(__file__).parent / 'runtime'))
+from configuration import get_postgres_config
 
 
 class ReplayWorker:
