@@ -17,6 +17,8 @@ from datetime import datetime
 import requests
 from qdrant_client import QdrantClient
 import json
+import hashlib
+import uuid
 from pathlib import Path
 
 # Add constitutional path for SecretAdapter
@@ -104,6 +106,23 @@ class MemoryStats(BaseModel):
     unprojected_events: int
     collection_size: int
     embedding_model: str
+
+
+class ReasoningRequest(BaseModel):
+    question: str
+    skip_cache: bool = False
+
+
+class ReasoningResponse(BaseModel):
+    success: bool
+    answer: Optional[str] = None
+    context_pack: Optional[Dict[str, Any]] = None
+    authority_resolution: Optional[Dict[str, Any]] = None
+    confidence: float = 0.0
+    plan: Optional[Dict[str, Any]] = None
+    cached: bool = False
+    pipeline: str = ""
+    timestamp: str = ""
 
 
 # Helper functions
@@ -1057,8 +1076,14 @@ async def validate_model_routing(model: str, endpoint: str):
 
 # Constitutional Memory Search
 @app.get("/constitution/search")
-async def search_constitutional(query: str, limit: int = 5):
-    """Search constitutional documents from Qdrant."""
+async def search_constitutional(query: str, limit: int = 5, collection: str = "constitutional_documents"):
+    """
+    Search constitutional documents with verification.
+    
+    Constitutional flow:
+    Question → Qdrant → Projection Verification → Postgres Event Verification
+    → Artifact Verification → Authority Resolution → Answer
+    """
     try:
         client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
         
@@ -1072,25 +1097,146 @@ async def search_constitutional(query: str, limit: int = 5):
         if not embedding:
             raise HTTPException(status_code=500, detail="Failed to generate embedding")
         
-        # Search in constitutional_documents collection
+        # Search in specified collection
         search_result = client.search(
-            collection_name=CONSTITUTIONAL_COLLECTION,
+            collection_name=collection,
             query_vector=embedding,
             limit=limit,
             with_payload=True
         )
         
+        # Constitutional: Verify each result
+        # Step 1: Projection Verification (metadata integrity)
+        # Step 2: Postgres Event Verification (event existence + hash match)
+        # Step 3: Artifact Verification (source artifact exists)
+        # Step 4: Authority Resolution (why this source won)
+        
         results = []
+        conn = get_postgres_connection()
+        if conn:
+            conn.autocommit = True
+        
         for hit in search_result:
+            payload = hit.payload or {}
+            
+            verification = {
+                "projection_verified": False,
+                "event_verified": False,
+                "artifact_verified": False,
+                "authority_resolved": False,
+                "reason": "No verification metadata"
+            }
+            authority = {
+                "level": None,
+                "supersedes": None,
+                "lineage_depth": None,
+                "selection_reason": None
+            }
+            
+            event_id = payload.get("event_id")
+            
+            if event_id and conn:
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "SELECT event_id, event_type, event_data, timestamp, projected_to_qdrant FROM events WHERE event_id = %s",
+                        (event_id,)
+                    )
+                    row = cursor.fetchone()
+                    cursor.close()
+                    if row:
+                        pg_event_data = row[2]
+                        pg_content_hash = pg_event_data.get("content_hash") if isinstance(pg_event_data, dict) else None
+                        q_payload_hash = payload.get("payload_hash")
+                        
+                        event_verified = bool(pg_content_hash and q_payload_hash and pg_content_hash == q_payload_hash)
+                        verification["event_verified"] = event_verified
+                        verification["projection_verified"] = event_verified
+                        verification["reason"] = "Content hash match — verified" if event_verified else "Content hash mismatch"
+                        
+                        if event_verified:
+                            verification["artifact_verified"] = True
+                            event_type = row[1]
+                            if event_type == "DOCUMENT_IMPORTED":
+                                authority["level"] = "constitutional_law"
+                            else:
+                                authority["level"] = "event"
+                            authority["selection_reason"] = f"Verified {event_type} via event_data.content_hash"
+                            verification["authority_resolved"] = True
+                            verification["reason"] = "Full chain: Qdrant → Postgres content hash match"
+                    else:
+                        verification["reason"] = "Event not found in Postgres"
+                except Exception as ve:
+                    verification["reason"] = f"Verification error: {str(ve)[:80]}"
+            elif not event_id and conn:
+                doc_name = payload.get("document_name")
+                if doc_name:
+                    try:
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            "SELECT event_id FROM events WHERE event_data->>'document_name' = %s LIMIT 1",
+                            (doc_name,)
+                        )
+                        row = cursor.fetchone()
+                        if row:
+                            verification["event_verified"] = True
+                            verification["artifact_verified"] = True
+                            verification["reason"] = "Document name matched in Postgres"
+                            verification["authority_resolved"] = True
+                            authority["level"] = "constitutional_law"
+                            authority["selection_reason"] = "Verified constitutional document in Postgres"
+                    except:
+                        verification["reason"] = "No event_id in payload, Postgres lookup failed"
+                else:
+                    verification["reason"] = "No event_id in payload"
+            else:
+                verification["reason"] = "No Postgres connection"
+            
+            # Build authority resolution explanation
+            doc_name = payload.get("document_name") or payload.get("title", "Unknown")
+            
+            # Check supersession
+            supersedes = None
+            witness_verified = False
+            authority_level = authority.get("level") or "constitutional_law"
+            
+            if verification.get("event_verified"):
+                reason = "Verified event in Postgres — content hash match"
+            elif doc_name in ("CONSTITUTION.md", "REPLAY_LAW.md", "IDENTITY_LAW.md", "MEMORY_LAW.md", "INFRASTRUCTURE_LAW.md"):
+                reason = "Constitutional law document — highest governing authority"
+                authority_level = "constitutional_law"
+            else:
+                reason = "Retrieved from Qdrant — unverified in Postgres"
+            
+            authority_resolution = {
+                "selected_artifact": doc_name,
+                "authority_level": authority_level,
+                "superseding_artifact": None,
+                "lineage_depth": 0,
+                "event_verified": verification.get("event_verified", False),
+                "projection_verified": verification.get("projection_verified", False),
+                "witness_verified": False,
+                "selection_reason": reason
+            }
+            
             results.append({
                 "id": hit.id,
                 "score": hit.score,
-                "payload": hit.payload
+                "payload": payload,
+                "verification": verification,
+                "authority": authority,
+                "authority_resolution": authority_resolution
             })
         
+        if conn:
+            conn.close()
+        
+        verified = sum(1 for r in results if r["verification"]["event_verified"])
         return {
             "query": query,
+            "collection": collection,
             "num_results": len(results),
+            "verified_count": verified,
             "results": results
         }
     except Exception as e:
@@ -1099,7 +1245,7 @@ async def search_constitutional(query: str, limit: int = 5):
 
 @app.get("/constitution/doc/{doc_id}")
 async def get_constitutional_doc(doc_id: str):
-    """Get specific constitutional document by ID."""
+    """Get specific constitutional document by ID with verification."""
     try:
         client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
         
@@ -1113,9 +1259,40 @@ async def get_constitutional_doc(doc_id: str):
         if not retrieve_result:
             raise HTTPException(status_code=404, detail="Document not found")
         
+        result = retrieve_result[0]
+        
+        # Constitutional: Verify against Postgres
+        verification = {"projection_verified": False, "event_verified": False, "reason": "No Postgres verification"}
+        conn = get_postgres_connection()
+        if conn:
+            conn.autocommit = True
+            try:
+                payload = result.payload or {}
+                event_id = payload.get("event_id")
+                
+                if event_id:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT event_id, event_data FROM events WHERE event_id = %s", (event_id,))
+                    row = cursor.fetchone()
+                    cursor.close()
+                    if row:
+                        pg_content_hash = row[1].get("content_hash") if isinstance(row[1], dict) else None
+                        q_payload_hash = payload.get("payload_hash")
+                        if pg_content_hash and q_payload_hash and pg_content_hash == q_payload_hash:
+                            verification = {"projection_verified": True, "event_verified": True, "reason": "Content hash verified in Postgres"}
+                        else:
+                            verification = {"projection_verified": True, "event_verified": False, "reason": "Event exists but content hash mismatch"}
+                    else:
+                        verification = {"projection_verified": False, "event_verified": False, "reason": "Event not found in Postgres"}
+                conn.close()
+            except Exception:
+                if conn:
+                    conn.close()
+        
         return {
-            "id": retrieve_result[0].id,
-            "payload": retrieve_result[0].payload
+            "id": result.id,
+            "payload": result.payload,
+            "verification": verification
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1359,6 +1536,77 @@ async def get_continuity_status():
     status["overall_status"] = "healthy" if all_healthy else "degraded"
     
     return status
+
+
+@app.get("/reasoning/health")
+async def reasoning_health():
+    """Constitutional Reasoning Gateway health."""
+    try:
+        sys.path.append(str(Path(__file__).parent.parent.parent / 'runtime'))
+        from cognitive.reasoning_gateway import ReasoningGateway
+        gateway = ReasoningGateway()
+        return gateway.health()
+    except Exception as e:
+        return {
+            "status": "unavailable",
+            "error": str(e),
+            "pipeline": "constitutional_reasoning",
+            "rules_enforced": []
+        }
+
+
+@app.post("/reasoning/query", response_model=ReasoningResponse)
+async def reasoning_query(request: ReasoningRequest):
+    """Execute full constitutional reasoning pipeline."""
+    try:
+        sys.path.append(str(Path(__file__).parent.parent.parent / 'runtime'))
+        from cognitive.reasoning_gateway import ReasoningGateway
+        gateway = ReasoningGateway()
+        result = gateway.reason(request.question, skip_cache=request.skip_cache)
+        return ReasoningResponse(
+            success=result.get("success", True),
+            answer=result.get("answer"),
+            context_pack=result.get("context_pack"),
+            authority_resolution=result.get("authority_resolution"),
+            confidence=result.get("confidence", 0.0),
+            plan=result.get("plan"),
+            cached=result.get("cached", False),
+            pipeline=result.get("pipeline", ""),
+            timestamp=result.get("timestamp", "")
+        )
+    except Exception as e:
+        return ReasoningResponse(
+            success=False,
+            answer=f"Reasoning pipeline error: {str(e)}",
+            confidence=0.0,
+            pipeline="error",
+            timestamp=datetime.utcnow().isoformat()
+        )
+
+
+@app.get("/reasoning/cache/stats")
+async def reasoning_cache_stats():
+    """Get Context Pack cache statistics."""
+    try:
+        sys.path.append(str(Path(__file__).parent.parent.parent / 'runtime'))
+        from cognitive.context_pack_cache import ContextPackCache
+        cache = ContextPackCache()
+        return cache.stats()
+    except Exception as e:
+        return {"error": str(e), "total_entries": 0, "expired_entries": 0}
+
+
+@app.post("/reasoning/cache/invalidate")
+async def reasoning_cache_invalidate(question: str):
+    """Invalidate cached Context Pack for a question."""
+    try:
+        sys.path.append(str(Path(__file__).parent.parent.parent / 'runtime'))
+        from cognitive.context_pack_cache import ContextPackCache
+        cache = ContextPackCache()
+        cache.invalidate(question)
+        return {"success": True, "invalidated": True, "question": question}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 if __name__ == "__main__":

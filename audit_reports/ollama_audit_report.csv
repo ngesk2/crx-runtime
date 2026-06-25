@@ -1,0 +1,5 @@
+"Model","SizeGB","LastUsed","Duplicate","Notes"
+"qwen2.5-coder:14b","9.0","46 hours ago","no","Large coder model (14B)"
+"llama3:latest","4.7","46 hours ago","no","General LLM"
+"nomic-embed-text:latest","0.274","46 hours ago","no","Embeddings model"
+"qwen2.5-coder:7b","4.7","47 hours ago","partial","Smaller variant of 14B - duplicates capability"

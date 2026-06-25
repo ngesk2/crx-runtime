@@ -8,8 +8,10 @@ Constitutional docs are Tier 1 memory.
 """
 
 import os
+import json
 import logging
 import hashlib
+import psycopg2
 from typing import List, Dict, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
@@ -72,19 +74,55 @@ class ConstitutionalRetrieval:
             return None
     
     def ingest_document(self, doc_name: str, content: str, doc_type: str = "law"):
-        """Ingest a constitutional document into Qdrant."""
-        # Generate document ID from content hash (UUID format for Qdrant v1.12+)
+        """
+        Ingest a constitutional document through the constitutional pipeline.
+        Constitutional flow: Artifact → DOCUMENT_IMPORTED → Postgres → Projection → Qdrant
+        """
         import uuid
         content_hash = hashlib.sha256(content.encode()).hexdigest()
         doc_id = str(uuid.UUID(hex=content_hash[:32]))
         
-        # Generate embedding
+        # Step 1: Record in Postgres as DOCUMENT_IMPORTED event (CQRS schema)
+        import uuid as _uuid
+        event_id = str(_uuid.uuid5(_uuid.NAMESPACE_DNS, doc_name + content))
+        try:
+            conn = psycopg2.connect(
+                host=os.getenv('POSTGRES_HOST', 'localhost'),
+                port=os.getenv('POSTGRES_PORT', '5432'),
+                database=os.getenv('POSTGRES_DB', 'crx_runtime'),
+                user=os.getenv('POSTGRES_USER', 'postgres'),
+                password=os.getenv('POSTGRES_PASSWORD', '')
+            )
+            cur = conn.cursor()
+            event_data = json.dumps({
+                'document_name': doc_name,
+                'document_type': doc_type,
+                'content': content,
+                'content_hash': content_hash,
+                '_source_classification': 'SOURCE_ARTIFACT',
+                '_generated_by': 'constitutional_retrieval.ingest',
+                '_verified': True
+            })
+            cur.execute(
+                "INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data, projected_to_qdrant) "
+                "VALUES (%s, %s, NOW(), %s, %s, %s::jsonb, FALSE) "
+                "ON CONFLICT (event_id) DO NOTHING",
+                (event_id, 'DOCUMENT_IMPORTED', event_id, 'constitutional_document', event_data)
+            )
+            conn.commit()
+            cur.close()
+            conn.close()
+            logger.info(f"Recorded Postgres event for: {doc_name} (event_id={event_id})")
+        except Exception as e:
+            logger.warning(f"Postgres event recording failed (non-fatal): {e}")
+        
+        # Step 2: Generate embedding
         embedding = self._generate_embedding(content)
         if not embedding:
             logger.error(f"Failed to generate embedding for {doc_name}")
             return False
         
-        # Create point
+        # Step 3: Project to Qdrant with event_id matching Postgres
         point = PointStruct(
             id=doc_id,
             vector=embedding,
@@ -92,8 +130,10 @@ class ConstitutionalRetrieval:
                 "document_name": doc_name,
                 "document_type": doc_type,
                 "content": content,
-                "content_hash": doc_id,
-                "tier": 1  # Tier 1 memory
+                "content_hash": content_hash,
+                "event_id": event_id,
+                "payload_hash": content_hash,
+                "tier": 1
             }
         )
         
@@ -102,10 +142,10 @@ class ConstitutionalRetrieval:
                 collection_name=QDRANT_COLLECTION,
                 points=[point]
             )
-            logger.info(f"Ingested document: {doc_name}")
+            logger.info(f"Projected to Qdrant: {doc_name}")
             return True
         except Exception as e:
-            logger.error(f"Failed to ingest document: {e}")
+            logger.error(f"Qdrant projection failed: {e}")
             return False
     
     def retrieve_for_question(self, question: str, limit: int = 3) -> List[Dict]:

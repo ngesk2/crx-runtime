@@ -2,6 +2,58 @@
 
 **Status:** FROZEN CONSTITUTIONAL AUTHORITY
 **Scope:** Replay determinism and reconstruction law only. No implementation details.
+**Root Law:** TRUTH_LAW.md (replay produces derived truth, not constitutional truth)
+**Date:** 2026-06-24 (formalized)
+
+---
+
+# FORMAL REPLAY SEMANTICS
+
+## Constitutional Invariants
+
+```yaml
+replay:
+  deterministic:
+    required: true
+  exact_reconstruction:
+    required: true
+  divergence:
+    constitutional_incident: true
+  forking:
+    prohibited: true
+  partial_replay:
+    verification:
+      permitted: true
+    authoritative_state:
+      prohibited: true
+  state_derivation:
+    deterministic_only: required
+    non_deterministic_derivation: prohibited
+    external_dependencies: prohibited
+```
+
+## Constitutional Principles
+
+```
+Replay may be partial ONLY for verification.
+Replay may NOT produce authoritative truth from partial execution.
+Partial replay may verify truth.
+Partial replay may NOT produce truth.
+Replay produces derived truth, not constitutional truth.
+Constitutional truth = immutable verified event (TRUTH_LAW.md).
+```
+
+---
+
+# CONSTITUTIONAL REPLAY SEMANTICS
+
+## Axiom 1 — Replay Determinism
+
+**AXIOM:** Replay must be deterministic. Identical event stream must always produce identical state.
+
+**RATIONALE:** Without deterministic replay, constitutional truth cannot be verified, state cannot be reconstructed, and integrity cannot be guaranteed.
+
+**VIOLATION CONSEQUENCE:** Replay divergence is a constitutional incident.
 
 ---
 
@@ -170,6 +222,197 @@ Version changes MUST:
 - Be recorded in event stream
 - Be traceable in minimum replay set
 - Be verifiable in witness generation
+
+---
+
+# FORMAL REPLAY SEMANTICS
+
+## Replay Determinism
+
+**Requirement:** Replay must be deterministic
+
+**Definition:** Identical event stream must always produce identical state
+
+**Constitutional Constraint:**
+```yaml
+replay:
+  deterministic:
+    required: true
+  exact_reconstruction:
+    required: true
+  divergence:
+    constitutional_incident: true
+```
+
+**Violation:** Replay divergence is a constitutional incident
+
+---
+
+## Exact Reconstruction
+
+**Requirement:** Replay must produce exact reconstruction
+
+**Definition:** State at any boundary must be identical across all replay executions
+
+**Constitutional Constraint:**
+```yaml
+replay:
+  exact_reconstruction:
+    required: true
+  state_identicality:
+    required: true
+  boundary_reproducibility:
+    required: true
+```
+
+**Violation:** State divergence is a constitutional incident
+
+---
+
+## Replay Divergence
+
+**Definition:** Replay produces different state from expected state
+
+**Constitutional Consequence:** Constitutional incident
+
+**Divergence Types:**
+- Identity divergence (identity assignment differs)
+- State divergence (state projection differs)
+- Witness divergence (witness hash differs)
+- Lineage divergence (lineage edges differ)
+
+**Remediation Required:**
+1. Identify divergence point
+2. Investigate cause
+3. Fix constitutional violation
+4. Re-run replay
+5. Verify convergence
+
+---
+
+## Forking Prohibition
+
+**Definition:** Replay forking is prohibited
+
+**Constitutional Constraint:**
+```yaml
+replay:
+  forking:
+    prohibited: true
+  single_truth_line:
+    required: true
+  alternative_histories:
+    prohibited: true
+```
+
+**Rationale:** Forking creates alternative constitutional truths, violating single source of truth principle
+
+**Violation:** Replay forking is a constitutional incident
+
+---
+
+## Partial Replay
+
+**Definition:** Replay may be partial for verification only
+
+**Constitutional Constraint:**
+```yaml
+partial_replay:
+  verification:
+    permitted: true
+  authoritative_state:
+    prohibited: true
+  truth_production:
+    prohibited: true
+```
+
+**Verification-Only Replay:**
+- May replay subset of events for verification
+- May NOT produce authoritative state from partial replay
+- May NOT create truth from partial execution
+- Result is verification status, not constitutional truth
+
+**Prohibited:**
+- Partial replay producing authoritative state
+- Partial replay creating constitutional truth
+- Partial replay for state reconstruction
+
+**Constitutional Principle:**
+```
+Partial replay may verify truth.
+Partial replay may NOT produce truth.
+```
+
+---
+
+## State Derivation
+
+**Definition:** State derivation must be deterministic only
+
+**Constitutional Constraint:**
+```yaml
+state_derivation:
+  deterministic_only:
+    required: true
+  non_deterministic_derivation:
+    prohibited: true
+  external_dependencies:
+    prohibited: true
+```
+
+**Prohibited:**
+- Non-deterministic state derivation
+- External dependency during state derivation
+- Network calls during state derivation
+- Clock dependence during state derivation
+
+**Required:**
+- Pure functions for state derivation
+- Deterministic computation only
+- No side effects during derivation
+
+---
+
+# REPLAY FAILURE SEMANTICS
+
+## Failure Classification
+
+Replay failures MUST be deterministic:
+- **INVALID_EVENT_STREAM:** Event stream cannot be parsed or is malformed
+- **INVALID_EVENT_ORDER:** Events violate constitutional ordering
+- **INVALID_LINEAGE:** Lineage contains cycles or duplicate edges
+- **IDENTITY_DIVERGENCE:** Identity does not match content under declared law
+- **POLICY_VIOLATION:** Mutation lacks required policy authorization
+- **INVARIANT_VIOLATION:** Reconstructed state violates invariant
+- **WITNESS_DIVERGENCE:** Witness does not match recomputed witness
+- **REPLAY_DIVERGENCE:** Replay produces different state from expected state
+- **FORKING_DETECTED:** Replay forking detected
+
+## Failure Handling
+
+Replay MUST:
+- Fail deterministically with structured failure codes
+- Never throw generic errors
+- Provide sufficient context for diagnosis
+- Allow replay to be re-executed for verification
+- Open constitutional incident on divergence
+
+## Constitutional Incident
+
+**Trigger Conditions:**
+- Replay divergence
+- Witness divergence
+- Identity divergence
+- State divergence
+- Forking detected
+
+**Incident Response:**
+1. Stop replay
+2. Open constitutional incident
+3. Investigate cause
+4. Fix constitutional violation
+5. Re-run replay
+6. Verify convergence
 
 ---
 
