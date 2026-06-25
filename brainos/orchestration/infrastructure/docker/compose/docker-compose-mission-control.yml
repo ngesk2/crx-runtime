@@ -15,7 +15,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       QDRANT_URL: http://qdrant:6333
-      QDRANT_API_KEY: cG96ZGV2ZWxvcG1lbnRAcGluZy5jb20uYXU6c3VwZXItc2ljcmV0LWtleS0xMjM0NTY=
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
       QDRANT_COLLECTION: constitutional_memory
       OLLAMA_BASE_URL: http://ollama:11434
       INFERENCE_BASE_URL: http://ollama:11434
@@ -58,7 +58,7 @@ services:
     container_name: brain-qdrant
     restart: unless-stopped
     environment:
-      QDRANT__SERVICE__API_KEY: cG96ZGV2ZWxvcG1lbnRAcGluZy5jb20uYXU6c3VwZXItc2ljcmV0LWtleS0xMjM0NTY=
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
