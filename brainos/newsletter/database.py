@@ -122,11 +122,16 @@ def save_raw_newsletter(newsletter: Dict) -> bool:
         conn.close()
 
 def update_newsletter_analysis(message_id: str, analysis: Dict) -> bool:
-    """Update newsletter with Ollama analysis results."""
+    """Update newsletter with Ollama analysis results (classified as REASONING_ARTIFACT)."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
     try:
+        # Constitutional: Label LLM-generated analysis as REASONING_ARTIFACT
+        analysis['_source_classification'] = 'REASONING_ARTIFACT'
+        analysis['_generated_by'] = 'newsletter_worker'
+        analysis['_verified'] = False
+        
         cursor.execute("""
             UPDATE newsletters
             SET summary = ?, tags = ?, key_ideas = ?, actionable_insights = ?, processed_at = ?
@@ -146,7 +151,7 @@ def update_newsletter_analysis(message_id: str, analysis: Dict) -> bool:
         if result:
             article_id = result[0]
             
-            # Save topics
+            # Save topics with constitutional: LLM-generated confidence must never be 1.0
             if 'topics' in analysis and analysis['topics']:
                 topics = analysis['topics']
                 if isinstance(topics, list):
@@ -154,13 +159,12 @@ def update_newsletter_analysis(message_id: str, analysis: Dict) -> bool:
                         cursor.execute("""
                             INSERT INTO newsletter_topics (article_id, topic, confidence)
                             VALUES (?, ?, ?)
-                        """, (article_id, topic, 1.0))
+                        """, (article_id, topic, 0.6))  # Constitutional: max 0.6 for LLM-generated
                 else:
-                    # Handle if topics is a string
                     cursor.execute("""
                         INSERT INTO newsletter_topics (article_id, topic, confidence)
                         VALUES (?, ?, ?)
-                    """, (article_id, str(topics), 1.0))
+                    """, (article_id, str(topics), 0.6))
         
         conn.commit()
         return True

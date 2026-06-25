@@ -21,6 +21,10 @@ COPY brainos/orchestration/src ./src
 # Copy runtime modules needed by app.py (sys.path references)
 COPY runtime/constitutional ./runtime/constitutional
 COPY runtime/adapters ./runtime/adapters
+COPY runtime/security ./runtime/security
+COPY runtime/cognitive ./runtime/cognitive
+COPY runtime/tools ./runtime/tools
+COPY runtime/data ./runtime/data
 
 # Expose port
 EXPOSE 8000

@@ -14,11 +14,10 @@ Usage:
 import os
 import json
 import hashlib
+import subprocess
 from qdrant_client import QdrantClient
-import psycopg2
-from psycopg2 import sql
 
-QDRANT_URL = os.getenv('QDRANT_URL')
+QDRANT_URL = os.getenv('QDRANT_URL', 'http://localhost:6333')
 QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
 QDRANT_COLLECTION = os.getenv('QDRANT_COLLECTION', 'constitutional_memory')
 
@@ -35,32 +34,36 @@ def canonical_json(obj):
     return json.dumps(obj, sort_keys=True, separators=(',', ':'))
 
 
-def get_postgres_event_payload_hash(conn, event_id):
+def get_postgres_event_payload_hash(event_id):
+    """Get event payload hash from PostgreSQL using docker exec."""
     try:
-        cur = conn.cursor()
-        cur.execute(sql.SQL("SELECT payload FROM events WHERE id = %s"), (event_id,))
-        row = cur.fetchone()
-        if not row:
+        cmd = 'docker exec brain-postgres psql -U postgres -d crx_runtime -c "SELECT event_data FROM events WHERE event_id = \'{}\';"'.format(event_id)
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
             return None
-        payload = row[0]
-        try:
-            h = hashlib.sha256(canonical_json(payload).encode()).hexdigest()
-            return h
-        except Exception:
-            return hashlib.sha256(str(payload).encode()).hexdigest()
+        
+        # Parse psql output
+        lines = result.stdout.strip().split('\n')
+        for line in lines:
+            if line and not line.startswith(' event_data') and not line.startswith('---') and not line.startswith('('):
+                try:
+                    payload = json.loads(line.strip())
+                    h = hashlib.sha256(canonical_json(payload).encode()).hexdigest()
+                    return h
+                except Exception:
+                    return hashlib.sha256(line.strip().encode()).hexdigest()
+        return None
     except Exception as e:
         print('Postgres lookup error', e)
         return None
 
 
 def main():
-    client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
-
-    try:
-        pg_conn = psycopg2.connect(host=POSTGRES_HOST, port=POSTGRES_PORT, database=POSTGRES_DB, user=POSTGRES_USER, password=POSTGRES_PASSWORD)
-    except Exception as e:
-        print('Failed to connect to Postgres:', e)
-        return
+    # Use host/port for local connection
+    if QDRANT_URL and QDRANT_URL.startswith('http'):
+        client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+    else:
+        client = QdrantClient(host="localhost", port=6333, api_key=QDRANT_API_KEY)
 
     projection_count = 0
     verified_count = 0
@@ -74,48 +77,49 @@ def main():
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow(['point_id', 'event_id', 'q_payload_hash', 'pg_payload_hash', 'status'])
 
-    offset = None
-    while True:
-        try:
-            resp = client.scroll(collection_name=QDRANT_COLLECTION, limit=BATCH, offset=offset, with_payload=True)
-        except Exception as e:
-            print('Qdrant scroll error', e)
-            break
-
-        points = resp.get('points') if isinstance(resp, dict) else getattr(resp, 'points', None)
-        if not points:
-            break
-
-        for p in points:
-            projection_count += 1
-            payload = p.get('payload') if isinstance(p, dict) else p.payload
-            if not payload:
-                continue
-            event_id = payload.get('event_id')
-            q_payload_hash = payload.get('payload_hash')
-            if not event_id:
-                orphan_count += 1
-                continue
-            pg_hash = get_postgres_event_payload_hash(pg_conn, event_id)
-            if not pg_hash:
-                orphan_count += 1
-                continue
-            if q_payload_hash == pg_hash:
-                verified_count += 1
-                csv_writer.writerow([p.get('id') if isinstance(p, dict) else p.id, event_id, q_payload_hash, pg_hash, 'VERIFIED'])
-            else:
-                mismatch_count += 1
-                csv_writer.writerow([p.get('id') if isinstance(p, dict) else p.id, event_id, q_payload_hash, pg_hash, 'MISMATCH'])
-
-        # advance offset if supported
-        if isinstance(resp, dict):
-            # Qdrant REST response format
-            if not resp.get('points'):
-                break
-            offset = (offset or 0) + BATCH
-        else:
-            # client object may return limited interface
-            break
+    # Try scroll with proper Qdrant client API
+    try:
+        records, offset = client.scroll(
+            collection_name=QDRANT_COLLECTION,
+            limit=BATCH,
+            with_payload=True,
+            with_vectors=False
+        )
+        
+        while records:
+            for p in records:
+                projection_count += 1
+                payload = p.payload
+                if not payload:
+                    continue
+                event_id = payload.get('event_id')
+                q_payload_hash = payload.get('canonical_hash')  # Use canonical_hash instead of payload_hash
+                if not event_id:
+                    orphan_count += 1
+                    continue
+                pg_hash = get_postgres_event_payload_hash(event_id)
+                if not pg_hash:
+                    orphan_count += 1
+                    continue
+                if q_payload_hash == pg_hash:
+                    verified_count += 1
+                    csv_writer.writerow([p.id, event_id, q_payload_hash, pg_hash, 'VERIFIED'])
+                else:
+                    mismatch_count += 1
+                    csv_writer.writerow([p.id, event_id, q_payload_hash, pg_hash, 'MISMATCH'])
+            
+            # Get next batch
+            records, offset = client.scroll(
+                collection_name=QDRANT_COLLECTION,
+                limit=BATCH,
+                offset=offset,
+                with_payload=True,
+                with_vectors=False
+            )
+    except Exception as e:
+        print('Qdrant scroll error', e)
+        import traceback
+        traceback.print_exc()
 
     print('projection_count', projection_count)
     print('verified_count', verified_count)

@@ -15,6 +15,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import hashlib
 import json
+import uuid
 from urllib.parse import urljoin, urlparse
 
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +53,7 @@ class WebRetrieval:
             return None
     
     def _emit_observation_event(self, event_type: str, payload: Dict):
-        """Emit observation event to PostgreSQL."""
+        """Emit observation event to PostgreSQL with constitutional classification."""
         if not self.postgres_conn:
             logger.error("PostgreSQL connection not available")
             return False
@@ -60,21 +61,30 @@ class WebRetrieval:
         try:
             cursor = self.postgres_conn.cursor()
             
+            # Constitutional: All web retrieval events are REASONING_ARTIFACT
+            # (external data or LLM-generated — never authoritative by default)
+            payload['_source_classification'] = 'REASONING_ARTIFACT'
+            payload['_generated_by'] = 'web_retrieval'
+            payload['_verified'] = False
+            
             # Generate payload hash
             payload_json = json.dumps(payload, sort_keys=True)
             payload_hash = hashlib.sha256(payload_json.encode()).hexdigest()
             
             # Insert event
+            stream = 'web_retrieval'
             insert_query = sql.SQL("""
-                INSERT INTO events (stream, event_type, payload, created_at, payload_hash, projected_to_qdrant)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data, payload_hash, projected_to_qdrant)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """)
             
             cursor.execute(insert_query, (
-                'web_retrieval',
+                uuid.uuid4(),
                 event_type,
-                json.dumps(payload),
                 datetime.utcnow(),
+                uuid.uuid5(uuid.NAMESPACE_DNS, f"stream.{stream}"),
+                stream,
+                json.dumps(payload),
                 payload_hash,
                 False
             ))

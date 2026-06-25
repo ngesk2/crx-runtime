@@ -1,0 +1,124 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime
+runtime/
+tmp/
+cache/
+*.pid
+*.seed
+*.pid.lock
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Docker
+docker-data/
+volumes/
+*.tar
+*.tar.gz
+
+# Qdrant
+qdrant_storage/
+qdrant_data/
+qdrant_snapshots/
+
+# Ollama
+ollama_models/
+.ollama/
+
+# Reports
+reports/generated/
+reports/tmp/
+
+# Secrets
+secrets/
+keys/
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+secrets.yaml
+secrets.yml
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.hypothesis/
+
+# Documentation
+docs/_build/
+docs/.doctrees/
+
+# Misc
+*.bak
+*.backup
+*.tmp

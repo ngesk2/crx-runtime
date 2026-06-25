@@ -1,0 +1,38 @@
+source_document,target_document,dependency_type,dependency_reason,authority_class_source,authority_class_target
+vault/constitutional/immutable/CONSTITUTION.md,TRUTH_LAW.md,foundational,Root constitutional law defines truth primitives,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/constitutional/immutable/CONSTITUTION.md,layering_law.md,foundational,Layer boundaries defined in foundational constitution,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,EVENT_LAW.md,root_law,Event law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,IDENTITY_LAW.md,root_law,Identity law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,MUTATION_LAW.md,root_law,Mutation law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,TIME_LAW.md,root_law,Time law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,STATE_TRANSITION_LAW.md,root_law,State Transition law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,REPLAY_LAW.md,root_law,Replay law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,WITNESS_LAW.md,root_law,Witness law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,AUTHORITY_TAXONOMY_SPEC.md,root_law,Authority taxonomy derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,GOVERNANCE.md,root_law,Governance derives truth definition from truth law,CONSTITUTIONAL_LAW,GOVERNANCE_AUTHORITY
+TRUTH_LAW.md,retrieval_law.md,root_law,Retrieval law derives truth definition from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,source_of_truth_law.md,root_law,Source of truth law superseded by truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+TRUTH_LAW.md,invariant_law.md,root_law,Invariants derived from truth law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+EVENT_LAW.md,REPLAY_LAW.md,ontological,Replay depends on event classification,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+EVENT_LAW.md,STATE_TRANSITION_LAW.md,ontological,State transitions depend on event classification,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+EVENT_LAW.md,TIME_LAW.md,ontological,Time law depends on event ordering,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+EVENT_LAW.md,WITNESS_LAW.md,ontological,Witness depends on event classification,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+IDENTITY_LAW.md,WITNESS_LAW.md,ontological,Witness depends on identity determinism,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+IDENTITY_LAW.md,MUTATION_LAW.md,ontological,Mutation depends on identity for artifact reference,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+IDENTITY_LAW.md,retrieval_law.md,ontological,Retrieval depends on identity for artifact reference,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+REPLAY_LAW.md,IDENTITY_LAW.md,ontological,Identity depends on replay determinism,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+REPLAY_LAW.md,TIME_LAW.md,ontological,Time law depends on replay determinism,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+REPLAY_LAW.md,WITNESS_LAW.md,ontological,Witness depends on replay verification,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+STATE_TRANSITION_LAW.md,MUTATION_LAW.md,ontological,Mutation depends on state transition rules,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+AUTHORITY_TAXONOMY_SPEC.md,GOVERNANCE.md,ontological,Governance depends on authority taxonomy,CONSTITUTIONAL_LAW,GOVERNANCE_AUTHORITY
+AUTHORITY_TAXONOMY_SPEC.md,AGENT_CONSTITUTION.md,ontological,Agent constitution depends on authority taxonomy,CONSTITUTIONAL_LAW,AGENT_CONSTITUTION
+GOVERNANCE.md,AGENT_CONSTITUTION.md,governance,Agent constitution subordinate to governance,GOVERNANCE_AUTHORITY,AGENT_CONSTITUTION
+MUTATION_LAW.md,AGENT_CONSTITUTION.md,ontological,Agent constitution depends on mutation law,CONSTITUTIONAL_LAW,AGENT_CONSTITUTION
+vault/constitutional/immutable/IDENTITY_LAW.md,IDENTITY_LAW.md,duplicate,Canonical identity law in vault,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/constitutional/immutable/REPLAY_LAW.md,REPLAY_LAW.md,duplicate,Canonical replay law in vault,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/constitutional/immutable/WITNESS_LAW.md,WITNESS_LAW.md,duplicate,Canonical witness law in vault,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/laws/IDENTITY_LAW.md,IDENTITY_LAW.md,duplicate,Duplicate of canonical identity law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/laws/REPLAY_LAW.md,REPLAY_LAW.md,duplicate,Duplicate of canonical replay law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+vault/laws/WITNESS_LAW.md,WITNESS_LAW.md,duplicate,Duplicate of canonical witness law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+constitution/replay_law.md,REPLAY_LAW.md,duplicate,Duplicate of canonical replay law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW
+constitution/witness_law.md,WITNESS_LAW.md,duplicate,Duplicate of canonical witness law,CONSTITUTIONAL_LAW,CONSTITUTIONAL_LAW

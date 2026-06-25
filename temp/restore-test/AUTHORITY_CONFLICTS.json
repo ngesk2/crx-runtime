@@ -1,0 +1,69 @@
+{
+  "analysis_date": "2026-06-23T00:00:00Z",
+  "conflicts": [
+    {
+      "authority": "constitution",
+      "documents": [
+        "constitution/CONSTITUTION.md",
+        "constitutional/immutable/CONSTITUTION.md"
+      ],
+      "overlap": 1.0,
+      "hash": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+      "conflict_type": "EXACT_DUPLICATE",
+      "evidence": "Files are byte-for-byte identical",
+      "recommendation": "constitutional/immutable/CONSTITUTION.md is the canonical location per directory structure",
+      "status": "PENDING_HUMAN_APPROVAL"
+    },
+    {
+      "authority": "identity_law",
+      "documents": [
+        "constitutional/immutable/IDENTITY_LAW.md",
+        "laws/IDENTITY_LAW.md"
+      ],
+      "overlap": 1.0,
+      "hash": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b",
+      "conflict_type": "EXACT_DUPLICATE",
+      "evidence": "Files are byte-for-byte identical",
+      "recommendation": "constitutional/immutable/IDENTITY_LAW.md is the canonical location per directory structure",
+      "status": "PENDING_HUMAN_APPROVAL"
+    },
+    {
+      "authority": "replay_law",
+      "documents": [
+        "constitutional/immutable/REPLAY_LAW.md",
+        "laws/REPLAY_LAW.md"
+      ],
+      "overlap": 1.0,
+      "hash": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+      "conflict_type": "EXACT_DUPLICATE",
+      "evidence": "Files are byte-for-byte identical",
+      "recommendation": "constitutional/immutable/REPLAY_LAW.md is the canonical location per directory structure",
+      "status": "PENDING_HUMAN_APPROVAL"
+    },
+    {
+      "authority": "witness_law",
+      "documents": [
+        "constitutional/immutable/WITNESS_LAW.md",
+        "laws/WITNESS_LAW.md"
+      ],
+      "overlap": 1.0,
+      "hash": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+      "conflict_type": "EXACT_DUPLICATE",
+      "evidence": "Files are byte-for-byte identical",
+      "recommendation": "constitutional/immutable/WITNESS_LAW.md is the canonical location per directory structure",
+      "status": "PENDING_HUMAN_APPROVAL"
+    }
+  ],
+  "summary": {
+    "total_conflicts": 4,
+    "conflict_types": {
+      "EXACT_DUPLICATE": 4
+    },
+    "affected_authorities": [
+      "constitution",
+      "identity_law",
+      "replay_law",
+      "witness_law"
+    ]
+  }
+}

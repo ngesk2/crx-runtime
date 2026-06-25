@@ -19,6 +19,7 @@ import sys
 import logging
 from datetime import datetime
 from pathlib import Path
+import uuid
 from typing import Dict, List, Optional, Any
 import psycopg2
 from psycopg2.extras import Json
@@ -80,8 +81,8 @@ def emit_event(stream: str, event_type: str, payload: Dict[str, Any]) -> bool:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO events (stream, event_type, payload, created_at) VALUES (%s, %s, %s, %s)",
-                (stream, event_type, Json(payload), datetime.utcnow())
+                "INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data) VALUES (%s, %s, %s, %s, %s, %s)",
+                (uuid.uuid4(), event_type, datetime.utcnow(), uuid.uuid5(uuid.NAMESPACE_DNS, f"stream.{stream}"), stream, Json(payload))
             )
             conn.commit()
             cursor.close()

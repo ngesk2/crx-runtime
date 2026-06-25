@@ -1,0 +1,2 @@
+INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+VALUES (gen_random_uuid(), 'DOCUMENT_IMPORTED', NOW(), gen_random_uuid(), 'document', '{"title": "Test Document", "content": "This is a test document. It contains multiple paragraphs. The purpose is to test the constitutional pipeline. This should generate observations. Then claims should be generated. Then replay should execute. Then witness should be created. Then lineage should be created. Then projection should be created.", "source": "test"}'::jsonb);

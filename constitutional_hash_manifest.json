@@ -1,0 +1,128 @@
+{
+  "manifest_version": "1.0",
+  "manifest_type": "constitutional_hash_sovereignty",
+  "generated_date": "2026-06-24",
+  "purpose": "SHA256 hash sovereignty for constitutional kernel documents",
+  "kernel_documents": [
+    {
+      "document_id": "TRUTH_LAW",
+      "file_path": "constitution/TRUTH_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "6e3ee57fd969a50db97a4e408dbd3f97708b32b9c1d48ed626b4a76b5c079a48",
+      "kernel_position": "root_law",
+      "dependencies": [],
+      "dependents": ["EVENT_LAW", "IDENTITY_LAW", "MUTATION_LAW", "TIME_LAW", "STATE_TRANSITION_LAW", "REPLAY_LAW", "WITNESS_LAW", "AUTHORITY_TAXONOMY_SPEC", "GOVERNANCE", "retrieval_law", "source_of_truth_law", "invariant_law"]
+    },
+    {
+      "document_id": "EVENT_LAW",
+      "file_path": "constitution/EVENT_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "4765d8ee3c1d0aa8f796e174d3d3ae67210e74684d9d19731bdd76d4f68c306c",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW"],
+      "dependents": ["REPLAY_LAW", "STATE_TRANSITION_LAW", "TIME_LAW", "WITNESS_LAW"]
+    },
+    {
+      "document_id": "IDENTITY_LAW",
+      "file_path": "vault/constitutional/immutable/IDENTITY_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "e34fb6957484efe1ead5db864fbee127c07f408e99a2014b6396b1dd2dfa1577",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW", "REPLAY_LAW"],
+      "dependents": ["WITNESS_LAW", "MUTATION_LAW"]
+    },
+    {
+      "document_id": "MUTATION_LAW",
+      "file_path": "constitution/mutation_law.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "173a30dcb2e3a65102b89380b54a6991c9e833e9030dfb4e48e94fb399af88ed",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW", "STATE_TRANSITION_LAW"],
+      "dependents": ["AGENT_CONSTITUTION"]
+    },
+    {
+      "document_id": "TIME_LAW",
+      "file_path": "constitution/TIME_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "a76941589ab23b5fcdc0d68f8aa7860bd9f4748d892d8e659cef3166c3b70d9d",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW", "EVENT_LAW", "REPLAY_LAW"],
+      "dependents": []
+    },
+    {
+      "document_id": "STATE_TRANSITION_LAW",
+      "file_path": "constitution/STATE_TRANSITION_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "29e9ca269221232368ce80aaba0e431d1911713f7b001dcccf678ffd4045d07d",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW", "EVENT_LAW"],
+      "dependents": ["MUTATION_LAW"]
+    },
+    {
+      "document_id": "REPLAY_LAW",
+      "file_path": "vault/constitutional/immutable/REPLAY_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW"],
+      "dependents": ["IDENTITY_LAW", "TIME_LAW", "WITNESS_LAW"]
+    },
+    {
+      "document_id": "WITNESS_LAW",
+      "file_path": "vault/constitutional/immutable/WITNESS_LAW.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FROZEN",
+      "sha256": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW", "EVENT_LAW", "IDENTITY_LAW", "REPLAY_LAW"],
+      "dependents": ["CONSTITUTIONAL_SNAPSHOT_SPEC"]
+    },
+    {
+      "document_id": "AUTHORITY_TAXONOMY_SPEC",
+      "file_path": "AUTHORITY_TAXONOMY_SPEC.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "CONSTITUTIONAL_FREEZE",
+      "sha256": "1a7873771e11b92187c50db087f5ee89d6e9d38fa6e3e4f4d1de6f363e95603c",
+      "kernel_position": "ontological",
+      "dependencies": ["TRUTH_LAW"],
+      "dependents": ["GOVERNANCE", "AGENT_CONSTITUTION"]
+    },
+    {
+      "document_id": "CONSTITUTION",
+      "file_path": "vault/constitutional/immutable/CONSTITUTION.md",
+      "authority_class": "CONSTITUTIONAL_LAW",
+      "status": "FOUNDATIONAL",
+      "sha256": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+      "kernel_position": "foundational",
+      "dependencies": [],
+      "dependents": ["TRUTH_LAW", "layering_law"]
+    }
+  ],
+  "hash_sovereignty": {
+    "algorithm": "SHA256",
+    "encoding": "hexadecimal_lowercase",
+    "verification_required": true,
+    "amendment_requires_hash_update": true,
+    "hash_collision_protection": "deterministic_verification"
+  },
+  "kernel_root_hash": {
+    "description": "Merkle root of all kernel document hashes (placeholder - requires implementation)",
+    "computed": false,
+    "implementation_required": true
+  },
+  "metadata": {
+    "total_kernel_documents": 10,
+    "frozen_documents": 9,
+    "foundational_documents": 1,
+    "constitutional_freeze_documents": 1,
+    "audit_status": "COMPLETE",
+    "next_phase": "Phase 5 - Freeze Registry Design"
+  }
+}

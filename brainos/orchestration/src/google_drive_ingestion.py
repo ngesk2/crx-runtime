@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import hashlib
 import json
+import uuid
 
 # Google Drive API imports
 try:
@@ -115,16 +116,19 @@ class GoogleDriveIngestion:
             payload_hash = hashlib.sha256(payload_json.encode()).hexdigest()
             
             # Insert event
+            stream = 'google_drive'
             insert_query = sql.SQL("""
-                INSERT INTO events (stream, event_type, payload, created_at, payload_hash, projected_to_qdrant)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data, payload_hash, projected_to_qdrant)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """)
             
             cursor.execute(insert_query, (
-                'google_drive',
+                uuid.uuid4(),
                 event_type,
-                json.dumps(payload),
                 datetime.utcnow(),
+                uuid.uuid5(uuid.NAMESPACE_DNS, f"stream.{stream}"),
+                stream,
+                json.dumps(payload),
                 payload_hash,
                 False
             ))

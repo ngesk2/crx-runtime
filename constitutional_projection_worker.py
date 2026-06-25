@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""
+Constitutional Projection Worker
+Processes LINEAGE_CREATED events and projects to Qdrant.
+Emits PROJECTION_CREATED events.
+"""
+
+import os
+import psycopg2
+import json
+import uuid
+from datetime import datetime
+from typing import Dict, Any
+
+def get_postgres_config() -> Dict[str, Any]:
+    """Get PostgreSQL configuration from environment variables"""
+    return {
+        "host": os.getenv("POSTGRES_HOST", "localhost"),
+        "port": int(os.getenv("POSTGRES_PORT", "5432")),
+        "database": os.getenv("POSTGRES_DB", "crx_runtime"),
+        "user": os.getenv("POSTGRES_USER", "postgres"),
+        "password": os.getenv("POSTGRES_PASSWORD", "postgres")
+    }
+
+
+class ConstitutionalProjectionWorker:
+    """Constitutional Projection Worker"""
+    
+    def __init__(self, postgres_config: Dict[str, Any], qdrant_url: str = "http://localhost:6333"):
+        self.postgres_config = postgres_config
+        self.qdrant_url = qdrant_url
+        
+    def get_connection(self):
+        """Get PostgreSQL connection"""
+        return psycopg2.connect(**self.postgres_config)
+    
+    def project_to_qdrant(self, document_id: str, lineage_chain: list) -> bool:
+        """Project document to Qdrant (simplified - stores metadata only)"""
+        # For now, this is a placeholder for Qdrant projection
+        # In a full implementation, this would:
+        # 1. Connect to Qdrant
+        # 2. Generate embeddings
+        # 3. Upsert points to constitutional_memory collection
+        
+        print(f"Projecting document {document_id} to Qdrant (placeholder)")
+        return True
+    
+    def store_projection(self, aggregate_id: str, event_id: str, projection_data: Dict[str, Any]):
+        """Store projection in projections table"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            INSERT INTO projections (projection_id, projection_type, projection_name, source_aggregate_id, projection_data, last_event_id, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            str(uuid.uuid4()),
+            "QDRANT_PROJECTION",
+            f"aggregate_{aggregate_id}",
+            aggregate_id,
+            json.dumps(projection_data),
+            event_id,
+            datetime.utcnow()
+        ))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+    
+    def emit_projection_created_event(self, event_id: str, aggregate_id: str, document_id: str, projection_data: Dict[str, Any]):
+        """Emit PROJECTION_CREATED event"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        new_event_id = str(uuid.uuid4())
+        
+        cursor.execute("""
+            INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            new_event_id,
+            "PROJECTION_CREATED",
+            datetime.utcnow(),
+            aggregate_id,
+            "DOCUMENT",
+            json.dumps({
+                "document_id": document_id,
+                "source_event_id": event_id,
+                "projection_type": "QDRANT_PROJECTION",
+                "projection_data": projection_data
+            })
+        ))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return new_event_id
+    
+    def handle_lineage_created(self, event: Dict[str, Any]):
+        """Handle LINEAGE_CREATED event"""
+        event_id = event["event_id"]
+        aggregate_id = event["aggregate_id"]
+        event_data = event["event_data"]
+        document_id = event_data.get("document_id")
+        lineage_chain = event_data.get("lineage_chain", [])
+        
+        if not aggregate_id:
+            print("No aggregate_id in event")
+            return
+        
+        print(f"Projecting aggregate: {aggregate_id} (document_id: {document_id})")
+        
+        # Project to Qdrant
+        projected = self.project_to_qdrant(aggregate_id, lineage_chain)
+        
+        if projected:
+            projection_data = {
+                "aggregate_id": aggregate_id,
+                "document_id": document_id,
+                "lineage_chain_length": len(lineage_chain),
+                "projected_at": datetime.utcnow().isoformat()
+            }
+            
+            # Store projection
+            self.store_projection(aggregate_id, event_id, projection_data)
+            
+            # Emit PROJECTION_CREATED event
+            self.emit_projection_created_event(event_id, aggregate_id, aggregate_id, projection_data)
+            
+            print(f"Projection created for aggregate {aggregate_id}")
+        else:
+            print(f"Projection failed for aggregate {aggregate_id}")
+
+
+def main():
+    """Main execution"""
+    postgres_config = get_postgres_config()
+    
+    worker = ConstitutionalProjectionWorker(postgres_config)
+    
+    # Test with a sample event
+    sample_event = {
+        "event_id": str(uuid.uuid4()),
+        "event_type": "LINEAGE_CREATED",
+        "timestamp": datetime.utcnow().isoformat(),
+        "aggregate_id": "test-doc-001",
+        "aggregate_type": "DOCUMENT",
+        "event_data": {
+            "document_id": "test-doc-001",
+            "source_event_id": str(uuid.uuid4()),
+            "lineage_chain": [
+                {"event_id": str(uuid.uuid4()), "event_type": "DOCUMENT_IMPORTED"},
+                {"event_id": str(uuid.uuid4()), "event_type": "OBSERVATION_CREATED"},
+                {"event_id": str(uuid.uuid4()), "event_type": "CLAIM_GENERATED"}
+            ],
+            "chain_length": 3
+        }
+    }
+    
+    worker.handle_lineage_created(sample_event)
+    print("Constitutional projection worker test complete")
+
+
+if __name__ == "__main__":
+    main()

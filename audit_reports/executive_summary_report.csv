@@ -1,0 +1,45 @@
+Category,Item,Detail,Size_GiB,Priority,Risk,Action
+USER_STORAGE,AppData_Local_Docker,"C:\Users\nolan\AppData\Local\Docker",77.74,CRITICAL,Contains overlay2,Inspect; prune unused images/volumes
+USER_STORAGE,AppData_Local_Temp,"C:\Users\nolan\AppData\Local\Temp",16.74,HIGH,Mostly safe to clean,Review; selective cleanup
+USER_STORAGE,AppData_Local_Google,"C:\Users\nolan\AppData\Local\Google",13.63,HIGH,Chrome caches (87k files),Clear browser caches
+USER_STORAGE,Videos,"C:\Users\nolan\Videos",27.57,HIGH,Media files (27k files),Archive to external storage
+USER_STORAGE,AppData_Local,"C:\Users\nolan\AppData\Local",126.84,CRITICAL,Aggregate; 300k files,Deep audit required (see breakdown)
+USER_STORAGE,AppData_Local_Programs,"C:\Users\nolan\AppData\Local\Programs",4.14,MEDIUM,winget packages,Review installed packages
+USER_STORAGE,AppData_Local_wsl,"C:\Users\nolan\AppData\Local\wsl",3.56,MEDIUM,WSL disk images,Compact WSL VHDX
+USER_STORAGE,AppData_Local_Microsoft,"C:\Users\nolan\AppData\Local\Microsoft",2.61,MEDIUM,System caches,Review
+USER_STORAGE,AppData_Local_hermes,"C:\Users\nolan\AppData\Local\hermes",2.55,MEDIUM,React Native cache (112k files),Safe to clear
+USER_STORAGE,AppData_Local_Packages,"C:\Users\nolan\AppData\Local\Packages",1.93,MEDIUM,Windows Store apps,Review
+USER_STORAGE,Downloads,"C:\Users\nolan\Downloads",3.63,MEDIUM,Only 9 files but 3.6 GB,Check for large installers
+DEVELOPER_BLOAT,npm_cache,"C:\Users\nolan\AppData\Local\npm-cache",0.79,HIGH,813 MB npm cache,npm cache clean --force
+DEVELOPER_BLOAT,pnpm_store,"C:\Users\nolan\AppData\Local\pnpm",0.18,HIGH,pnpm store 182 MB,pnpm store prune
+DEVELOPER_BLOAT,venv,"C:\Users\nolan\PING\.venv",0.10,MEDIUM,101 MB Python venv,Recreate if needed
+DEVELOPER_BLOAT,node_modules,"C:\Users\nolan\PING\node_modules",0.03,LOW,33 MB,npm prune
+DEVELOPER_BLOAT,pip_cache,"C:\Users\nolan\AppData\Local\pip",0.03,LOW,32 MB pip cache,pip cache purge
+DEVELOPER_BLOAT,pycache,"C:\Users\nolan\PING project __pycache__",0.01,LOW,Aggregate ~10 MB across 50+ dirs,Can be safely deleted
+REPO_DUPLICATION,PING_vs_CRX_REMOTE,"Both clone github.com/ngesk2/crx-runtime.git",263.64,HIGH,Complete repo duplication,PING has 263 MB; CRX_REMOTE has 42 MB
+REPO_DUPLICATION,PING_submodules,"PING/runtime nested git (same remote)",39.38,MEDIUM,Submodule duplicates parent,Fix submodule config
+REPO_DUPLICATION,PING_knowledge,"PING/knowledge - no remote (1.59 MB)",1.59,LOW,Orphan local repo,Assess for remote push
+REPO_DUPLICATION,PING_vos,"PING/vos - no remote (0.23 MB)",0.23,LOW,Tiny orphan repo,Assess lineage
+DOCKER_WASTE,Stopped_Containers,"vault, crx-gateway, crx-ollama-worker, crx-ui-next",13.67,CRITICAL,99% reclaimable (13.67 GB of 13.78 GB),docker container prune
+DOCKER_WASTE,Unused_Images,"various - 956 MB reclaimable",0.96,HIGH,2% of image storage,Review unused images
+DOCKER_WASTE,Build_Cache,"159 cache entries",2.65,HIGH,55% reclaimable,docker builder prune
+DOCKER_WASTE,Orphan_Volumes,"Unknown status - 18.56 GB reclaimable",18.56,CRITICAL,45% of volume storage (40.51 GB total),docker volume prune
+DOCKER_WASTE,Duplicate_OpenWebUI,"open-webui:latest AND open-webui:main (same image ID)",13.46,HIGH,6.73 GB each - SAME image,Remove duplicate tag
+OLLAMA_WASTE,qwen2.5-coder_7b,"Duplicate capability vs 14B variant",4.7,MEDIUM,qwen2.5 models overlap,Unused if 14B suffices
+AI_CACHE_WASTE,cache,"C:\Users\nolan\.cache",1.41,MEDIUM,29k files - general cache,Review contents
+KNOWLEDGE_INFRA,Empty_Projections,"projections table has 0 records",0,CRITICAL,15 events exist but 0 projected,Restart projection worker
+KNOWLEDGE_INFRA,Empty_Lineage,"lineage table has 0 records",0,HIGH,Traceability gap,Check lineage pipeline
+KNOWLEDGE_INFRA,Empty_Citations,"citations table has 0 records",0,HIGH,Citation chain broken,Check citation pipeline
+KNOWLEDGE_INFRA,Empty_Claims,"claims table has 0 records",0,HIGH,Claim extraction offline,Check claim worker
+KNOWLEDGE_INFRA,Empty_Topics,"topics table has 0 records",0,MEDIUM,No topic modeling,Check topic worker
+KNOWLEDGE_INFRA,Empty_Relationships,"relationships table has 0 records",0,MEDIUM,Knowledge graph disconnected,Check relationship builder
+RECOMMENDATION,Quick_Wins_1,Docker container prune - 13.67 GB,0,CRITICAL,Zero risk stopped containers,docker container prune
+RECOMMENDATION,Quick_Wins_2,Docker volume prune - ~18 GB,0,CRITICAL,Orphan volumes safe to prune,docker volume prune
+RECOMMENDATION,Quick_Wins_3,Build cache prune - 2.65 GB,0,HIGH,Safe reclaimable,docker builder prune
+RECOMMENDATION,Quick_Wins_4,npm cache clean - 0.79 GB,0,HIGH,No side effects,npm cache clean --force
+RECOMMENDATION,Quick_Wins_5,Remove duplicate OpenWebUI tag - 6.73 GB,0,HIGH,Same image ID for both tags,Remove one tag
+RECOMMENDATION,Deep_Clean_1,Temp directory review - 16.74 GB,0,HIGH,Review before deleting,Manual review needed
+RECOMMENDATION,Deep_Clean_2,Google/Chrome caches - 13.63 GB,0,MEDIUM,May lose session state,browser cleanup
+RECOMMENDATION,Deep_Clean_3,Repository dedup (CRX_REMOTE vs PING),0,MEDIUM,263 MB duplicate,Consolidate to one clone
+RECOMMENDATION,Deep_Clean_4,WSL disk compact - 3.56 GB,0,LOW,Complex process,wsl --shutdown then optimize
+RECOMMENDATION,Deep_Clean_5,Docker image review - 39.79 GB total,0,MEDIUM,Selective removal needed,Audit image necessity

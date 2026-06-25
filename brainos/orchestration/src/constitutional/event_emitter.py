@@ -9,6 +9,7 @@ to the constitutional event log without modifying runtime behavior.
 
 import os
 import json
+import uuid
 import logging
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -49,21 +50,23 @@ def get_postgres_connection():
         return None
 
 
-def emit_event(stream: str, event_type: str, payload: Dict[str, Any]) -> bool:
+def emit_event(stream: str, event_type: str, payload: Dict[str, Any], causation_id: Optional[str] = None, correlation_id: Optional[str] = None) -> bool:
     """
-    Emit an event to the constitutional event log.
+    Emit an event to the constitutional event log (CQRS schema).
     
     This function:
-    - Inserts into PostgreSQL
+    - Inserts into PostgreSQL using CQRS columns
     - Never modifies runtime behavior
     - Never throws fatal exceptions
     - Fails safely
     - Logs failures
     
     Args:
-        stream: The event stream (e.g., 'rss', 'yahoo', 'ollama', 'gateway', 'replay', 'storage')
-        event_type: The type of event (e.g., 'ARTICLE_CREATED', 'INFERENCE_REQUEST')
-        payload: The event payload as a dictionary
+        stream: The event stream (mapped to aggregate_type)
+        event_type: The type of event
+        payload: The event payload as a dictionary (stored as event_data)
+        causation_id: Optional UUID of the event that caused this one
+        correlation_id: Optional UUID for correlating related events
     
     Returns:
         bool: True if event was emitted successfully, False otherwise
@@ -93,25 +96,33 @@ def emit_event(stream: str, event_type: str, payload: Dict[str, Any]) -> bool:
             return False
         
         try:
-            # Insert event
+            # Generate deterministic aggregate_id from stream name
+            aggregate_id = uuid.uuid5(uuid.NAMESPACE_DNS, f"stream.{stream}")
+            event_id = uuid.uuid4()
+            now = datetime.utcnow()
+            
             cursor = conn.cursor()
             query = sql.SQL("""
-                INSERT INTO events (stream, event_type, payload, created_at)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data, causation_id, correlation_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """)
             
             cursor.execute(query, (
-                stream,
+                event_id,
                 event_type,
+                now,
+                aggregate_id,
+                stream,
                 Json(payload),
-                datetime.utcnow()
+                causation_id,
+                correlation_id
             ))
             
             conn.commit()
             cursor.close()
             conn.close()
             
-            logger.info(f"Event emitted: stream={stream}, event_type={event_type}")
+            logger.info(f"Event emitted: event_id={event_id}, stream={stream}, event_type={event_type}")
             return True
             
         except Exception as e:
@@ -127,7 +138,7 @@ def emit_event(stream: str, event_type: str, payload: Dict[str, Any]) -> bool:
         return False
 
 
-def emit_event_sync(stream: str, event_type: str, payload: Dict[str, Any]) -> bool:
+def emit_event_sync(stream: str, event_type: str, payload: Dict[str, Any], causation_id: Optional[str] = None, correlation_id: Optional[str] = None) -> bool:
     """
     Synchronous wrapper for emit_event.
     
@@ -137,11 +148,13 @@ def emit_event_sync(stream: str, event_type: str, payload: Dict[str, Any]) -> bo
         stream: The event stream
         event_type: The type of event
         payload: The event payload
+        causation_id: Optional UUID of the event that caused this one
+        correlation_id: Optional UUID for correlating related events
     
     Returns:
         bool: True if event was emitted successfully, False otherwise
     """
-    return emit_event(stream, event_type, payload)
+    return emit_event(stream, event_type, payload, causation_id, correlation_id)
 
 
 # Supported streams
