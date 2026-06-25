@@ -6,20 +6,27 @@ Emits OBSERVATION_CREATED events.
 """
 
 import os
+import sys
 import psycopg2
 import json
 import uuid
 from datetime import datetime
 from typing import Dict, Any
+from pathlib import Path
+
+# Add constitutional path for SecretAdapter
+sys.path.append(str(Path(__file__).parent / 'runtime' / 'constitutional'))
+from secret_adapter import get_secret_adapter
 
 def get_postgres_config() -> Dict[str, Any]:
-    """Get PostgreSQL configuration from environment variables"""
+    """Get PostgreSQL configuration from SecretAdapter and environment variables"""
+    secret_adapter = get_secret_adapter()
     return {
         "host": os.getenv("POSTGRES_HOST", "localhost"),
         "port": int(os.getenv("POSTGRES_PORT", "5432")),
         "database": os.getenv("POSTGRES_DB", "crx_runtime"),
         "user": os.getenv("POSTGRES_USER", "postgres"),
-        "password": os.getenv("POSTGRES_PASSWORD", "postgres")
+        "password": secret_adapter.get_postgres_password() or os.getenv("POSTGRES_PASSWORD", "postgres")
     }
 
 

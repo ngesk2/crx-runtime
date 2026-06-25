@@ -13,6 +13,7 @@ Repository state must be reconstructible from events alone.
 """
 
 import os
+import sys
 import json
 import hashlib
 import uuid
@@ -21,6 +22,10 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import psycopg2
 from psycopg2.extras import Json
+
+# Add constitutional path for SecretAdapter
+sys.path.append(str(Path(__file__).parent / 'runtime' / 'constitutional'))
+from secret_adapter import get_secret_adapter
 
 
 class RepositoryScanner:
@@ -202,12 +207,14 @@ def main():
     # Configuration
     repository_root = os.getenv("REPOSITORY_ROOT", "C:\\PING\\repositories\\drive")
     
+    # Constitutional: Use SecretAdapter for secret access
+    secret_adapter = get_secret_adapter()
     postgres_config = {
         "host": os.getenv("POSTGRES_HOST", "localhost"),
         "port": int(os.getenv("POSTGRES_PORT", "5432")),
         "database": os.getenv("POSTGRES_DB", "crx_runtime"),
         "user": os.getenv("POSTGRES_USER", "postgres"),
-        "password": os.getenv("POSTGRES_PASSWORD", "postgres")
+        "password": secret_adapter.get_postgres_password() or os.getenv("POSTGRES_PASSWORD", "postgres")
     }
     
     # Create scanner
