@@ -23,9 +23,7 @@ from typing import Dict, List, Optional
 import psycopg2
 from psycopg2.extras import Json
 
-# Add constitutional path for shared configuration
-sys.path.append(str(Path(__file__).parent / 'runtime'))
-from configuration import get_postgres_config
+from runtime.configuration import get_postgres_config
 
 
 class RepositoryScanner:

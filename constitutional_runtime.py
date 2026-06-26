@@ -19,9 +19,7 @@ from witness_worker import WitnessWorker
 from lineage_worker import LineageWorker
 from constitutional_projection_worker import ConstitutionalProjectionWorker
 
-# Add constitutional path for shared configuration
-sys.path.append(str(Path(__file__).parent / 'runtime'))
-from configuration import get_postgres_config
+from runtime.configuration import get_postgres_config
 
 
 class ConstitutionalRuntime:
