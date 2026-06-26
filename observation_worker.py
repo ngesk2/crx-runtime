@@ -14,9 +14,7 @@ from datetime import datetime
 from typing import Dict, Any
 from pathlib import Path
 
-# Add constitutional path for shared configuration
-sys.path.append(str(Path(__file__).parent / 'runtime'))
-from configuration import get_postgres_config
+from runtime.configuration import get_postgres_config
 
 
 class ObservationWorker:

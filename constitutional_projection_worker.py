@@ -14,9 +14,7 @@ from datetime import datetime
 from typing import Dict, Any
 from pathlib import Path
 
-# Add constitutional path for shared configuration
-sys.path.append(str(Path(__file__).parent / 'runtime'))
-from configuration import get_configuration
+from runtime.configuration import get_configuration
 
 
 class ConstitutionalProjectionWorker:
@@ -132,7 +130,7 @@ class ConstitutionalProjectionWorker:
 
 def main():
     """Main execution"""
-    from configuration import get_postgres_config
+    from runtime.configuration import get_postgres_config
     postgres_config = get_postgres_config()
     
     worker = ConstitutionalProjectionWorker(postgres_config)
