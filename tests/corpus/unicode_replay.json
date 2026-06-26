@@ -1,0 +1,31 @@
+{
+  "name": "unicode_replay",
+  "description": "Event with unicode payload",
+  "event_stream": [
+    {
+      "event_id": "evt-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-001",
+        "artifact_content": "Hello 世界 🌍 Привет مرحبا"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "expected_vectors": {
+    "canonical_bytes": "W3siYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDEiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6IkhlbGxvIOS4lueVjCDwn4yNINCf0YDQuNCy0LXRgiDZhdix2K3YqNinIiwiYXJ0aWZhY3RfaWQiOiJhcnRpZmFjdC0wMDEifSwicG9saWN5X3ZlcnNpb24iOiIxLjAiLCJyZXBsYXlfdmVyc2lvbiI6IjEuMCIsInNjaGVtYV92ZXJzaW9uIjoiMS4wIiwidGltZXN0YW1wIjoiMjAyNi0wNi0wN1QwMDowMDowMFoifV0",
+    "fingerprint": "sha256:773f603796261575006d923ac85a111392e406e94f0f939722a175cb38198f3f",
+    "witness_root": "ac5f03c19c70197c7672f026bcd5da78e5393c3af50bc403f1cf7be59aa462f4",
+    "leaf_count": 14,
+    "tree_height": 4,
+    "state_version": "1.0",
+    "artifact_count": 1
+  }
+}
