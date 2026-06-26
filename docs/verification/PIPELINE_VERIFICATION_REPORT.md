@@ -487,14 +487,32 @@ This report documents the verification of the constitutional runtime pipeline to
 
 ## Next Steps
 
-1. **Inspect Runtime Submodule:** Replay kernel and Mission Control may be in runtime submodule
-2. **Runtime Verification:** Run all workers and verify determinism
-3. **Add Missing Components:** Witness schema, authority verification, embedding guard
-4. **Integration Tests:** Add integration tests for worker chains
-5. **Re-run Verification:** Re-run this verification after runtime tests
+1. **Runtime Verification:** Run all workers and verify determinism
+2. **Replay Determinism Tests:** Run replay multiple times and verify byte-for-byte identical outputs
+3. **Clarify Python-TypeScript Integration:** Determine how Python workers integrate with TypeScript replay kernel
+4. **Add Witness Schema:** Add dedicated witness table to canonical state schema
+5. **Add Authority Verification:** Implement explicit authority verification mechanism
+6. **Add Embedding Guard:** Implement explicit guard against embeddings becoming authority
+7. **Integration Tests:** Add integration tests for worker chains
+8. **Re-run Verification:** Re-run this verification after runtime tests
+
+---
+
+## Test Infrastructure Found
+
+**Constitutional Primitives Test Suite:** ✅ PRESENT
+- Location: `runtime/replay/__tests__/constitutional_primitives.test.ts`
+- Features:
+  - Canonical key ordering test
+  - Nested ordering test
+  - Array stability test
+  - Hash determinism test
+  - Regression hash test
+- Framework: Vitest
+- Status: Unit tests present, but runtime verification required
 
 ---
 
 **Report Generated:** 2026-06-25
 **Sprint:** Pipeline Verification
-**Status:** IN PROGRESS
+**Status:** STATIC VERIFICATION COMPLETE, RUNTIME VERIFICATION REQUIRED
