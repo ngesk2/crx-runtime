@@ -77,7 +77,11 @@ SecretAuthority
 Vault
 
         ↓
-ConfigurationStore
+ConfigurationProvider
+        ├── EnvironmentProvider
+        ├── VaultProvider
+        ├── FileProvider
+        └── DatabaseProvider
 ```
 
 ### Single Authority for All Configuration
@@ -96,13 +100,30 @@ ConfigurationStore
 
 ### ConfigurationStore
 
-**ConfigurationStore** should provide:
-- Centralized configuration management
-- Environment-specific overrides
-- Configuration validation
-- Type safety
-- Runtime reconfiguration support
-- Audit trail for configuration changes
+**ConfigurationStore** should be implemented as an interface with multiple providers:
+
+```
+ConfigurationAuthority
+        ↓
+ConfigurationProvider
+        ├── EnvironmentProvider
+        ├── VaultProvider
+        ├── FileProvider
+        └── DatabaseProvider
+```
+
+**ConfigurationAuthority owns precedence rules:**
+1. Runtime overrides
+2. Configuration store
+3. Deployment defaults
+4. Constitutional defaults
+
+**Benefits:**
+- One authority while allowing different backing implementations
+- Business logic unchanged when switching providers
+- Flexible deployment strategies (local, Docker, production)
+- Easy testing with mock providers
+- Clear configuration hierarchy
 
 ---
 
@@ -115,8 +136,11 @@ ConfigurationStore
 - ConfigurationAuthority delegates secrets to SecretAuthority
 
 ### Phase 2: ConfigurationStore Implementation
-- Implement ConfigurationStore (could be Vault KV, database, or file-based)
-- Migrate `.env.base` to ConfigurationStore
+- Implement ConfigurationProvider interface
+- Implement EnvironmentProvider (current .env.base)
+- Implement VaultProvider (for production)
+- Implement FileProvider (for local development)
+- Define precedence rules in ConfigurationAuthority
 - Add configuration validation
 - Add configuration change audit trail
 
@@ -131,7 +155,13 @@ ConfigurationStore
 - ConfigurationAuthority constructs VaultConfig and passes to SecretAuthority
 - Eliminates final hidden environment dependency
 
-### Phase 5: Runtime Reconfiguration
+### Phase 5: SecretAdapter → SecretAuthority Renaming
+- Rename SecretAdapter to SecretAuthority
+- Reflects constitutional role as authority, not adapter
+- Adapter implies translation; Authority implies ownership
+- Once dependency injection complete, SecretAuthority exists solely as constitutional source of credential retrieval
+
+### Phase 6: Runtime Reconfiguration
 - Add hot-reload support for configuration changes
 - Add configuration change notifications
 - Add configuration rollback support
@@ -221,10 +251,11 @@ ConfigurationStore
 - No direct os.getenv calls in business logic
 - No direct os.getenv calls in configuration module
 - ConfigurationAuthority delegates secrets to SecretAuthority
-- ConfigurationAuthority reads non-secrets from ConfigurationStore
+- ConfigurationAuthority reads non-secrets from ConfigurationProvider interface
 - Configuration changes are audited
 - Configuration is validated before use
 - SecretAdapter receives VaultConfig via dependency injection (no internal environment construction)
+- SecretAdapter renamed to SecretAuthority (reflects constitutional role)
 
 ---
 
@@ -240,15 +271,15 @@ ConfigurationStore
 
 ## Constitutional Maturity Assessment
 
-| Area | Status | Score | Notes |
-|------|--------|-------|-------|
-| Secret Authority | ✅ Good | 95% | All secrets flow through SecretAdapter, improved error handling, PermissionError on auth failures. Remaining: SecretAdapter still constructs VaultConfig from environment internally. |
-| Configuration Authority | ⚠️ Partial | 75% | Secrets centralized, but configuration split between SecretAdapter and os.getenv. Violates single authority principle. |
-| Import Authority | ✅ Complete | 100% | Removed sys.path.append drift, all imports use proper package paths, no hidden runtime import behavior. |
-| Deployment Authority | ✅ Good | 90% | Docker Compose consolidation complete, canonical environment file established, all services use env_file injection. |
-| Runtime Determinism Impact | ✅ Low Risk | Very Low | Configuration changes do not affect replay determinism, SecretAdapter fallback behavior is consistent. |
+| Area | Phase | Notes |
+|------|-------|-------|
+| Secret Authority | Mature | All secrets flow through SecretAdapter, improved error handling, PermissionError on auth failures. Remaining: SecretAdapter still constructs VaultConfig from environment internally. |
+| Configuration Authority | Transitional | Secrets centralized, but configuration split between SecretAdapter and os.getenv. Violates single authority principle. |
+| Import Authority | Complete | Removed sys.path.append drift, all imports use proper package paths, no hidden runtime import behavior. |
+| Deployment Authority | Mature | Docker Compose consolidation complete, canonical environment file established, all services use env_file injection. |
+| Runtime Determinism | Stable | Configuration changes do not affect replay determinism, SecretAdapter fallback behavior is consistent. |
 
-**Overall Constitutional Maturity: 87%**
+**Overall Constitutional Maturity: Transitional Phase**
 
 ---
 
@@ -302,3 +333,14 @@ secret_adapter = SecretAdapter(config=vault_config)
 - Clear separation of concerns
 - Easier testing (mock VaultConfig without environment)
 - Consistent with constitutional authority hierarchy
+
+**Resulting Architecture (Post-Dependency Injection):**
+```
+ConfigurationAuthority
+      ↓
+VaultConfig
+      ↓
+SecretAuthority
+```
+
+This makes SecretAuthority almost entirely deterministic - it receives its configuration rather than constructing it.
