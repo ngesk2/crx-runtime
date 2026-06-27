@@ -1,0 +1,44 @@
+ReplayAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  implementation:
+    - runtime/replay/**
+  invariants:
+    - deterministic
+    - canonical
+
+CapabilityAuthority:
+  owner: runtime/kernel
+  specification: specs/capability
+  implementation:
+    - runtime/capability/**
+  invariants:
+    - capability-flow
+    - delegation-safe
+
+GovernanceAuthority:
+  owner: runtime/kernel
+  specification: specs/governance
+  implementation:
+    - runtime/governance/**
+  invariants:
+    - authority-singular
+    - replay-visible
+
+ConstitutionalIRAuthority:
+  owner: runtime/kernel
+  specification: specs/constitutional-ir
+  implementation:
+    - runtime/constitution/**
+  invariants:
+    - kernel-owned
+    - replay-visible
+
+CanonicalHashAuthority:
+  owner: runtime/kernel
+  specification: specs/hashing
+  implementation:
+    - runtime/hash/**
+  invariants:
+    - canonical
+    - deterministic

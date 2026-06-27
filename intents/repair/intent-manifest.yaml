@@ -1,0 +1,24 @@
+intent: repair
+mission: "Plan and apply constitutional repairs to violated code."
+authority: RepairAuthority
+capabilities:
+  - ViolationDetection
+  - RepairPlanning
+  - EditGeneration (via ts-morph)
+owns:
+  - constitutional-compiler/repair/automatic-repair-engine.ts
+consumes:
+  - RuleEngine
+  - EvidenceStore
+  - ConstitutionalIR
+produces:
+  - RepairPlan
+  - EditedSource (via ts-morph)
+specifications:
+  - specs/repair-planner
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+  - "Repair planner plans edits; ts-morph executes them (per Wave 1 charter)"
+status: implemented

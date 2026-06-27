@@ -1,0 +1,24 @@
+intent: repository
+mission: "Provide constitutional event storage and retrieval."
+authority: RepositoryAuthority
+capabilities:
+  - EventPersistence
+  - EventRetrieval
+  - StreamManagement
+owns:
+  - runtime/kernel/repository/IRepositoryAuthority.ts (interface only)
+consumes:
+  - IdentityAuthority
+  - CanonicalHash
+produces:
+  - EventStream
+  - StoredEvent
+specifications:
+  - specs/repository-authority
+adr: []
+tests: []
+evidence:
+  - "PROVEN — interface only. No concrete implementation."
+  - "De facto: runtime/adapters/postgres_event_store.ts"
+status: missing_implementation
+action: "Implement concrete RepositoryAuthority in kernel."

@@ -1,0 +1,22 @@
+intent: execution
+mission: "Provide deterministic execution context for constitutional operations."
+authority: ExecutionContextBuilder
+capabilities:
+  - ContextConstruction
+  - DeterministicTime
+  - ExecutionScope
+owns:
+  - runtime/kernel/execution/ExecutionContextBuilder.ts
+  - runtime/kernel/execution/CanonicalClock.ts
+consumes:
+  - IdentityAuthority
+produces:
+  - ExecutionContext
+specifications:
+  - specs/execution-context
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in kernel"
+  - "35 consumers of CanonicalClock singleton"
+status: mostly_intact

@@ -1,0 +1,12 @@
+# CPU Profile Overrides
+# Usage: docker compose --profile cpu up
+
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices: []
+    runtime: runc
+    environment:
+      - OLLAMA_NUM_GPU=0

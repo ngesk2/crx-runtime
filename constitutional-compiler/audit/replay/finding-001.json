@@ -1,0 +1,9 @@
+{
+  "id": "REPLAY-001",
+  "classification": "Supported",
+  "authority": "ReplayAuthority",
+  "owner": "runtime/kernel",
+  "file": "specs/replay-authority/ownership.md",
+  "duplicate": null,
+  "recommendation": "defer"
+}

@@ -3,7 +3,7 @@
  * Routes artifacts to capabilities based on routing policies.
  */
 
-import { CapabilityID } from '../capability/capability';
+import { CapabilityID } from '../capabilities/capability';
 import { WorkerID } from '../workers/worker';
 import { RoutingPolicy } from './routing-policy';
 import { ExecutionRequest } from './execution-request';

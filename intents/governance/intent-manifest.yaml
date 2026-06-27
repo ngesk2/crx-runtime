@@ -1,0 +1,24 @@
+intent: governance
+mission: "Enforce constitutional rules across all runtime execution."
+authority: GovernanceAuthority
+capabilities:
+  - ConstitutionalRuleEnforcement
+  - PolicyEvaluation
+  - AuthorityRouting
+owns:
+  - runtime/kernel/governance/IGovernanceAuthority.ts
+consumes:
+  - CapabilityAuthority
+  - IdentityAuthority
+produces:
+  - GovernanceDecision
+  - PolicyCompliance
+specifications:
+  - specs/governance-engine
+adr: []
+tests: []
+evidence:
+  - "PROVEN — interface only, no concrete implementation"
+  - "De facto: runtime/security/policy_engine.py (Python, ungoverned)"
+status: missing_implementation
+action: "Implement concrete GovernanceAuthority in kernel."

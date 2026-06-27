@@ -2,11 +2,11 @@
  * CONFIG ADAPTER
  * 
  * Infrastructure adapter for configuration injection.
- * Depends on replay/ for configuration.
- * replay/ NEVER depends on this adapter.
+ * Depends on kernel/replay/ for configuration.
+ * kernel/replay/ NEVER depends on this adapter.
  */
 
-import { DeterministicReplayConfig } from '../replay/replay_types';
+import { DeterministicReplayConfig } from '../kernel/replay/replay_types';
 
 export class ConfigAdapter {
   private config: Map<string, any>;

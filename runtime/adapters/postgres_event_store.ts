@@ -12,7 +12,7 @@
  * Constitutional Authority Class: EVENT_PERSISTENCE
  *
  * Truth Source:
- * runtime/replay/replay_event_stream.ts (constitutional event stream)
+ * runtime/kernel/replay/replay_event_stream.ts (constitutional event stream)
  *
  * Constitutional Flow:
  * 1. Receives events from ReplayEventStream via append()
@@ -25,13 +25,13 @@
  * It is the constitutional event persistence authority.
  *
  * Infrastructure adapter for PostgreSQL event storage.
- * Depends on replay/ for canonicalization.
- * replay/ NEVER depends on this adapter.
+ * Depends on kernel/replay/ for canonicalization.
+ * kernel/replay/ NEVER depends on this adapter.
  */
 
 import { Pool, PoolClient } from 'pg';
-import { CanonicalEventEnvelope } from '../replay/canonical_event_envelope';
-import { ReplayEventStream } from '../replay/replay_event_stream';
+import { CanonicalEventEnvelope } from '../kernel/replay/canonical_event_envelope';
+import { ReplayEventStream } from '../kernel/replay/replay_event_stream';
 
 export class PostgresEventStore {
   private pool: Pool;

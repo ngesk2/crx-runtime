@@ -1,0 +1,30 @@
+# Specification: Constitutional IR
+# Phase S.16 — Constitutional Stabilization
+
+spec:
+  id: constitutional-ir
+  version: "1.0.0"
+  status: ratified
+  owner: runtime/kernel/
+
+scope:
+  owns:
+    - CanonicalEventEnvelope: "Standard event envelope for constitutional events"
+    - CanonicalObject: "Canonical object representation for identity/authority"
+    - ReplayCertificate: "Certificate format for replay verification"
+    - MerkleTree: "Merkle tree structure for witness roots"
+  does_not_own:
+    - Compiler IR (constitutional-compiler/ir/) — static analysis types, different domain
+    - Semantic IR (constitutional-compiler/lowering/) — analysis metadata, not runtime types
+    - CIR payloads (cir/) — orphaned, not imported by anything
+
+layers:
+  - name: "Compiler IR"
+    location: constitutional-compiler/ir/
+    purpose: "Static analysis types (syntax, symbols, source maps)"
+  - name: "Semantic IR"
+    location: constitutional-compiler/lowering/
+    purpose: "Language-agnostic analysis metadata"
+  - name: "Constitutional IR"
+    location: runtime/kernel/
+    purpose: "Runtime execution types (events, certificates, objects)"

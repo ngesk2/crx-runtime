@@ -1,0 +1,13 @@
+# GPU Profile Overrides
+# Usage: docker compose --profile gpu up
+
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia

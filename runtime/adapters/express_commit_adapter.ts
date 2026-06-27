@@ -2,13 +2,13 @@
  * EXPRESS COMMIT ADAPTER
  * 
  * Infrastructure adapter for Express HTTP API.
- * Depends on replay/ for replay verification.
- * replay/ NEVER depends on this adapter.
+ * Depends on kernel/replay/ for replay verification.
+ * kernel/replay/ NEVER depends on this adapter.
  */
 
-import { CanonicalEventEnvelope } from '../replay/canonical_event_envelope';
-import { ReplayVerification } from '../replay/replay_verification';
-import { ReplayEventStream } from '../replay/replay_event_stream';
+import { CanonicalEventEnvelope } from '../kernel/replay/canonical_event_envelope';
+import { ReplayVerification } from '../kernel/replay/replay_verification';
+import { ReplayEventStream } from '../kernel/replay/replay_event_stream';
 
 export class ExpressCommitAdapter {
   private replayVerification: ReplayVerification;

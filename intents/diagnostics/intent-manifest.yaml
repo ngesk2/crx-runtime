@@ -1,0 +1,22 @@
+intent: diagnostics
+mission: "Generate constitutional diagnostics and violations from analysis."
+authority: DiagnosticAuthority
+capabilities:
+  - DiagnosticGeneration
+  - ViolationReporting
+  - SeverityClassification
+owns:
+  - constitutional-compiler/diagnostics/constitutional-diagnostics.ts
+consumes:
+  - RuleEngine
+  - EvidenceStore
+produces:
+  - Diagnostic
+  - ViolationReport
+specifications:
+  - specs/diagnostics
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+status: implemented

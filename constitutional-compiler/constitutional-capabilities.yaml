@@ -1,0 +1,33 @@
+CapabilityRegistry:
+  owner: runtime/kernel
+  authority: CapabilityAuthority
+  implementation:
+    - runtime/capability/**
+  consumers:
+    - runtime/kernel
+    - constitutional-compiler
+
+OwnershipReasoning:
+  owner: runtime/kernel
+  authority: GovernanceAuthority
+  implementation:
+    - runtime/governance/**
+  consumers:
+    - runtime/kernel
+
+ReplayVerification:
+  owner: runtime/kernel
+  authority: ReplayAuthority
+  implementation:
+    - runtime/replay/**
+  consumers:
+    - runtime/kernel
+
+ConstitutionalEvidence:
+  owner: runtime/kernel
+  authority: ConstitutionalIRAuthority
+  implementation:
+    - runtime/constitution/**
+  consumers:
+    - runtime/kernel
+    - constitutional-compiler

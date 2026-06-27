@@ -1,0 +1,24 @@
+intent: evidence
+mission: "Store, query, and verify constitutional evidence artifacts."
+authority: EvidenceAuthority
+capabilities:
+  - EvidenceStorage
+  - EvidenceVerification
+  - CounterEvidence
+  - EvidenceQuery
+owns:
+  - constitutional-compiler/evidence/evidence-store.ts
+  - constitutional-compiler/engines/counter-evidence-engine.ts
+consumes:
+  - ConstitutionalIR
+  - RuleEngine
+produces:
+  - EvidenceGraph
+  - CounterEvidence
+specifications:
+  - specs/evidence-graph
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+status: implemented

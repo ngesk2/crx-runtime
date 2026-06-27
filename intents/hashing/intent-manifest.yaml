@@ -1,0 +1,29 @@
+intent: hashing
+mission: "Single authoritative hash chain for all constitutional computations."
+authority: CanonicalHashAuthority
+capabilities:
+  - CanonicalSHA256
+  - CanonicalJSON
+  - DomainSeparatedHashing
+  - HashRouting
+owns:
+  - runtime/kernel/witness/certificate_authority.ts
+  - runtime/kernel/witness/canonical_hash_authority.ts
+  - runtime/kernel/replay/canonical_json.ts
+  - runtime/kernel/replay/merkle_tree.ts (call site — delegates correctly)
+consumes:
+  - ConstitutionalIR
+  - CanonicalJson
+produces:
+  - CanonicalHash
+  - WitnessRoot
+  - ReplayCertificate
+specifications:
+  - specs/hash-authority
+adr: []
+tests: []
+evidence:
+  - "PROVEN — 1 canonical chain: CanonicalJson → CanonicalHashAuthority → CertificateAuthority.sha256"
+  - "~67 total hash sites, only 3 route through canonical. 46+ Python hashlib.sha256 bypasses."
+status: missing_package
+action: "Create runtime/kernel/hash/. Route all hashing through it. Delete fake SHA-256 from cryptographic-authorities.ts."

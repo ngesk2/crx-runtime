@@ -138,9 +138,9 @@ Maintain session context across agent resets. Each entry records what was done, 
 - **constitution/ vs vault/laws/ divergent content** on replay_law and witness_law â€” same subjects, different rules, no supersession declared
 - **AGENT_CONSTITUTION.md** self-binds the agent that created it, in compliance with its own Article 8.1
 
-### 2026-06-25 Session 8 (RUNTIME TRUTH OBSERVATION — Live Data Collection)
+### 2026-06-25 Session 8 (RUNTIME TRUTH OBSERVATION ï¿½ Live Data Collection)
 
-**14:30** | Started Session 8. Goal: Live observation of 6 running containers — gather real env vars, DNS/network topology, Postgres data, Qdrant data, Ollama status, automation reality. | Read AGENTS.md, existing RUNTIME_TRUTH_AUDIT.md.
+**14:30** | Started Session 8. Goal: Live observation of 6 running containers ï¿½ gather real env vars, DNS/network topology, Postgres data, Qdrant data, Ollama status, automation reality. | Read AGENTS.md, existing RUNTIME_TRUTH_AUDIT.md.
 
 **14:35** | Phase G deliverables: OPERATIONAL_REALITY_SUMMARY.md, ENVIRONMENT_REALITY_AUDIT.md (env var inventory all 11 containers), AUTOMATION_REALITY_AUDIT.md (confirmed no 2:00 AM commit). | Started live docker exec.
 
@@ -148,11 +148,11 @@ Maintain session context across agent resets. Each entry records what was done, 
 
 **15:00-17:00** | Executed 40+ docker exec commands across all 6 running containers. Postgres: 16 tables, 49 rows, 8.7 MB, only DOCUMENT_IMPORTED used. Qdrant: 2 collections (5 pts / 0 pts), 768-dim Cosine, 0 indexed vectors. Ollama: v0.30.7, qwen2.5-coder:7b+14b (13.7 GB), 0 network. | Updated RUNTIME_TRUTH_AUDIT.md.
 
-## Session 8 — 5 Critical Bugs Found
+## Session 8 ï¿½ 5 Critical Bugs Found
 
-1. **crx-ollama-worker NO network** (Networks: {}) — ollama serve running but completely unreachable
-2. **crx-ui-next NO network** (Networks: {}) — completely unreachable
-3. **crx-gateway isolated** — on crx_crx-network alone, ENOTFOUND for all backends
+1. **crx-ollama-worker NO network** (Networks: {}) ï¿½ ollama serve running but completely unreachable
+2. **crx-ui-next NO network** (Networks: {}) ï¿½ completely unreachable
+3. **crx-gateway isolated** ï¿½ on crx_crx-network alone, ENOTFOUND for all backends
 4. **Only working data path**: brain-postgres ? brain-qdrant (compose_brain_internal)
 5. **5 stopped containers**: brain-ollama, brain-openwebui, brain-repo-runtime, ping-mission-control, vault
 
@@ -160,6 +160,36 @@ Maintain session context across agent resets. Each entry records what was done, 
 1. Fix crx-ollama-worker network: connect to crx_crx-network + publish port 11434
 2. Fix crx-ui-next: same treatment
 3. Connect crx-gateway to compose_brain_internal for postgres/qdrant DNS
-4. Fix Open WebUI ? Ollama path (currently host.docker.internal:11434 — no host ollama)
+4. Fix Open WebUI ? Ollama path (currently host.docker.internal:11434 ï¿½ no host ollama)
 5. Restart Vault + mission-control (stopped with errors)
 6. Populate empty tables: projections, entities, claims, citations
+
+### 2026-06-25 Session 9 (Constitutional Freeze â€” Sprint 02D Final Runtime Audit)
+
+**18:00** | Imposed constitutional implementation freeze. Executed final runtime forensics across all 4 branches. Phase 1: on-disk runtime audit (54 runtime artifacts, 17 gitignored). Phase 2: comprehensive Git archaeology (branch inventory, capability matrix, runtime evolution, competing architectures, constitutional lineage, authority determination). Phase 3: freeze verification with remaining unknowns documented. | Report delivered.
+
+## Session 9 â€” Key Findings
+
+1. **No constitutional authority exists** â€” main (TypeScript kernel, replay engine, certification) and audit-hardening (Python workers, mission control, constitution law files) are two fragmentary branches with no supersession chain. Neither is canonical.
+
+2. **TypeScript kernel deleted in commit 1a7a30e** â€” `kernel/commit-service/src/` (12 files) were version-tracked in dd57cec, then permanently deleted. Survivors exist only as untracked files in `runtime/kernel/commit-service/` (gitignored).
+
+3. **The compiled JS replay engine (18 files) and certification test suite (6 tests + 13 corpus files) exist ONLY in `main`** â€” audit-hardening has none of these. The TS source at `runtime/replay/` (28 files) is untracked.
+
+4. **`runtime/` is entirely outside version control** â€” SecretAdapter, cognitive pipeline, security modules, retrieval service, Google Drive adapter, TypeScript kernel copy, TypeScript replay source â€” all gitignored. ZERO constitutional secret authority in any branch.
+
+5. **Repository Readiness Score: 2.9/10** â€” Version control coverage 3/10, replay integrity 1/10, testing 2/10, secret management 1/10.
+
+6. **Implementation may NOT resume** until constitutional authority is established, critical runtime is version-controlled, and branch supersession is declared.
+
+### 2026-06-25 Session 10 (Constitutional Reframing â€” From Audit to Execution)
+
+**19:00** | Fundamental reframing of the problem. Architecture is not broken â€” it's fragmented. Four constitutional blockers, not 20 critical issues. The real bottleneck is repository governance, not Python code. Sprint 03 redefined as "Constitutional Repository Consolidation." | Transition to Sprint 04 planning.
+
+**19:15** | Sprint 04 defined: "Constitutional Runtime Activation." Six phases: (1) Infrastructure Repair, (2) Event Pipeline Wiring, (3) Connect Existing Workers, (4) Remove Direct SQL Inserts, (5) Constitutional Execution Proof, (6) Runtime Lockdown. One artifact, end-to-end. Zero new architecture. | Ready to begin Sprint 04.
+
+## Session 10 â€” Decision Log
+- **Architecture is fragmented, not broken** â€” replay engine, constitutional laws, workers, Qdrant, certification all exist; they're scattered across main, audit-hardening, and untracked runtime/. Governance problem, not engineering failure.
+- **Four constitutional blockers, not 20 issues**: (1) runtime/ outside Git, (2) no authoritative replay engine in VC, (3) no declared branch authority, (4) no constitutional CI on active branch. Everything else is migration checklist or historical archive.
+- **Future trunk = constitutional synthesis**: audit-hardening runtime + main governance assets + runtime/ replay engine + runtime/ SecretAdapter. Neither current branch replaces the other.
+- **Sprint 04 scope**: No Neo4j, Devin Desktop, MCP, agents, supervisors, Kafka, Temporal, Ollama redesign, Yahoo redesign, Mission Control redesign. Only runtime activation.

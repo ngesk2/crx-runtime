@@ -1,0 +1,37 @@
+# Specification: Parser Boundary
+# Phase S.16 — Constitutional Stabilization
+# Wave 1 — Parsing Elimination
+
+spec:
+  id: parser-boundary
+  version: "1.0.0"
+  status: planned  # To be executed in Phase S.17
+  owner: constitutional-compiler/lowering/
+
+scope:
+  owns:
+    - ConstitutionalIR: "Canonical semantic IR — the output format after lowering"
+  does_not_own:
+    - Parsing — delegated to Tree-sitter (Wave 1)
+    - AST wrappers — deleted by Wave 1
+    - Parser abstraction layers — deleted
+    - Parser utilities — deleted
+
+pipeline:
+  input: "Tree-sitter CST (concrete syntax tree)"
+  transform: "Semantic Lowerer"
+  output: "Constitutional IR (canonical semantics, no AST structure)"
+
+boundary:
+  allowed_dependents:
+    - constitutional-compiler/engines/*
+    - constitutional-compiler/evidence/*
+    - constitutional-compiler/proof/*
+  forbidden_interfaces:
+    - No IRNode type exposure outside lowering/
+    - No direct AST access by engines
+
+current_state:
+  frontend: "TypeScript Compiler API (constitutional-compiler/frontends/typescript/ts-frontend.ts)"
+  target_frontend: "Tree-sitter"
+  action: "Replace ts-frontend.ts with Tree-sitter adapter in Phase S.17"

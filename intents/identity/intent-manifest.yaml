@@ -1,0 +1,23 @@
+intent: identity
+mission: "Generate and verify canonical identities for all constitutional objects."
+authority: CanonicalIdentityService
+capabilities:
+  - IdentityGeneration
+  - IdentityVerification
+  - IdentityRegistry
+owns:
+  - runtime/kernel/identity/canonical-identity-service.ts
+consumes:
+  - CanonicalHash
+produces:
+  - CanonicalIdentity
+  - SymbolID
+specifications:
+  - specs/identity-authority
+adr: []
+tests: []
+evidence:
+  - "PROVEN — single TS implementation in kernel"
+  - "12 Python files bypass with uuid.uuid4()"
+status: fragmented
+action: "Route all Python identity generation through CanonicalIdentityService bridge."

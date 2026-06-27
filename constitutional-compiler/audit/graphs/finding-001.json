@@ -1,0 +1,9 @@
+{
+  "id": "GRAPH-001",
+  "classification": "Supported",
+  "authority": "ConstitutionalIRAuthority",
+  "owner": "runtime/kernel",
+  "file": "adr/ADR-0003-Compiler-IR-Boundary.md",
+  "duplicate": null,
+  "recommendation": "defer"
+}

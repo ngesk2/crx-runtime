@@ -1,0 +1,29 @@
+{
+  "name": "constitutional-compiler",
+  "version": "0.1.0",
+  "description": "Constitutional Semantic Compiler - Verifies constitutional architecture through semantic analysis",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "node --test",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist",
+    "install:deps": "npm install"
+  },
+  "keywords": [
+    "constitutional",
+    "compiler",
+    "semantic-analysis",
+    "architecture-verification"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
