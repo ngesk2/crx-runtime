@@ -1,0 +1,16 @@
+{
+  "empty_object": {},
+  "empty_array": [],
+  "null_value": null,
+  "boolean_true": true,
+  "boolean_false": false,
+  "zero": 0,
+  "negative": -42,
+  "float": 3.14,
+  "mixed": {
+    "a": 1,
+    "b": null,
+    "c": [1, 2, 3],
+    "d": {"x": 10, "y": 20}
+  }
+}
