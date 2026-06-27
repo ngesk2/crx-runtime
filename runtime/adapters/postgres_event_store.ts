@@ -32,6 +32,7 @@
 import { Pool, PoolClient } from 'pg';
 import { CanonicalEventEnvelope } from '../kernel/replay/canonical_event_envelope';
 import { ReplayEventStream } from '../kernel/replay/replay_event_stream';
+import { CertificateAuthority } from '../kernel/replay/certificate_authority';
 
 export class PostgresEventStore {
   private pool: Pool;
@@ -196,12 +197,12 @@ export class PostgresEventStore {
   }
 
   /**
-   * Compute event hash (canonical)
+   * Compute event hash via canonical CertificateAuthority
    */
   private computeEventHash(event: CanonicalEventEnvelope): string {
     const payload = event.toJSON();
     const canonical = JSON.stringify(payload, Object.keys(payload).sort());
-    return Buffer.from(canonical).toString('base64');
+    return CertificateAuthority.sha256(canonical);
   }
 
   /**
