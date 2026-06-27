@@ -1,6 +1,6 @@
 # Constitutional Knowledge Compiler (CKC)
 
-## Canonical Artifact Lifecycle Specification v1.0
+## Canonical Artifact Lifecycle Specification v1.1
 
 ### Objective
 
@@ -72,6 +72,8 @@ REPLAY_CERTIFIED
 WITNESSED
         ↓
 PUBLISHED
+        ↓
+INDEXED
         ↓
 PROJECTED
         ↓
@@ -295,6 +297,13 @@ Failure halts compilation.
 
 Replay entire transformation.
 
+Replay consumes only:
+
+* Canonical Knowledge Objects
+* Constitution Version
+
+Replay never consumes repositories or raw files.
+
 Requirements:
 
 Same inputs
@@ -322,6 +331,14 @@ Replay proves deterministic reproducibility.
 ## WITNESSED
 
 Generate immutable replay certification.
+
+Witnesses are immutable.
+
+Never regenerated.
+
+If replay changes, generate a new witness.
+
+Do not overwrite.
 
 Witness includes:
 
@@ -351,25 +368,35 @@ Compiler responsibility ends.
 
 ---
 
-## PROJECTED
+## INDEXED
 
-Knowledge Substrate creates derived views.
+Knowledge Substrate creates lookup structures.
 
 Examples:
 
-Graph projections
+* Identity indexes
+* Temporal indexes
+* Capability indexes
+* Authority indexes
 
-Vector projections
+Indexing creates efficient access structures.
 
-Lexical indexes
+---
 
-Temporal indexes
+## PROJECTED
 
-Capability indexes
+Knowledge Substrate creates derived views as pure deterministic functions.
 
-Architecture indexes
+Every projection is reproducible from canonical knowledge.
 
-These are projections.
+Examples:
+
+* Knowledge Objects → Graph Projection
+* Knowledge Objects → Vector Projection
+* Knowledge Objects → Lexical Projection
+* Knowledge Objects → Architecture Projection
+
+All projections are deterministic.
 
 Not authorities.
 
@@ -413,33 +440,35 @@ Only historical.
 
 # Canonical Object Identity
 
-Every object SHALL possess globally stable identifiers.
+Every object SHALL possess globally stable identifiers following a hierarchical model.
 
-Required identities include:
+Identity flows downward:
 
+```
 SourceID
-
+    ↓
 ArtifactID
-
+    ↓
 EvidenceID
-
-ExtractionIRID
-
-CanonicalIRID
-
+    ↓
 KnowledgeObjectID
-
-RelationshipID
-
-CapabilityID
-
-WitnessID
-
-ReplayID
-
+    ↓
 ProjectionID
+    ↓
+ExecutionID
+    ↓
+ReplayID
+    ↓
+WitnessID
+```
 
-LifecycleID
+Additional identities include:
+
+* ExtractionIRID
+* CanonicalIRID
+* RelationshipID
+* CapabilityID
+* LifecycleID
 
 Identifiers SHALL remain stable across replay.
 
@@ -448,6 +477,14 @@ Identifiers SHALL remain stable across replay.
 # Event Requirements
 
 Every lifecycle transition SHALL emit one constitutional event.
+
+Events SHALL describe state transitions (verbs), not entities.
+
+Examples:
+
+* ArtifactNormalized (not Artifact)
+* KnowledgeCompiled (not KnowledgeObject)
+* ReplayCertified (not Replay)
 
 Each event SHALL include:
 
@@ -458,9 +495,12 @@ Each event SHALL include:
 * Lifecycle State
 * Object ID
 * Parent IDs
-* Replay Version
 * Constitution Version
 * Compiler Version
+* Schema Version
+* Replay Version
+* Witness Version
+* Projection Version
 * Policy Version
 * Schema Hash
 
@@ -480,6 +520,15 @@ Owns:
 * identity rules
 * replay rules
 * witness rules
+* semantic ontology
+* meaning definitions
+
+Defines:
+
+* what a Capability is
+* what an Artifact is
+* what Evidence means
+* what Knowledge means
 
 Never executes.
 
@@ -505,14 +554,20 @@ Never stores runtime state.
 
 Owns:
 
-* persistence
+* canonical persistence
 * retrieval
-* graph projections
-* vector projections
-* indexing
 * lineage storage
+* projection management
+* publication
+* indexing
 
-Never recompiles knowledge.
+Does not:
+
+* execute
+* schedule
+* reason
+* compile
+* verify
 
 ---
 
@@ -526,6 +581,13 @@ Owns:
 * leases
 * events
 * execution
+
+Runtime SHALL NOT:
+
+* infer authority
+* modify evidence
+* modify lineage
+* generate canonical knowledge
 
 Never mutates canonical knowledge.
 
@@ -569,13 +631,15 @@ The compiler SHALL expose only:
 
 Canonical IR
 
-Knowledge Objects
+Verified Knowledge Objects
 
 Replay Certificates
 
-Witnesses
+Compiler Reports
 
-Diagnostics
+Diagnostics are temporary.
+
+Compiler Reports are artifacts.
 
 No runtime-specific structures.
 
@@ -609,11 +673,15 @@ Constitution
 
 ↓
 
+Canonical State
+
+↓
+
 Compiler
 
 ↓
 
-Knowledge Substrate
+Knowledge
 
 ↓
 
@@ -622,6 +690,11 @@ Runtime
 ↓
 
 Execution Providers
+
+The compiler produces canonical state.
+It does not own it.
+
+The Constitution owns the meaning of canonical state.
 
 Future work SHALL implement these contracts rather than introduce new architectural authorities.
 
