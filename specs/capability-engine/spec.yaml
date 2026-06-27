@@ -1,0 +1,23 @@
+# Specification: Capability Engine
+# Phase S.16 — Constitutional Stabilization
+
+spec:
+  id: capability-engine
+  version: "1.0.0"
+  status: missing_implementation
+  owner: runtime/kernel/
+
+scope:
+  owns:
+    - CapabilityResolution: "Resolving which capabilities a component consumes and produces"
+    - CapabilityVerification: "Verifying capability chains are complete and valid"
+    - CapabilityRegistry: "Single registry of all capabilities across the codebase"
+  does_not_own:
+    - Identity generation (handled by CanonicalIdentityService)
+    - Authority resolution (handled separately)
+    - Governance rules (handled by GovernanceEngine)
+
+current_state:
+  implementation: "ICapabilityAuthority interface only (no concrete implementation)"
+  competing_systems: "6 detected across Python+TS codebase"
+  action: "Implement concrete CapabilityAuthority in kernel"

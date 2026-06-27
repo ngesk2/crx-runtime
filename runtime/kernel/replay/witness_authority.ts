@@ -11,7 +11,7 @@
  * - no infrastructure dependencies
  */
 
-import { CanonicalHashAuthority } from '../witness/canonical_hash_authority';
+import { CanonicalHashAuthority } from './canonical_hash_authority';
 import { ReplayEventStream } from './replay_event_stream';
 import { InvariantRunner } from './invariant_runner';
 import { MerkleTree, MerkleLeaf } from './merkle_tree';
@@ -19,7 +19,7 @@ import { StateSerializer } from './state_serializer';
 import { CanonicalJson } from './canonical_json';
 import { ReplayResult, WitnessRoot, CanonicalBytes, Fingerprint, LineageGraph, ReplayState, toWitnessLeafId } from './replay_types';
 import { deepFreeze } from './utils/deep_freeze';
-import { CertificateAuthority } from '../witness/certificate_authority';
+import { CertificateAuthority } from './certificate_authority';
 import { getConstitutionalLawManifest } from './constitutional_law_manifest';
 import { utf8Encode, hexDecode, base64UrlDecode } from './byte_utils';
 

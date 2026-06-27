@@ -1,0 +1,9 @@
+{
+  "id": "ADAPTER-001",
+  "classification": "Supported",
+  "authority": "AdapterDoctrine",
+  "owner": "constitutional-compiler",
+  "file": "adr/ADR-0004-Adapter-Doctrine.md",
+  "duplicate": null,
+  "recommendation": "defer"
+}

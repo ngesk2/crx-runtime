@@ -1,0 +1,63 @@
+# Debug Profile Overrides
+# Usage: docker compose --profile debug up
+
+services:
+  # Enable all workers
+  digestion-worker:
+    profiles:
+      - debug
+
+  newsletter-worker:
+    profiles:
+      - debug
+
+  projection-worker:
+    profiles:
+      - debug
+
+  witness-worker:
+    profiles:
+      - debug
+
+  replay-worker:
+    profiles:
+      - debug
+
+  # Extended debug logging
+  mission-control:
+    environment:
+      - LOG_LEVEL=trace
+      - DEBUG=true
+      - VERBOSE=true
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debug port
+
+  gateway:
+    environment:
+      - LOG_LEVEL=trace
+      - DEBUG=true
+      - VERBOSE=true
+    ports:
+      - "8080:8080"
+      - "9229:9229"  # Node.js debug port
+
+  postgres:
+    environment:
+      - POSTGRES_LOG_STATEMENT=all
+    ports:
+      - "5432:5432"
+      - "5433:5433"  # Debug port
+
+  qdrant:
+    environment:
+      - RUST_LOG=debug
+    ports:
+      - "6333:6333"
+      - "6334:6334"  # Debug port
+
+  ollama:
+    environment:
+      - OLLAMA_DEBUG=1
+    ports:
+      - "11434:11434"

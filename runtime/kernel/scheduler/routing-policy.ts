@@ -3,7 +3,7 @@
  * Defines how artifacts are routed to capabilities.
  */
 
-import { CapabilityID } from '../capability/capability';
+import { CapabilityID } from '../capabilities/capability';
 import { WorkerID } from '../workers/worker';
 import { ExecutionRequest } from './execution-request';
 import { ExecutionResult } from './execution-result';

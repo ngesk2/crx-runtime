@@ -1,0 +1,21 @@
+intent: parsing
+mission: "Convert source code into Constitutional IR via Tree-sitter."
+authority: (delegated to Tree-sitter)
+capabilities:
+  - SourceParsing
+  - CSTGeneration
+  - LanguageDetection
+owns:
+  - constitutional-compiler/frontends/typescript/ts-frontend.ts (to be deleted)
+consumes:
+  - SourceCode
+produces:
+  - CST (to Semantic Lowerer)
+specifications:
+  - specs/parser-boundary
+adr: []
+tests: []
+evidence:
+  - "PROVEN — currently uses TS Compiler API. Wave 1 target: Tree-sitter only."
+status: commodity
+action: "Phase S.17: Replace ts-frontend.ts with Tree-sitter adapter. Delete all AST wrappers."

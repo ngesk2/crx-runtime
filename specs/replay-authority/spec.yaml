@@ -1,0 +1,46 @@
+# Specification: Replay Authority
+# Phase S.16 — Constitutional Stabilization
+
+spec:
+  id: replay-authority
+  version: "1.0.0"
+  status: ratified
+  owner: runtime/kernel/replay/
+
+scope:
+  owns:
+    - ReplayTranscript: "Recording event execution history"
+    - ReplayVerification: "Verifying replay determinism and equivalence"
+    - ReplayExecution: "Deterministic event replay via DeterministicReplayEngine"
+    - WitnessGeneration: "Merkle witness root generation via WitnessAuthority"
+    - CertificateIssuance: "SHA-256 certificate generation via CertificateAuthority"
+    - MerkleTree: "Domain-separated Merkle tree for witness roots"
+  does_not_own:
+    - Witness verification (different authority — handles certificate/witness verification, not replay determinism)
+    - Lineage verification (different authority — handles provenance chains, not replay)
+    - Filesystem replay (different domain — Python repository_event_layer.py operates on files, not events)
+
+boundary:
+  allowed_dependents:
+    - runtime/adapters/*    # Adapters may call replay/* via kernel/replay/ path
+  forbidden_dependents:
+    - constitutional-compiler/*  # Compiler must NOT construct replay artifacts
+    - workers/*                  # Workers must call via adapter, not directly
+  allowed_imports:
+    - commodity: crypto, fs, path
+    - internal: runtime/kernel/replay/*, runtime/kernel/witness/*
+  forbidden_imports:
+    - runtime/adapters/*
+    - constitutional-compiler/*
+    - Any infrastructure dependency
+
+verification:
+  - Every replay verification call must go through ReplayVerification (single exported API)
+  - No duplicate witness root comparisons outside canonical tests
+  - Tests must import ReplayVerification, not reimplement inline comparison
+  - Python workers must NOT implement replay logic
+
+evidence:
+  pre_audit: "9 implementations claimed (1 canonical + 4 runtime duplicates + 1 stub + 3 miscounted)"
+  corrected: "1 canonical + 4 runtime duplicates + 5 test duplicates"
+  target: "1 canonical, all callers import single exported API"

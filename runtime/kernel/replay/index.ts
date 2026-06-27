@@ -10,6 +10,7 @@
 export { CanonicalJson } from './canonical_json';
 export { CanonicalEventEnvelope } from './canonical_event_envelope';
 export { CanonicalHashAuthority } from './canonical_hash_authority';
+export { CertificateAuthority } from './certificate_authority';
 export { InvariantRunner } from './invariant_runner';
 export { ReplayInvariants } from './replay_invariants';
 export { ReplayEventStream } from './replay_event_stream';

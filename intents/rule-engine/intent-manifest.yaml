@@ -1,0 +1,26 @@
+intent: rule-engine
+mission: "Execute constitutional rules and track their provenance."
+authority: RuleAuthority
+capabilities:
+  - RuleExecution
+  - RuleProvenance
+  - RuleCoverage
+owns:
+  - constitutional-compiler/rules/rule-executor.ts
+  - constitutional-compiler/engines/rule-provenance-engine.ts
+  - constitutional-compiler/coverage/rule-coverage.ts
+consumes:
+  - OwnershipEngine
+  - CapabilityEngine
+  - ConstitutionalIR
+produces:
+  - Finding
+  - RuleViolation
+  - CoverageReport
+specifications:
+  - specs/rule-engine
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+status: implemented

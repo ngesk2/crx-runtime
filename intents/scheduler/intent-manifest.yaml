@@ -1,0 +1,27 @@
+intent: scheduler
+mission: "Schedule constitutional execution across distributed workers."
+authority: SchedulerAuthority
+capabilities:
+  - WorkScheduling
+  - DispatchRouting
+  - ExecutionCoordination
+owns:
+  - runtime/kernel/scheduler/ISchedulerAuthority.ts (interface only)
+  - runtime/kernel/scheduler/artifact-router.ts
+  - runtime/kernel/scheduler/artifact-dispatch.ts
+  - runtime/kernel/scheduler/routing-policy.ts
+consumes:
+  - IdentityAuthority
+  - CapabilityAuthority
+produces:
+  - Schedule
+  - Dispatch
+specifications:
+  - specs/scheduler-authority
+adr: []
+tests: []
+evidence:
+  - "PROVEN — interface only. No concrete implementation."
+  - "Compiler has DistributedGraphScheduler (constitutional-compiler/execution/)"
+status: missing_implementation
+action: "Implement concrete SchedulerAuthority in kernel or declare compiler as sole owner."

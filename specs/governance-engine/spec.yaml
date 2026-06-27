@@ -1,0 +1,23 @@
+# Specification: Governance Engine
+# Phase S.16 — Constitutional Stabilization
+
+spec:
+  id: governance-engine
+  version: "1.0.0"
+  status: missing_implementation
+  owner: runtime/kernel/
+
+scope:
+  owns:
+    - ConstitutionalRuleEnforcement: "Enforcing constitutional rules at runtime"
+    - PolicyEvaluation: "Evaluating policy compliance"
+    - AuthorityRouting: "Routing authority verification requests"
+  does_not_own:
+    - Identity generation
+    - Capability resolution
+    - System scheduling
+
+current_state:
+  implementation: "IGovernanceAuthority interface only"
+  de_facto: "runtime/security/policy_engine.py (Python, no constitutional routing)"
+  action: "Implement concrete GovernanceAuthority in kernel"

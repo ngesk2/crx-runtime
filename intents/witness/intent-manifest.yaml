@@ -1,0 +1,24 @@
+intent: witness
+mission: "Generate and verify cryptographic witnesses for constitutional events."
+authority: WitnessAuthority
+capabilities:
+  - WitnessGeneration
+  - WitnessVerification
+  - CertificateVerification
+owns:
+  - runtime/kernel/replay/witness_authority.ts
+consumes:
+  - CanonicalHash
+  - MerkleTree
+produces:
+  - WitnessRoot
+  - ReplayCertificate
+specifications:
+  - specs/replay-authority
+adr: []
+tests: []
+evidence:
+  - "PROVEN — canonical implementation in replay/witness_authority.ts"
+  - "CRITICAL: Complete duplicate subsystem in runtime/kernel/witness/ (WitnessEngine, WitnessBuilder, verification-engine, replay-verifier, lineage-verifier, cryptographic-authorities)"
+status: fragmented
+action: "Eliminate runtime/kernel/witness/ duplicate subsystem. All witness operations route through replay/witness_authority.ts."

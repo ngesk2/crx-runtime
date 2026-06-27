@@ -1,0 +1,25 @@
+intent: constitutional-ir
+mission: "Define canonical types for constitutional execution and analysis."
+authority: ConstitutionalIRAuthority
+capabilities:
+  - TypeDefinition
+  - Serialization
+  - Validation
+owns:
+  - runtime/kernel/replay/ (CanonicalEventEnvelope, ReplayCertificate, MerkleTree)
+  - runtime/kernel/identity/ (CanonicalObject)
+consumes:
+  - (foundational — no dependencies)
+produces:
+  - CanonicalEventEnvelope
+  - CanonicalObject
+  - ReplayCertificate
+  - MerkleTree
+specifications:
+  - specs/constitutional-ir
+adr: []
+tests: []
+evidence:
+  - "PROVEN — 4 distinct IR layers identified: Compiler IR, Semantic IR, Constitutional IR, CIR payloads"
+  - "Zero cross-imports between compiler IR and constitutional IR"
+status: ratified

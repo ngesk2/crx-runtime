@@ -1,0 +1,65 @@
+# Production Profile Overrides
+# Usage: docker compose --profile prod up -d
+
+services:
+  # Only essential workers in production
+  digestion-worker:
+    profiles:
+      - prod
+
+  newsletter-worker:
+    profiles:
+      - prod
+
+  # Optional workers disabled in production
+  projection-worker:
+    profiles: []
+
+  witness-worker:
+    profiles: []
+
+  replay-worker:
+    profiles: []
+
+  # Production logging
+  mission-control:
+    environment:
+      - LOG_LEVEL=info
+      - DEBUG=false
+
+  gateway:
+    environment:
+      - LOG_LEVEL=info
+      - DEBUG=false
+      - NODE_ENV=production
+
+  # Production resource limits
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  qdrant:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  ollama:
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
