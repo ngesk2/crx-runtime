@@ -35,7 +35,7 @@ CREATE TABLE events (
     event_id UUID NOT NULL UNIQUE,
     event_type VARCHAR(255) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    aggregate_id UUID NOT NULL,
+    aggregate_id VARCHAR(255) NOT NULL,
     aggregate_type VARCHAR(255) NOT NULL,
     event_data JSONB NOT NULL,
     causation_id UUID,
