@@ -10,17 +10,15 @@ No canonical state reconstruction (objects, lineage, entities, relationships, cl
 Just: Can system rebuild Qdrant from events?
 """
 
-import os
-import sys
 import json
-import uuid
 import logging
-import subprocess
-from datetime import datetime
 from typing import Dict, List, Optional, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from sentence_transformers import SentenceTransformer
+
+from runtime.authorities.embedding_authority import EmbeddingAuthority
+from runtime.authorities.execution_authority import ExecutionAuthority
+from runtime.config.configuration_authority import ConfigurationAuthority
 
 # Configure logging
 logging.basicConfig(
@@ -29,18 +27,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# PostgreSQL configuration (via docker exec)
-POSTGRES_CONTAINER = os.getenv('POSTGRES_CONTAINER', 'brain-postgres')
-POSTGRES_DB = os.getenv('POSTGRES_DB', 'crx_runtime')
-POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
+CONFIGURATION = ConfigurationAuthority.current()
+EMBEDDING_AUTHORITY = EmbeddingAuthority(CONFIGURATION)
+EXECUTION_AUTHORITY = ExecutionAuthority()
 
-# Qdrant configuration
-QDRANT_URL = os.getenv('QDRANT_URL', 'http://localhost:6333')
-QDRANT_API_KEY = os.getenv('QDRANT_API_KEY', '')
-QDRANT_COLLECTION = os.getenv('QDRANT_COLLECTION', 'constitutional_memory')
+POSTGRES_CONFIG = CONFIGURATION.get_postgres_config()
+QDRANT_CONFIG = CONFIGURATION.get_qdrant_config()
+INFERENCE_CONFIG = CONFIGURATION.get_inference_config()
 
-# Embedding model
-EMBED_MODEL = os.getenv('EMBED_MODEL', 'nomic-embed-text')
+POSTGRES_CONTAINER = POSTGRES_CONFIG.get('host', 'brain-postgres')
+POSTGRES_DB = POSTGRES_CONFIG.get('database', 'crx_runtime')
+POSTGRES_USER = POSTGRES_CONFIG.get('user', 'postgres')
+
+QDRANT_URL = QDRANT_CONFIG.get('url', 'http://localhost:6333')
+QDRANT_API_KEY = QDRANT_CONFIG.get('api_key', '')
+QDRANT_COLLECTION = QDRANT_CONFIG.get('collection', 'constitutional_memory')
+
+EMBED_MODEL = INFERENCE_CONFIG.get('embedding_model', 'nomic-embed-text')
 
 
 class ProjectionReplay:
@@ -68,7 +71,7 @@ class ProjectionReplay:
         # Embedding model
         try:
             logger.info(f"Loading embedding model: {EMBED_MODEL}")
-            self.embedding_model = SentenceTransformer(EMBED_MODEL)
+            self.embedding_model = EMBEDDING_AUTHORITY.load_model(EMBED_MODEL)
             logger.info("Embedding model loaded")
         except Exception as e:
             logger.error(f"Failed to load embedding model: {e}")
@@ -77,15 +80,10 @@ class ProjectionReplay:
         return True
 
     def run_psql_query(self, query):
-        """Run psql query via docker exec."""
+        """Run psql query through the execution authority."""
         try:
-            cmd = f'docker exec {POSTGRES_CONTAINER} psql -U {POSTGRES_USER} -d {POSTGRES_DB} -t -c "{query}"'
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True
-            )
+            cmd = ['docker', 'exec', POSTGRES_CONTAINER, 'psql', '-U', POSTGRES_USER, '-d', POSTGRES_DB, '-t', '-c', query]
+            result = EXECUTION_AUTHORITY.run_command('docker', ['exec', POSTGRES_CONTAINER, 'psql', '-U', POSTGRES_USER, '-d', POSTGRES_DB, '-t', '-c', query])
             if result.returncode != 0:
                 logger.error(f"Query failed: {result.stderr}")
                 return None

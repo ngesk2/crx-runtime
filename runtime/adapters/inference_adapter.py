@@ -27,16 +27,19 @@ import os
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
+from runtime.config.configuration_authority import ConfigurationAuthority
+
 class ProviderType(Enum):
     OLLAMA = "ollama"
     OPENAI = "openai"
 
-# Configuration - These are operational config, not secrets
-# Secrets (API keys) are handled by provider adapters through SecretAdapter
-INFERENCE_PROVIDER = os.getenv('INFERENCE_PROVIDER', 'ollama')
-INFERENCE_BASE_URL = os.getenv('INFERENCE_BASE_URL', 'http://localhost:11434')
-DEFAULT_EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
-DEFAULT_CHAT_MODEL = os.getenv('CHAT_MODEL', 'llama3')
+# Configuration - Single source via ConfigurationAuthority
+_config = ConfigurationAuthority.current()
+_inference_cfg = _config.get_inference_config()
+INFERENCE_PROVIDER = _inference_cfg.get('provider', 'ollama')
+INFERENCE_BASE_URL = _inference_cfg.get('base_url', 'http://localhost:11434')
+DEFAULT_EMBEDDING_MODEL = _inference_cfg.get('embedding_model', 'nomic-embed-text')
+DEFAULT_CHAT_MODEL = _inference_cfg.get('chat_model', 'llama3')
 
 class InferenceAdapter:
     """Single constitutional inference authority."""

@@ -40,7 +40,6 @@ import psycopg2
 from psycopg2.extras import DictCursor
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from sentence_transformers import SentenceTransformer
 import json
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -48,6 +47,7 @@ import logging
 from pathlib import Path
 
 from runtime.configuration import get_configuration
+from runtime.authorities.embedding_authority import EmbeddingAuthority
 
 # Configure logging
 logging.basicConfig(
@@ -74,8 +74,8 @@ class QdrantProjectionWorker:
         self.qdrant_url = qdrant_config["url"]
         self.qdrant_api_key = qdrant_config["api_key"]
         self.qdrant_collection = qdrant_config["collection"]
-        self.memory_collection = os.getenv('MEMORY_COLLECTION', 'memory')
-        self.embed_model = os.getenv('EMBED_MODEL', 'nomic-embed-text')
+        self.memory_collection = self.configuration.get_path_config().get('memory_collection', 'memory')
+        self.embed_model = self.configuration.get_inference_config().get('embedding_model', 'nomic-embed-text')
         
         # Postgres configuration from shared configuration
         postgres_config = self.configuration.get_postgres_config()
@@ -88,6 +88,7 @@ class QdrantProjectionWorker:
         self.qdrant_client = None
         self.embedding_model = None
         self.postgres_conn = None
+        self.embedding_authority = EmbeddingAuthority(self.configuration)
         
         # Document extractor
         self.document_extractor = None
@@ -104,7 +105,7 @@ class QdrantProjectionWorker:
         
         # Initialize embedding model (768 dimensions for nomic-embed-text)
         logger.info(f"Loading embedding model: {self.embed_model}")
-        self.embedding_model = SentenceTransformer(self.embed_model)
+        self.embedding_model = self.embedding_authority.load_model(self.embed_model)
         
         # Initialize Postgres connection
         if self.postgres_url:

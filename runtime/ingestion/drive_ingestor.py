@@ -97,15 +97,10 @@ class DriveIngestor:
             return False
     
     def connect_postgres(self) -> bool:
-        """Connect to PostgreSQL using SecretAdapter."""
+        """Connect to PostgreSQL using RepositoryAdapter."""
         try:
-            self.conn = psycopg2.connect(
-                host=self.postgres_host,
-                port=self.postgres_port,
-                database=self.postgres_db,
-                user=self.postgres_user,
-                password=self.postgres_password
-            )
+            from runtime.adapters.repository_adapter import get_repository_connection
+            self.conn = get_repository_connection()
             self.cursor = self.conn.cursor()
             logger.info("Successfully connected to PostgreSQL")
             return True

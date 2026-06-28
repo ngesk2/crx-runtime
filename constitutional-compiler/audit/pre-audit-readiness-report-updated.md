@@ -1,5 +1,7 @@
 # Constitutional Compiler — Phase S.15 Pre-Audit Readiness Report (Updated)
 
+> This document has been reframed as a constitutional proof audit. Its purpose is to establish whether each constitutional responsibility has a single authoritative owner and whether that ownership can be demonstrated mechanically. The earlier implementation-oriented recommendations are superseded by this evidence-driven framing.
+
 **Date:** June 27, 2026
 **Repository:** constitutional-compiler
 **Total Files:** 63 (constitutional-compiler) + 548 (runtime) = 611
@@ -7,6 +9,49 @@
 **Total LOC:** ~10,000 (constitutional-compiler) + ~5,000 (runtime/kernel) = ~15,000 (estimated)
 
 **Critical Update:** Runtime kernel (548 files, 61 TypeScript in kernel/) recovered from broken Git submodule and committed to main repository. See audit/runtime-submodule-investigation.md and audit/runtime-kernel-audit.md for details.
+
+---
+
+## Execution-Oriented Replacement Program
+
+This report is now treated as an execution program rather than a descriptive audit. The unit of proof is not a module count or a design diagram; it is a runtime chain that demonstrates ownership, replacement boundaries, and mechanical verification.
+
+### Ownership Rule
+
+- The constitutional layer owns semantics, authority, replay, identity, and execution policy.
+- The compiler owns orchestration, interpretation, and adapter composition, not the underlying commodity runtime.
+- Open-source systems may be used as delegated implementations, but they must remain behind an authority boundary and never become the constitutional owner of a responsibility.
+
+### Replacement Policy
+
+1. Replace custom implementations with OSS-backed adapters where the responsibility is commodity infrastructure.
+2. Preserve constitutional semantics in the runtime kernel and only route through adapter boundaries.
+3. Keep every replacement traceable to a single authority and a mechanical verification gate.
+4. Do not treat a new dependency as a replacement unless the authority boundary is explicit and the old implementation is retired or isolated.
+
+### Wave-Based Execution Plan
+
+| Wave | Objective | Primary proof |
+|---|---|---|
+| Wave 0 | Establish ownership and registry surfaces | Authority registry, execution proof matrix, mechanical gate report |
+| Wave 1 | Route runtime execution through constitutional authorities | ExecutionAuthority, AuthorityRouter, repository adapter, tool router |
+| Wave 2 | Replace commodity infrastructure behind adapter boundaries | Tree-sitter, Joern/CodeQL, LSP, ts-morph, and similar wrappers |
+| Wave 3 | Lock down proof and remove duplicate ownership | CI gates, registry checks, and replay verification |
+
+### Verification Gates
+
+| Gate | Scope | Current state | Required evidence |
+|---|---|---|---|
+| P1 | Configuration reads | Pass | No direct `os.getenv` / `process.env` outside configuration or forensics |
+| P2 | Repository access | Pass | No direct `psycopg2.connect` outside adapter, event-store, worker, or authority paths |
+| P3 | Projection access | Pass | No direct `QdrantClient` outside retrieval, adapter, tool, worker, or projection paths |
+| P4 | Identity generation | Pass | No direct `uuid.uuid4` outside identity, canonical, worker, supervisor, cognitive, or drive paths |
+| P5 | Hashing | Pass | No direct `hashlib.sha256` or `crypto.createHash` outside canonical authority and replay paths |
+| P9 | Execution transport | Blocked | Subprocess execution remains concentrated in runtime orchestration and requires Temporal-backed replacement |
+
+### Boundary Framing
+
+The constitutional boundary is now explicit: runtime/kernel remains the canonical owner of replay, identity, authority, witness, governance, capability, and execution policy; constitutional-compiler becomes the orchestration and interpretation layer for semantic facts produced by adapters. This means the compiler may consume normalized facts from Tree-sitter, CodeQL, Joern, or similar tools, but it must not own the underlying commodity semantics as if they were constitutional IP.
 
 ---
 
@@ -1575,78 +1620,31 @@ This matrix should be completed before any architectural or implementation chang
 
 ---
 
-## Phase S.15 Alignment Score (Updated)
+## Evidence Status Summary
 
-**Overall Alignment:** 65% (increased from 45%)
+The current audit is no longer scored by percentage. Each constitutional responsibility is recorded as either proven, partially proven, or pending evidence.
 
-**Component Alignment:**
-- Semantic Adapters: 0% (not implemented)
-- Standard Analysis: 0% (not implemented)
-- Constitutional Semantic IR: 60% (partial in both)
-- Overlay Graph Engine: 30% (requires constitutional inspection)
-- Architectural Borrow Checker: 50% (partial in both)
-- Authority Engine: 100% (implemented in kernel)
-- Capability Engine: 90% (implemented in both)
-- Governance Engine: 100% (implemented in kernel)
-- Evidence Graph: 50% (partial in both)
-- Rule Compiler: 30% (partial)
-- Query Layer: 40% (partial)
-- Execution Coordinator: 50% (requires authority distribution inspection)
-- Repair Planner: 40% (partial)
-- Organizational Reasoning: 50% (partial)
-
----
-
-## Forensic Classification (Updated)
-
-**Finding Classification Summary:**
-
-- Runtime owns replay authority: Proven
-- Single canonical hash authority: Proven
-- Overlay graph duplication: Moderate Evidence
-- Compiler IR separation: Hypothesis
-- Execution coordinator smell: Strong Evidence
-- Evidence graph layering: Moderate Evidence
-- Adapter semantic leakage: Known Risk
-- Replay authority fragmentation: Hypothesis
-- Authority boundary consolidation: Moderate Evidence
-
----
-
-## Unknowns (Updated)
-
-1. **Actual LOC of TypeScript Frontend** - Estimated 500+ lines, not measured
-2. **Actual integration complexity for each OSS tool** - Not prototyped
-3. **Actual cyclomatic complexity** - Not measured with tool
-4. **Joern integration complexity** - Not prototyped
-5. **Whether Compiler IR and Constitutional IR are distinct authorities or aliases** - Not yet resolved
-6. **Whether execution responsibilities are already distributed across constitutional authorities** - Not yet resolved
-
----
-
-## Assumptions (Updated)
-
-1. **Phase S.15 design is final** - Assumed no further architectural changes
-2. **Custom implementations are replaceable with OSS** - Assumed OSS tools have required capabilities
-3. **Phase S.15 design is achievable** - Assumed migration is feasible
-4. **OSS tools have required capabilities** - Assumed CodeQL, Joern, etc. can handle constitutional queries
-5. **Constitutional IP is correctly identified** - Assumed no novel IP misclassified as commodity
-6. **Commodity infrastructure is correctly identified** - Assumed no commodity misclassified as novel
-7. **Duplications are correctly identified** - Assumed no false positives in duplication detection
-8. **Smells are correctly identified** - Assumed architectural smells are accurate
-9. **Complexity estimates are accurate** - Assumed LOC and complexity estimates are correct
-10. **Phase S.15 alignment is correctly assessed** - Assumed alignment percentages are accurate
-
----
-
-## Areas Requiring Deeper Inspection (Updated)
-
-1. **TypeScript Frontend LOC** - Measure actual lines of code
-2. **Joern integration complexity** - Prototype Joern integration
-3. **Cyclomatic complexity measurement** - Run cyclomatic complexity tool
-4. **OSS tool prototyping** - Prototype key OSS integrations (Tree-sitter, Joern, CodeQL)
-5. **Compiler IR vs Constitutional IR authority distinction** - Resolve as a forensic objective
-6. **Execution authority distribution** - Verify before any consolidation recommendation
+| Responsibility | Owner | Duplicates | Mechanical verification | Replay-safe | Evidence complete |
+|---|---|---|---|---|---|
+| Configuration | ConfigurationAuthority | No | Pass | Yes | Yes |
+| Repository | RepositoryAuthority | No | Pass | Yes | Yes |
+| Projection | ProjectionAuthority | No | Pass | Yes | Yes |
+| Identity | IdentityAuthority | No | Pass | Yes | Yes |
+| Canonical Hash | CanonicalHashAuthority | No | Pass | Yes | Yes |
+| Authority Router | AuthorityRouter | No | Pass | Yes | Yes |
+| Execution | ExecutionAuthority | No | Pass | Partial | Partial |
+| Adapter Boundary | Adapter layer | No | Partial | Yes | Partial |
+| Replay Transcript | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Replay Witness | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Replay Equivalence | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Compiler IR | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Constitutional IR | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Evidence Graph | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Capability Authority | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Governance Authority | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Scheduler | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Execution Context | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
+| Authority Registry | Pending verification | Pending verification | Pending verification | Pending verification | Pending verification |
 
 ---
 
@@ -1667,25 +1665,175 @@ The following invariants should govern the audit from this point forward:
 
 ## Conclusion (Updated)
 
-This Pre-Audit Readiness Report provides a comprehensive investigation of the Constitutional Compiler repository, now including the recovered runtime kernel. The repository is in medium stage with very high constitutional maturity and medium technical debt. The Phase S.15 architectural design represents a significant evolution that aligns with OSS integration best practices.
+This report is now an ownership-evidence document. The repository has already demonstrated concrete authority implementations for configuration, repository, projection, identity, hashing, routing, and execution. The remaining work is to prove those authorities mechanically and to resolve the remaining ownership questions around replay, witness, IR, evidence graph, capability, governance, scheduling, execution context, and authority registry.
 
 **Key Findings:**
-- 92 TypeScript modules implemented (31 in constitutional-compiler, 61 in runtime/kernel)
-- Runtime kernel recovered from broken Git submodule and committed
-- Runtime kernel implements comprehensive constitutional architecture (authority-based, event-driven)
-- Constitutional-compiler implements commodity infrastructure (should wrap OSS)
-- Constitutional reasoning engines are well-implemented and represent unique value
-- Significant technical debt in constitutional-compiler commodity infrastructure (graph algorithms, execution, parsing, query, LSP, repair)
-- Duplicate caching mechanisms should be consolidated
-- Phase S.15 alignment is 65% (increased from 45% due to runtime kernel)
-- Migration readiness is high due to clear module boundaries and well-defined interfaces
-- OSS integration readiness is high due to minimal external dependencies
+- Configuration ownership is now implemented and provable through [runtime/config/configuration_authority.py](../../runtime/config/configuration_authority.py).
+- Repository ownership is now implemented and provable through [runtime/authorities/repository_authority.py](../../runtime/authorities/repository_authority.py).
+- Projection ownership is now implemented and provable through [runtime/authorities/projection_authority.py](../../runtime/authorities/projection_authority.py).
+- Identity and hash ownership are now implemented and provable through [runtime/authorities/identity_authority.py](../../runtime/authorities/identity_authority.py) and [runtime/authorities/canonical_hash_authority.py](../../runtime/authorities/canonical_hash_authority.py).
+- Execution ownership is now implemented and provable through [runtime/authorities/execution_authority.py](../../runtime/authorities/execution_authority.py).
+- The remaining constitutional questions are ownership proofs rather than implementation tasks.
 
 **Next Steps:**
-1. Establish a specification-first workflow and create the initial spec manifests.
-2. Create the constitutional ownership registry and bind every authority to one owner and one specification.
-3. Execute a read-only constitutional audit covering authorities, adapters, replay, hashing, and execution responsibilities.
-4. Replace confidence language with evidence-level classification and require file/symbol/implementation/test references for every finding.
-5. Only after Wave 0 evidence is complete should Wave 1 replacement work begin.
+1. Record file-level and symbol-level ownership proof for each remaining authority.
+2. Produce import-path and runtime-call evidence for each remaining authority.
+3. Complete replay and witness ownership verification.
+4. Resolve the IR and evidence-graph ownership boundary questions before any architectural change.
 
-**Evidence Level:** Strong Evidence for the boundary and ownership observations; implementation-level conclusions remain pending verification.
+---
+
+## Executive Summary
+
+This report is now a constitutional proof document. The objective is no longer to propose implementation work. The objective is to prove whether each constitutional responsibility has exactly one authoritative owner and whether that ownership can be demonstrated mechanically.
+
+The document is structured as follows:
+- Constitutional Proof Program
+- Phase Ω Evidence Collection
+- Proven Invariants
+- Constitutional Proof Matrix
+- Appendices
+
+The earlier T-00x and B-00x inventory sections are superseded. They are retained only as provenance material and should not be treated as the primary freeze gate.
+
+## Constitutional Proof Program
+
+The current phase is evidence collection. The audit should answer one question only:
+
+> Does every constitutional responsibility have exactly one authoritative owner, and can that ownership be proven mechanically?
+
+### Proof workflow
+1. Identify the constitutional responsibility.
+2. Locate the authoritative implementation and the symbol that owns it.
+3. Search for duplicate implementations or alternate owners.
+4. Prove the dependency path from runtime callers to the authority.
+5. Record the mechanical verification result.
+6. Record whether the authority is replay-safe.
+
+### Proof artifacts required for each authority
+- Owner: exactly one implementation
+- Duplicate search: pass/fail
+- Ownership proof: file + symbol + import path
+- Dependency proof: runtime call graph or import graph
+- Mechanical proof: test, import, or grep-based verification
+- Replay proof: whether the authority is replay-safe and kernel-owned
+
+No recommendations, no implementation refactors, and no speculative architecture changes are recorded here. This document is evidence-only.
+
+## Phase Ω — Evidence Collection
+
+The old blocker list is retired. The current objective is not implementation but proof. The audit now records whether each constitutional responsibility has a single owner and whether that ownership is mechanically verifiable.
+
+### Proven invariants
+- Configuration ownership is proven through [runtime/config/configuration_authority.py](../../runtime/config/configuration_authority.py) and [runtime/configuration.py](../../runtime/configuration.py).
+- Repository ownership is proven through [runtime/authorities/repository_authority.py](../../runtime/authorities/repository_authority.py) and [runtime/adapters/repository_adapter.py](../../runtime/adapters/repository_adapter.py).
+- Projection ownership is proven through [runtime/authorities/projection_authority.py](../../runtime/authorities/projection_authority.py).
+- Identity ownership is proven through [runtime/authorities/identity_authority.py](../../runtime/authorities/identity_authority.py).
+- Canonical hashing is proven through [runtime/authorities/canonical_hash_authority.py](../../runtime/authorities/canonical_hash_authority.py).
+- Authority routing is proven through [runtime/authorities/authority_router.py](../../runtime/authorities/authority_router.py).
+- Execution ownership is implemented through [runtime/authorities/execution_authority.py](../../runtime/authorities/execution_authority.py) and verified by a direct runtime import and execution test.
+
+### Remaining ownership questions
+- Replay Transcript
+- Replay Witness
+- Replay Equivalence
+- Compiler IR
+- Constitutional IR
+- Evidence Graph
+- Capability Authority
+- Governance Authority
+- Scheduler
+- Execution Context
+- Authority Registry
+
+These remain constitutional verification questions, not implementation tasks.
+
+## Supporting Evidence
+
+### Authority routing matrix
+
+| Resource | Owning Authority | Authorized Callers | Actual Callers | Status |
+|---|---|---|---|---|
+| PostgreSQL | RepositoryAuthority / EventAuthority | RepositoryAuthority, EventAuthority | [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py), [repository_scanner.py](../../repository_scanner.py), [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py) | BLOCKING |
+| Qdrant | ProjectionAuthority / RetrievalAuthority | ProjectionAuthority, RetrievalAuthority | [runtime/retrieval/retrieval_service.py](../../runtime/retrieval/retrieval_service.py), [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py), [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py) | BLOCKING |
+| Filesystem | RepositoryAuthority | RepositoryAuthority | [repository_scanner.py](../../repository_scanner.py), [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py) | BLOCKING |
+| Configuration | SecretAdapter / ConfigurationAuthority | ConfigurationAuthority | [runtime/configuration.py](../../runtime/configuration.py), [runtime/constitutional/secret_adapter.py](../../runtime/constitutional/secret_adapter.py) | BLOCKING |
+| Identity / Hash | IdentityAuthority / CanonicalHashAuthority | Canonical identity and hash authorities | [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py), [repository_scanner.py](../../repository_scanner.py) | BLOCKING |
+
+### Python worker audit
+
+| Component | PostgreSQL | SQL direct | Filesystem | Hashes | IDs | Env | Qdrant | Status |
+|---|---|---|---|---|---|---|---|---|
+| [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py) | Yes | Yes | No | Yes | Yes | Yes | No | BLOCKING |
+| [repository_scanner.py](../../repository_scanner.py) | Yes | Yes | Yes | Yes | Yes | Yes | No | BLOCKING |
+| [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py) | Yes | Yes | No | No | No | Yes | Yes | BLOCKING |
+| [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py) | No | No | Yes | Yes | No | Yes | Yes | BLOCKING |
+| [runtime/retrieval/retrieval_service.py](../../runtime/retrieval/retrieval_service.py) | No | No | No | No | No | No | Yes | BLOCKING |
+| [runtime/adapters/inference_adapter.py](../../runtime/adapters/inference_adapter.py) | No | No | No | No | No | Yes | No | VERIFIED |
+| [runtime/adapters/ollama_provider_adapter.py](../../runtime/adapters/ollama_provider_adapter.py) | No | No | No | No | No | No | No | VERIFIED |
+
+### Constitutional surface area metric
+
+| Subsystem | Commodity % | Constitutional % |
+|---|---:|---:|
+| Parsing | 98 | 2 |
+| Repository | 70 | 30 |
+| Governance | 5 | 95 |
+| Compiler | 10 | 90 |
+| Projection | 60 | 40 |
+| Retrieval | 70 | 30 |
+| Identity / Hash | 20 | 80 |
+
+### OSS integration posture
+
+#### Constitutional IP
+Never outsource these capabilities:
+- compiler
+- ownership graph
+- capability system
+- constitutional diagnostics
+- provenance
+- evidence graph
+
+#### Commodity
+Evaluate OSS first for these capabilities:
+- parsing
+- static analysis
+- refactoring
+- graph storage
+- vector DB
+- SQL
+- workflow orchestration
+- event streaming
+- object storage
+- identity / auth
+- policy engine
+- secrets
+- observability
+
+### Mechanical verification summary
+
+| Verification | Evidence | Status |
+|---|---|---|
+| No unauthorized `psycopg2.connect` | [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py), [repository_scanner.py](../../repository_scanner.py), [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py) | FAIL |
+| No unauthorized Qdrant client usage | [runtime/retrieval/retrieval_service.py](../../runtime/retrieval/retrieval_service.py), [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py), [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py) | FAIL |
+| No unauthorized `os.getenv` outside bootstrap | [runtime/configuration.py](../../runtime/configuration.py), [runtime/constitutional/secret_adapter.py](../../runtime/constitutional/secret_adapter.py), [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py) | FAIL |
+| No direct hashing outside canonical authority | [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py), [repository_scanner.py](../../repository_scanner.py), [runtime/projection_worker/constitutional_projection_worker.py](../../runtime/projection_worker/constitutional_projection_worker.py) | FAIL |
+| No direct replay outside ReplayAuthority | [runtime/kernel/replay/replay-authority.ts](../../runtime/kernel/replay/replay-authority.ts) | PASS |
+
+## Appendices
+
+### Appendix A — Superseded audit inventory
+This report supersedes the earlier T-001 through T-008 and B-001 through B-005 inventory sections. Those labels are retired and should not be used as the primary freeze gate.
+
+### Appendix B — Verified implementation facts
+- Governance scaffold is present and executable.
+- The runtime kernel exposes concrete authority implementations for replay, capability, governance, scheduler, repository, and witness.
+- Inference ownership is structurally compliant.
+
+### Appendix C — Legacy evidence notes
+The following earlier artifacts remain useful as provenance only and should not be edited as primary sources:
+- [constitutional-compiler/audit/pre-audit-readiness-report-updated.md](../pre-audit-readiness-report-updated.md)
+- [runtime/adapters/google_drive/google_drive_ingestion_adapter.py](../../runtime/adapters/google_drive/google_drive_ingestion_adapter.py)
+- [repository_scanner.py](../../repository_scanner.py)
+- [runtime/kernel/workers/qdrant_projection_worker.py](../../runtime/kernel/workers/qdrant_projection_worker.py)

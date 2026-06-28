@@ -13,12 +13,12 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import logging
-import subprocess
 import json
 import time
 import uuid
 from typing import List, Dict, Any, Optional
 from kernel.event_dispatcher import Event, get_dispatcher, register_event_handlers
+from runtime.authorities.execution_authority import ExecutionAuthority
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,14 +35,13 @@ BATCH_SIZE = 10
 
 
 def run_psql_query(query):
-    """Run psql query via docker exec."""
+    """Run psql query via docker exec through the execution authority."""
     try:
-        cmd = f'docker exec {POSTGRES_CONTAINER} psql -U {POSTGRES_USER} -d {POSTGRES_DB} -t -c "{query}"'
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            capture_output=True,
-            text=True
+        authority = ExecutionAuthority()
+        result = authority.run_command(
+            'docker',
+            ['exec', POSTGRES_CONTAINER, 'psql', '-U', POSTGRES_USER, '-d', POSTGRES_DB, '-t', '-c', query],
+            timeout=30,
         )
         if result.returncode != 0:
             logger.error(f"Query failed: {result.stderr}")

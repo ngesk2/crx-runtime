@@ -11,7 +11,11 @@ returns the combined result. It does NOT call Ollama itself.
 import sys
 import os
 import json
-import subprocess
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, ROOT)
+
+from runtime.authorities.execution_authority import ExecutionAuthority
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 TOOL_ROUTER = os.path.join(ROOT, 'runtime', 'tool_router.py')
@@ -21,11 +25,12 @@ DEFAULT_TOOLSET = ['authority_search', 'contradiction_search', 'graph_expand', '
 
 def call_tool(tool, args):
     payload = {'tool': tool, 'args': args}
-    proc = subprocess.run(['python', TOOL_ROUTER], input=json.dumps(payload).encode('utf-8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if proc.returncode != 0:
-        return {'error': proc.stderr.decode('utf-8')}
+    authority = ExecutionAuthority()
+    result = authority.run_command('python', [TOOL_ROUTER], timeout=30, input_data=json.dumps(payload).encode('utf-8'))
+    if result.returncode != 0:
+        return {'error': result.stderr}
     try:
-        out = json.loads(proc.stdout.decode('utf-8'))
+        out = json.loads(result.stdout)
     except Exception:
         return {'error': 'invalid router response'}
     if not out.get('success'):

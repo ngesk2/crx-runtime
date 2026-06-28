@@ -60,8 +60,10 @@ if SECRET_ADAPTER_AVAILABLE:
     GOOGLE_DRIVE_FOLDER_ID = google_drive_config.get('folder_id', '')
 else:
     # Fallback to environment variables
-    GOOGLE_DRIVE_CREDENTIALS_PATH = os.getenv('GOOGLE_DRIVE_CREDENTIALS_PATH', 'credentials.json')
-    GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', '')
+    _config = ConfigurationAuthority.current()
+    _drive_cfg = _config.get_google_drive_config()
+    GOOGLE_DRIVE_CREDENTIALS_PATH = _drive_cfg.get('credentials_path', 'credentials.json')
+    GOOGLE_DRIVE_FOLDER_ID = _drive_cfg.get('folder_id', '')
 
 class GoogleDriveIngestionAdapter:
     """Adapter for ingesting documents from Google Drive."""
@@ -234,16 +236,18 @@ class EventStore:
                 print("EventStore: Connected to PostgreSQL via SecretAdapter")
             except Exception as e:
                 print(f"EventStore: Failed to connect via SecretAdapter: {e}")
-                # Fallback to environment variables
+                # Fallback to ConfigurationAuthority
                 try:
+                    from runtime.config.configuration_authority import ConfigurationAuthority
+                    _fb_cfg = ConfigurationAuthority.current().get_postgres_config()
                     self.conn = psycopg2.connect(
-                        host=os.getenv('POSTGRES_HOST', 'localhost'),
-                        port=os.getenv('POSTGRES_PORT', '5432'),
-                        database=os.getenv('POSTGRES_DB', 'crx_runtime'),
-                        user=os.getenv('POSTGRES_USER', 'postgres'),
-                        password=os.getenv('POSTGRES_PASSWORD', '')
+                        host=_fb_cfg.get('host', 'localhost'),
+                        port=_fb_cfg.get('port', '5432'),
+                        database=_fb_cfg.get('database', 'crx_runtime'),
+                        user=_fb_cfg.get('user', 'postgres'),
+                        password=_fb_cfg.get('password', '')
                     )
-                    print("EventStore: Connected to PostgreSQL via fallback")
+                    print("EventStore: Connected to PostgreSQL via ConfigurationAuthority")
                 except Exception as e2:
                     print(f"EventStore: Failed to connect via fallback: {e2}")
     

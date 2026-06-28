@@ -14,9 +14,9 @@ from typing import List, Dict, Optional
 from pathlib import Path
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
-from sentence_transformers import SentenceTransformer
 
 from runtime.constitutional.secret_adapter import get_secret_adapter
+from runtime.authorities.embedding_authority import EmbeddingAuthority
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +40,13 @@ class RetrievalService:
             api_key=self.qdrant_api_key
         )
         
-        # Initialize embedding model
-        self.embed_model = os.getenv("EMBED_MODEL", "nomic-embed-text")
+        self.embedding_authority = EmbeddingAuthority(self.configuration)
+        
+        # Initialize embedding model from configuration authority
+        _icfg = self.configuration.get_inference_config()
+        self.embed_model = _icfg.get('embedding_model', 'nomic-embed-text')
         logger.info(f"Loading embedding model: {self.embed_model}")
-        self.embedding_model = SentenceTransformer(self.embed_model)
+        self.embedding_model = self.embedding_authority.load_model(self.embed_model)
         
         logger.info("Retrieval Service initialized")
     

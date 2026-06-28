@@ -83,8 +83,8 @@ class JWTAuth:
             return key
         else:
             # Fallback for development/testing
-            import os
-            return os.getenv('JWT_SECRET', 'dev-signing-key-change-in-production')
+            from runtime.config.configuration_authority import ConfigurationAuthority
+            return ConfigurationAuthority.current().get_secret('jwt_secret') or 'dev-signing-key-change-in-production'
     
     def create_token(
         self,

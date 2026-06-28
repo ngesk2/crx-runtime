@@ -21,26 +21,12 @@ except ImportError:
 import os
 import sys
 from pathlib import Path
+from runtime.config.configuration_authority import ConfigurationAuthority
 
-# Add constitutional directory to path for SecretAdapter
-sys.path.append(str(Path(__file__).parent.parent / 'constitutional'))
-
-try:
-    from secret_adapter import get_secret_adapter
-    SECRET_ADAPTER_AVAILABLE = True
-except ImportError:
-    SECRET_ADAPTER_AVAILABLE = False
-
-# Configuration - Use SecretAdapter for secrets
-if SECRET_ADAPTER_AVAILABLE:
-    secret_adapter = get_secret_adapter()
-    qdrant_config = secret_adapter.get_qdrant_config()
-    QDRANT_HOST = qdrant_config.get('host', 'localhost')
-    QDRANT_PORT = qdrant_config.get('port', 6333)
-else:
-    # Fallback to environment variables
-    QDRANT_HOST = os.getenv('QDRANT_HOST', 'localhost')
-    QDRANT_PORT = int(os.getenv('QDRANT_PORT', 6333))
+# Configuration - Single source via ConfigurationAuthority
+_qdrant_cfg = ConfigurationAuthority.current().get_qdrant_config()
+QDRANT_HOST = _qdrant_cfg.get('host', 'localhost')
+QDRANT_PORT = int(_qdrant_cfg.get('port', 6333))
 
 COLLECTION_NAME = "constitutional_memory"
 

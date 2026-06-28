@@ -16,14 +16,18 @@ This script:
 import os
 import hvac
 from typing import Dict
+from runtime.config.configuration_authority import ConfigurationAuthority
 
 
 def setup_vault():
     """Setup Vault with KV v2 and initial secrets."""
     
-    # Vault configuration
-    vault_url = os.getenv('VAULT_URL', 'http://localhost:8200')
-    root_token = os.getenv('VAULT_DEV_ROOT_TOKEN_ID', 'root')
+    # Vault configuration from Authority
+    from runtime.config.configuration_authority import ConfigurationAuthority
+    _config = ConfigurationAuthority.current()
+    vault_cfg = _config.get_vault_config()
+    vault_url = vault_cfg.get('url', 'http://localhost:8200')
+    root_token = vault_cfg.get('dev_root_token_id', 'root')
     
     print(f"Connecting to Vault at {vault_url}")
     
@@ -84,28 +88,29 @@ def setup_vault():
     # Store initial secrets from environment (development mode)
     print("\nStoring initial secrets from environment...")
     
+    _cfg = ConfigurationAuthority.current()
     secrets_to_store = {
         'openai': {
-            'api_key': os.getenv('OPENAI_API_KEY', 'dev-key-placeholder')
+            'api_key': _cfg.get_secret('openai_api_key') or 'dev-key-placeholder'
         },
         'anthropic': {
-            'api_key': os.getenv('ANTHROPIC_API_KEY', 'dev-key-placeholder')
+            'api_key': _cfg.get_secret('anthropic_api_key') or 'dev-key-placeholder'
         },
         'postgres': {
-            'password': os.getenv('POSTGRES_PASSWORD', 'dev-password'),
-            'user': os.getenv('POSTGRES_USER', 'postgres'),
-            'host': os.getenv('POSTGRES_HOST', 'localhost'),
-            'port': os.getenv('POSTGRES_PORT', '5432'),
-            'database': os.getenv('POSTGRES_DB', 'crx_runtime')
+            'password': _cfg.get_postgres_config().get('password', 'dev-password'),
+            'user': _cfg.get_postgres_config().get('user', 'postgres'),
+            'host': _cfg.get_postgres_config().get('host', 'localhost'),
+            'port': _cfg.get_postgres_config().get('port', '5432'),
+            'database': _cfg.get_postgres_config().get('database', 'crx_runtime')
         },
         'qdrant': {
-            'api_key': os.getenv('QDRANT_API_KEY', 'dev-key-placeholder')
+            'api_key': _cfg.get_qdrant_config().get('api_key', 'dev-key-placeholder')
         },
         'jwt': {
-            'signing_key': os.getenv('JWT_SECRET', 'dev-signing-key-placeholder')
+            'signing_key': _cfg.get_secret('jwt_secret') or 'dev-signing-key-placeholder'
         },
         'google-drive': {
-            'client_secret': os.getenv('GOOGLE_CLIENT_SECRET', 'dev-secret-placeholder')
+            'client_secret': _cfg.get_secret('google_client_secret') or 'dev-secret-placeholder'
         }
     }
     

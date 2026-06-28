@@ -66,7 +66,7 @@ function lintGovernance(repoRoot) {
   return {
     ok: errors.length === 0,
     errors,
-    summary: `Governance scaffold checked: ${requiredSpecDirs.length} spec directories, ADR directory, authority registry, capability registry.`,
+    summary: `Governance specs checked: ${requiredSpecDirs.length} spec directories, ADR directory, authority registry, capability registry.`,
   };
 }
 

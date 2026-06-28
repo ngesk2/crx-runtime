@@ -21,15 +21,9 @@ import json
 from datetime import datetime
 from typing import Dict, Any, List
 from pathlib import Path
+from runtime.config.configuration_authority import ConfigurationAuthority
 
-# Add constitutional directory to path for SecretAdapter
-sys.path.append(str(Path(__file__).parent.parent / 'constitutional'))
-
-try:
-    from secret_adapter import get_secret_adapter
-    SECRET_ADAPTER_AVAILABLE = True
-except ImportError:
-    SECRET_ADAPTER_AVAILABLE = False
+_config = ConfigurationAuthority.current()
 
 try:
     from qdrant_client import QdrantClient
@@ -39,19 +33,12 @@ except ImportError:
     QDRANT_AVAILABLE = False
     print("qdrant-client not installed. Install with: pip install qdrant-client")
 
-# Configuration - Use SecretAdapter for secrets
-VAULT_PATH = os.getenv('VAULT_PATH', r'C:\Users\nolan\PING\vault')
+# Configuration - Single source via ConfigurationAuthority
+VAULT_PATH = _config.get_path_config().get('vault_path', r'C:\Users\nolan\PING\vault')
 PROJECTION_MANIFEST_PATH = os.path.join(VAULT_PATH, 'projection_manifest.json')
-
-if SECRET_ADAPTER_AVAILABLE:
-    secret_adapter = get_secret_adapter()
-    qdrant_config = secret_adapter.get_qdrant_config()
-    QDRANT_HOST = qdrant_config.get('host', 'localhost')
-    QDRANT_PORT = qdrant_config.get('port', 6333)
-else:
-    # Fallback to environment variables
-    QDRANT_HOST = os.getenv('QDRANT_HOST', 'localhost')
-    QDRANT_PORT = int(os.getenv('QDRANT_PORT', 6333))
+_qdrant_cfg = _config.get_qdrant_config()
+QDRANT_HOST = _qdrant_cfg.get('host', 'localhost')
+QDRANT_PORT = int(_qdrant_cfg.get('port', 6333))
 
 COLLECTION_NAME = "constitutional_memory"
 
