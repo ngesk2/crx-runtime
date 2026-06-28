@@ -19,10 +19,9 @@ Constitutional principle: Authority is DECLARED by class, not scored.
 import sys
 import os
 import json
-import hashlib
 from datetime import datetime
+from runtime.authorities.authority_router import AuthorityRouter
 
-# Constitutional: authority class hierarchy (declared, not scored)
 AUTHORITY_CLASSES = [
     "CONSTITUTIONAL_LAW",
     "CANONICAL_SPEC",
@@ -38,40 +37,40 @@ AUTHORITY_CLASSES = [
 
 AUTHORITY_CLASS_ORDER = {cls: idx for idx, cls in enumerate(AUTHORITY_CLASSES)}
 
+_CLASS_MAPPING = {
+    'constitutional law': 'CONSTITUTIONAL_LAW',
+    'constitutional': 'CONSTITUTIONAL_LAW',
+    'constitutional_law': 'CONSTITUTIONAL_LAW',
+    'canonical spec': 'CANONICAL_SPEC',
+    'canonical': 'CANONICAL_SPEC',
+    'canonical_spec': 'CANONICAL_SPEC',
+    'canonical_specification': 'CANONICAL_SPEC',
+    'creator research': 'CREATOR_RESEARCH',
+    'creator_research': 'CREATOR_RESEARCH',
+    'creator notes': 'CREATOR_NOTES',
+    'creator_notes': 'CREATOR_NOTES',
+    'imported document': 'IMPORTED_DOCUMENT',
+    'imported_document': 'IMPORTED_DOCUMENT',
+    'repository documentation': 'REPOSITORY_DOCUMENTATION',
+    'repository_documentation': 'REPOSITORY_DOCUMENTATION',
+    'scripts': 'SCRIPT',
+    'script': 'SCRIPT',
+    'summaries': 'SUMMARY',
+    'summary': 'SUMMARY',
+    'ai generated analysis': 'AI_GENERATED_ANALYSIS',
+    'ai_generated_analysis': 'AI_GENERATED_ANALYSIS',
+    'analysis': 'AI_GENERATED_ANALYSIS',
+    'temporary observations': 'TEMPORARY_OBSERVATION',
+    'temporary_observation': 'TEMPORARY_OBSERVATION',
+    'temporary_observations': 'TEMPORARY_OBSERVATION',
+    'observation': 'TEMPORARY_OBSERVATION',
+}
+
 
 def resolve_authority_class(category: str) -> str:
-    """Map category string to declared authority class."""
     if category.upper() in AUTHORITY_CLASSES:
         return category.upper()
-    mapping = {
-        'constitutional law': 'CONSTITUTIONAL_LAW',
-        'constitutional': 'CONSTITUTIONAL_LAW',
-        'constitutional_law': 'CONSTITUTIONAL_LAW',
-        'canonical spec': 'CANONICAL_SPEC',
-        'canonical': 'CANONICAL_SPEC',
-        'canonical_spec': 'CANONICAL_SPEC',
-        'canonical_specification': 'CANONICAL_SPEC',
-        'creator research': 'CREATOR_RESEARCH',
-        'creator_research': 'CREATOR_RESEARCH',
-        'creator notes': 'CREATOR_NOTES',
-        'creator_notes': 'CREATOR_NOTES',
-        'imported document': 'IMPORTED_DOCUMENT',
-        'imported_document': 'IMPORTED_DOCUMENT',
-        'repository documentation': 'REPOSITORY_DOCUMENTATION',
-        'repository_documentation': 'REPOSITORY_DOCUMENTATION',
-        'scripts': 'SCRIPT',
-        'script': 'SCRIPT',
-        'summaries': 'SUMMARY',
-        'summary': 'SUMMARY',
-        'ai generated analysis': 'AI_GENERATED_ANALYSIS',
-        'ai_generated_analysis': 'AI_GENERATED_ANALYSIS',
-        'analysis': 'AI_GENERATED_ANALYSIS',
-        'temporary observations': 'TEMPORARY_OBSERVATION',
-        'temporary_observation': 'TEMPORARY_OBSERVATION',
-        'temporary_observations': 'TEMPORARY_OBSERVATION',
-        'observation': 'TEMPORARY_OBSERVATION',
-    }
-    return mapping.get(category.lower().replace('-', '_'), 'TEMPORARY_OBSERVATION')
+    return _CLASS_MAPPING.get(category.lower().replace('-', '_'), 'TEMPORARY_OBSERVATION')
 
 
 def mechanical_verification(candidate: dict) -> dict:
@@ -128,45 +127,7 @@ def mechanical_verification(candidate: dict) -> dict:
 
 def try_postgres_search(query):
     try:
-        import psycopg2
-        import psycopg2.extras
-    except Exception:
-        return None
-    try:
-        conn = psycopg2.connect(
-            host=os.getenv('POSTGRES_HOST', 'localhost'),
-            port=int(os.getenv('POSTGRES_PORT', '5432')),
-            database=os.getenv('POSTGRES_DB', 'crx_runtime'),
-            user=os.getenv('POSTGRES_USER', 'postgres'),
-            password=os.getenv('POSTGRES_PASSWORD', '')
-        )
-        conn.autocommit = True
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        q = "%" + query + "%"
-        cur.execute("""
-            SELECT ao.*, 
-                   (SELECT COUNT(*) FROM authority_lineage al 
-                    WHERE al.ancestor = ao.artifact_id OR al.descendant = ao.artifact_id) as lineage_depth,
-                   (SELECT COUNT(*) FROM authority_witness aw WHERE aw.artifact_id = ao.artifact_id) as witness_count
-            FROM authority_objects ao 
-            WHERE ao.title ILIKE %s OR ao.description ILIKE %s 
-            ORDER BY ao.authority_level DESC 
-            LIMIT 50
-        """, (q, q))
-        cands = [dict(r) for r in cur.fetchall()]
-
-        superseded = set()
-        try:
-            cur.execute("SELECT superseded, superseded_by FROM authority_supersession")
-            for r in cur.fetchall():
-                s, by = r
-                if by:
-                    superseded.add(s)
-        except Exception:
-            conn.rollback()
-            pass
-        cur.close(); conn.close()
-        return cands, superseded
+        return AuthorityRouter.query("repository", "search_authorities", query=query)
     except Exception:
         return None
 
@@ -197,58 +158,12 @@ def load_local_authorities(query):
 
 
 def try_qdrant_fallback(query):
-    """
-    Qdrant fallback — retrieval only, NOT truth.
-    Searches constitutional_documents collection and returns results
-    tagged as unverified TEMPORARY_OBSERVATION.
-    """
     try:
-        from qdrant_client import QdrantClient
+        results = AuthorityRouter.query("projection", "search_collection", query=query, limit=10)
     except Exception:
         return None
-    try:
-        qdrant_url = os.getenv('QDRANT_URL', 'http://localhost:6333')
-        qdrant_api_key = os.getenv('QDRANT_API_KEY', '')
-        client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
-        collections = [c.name for c in client.get_collections().collections]
-        target = 'constitutional_documents' if 'constitutional_documents' in collections else (
-            'constitutional_memory' if 'constitutional_memory' in collections else None
-        )
-        if not target:
-            return None
-    except Exception:
+    if results is None:
         return None
-
-    # Generate embedding for the query
-    embedding = None
-    try:
-        import requests
-        ollama_base = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
-        embed_model = os.getenv('EMBED_MODEL', 'nomic-embed-text')
-        resp = requests.post(
-            f'{ollama_base}/api/embeddings',
-            json={'model': embed_model, 'prompt': query},
-            timeout=30
-        )
-        if resp.status_code == 200:
-            embedding = resp.json().get('embedding')
-    except Exception:
-        pass
-
-    if not embedding:
-        return None
-
-    # Search Qdrant
-    try:
-        results = client.search(
-            collection_name=target,
-            query_vector=embedding,
-            limit=10
-        )
-    except Exception:
-        return None
-
-    # Map results to authority candidates (unverified)
     cands = []
     for r in results:
         payload = r.payload or {}
@@ -267,7 +182,6 @@ def try_qdrant_fallback(query):
             'witness_count': 0,
             '_source': 'qdrant_fallback'
         })
-
     return cands, set()
 
 

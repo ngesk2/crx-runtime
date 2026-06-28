@@ -5,11 +5,15 @@ Rule 5: All worker communication must be structured JSON.
 Natural language communication between workers is forbidden.
 """
 import json
-import subprocess
 import sys
 import os
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, ROOT)
+
+from runtime.authorities.execution_authority import ExecutionAuthority
 
 from .models import WorkerTask, WorkerResponse, WorkerRole
 
@@ -39,17 +43,12 @@ class WorkerProtocol:
         if not os.path.exists(path):
             return {'error': f'missing tool: {path}'}
         try:
-            proc = subprocess.run(
-                [sys.executable, path],
-                input=json.dumps(args).encode('utf-8'),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=timeout
-            )
-            if proc.returncode != 0:
-                return {'error': proc.stderr.decode('utf-8')[:500]}
-            return json.loads(proc.stdout.decode('utf-8'))
-        except subprocess.TimeoutExpired:
+            authority = ExecutionAuthority()
+            result = authority.run([sys.executable, path], timeout=timeout, input_data=json.dumps(args).encode('utf-8'))
+            if result.returncode != 0:
+                return {'error': result.stderr[:500]}
+            return json.loads(result.stdout)
+        except TimeoutError:
             return {'error': f'tool {tool_name} timed out after {timeout}s'}
         except json.JSONDecodeError:
             return {'error': f'invalid JSON from tool {tool_name}'}

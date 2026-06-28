@@ -7,7 +7,11 @@ Output JSON: {"success": true, "data": {...}} or {"success": false, "error": "..
 import sys
 import os
 import json
-import subprocess
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, ROOT)
+
+from runtime.authorities.execution_authority import ExecutionAuthority
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 TOOLS_DIR = os.path.join(ROOT, 'runtime', 'tools')
@@ -26,11 +30,12 @@ def run_script(path, args, timeout=15):
     if not os.path.exists(path):
         return {'error': f'missing tool script: {path}'}
     try:
-        proc = subprocess.run(['python', path], input=json.dumps(args).encode('utf-8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
-        if proc.returncode != 0:
-            return {'error': proc.stderr.decode('utf-8')}
+        authority = ExecutionAuthority()
+        result = authority.run_command('python', [path], timeout=timeout, input_data=json.dumps(args).encode('utf-8'))
+        if result.returncode != 0:
+            return {'error': result.stderr}
         try:
-            return json.loads(proc.stdout.decode('utf-8'))
+            return json.loads(result.stdout)
         except Exception:
             return {'error': 'invalid JSON from tool'}
     except Exception as e:

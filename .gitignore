@@ -126,3 +126,5 @@ docs/.doctrees/
 *.bak
 *.backup
 *.tmp
+.env.base
+.env.example

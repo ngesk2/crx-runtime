@@ -27,6 +27,9 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from runtime.config.configuration_authority import ConfigurationAuthority
+
+_config = ConfigurationAuthority.current()
 
 # Add parent directory to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'adapters'))
@@ -47,21 +50,14 @@ try:
 except ImportError:
     QDRANT_AVAILABLE = False
 
-# Configuration - Use SecretAdapter for secrets
-VAULT_PATH = os.getenv('VAULT_PATH', r'C:\Users\nolan\PING\vault')
-
-if SECRET_ADAPTER_AVAILABLE:
-    secret_adapter = get_secret_adapter()
-    qdrant_config = secret_adapter.get_qdrant_config()
-    QDRANT_HOST = qdrant_config.get('host', 'localhost')
-    QDRANT_PORT = qdrant_config.get('port', 6333)
-else:
-    # Fallback to environment variables
-    QDRANT_HOST = os.getenv('QDRANT_HOST', 'localhost')
-    QDRANT_PORT = int(os.getenv('QDRANT_PORT', 6333))
-
-COLLECTION_NAME = "constitutional_memory"
-EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
+# Configuration - Single source via ConfigurationAuthority
+VAULT_PATH = _config.get_path_config().get('vault_path', r'C:\Users\nolan\PING\vault')
+_qdrant_cfg = _config.get_qdrant_config()
+QDRANT_HOST = _qdrant_cfg.get('host', 'localhost')
+QDRANT_PORT = int(_qdrant_cfg.get('port', 6333))
+_ollama_cfg = _config.get_ollama_config()
+COLLECTION_NAME = _qdrant_cfg.get('collection', 'constitutional_memory')
+EMBEDDING_MODEL = _ollama_cfg.get('embed_model', 'nomic-embed-text')
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 

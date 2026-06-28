@@ -11,64 +11,14 @@ Behavior:
 import sys
 import os
 import json
+from runtime.authorities.authority_router import AuthorityRouter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-
-POSTGRES_DSN = {
-    'host': os.getenv('POSTGRES_HOST', 'localhost'),
-    'port': int(os.getenv('POSTGRES_PORT', '5432')),
-    'database': os.getenv('POSTGRES_DB', 'crx_runtime'),
-    'user': os.getenv('POSTGRES_USER', 'postgres'),
-    'password': os.getenv('POSTGRES_PASSWORD', '')
-}
 
 
 def try_postgres_lineage(artifact_id):
     try:
-        import psycopg2
-        import psycopg2.extras
-    except Exception:
-        return None
-    try:
-        conn = psycopg2.connect(**POSTGRES_DSN)
-        conn.autocommit = True
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        artifact = None
-        try:
-            cur.execute("SELECT * FROM artifact_registry WHERE artifact_id=%s", (artifact_id,))
-            r = cur.fetchone()
-            if r:
-                artifact = dict(r)
-        except Exception:
-            conn.rollback()
-            artifact = None
-        events = []
-        try:
-            cur.execute("SELECT event_id AS id, aggregate_type AS stream, event_type, event_data AS payload, timestamp AS created_at FROM events WHERE event_data::text ILIKE %s ORDER BY timestamp", (f'%{artifact_id}%',))
-            for r in cur.fetchall():
-                events.append({'id': r['id'], 'stream': r['stream'], 'event_type': r['event_type'], 'payload': r['payload'], 'created_at': str(r['created_at'])})
-        except Exception:
-            conn.rollback()
-            events = []
-        projections = []
-        try:
-            cur.execute("SELECT id, projection_data, created_at FROM projections WHERE projection_data::text ILIKE %s ORDER BY created_at", (f'%{artifact_id}%',))
-            for r in cur.fetchall():
-                projections.append({'id': r['id'], 'payload': r['projection_data'], 'created_at': str(r['created_at'])})
-        except Exception:
-            conn.rollback()
-            projections = []
-        authorities = []
-        try:
-            cur.execute("SELECT * FROM authority_lineage WHERE ancestor=%s OR descendant=%s", (artifact_id, artifact_id))
-            for r in cur.fetchall():
-                authorities.append(dict(r))
-        except Exception:
-            conn.rollback()
-            authorities = []
-        cur.close()
-        conn.close()
-        return {'artifact': artifact, 'events': events, 'projections': projections, 'authorities': authorities, 'witness_roots': []}
+        return AuthorityRouter.query("repository", "fetch_lineage_data", artifact_id=artifact_id)
     except Exception:
         return None
 

@@ -10,15 +10,9 @@ import sys
 import os
 import json
 import re
+from runtime.authorities.authority_router import AuthorityRouter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-POSTGRES_DSN = {
-    'host': os.getenv('POSTGRES_HOST', 'localhost'),
-    'port': int(os.getenv('POSTGRES_PORT', '5432')),
-    'database': os.getenv('POSTGRES_DB', 'crx_runtime'),
-    'user': os.getenv('POSTGRES_USER', 'postgres'),
-    'password': os.getenv('POSTGRES_PASSWORD', '')
-}
 NEGATIONS = re.compile(r"\b(no|not|never|none|cannot|can't|without|deny|contradict|refute)\b", re.I)
 
 
@@ -38,32 +32,18 @@ def stance_of_text(claim, text):
 
 
 def try_postgres_search(claim):
+    results = []
     try:
-        import psycopg2
-        import psycopg2.extras
+        for r in AuthorityRouter.query("repository", "search_events_by_payload", query=claim):
+            results.append({'source': 'event', 'id': r['id'], 'stream': r['stream'], 'event_type': r['event_type'], 'payload': r['payload'], 'created_at': str(r['created_at'])})
     except Exception:
-        return None
+        pass
     try:
-        conn = psycopg2.connect(**POSTGRES_DSN)
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        q = '%' + claim + '%'
-        results = []
-        try:
-            cur.execute("SELECT id, stream, event_type, payload, created_at FROM events WHERE payload::text ILIKE %s LIMIT 200", (q,))
-            for r in cur.fetchall():
-                results.append({'source': 'event', 'id': r['id'], 'stream': r['stream'], 'event_type': r['event_type'], 'payload': r['payload'], 'created_at': str(r['created_at'])})
-        except Exception:
-            results = []
-        try:
-            cur.execute("SELECT id, payload, payload_hash, projection_hash, created_at FROM projections WHERE payload::text ILIKE %s LIMIT 200", (q,))
-            for r in cur.fetchall():
-                results.append({'source': 'projection', 'id': r['id'], 'payload': r['payload'], 'payload_hash': r['payload_hash'], 'projection_hash': r['projection_hash'], 'created_at': str(r['created_at'])})
-        except Exception:
-            pass
-        cur.close(); conn.close()
-        return results
+        for r in AuthorityRouter.query("repository", "search_projections_by_payload", query=claim):
+            results.append({'source': 'projection', 'id': r['id'], 'payload': r['payload'], 'payload_hash': r['payload_hash'], 'projection_hash': r['projection_hash'], 'created_at': str(r['created_at'])})
     except Exception:
-        return None
+        pass
+    return results if results else None
 
 
 def load_local_search(claim):

@@ -13,49 +13,22 @@ import sys
 import os
 import json
 from collections import deque
+from runtime.authorities.authority_router import AuthorityRouter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-POSTGRES_DSN = {
-    'host': os.getenv('POSTGRES_HOST', 'localhost'),
-    'port': int(os.getenv('POSTGRES_PORT', '5432')),
-    'database': os.getenv('POSTGRES_DB', 'crx_runtime'),
-    'user': os.getenv('POSTGRES_USER', 'postgres'),
-    'password': os.getenv('POSTGRES_PASSWORD', '')
-}
-
 
 def try_postgres_fetch(node):
+    edges = []
     try:
-        import psycopg2
+        edges.extend(AuthorityRouter.query("repository", "fetch_relationships", node=node))
     except Exception:
-        return None
+        pass
     try:
-        conn = psycopg2.connect(**POSTGRES_DSN)
-        cur = conn.cursor()
-        # Try to fetch relationships where node appears in source or target
-        q = "SELECT source, target, relation_type, metadata FROM object_relationships WHERE source=%s OR target=%s"
-        cur.execute(q, (node, node))
-        rows = cur.fetchall()
-        edges = []
-        for r in rows:
-            source, target, reltype, meta = r
-            edges.append({'source': source, 'target': target, 'type': reltype if reltype else 'related', 'meta': meta})
-        # authority_lineage edges
-        q2 = "SELECT ancestor, descendant, relation, metadata FROM authority_lineage WHERE ancestor=%s OR descendant=%s"
-        try:
-            cur.execute(q2, (node, node))
-            rows2 = cur.fetchall()
-            for r in rows2:
-                anc, desc, rel, meta = r
-                edges.append({'source': anc, 'target': desc, 'type': rel if rel else 'authority_lineage', 'meta': meta})
-        except Exception:
-            pass
-        cur.close()
-        conn.close()
-        return edges
+        edges.extend(AuthorityRouter.query("repository", "fetch_authority_lineage", node=node))
     except Exception:
-        return None
+        pass
+    return edges if edges else None
 
 
 def load_local_data():

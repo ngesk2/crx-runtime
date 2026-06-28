@@ -13,56 +13,19 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import logging
-import subprocess
 import json
 from typing import Dict, Any, Optional
 from kernel.event_dispatcher import Event, EventHandler
+import repository_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-POSTGRES_CONTAINER = "brain-postgres"
-POSTGRES_DB = "crx_runtime"
-POSTGRES_USER = "postgres"
-
-
-def run_psql_query(query):
-    """Run psql query via docker exec."""
-    try:
-        cmd = f'docker exec {POSTGRES_CONTAINER} psql -U {POSTGRES_USER} -d {POSTGRES_DB} -t -c "{query}"'
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            capture_output=True,
-            text=True
-        )
-        if result.returncode != 0:
-            logger.error(f"Query failed: {result.stderr}")
-            return None
-        return result.stdout.strip()
-    except Exception as e:
-        logger.error(f"Error running query: {e}")
-        return None
-
-
 def emit_event(event_type: str, aggregate_id: str, aggregate_type: str, event_data: Dict[str, Any]) -> Optional[str]:
-    """Emit event to PostgreSQL."""
+    """Emit event to PostgreSQL via RepositoryAuthority API."""
     try:
-        import uuid
-        event_id = str(uuid.uuid4())
-
-        query = f"""
-        INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
-        VALUES ('{event_id}', '{event_type}', NOW(), '{aggregate_id}', '{aggregate_type}', '{json.dumps(event_data).replace("'", "''")}'::jsonb)
-        RETURNING event_id
-        """
-
-        result = run_psql_query(query)
-        if result:
-            logger.info(f"Emitted event {event_type} with ID {event_id}")
-            return event_id
-        return None
+        return repository_client.emit_event(event_type, aggregate_id, aggregate_type, event_data)
     except Exception as e:
         logger.error(f"Error emitting event: {e}")
         return None

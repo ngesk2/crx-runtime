@@ -3,6 +3,7 @@ const app = express();
 const { emitInferenceRequest, emitInferenceResponse, emitInferenceFailed } = require('./event_emitter');
 const { Pool } = require('pg');
 const { getInferenceAdapter } = require('./inference_adapter');
+const { RepositoryStore } = require('./repository_store');
 
 // PostgreSQL pool for event queries
 const eventPool = new Pool({
@@ -15,6 +16,9 @@ const eventPool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 });
+
+const repoStore = new RepositoryStore(eventPool);
+repoStore.initialize().catch(err => console.error('Failed to initialize repository store:', err));
 
 app.use(express.json());
 
@@ -459,6 +463,82 @@ app.get('/context/daily-activity', async (req, res) => {
     res.json({ activity: result.rows[0] });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] CONTEXT ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Repository Authority API
+
+app.post('/api/v1/events', async (req, res) => {
+  try {
+    const { event_id, event_type, aggregate_id, aggregate_type, event_data } = req.body;
+    if (!event_type || !aggregate_id || !aggregate_type || !event_data) {
+      return res.status(400).json({ error: 'event_type, aggregate_id, aggregate_type, and event_data are required' });
+    }
+    const id = event_id || require('crypto').randomUUID();
+    await eventPool.query(`
+      INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+      VALUES ($1, $2, NOW(), $3, $4, $5)
+      ON CONFLICT (event_id) DO NOTHING
+    `, [id, event_type, aggregate_id, aggregate_type, JSON.stringify(event_data)]);
+    res.status(201).json({ event_id: id });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] EVENT EMIT ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/v1/repository/objects', async (req, res) => {
+  try {
+    const { object_id, kind, data, metadata } = req.body;
+    if (!kind || data === undefined) {
+      return res.status(400).json({ error: 'kind and data are required' });
+    }
+    const id = await repoStore.append({ object_id, kind, data, metadata });
+    res.status(201).json({ object_id: id, kind, data, metadata });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] REPOSITORY APPEND ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/v1/repository/objects/:id', async (req, res) => {
+  try {
+    const obj = await repoStore.load(req.params.id);
+    if (!obj) return res.status(404).json({ error: 'Object not found' });
+    res.json(obj);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] REPOSITORY LOAD ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/v1/repository/objects', async (req, res) => {
+  try {
+    const { kind, query, limit } = req.query;
+    let filters = {};
+    if (req.query.filters) {
+      try { filters = JSON.parse(req.query.filters); } catch (e) { /* ignore */ }
+    }
+    const results = await repoStore.search({
+      kind: kind || undefined,
+      query: query || undefined,
+      filters,
+      limit: parseInt(limit) || 100,
+    });
+    res.json({ results, total: results.length });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] REPOSITORY SEARCH ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/v1/repository/objects/:id', async (req, res) => {
+  try {
+    await repoStore.delete(req.params.id);
+    res.json({ deleted: true });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] REPOSITORY DELETE ERROR: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
