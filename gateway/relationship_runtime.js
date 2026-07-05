@@ -35,6 +35,8 @@
 
 const { RelationshipEdgeObject, RelationshipProposalObject } = require('./relationship_objects');
 const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
+const { identityAuthority } = require('./identity_authority');
 
 class RelationshipRuntime {
   constructor() {
@@ -51,7 +53,6 @@ class RelationshipRuntime {
    */
   generate(knowledgeObjects, parserObjects) {
     const edges = [];
-    const proposalId = this._generateProposalId();
 
     // Generate CALLS edges from call graph
     const callsEdges = this._generateCallsEdges(parserObjects.callGraph, knowledgeObjects.functions);
@@ -76,6 +77,9 @@ class RelationshipRuntime {
     // Generate OWNS edges from class properties
     const ownsEdges = this._generateOwnsEdges(knowledgeObjects.classes);
     edges.push(...ownsEdges);
+
+    // Generate proposal ID from edges (constitutional: CanonicalBytes → CanonicalHash → Identity)
+    const proposalId = this._generateProposalId(edges);
 
     // Build relationship proposal
     const proposalBuilder = new RelationshipProposalObject(edges, proposalId);
@@ -295,6 +299,7 @@ class RelationshipRuntime {
 
   /**
    * Generate OWNS edges from class properties
+   * Constitutional Constraint: Properties and methods must be constitutional objects
    * @param {Array} classes - Class knowledge objects
    * @returns {Array} OWNS edges
    */
@@ -303,10 +308,21 @@ class RelationshipRuntime {
 
     for (const cls of classes) {
       for (const prop of cls.payload.properties) {
-        // Create OWNS edge from class to property
-        // In production, you'd have separate property knowledge objects
-        // For now, we'll use a placeholder ID
-        const propertyId = `${cls.id}_property_${prop.name}`;
+        // Constitutional Constraint: Properties should be constitutional objects
+        // For now, generate canonical ID from property data
+        const propertyCanonicalData = {
+          class_id: cls.id,
+          property_name: prop.name,
+          property_type: prop.type,
+        };
+        
+        const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
+        const { identityAuthority } = require('./identity_authority');
+        
+        const propertyCanonicalBytes = CanonicalBytes.serialize(propertyCanonicalData);
+        const propertyCanonicalHash = CanonicalAuthority.hashBytes(propertyCanonicalBytes);
+        const propertyId = identityAuthority.generateFromCanonicalHash(propertyCanonicalBytes, 'Property');
+        
         const edge = new RelationshipEdgeObject(
           cls.id,
           propertyId,
@@ -321,8 +337,20 @@ class RelationshipRuntime {
       }
 
       for (const method of cls.payload.methods) {
-        // Create OWNS edge from class to method
-        const methodId = `${cls.id}_method_${method.name}`;
+        // Constitutional Constraint: Methods should be constitutional objects
+        const methodCanonicalData = {
+          class_id: cls.id,
+          method_name: method.name,
+          method_kind: method.kind,
+        };
+        
+        const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
+        const { identityAuthority } = require('./identity_authority');
+        
+        const methodCanonicalBytes = CanonicalBytes.serialize(methodCanonicalData);
+        const methodCanonicalHash = CanonicalAuthority.hashBytes(methodCanonicalBytes);
+        const methodId = identityAuthority.generateFromCanonicalHash(methodCanonicalBytes, 'Method');
+        
         const edge = new RelationshipEdgeObject(
           cls.id,
           methodId,
@@ -342,12 +370,38 @@ class RelationshipRuntime {
 
   /**
    * Generate proposal ID
+   * Constitutional Constraint: Must derive from CanonicalBytes → CanonicalHash → Identity
+   * Never use Date.now() or Math.random()
+   * @param {Array} edges - Edges to generate proposal ID from
    * @returns {string} Proposal ID
    */
-  _generateProposalId() {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 10);
-    return `proposal_${timestamp}_${random}`;
+  _generateProposalId(edges) {
+    // Sort edges deterministically for canonical proposal ID
+    const sortedEdges = [...edges].sort((a, b) => {
+      if (a._sourceId !== b._sourceId) return a._sourceId.localeCompare(b._sourceId);
+      if (a._targetId !== b._targetId) return a._targetId.localeCompare(b._targetId);
+      return a._edgeType.localeCompare(b._edgeType);
+    });
+
+    // Create canonical representation of edges
+    const canonicalData = {
+      edges: sortedEdges.map(edge => ({
+        source_id: edge._sourceId,
+        target_id: edge._targetId,
+        edge_type: edge._edgeType,
+      })),
+    };
+
+    // Generate canonical bytes
+    const canonicalBytes = CanonicalBytes.serialize(canonicalData);
+    
+    // Generate canonical hash
+    const canonicalHash = CanonicalAuthority.hashBytes(canonicalBytes);
+    
+    // Generate identity from canonical hash
+    const identity = identityAuthority.generateFromCanonicalHash(canonicalBytes, 'RelationshipProposal');
+
+    return identity;
   }
 }
 
