@@ -31,57 +31,47 @@ class ReplayCertificate {
   }
 
   /**
-   * Create replay certificate
+   * Create replay certificate (pure attestation)
+   * 
+   * Constitutional Constraint: Certificates should be pure attestations.
+   * Constitutional Constraint: No payload duplication.
+   * Constitutional Constraint: No serialization in certificate.
+   * 
+   * Certificate structure:
+   * - canonical_bytes_hash: hash of canonical bytes being attested
+   * - authority: certificate authority
+   * - version: certificate version
+   * - signature: cryptographic signature
+   * - timestamp: attestation timestamp
+   * 
    * @param {Object} certificateData - Certificate data
-   * @param {string} certificateData.transcript_hash - Transcript hash
-   * @param {string} certificateData.witness_hash - Witness hash
-   * @param {string} certificateData.runtime_hash - Runtime hash
-   * @param {string} certificateData.verifier_version - Verifier version
-   * @param {string} certificateData.constitutional_version - Constitutional version
-   * @param {Object} certificateData.verification_result - Verification result
-   * @returns {Object} Replay certificate
+   * @param {Buffer} certificateData.canonical_bytes - Canonical bytes being attested
+   * @param {string} certificateData.authority - Certificate authority
+   * @param {string} certificateData.version - Certificate version
+   * @param {string} certificateData.signature - Cryptographic signature
+   * @returns {Object} Replay certificate (pure attestation)
    */
   createCertificate(certificateData) {
+    if (!certificateData.canonical_bytes) {
+      throw new Error('Certificate requires canonical_bytes for pure attestation');
+    }
+
+    const canonicalBytesHash = CanonicalAuthority.hashBytes(certificateData.canonical_bytes);
+
     const certificate = {
       certificate_id: this._generateCertificateId(certificateData),
-      certificate_version: this._certificateVersion,
-      constitutional_version: certificateData.constitutional_version || '5.0.0',
+      canonical_bytes_hash: canonicalBytesHash,
+      authority: certificateData.authority || 'ReplayCertificate',
+      version: certificateData.version || this._certificateVersion,
+      signature: certificateData.signature,
+      timestamp: constitutionalTimeAuthority.now(),
       
-      // Core hashes
-      transcript_hash: certificateData.transcript_hash,
-      witness_hash: certificateData.witness_hash,
-      runtime_hash: certificateData.runtime_hash,
-      
-      // Version information
-      verifier_version: certificateData.verifier_version || '5.0.0',
-      replay_engine_version: certificateData.replay_engine_version || '5.0.0',
-      
-      // Verification result
-      verification_result: certificateData.verification_result,
-      
-      // Certificate metadata
+      // Metadata (not part of attestation)
       certificate_metadata: {
         created_by: 'ReplayCertificate',
         frozen: true,
-        hash: null,
-        created_at: constitutionalTimeAuthority.now()
       }
     };
-
-    // Compute certificate hash
-    const certificateForHash = { ...certificate };
-    delete certificateForHash.certificate_metadata.hash;
-    delete certificateForHash.certificate_metadata.created_at;
-    
-    certificate.certificate_metadata.hash = CanonicalAuthority.hash(certificateForHash);
-    
-    // Create certificate witness
-    const certificateWitness = this._witnessAuthority.createWitness(certificate, {
-      authority: 'ReplayCertificate',
-      authority_version: this._certificateVersion
-    });
-    
-    certificate.certificate_witness = certificateWitness;
 
     // Deep freeze
     return this._freezeCertificate(certificate);

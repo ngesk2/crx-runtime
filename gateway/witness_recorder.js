@@ -93,13 +93,26 @@ class WitnessRecorder {
      * 
      * Constitutional Constraint: Witness verification is cryptographic.
      * Constitutional Constraint: Witness must consume canonical_bytes, not objects.
+     * Constitutional Constraint: Witness roots must be deterministic across schema evolution.
      * 
-     * Pattern: canonical_bytes → hashBytes() → WitnessRoot
+     * Pattern: ordered witness IDs → ordered canonical bytes → concat(bytes) → hashBytes() → WitnessRoot
+     * 
+     * This prevents future witness schema evolution from changing replay roots.
      */
     if (!replayObject.canonical_bytes) {
       throw new Error('Witness requires replayObject.canonical_bytes for constitutional witness generation');
     }
 
+    // If replay object has multiple witnesses (e.g., from different stages),
+    // order them deterministically by ID before concatenating
+    if (replayObject.witnesses && Array.isArray(replayObject.witnesses)) {
+      const orderedWitnesses = [...replayObject.witnesses].sort((a, b) => a.id.localeCompare(b.id));
+      const orderedCanonicalBytes = orderedWitnesses.map(w => w.canonical_bytes);
+      const concatenatedBytes = Buffer.concat(orderedCanonicalBytes);
+      return CanonicalAuthority.hashBytes(concatenatedBytes);
+    }
+
+    // Single witness case
     return CanonicalAuthority.hashBytes(replayObject.canonical_bytes);
   }
 
