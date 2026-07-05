@@ -93,9 +93,9 @@ class ConstitutionalReplayIntegrationHarness {
 
     for (let i = 0; i < this._iterations; i++) {
       const bytes = CanonicalBytes.serialize(testObject);
-      canonicalBytesSet.add(bytes);
+      canonicalBytesSet.add(bytes.toString('hex')); // Store hex string for comparison
       
-      if (bytes !== firstBytes) {
+      if (!bytes.equals(firstBytes)) {
         allIdentical = false;
         console.log(`  ❌ Iteration ${i}: bytes differ`);
       }
@@ -207,10 +207,10 @@ class ConstitutionalReplayIntegrationHarness {
       const hash = CanonicalAuthority.hashBytes(bytes);
       const id = identityAuthority.generateFromCanonicalHash(bytes, 'replay');
       
-      canonicalBytesSet.add(bytes);
+      canonicalBytesSet.add(bytes.toString('hex'));
       replayIdSet.add(id);
       
-      if (bytes !== canonicalBytes || id !== replayId) {
+      if (!bytes.equals(canonicalBytes) || id !== replayId) {
         allIdentical = false;
         console.log(`  ❌ Iteration ${i}: replay diverges`);
       }
@@ -379,7 +379,7 @@ class ConstitutionalReplayIntegrationHarness {
     for (let i = 1; i < pipelineOutputs.length; i++) {
       const current = pipelineOutputs[i];
       
-      if (current.canonicalBytes !== first.canonicalBytes) {
+      if (!current.canonicalBytes.equals(first.canonicalBytes)) {
         console.log(`  ❌ Iteration ${i}: canonical_bytes differ`);
         allIdentical = false;
       }
@@ -391,7 +391,7 @@ class ConstitutionalReplayIntegrationHarness {
         console.log(`  ❌ Iteration ${i}: objectId differ`);
         allIdentical = false;
       }
-      if (current.replayBytes !== first.replayBytes) {
+      if (!current.replayBytes.equals(first.replayBytes)) {
         console.log(`  ❌ Iteration ${i}: replayBytes differ`);
         allIdentical = false;
       }
@@ -483,7 +483,7 @@ class ConstitutionalReplayIntegrationHarness {
     });
 
     // Compare
-    const bytesMatch = replay1Bytes === replay2Bytes;
+    const bytesMatch = replay1Bytes.equals(replay2Bytes);
     const hashMatch = replay1Hash === replay2Hash;
     const idMatch = replay1Id === replay2Id;
     const witnessMatch = witnessObject1.canonical_hash === witnessObject2.canonical_hash;
