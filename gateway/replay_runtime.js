@@ -20,6 +20,12 @@
 
 const { ReplayAuthority } = require('./replay_authority');
 const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { RepositoryStore } = require('./repository_store');
+const { ConstitutionalParser } = require('./constitutional_parser');
+const { KnowledgeRuntime } = require('./knowledge_runtime');
+const { RelationshipRuntime } = require('./relationship_runtime');
+const { KnowledgeGraphRuntime } = require('./knowledge_graph');
+const { PromptRuntime } = require('./prompt_runtime');
 
 class ReplayRuntime {
   constructor(config) {
@@ -30,6 +36,7 @@ class ReplayRuntime {
       verificationPort: config.verificationPort,
       transcriptPort: config.transcriptPort,
     });
+    this._repositoryStore = new RepositoryStore(config.postgresPool);
     this._namespace = 'replay';
     this._version = '1.0.0';
   }
@@ -50,14 +57,14 @@ class ReplayRuntime {
       verification: {},
     };
 
-    // Replay each stage
+    // Replay each stage (pass dependencies between stages)
     results.replayed.github = await this._replayGitHub(pipelineState.github);
-    results.replayed.parser = await this._replayParser(pipelineState.parser);
-    results.replayed.knowledge = await this._replayKnowledge(pipelineState.knowledge);
-    results.replayed.relationships = await this._replayRelationships(pipelineState.relationships);
-    results.replayed.graph = await this._replayGraph(pipelineState.graph);
-    results.replayed.prompt = await this._replayPrompt(pipelineState.prompt);
-    results.replayed.reflection = await this._replayReflection(pipelineState.reflection);
+    results.replayed.parser = await this._replayParser(pipelineState.parser, results.replayed.github);
+    results.replayed.knowledge = await this._replayKnowledge(pipelineState.knowledge, results.replayed.parser);
+    results.replayed.relationships = await this._replayRelationships(pipelineState.relationships, results.replayed.knowledge, results.replayed.parser);
+    results.replayed.graph = await this._replayGraph(pipelineState.graph, results.replayed.knowledge, results.replayed.relationships);
+    results.replayed.prompt = await this._replayPrompt(pipelineState.prompt, results.replayed.graph);
+    results.replayed.reflection = await this._replayReflection(pipelineState.reflection, results.replayed.prompt);
 
     // Verify determinism
     results.verification = await this._verifyDeterminism(pipelineState, results.replayed);
@@ -68,93 +75,161 @@ class ReplayRuntime {
 
   /**
    * Replay GitHub stage
+   * Constitutional Constraint: Rebuild from stored constitutional artifacts, not return original
    * @param {Object} originalGitHub - Original GitHub state
    * @returns {Object} Replayed GitHub state
    */
   async _replayGitHub(originalGitHub) {
     console.log('Replaying GitHub stage...');
     
-    // In production, this would re-fetch from GitHub API
-    // For now, return the original state as placeholder
-    return originalGitHub;
+    // Constitutional: Reload from RepositoryStore using canonical hashes
+    // This proves the artifacts can be reconstructed from storage
+    const replayed = {
+      repository: await this._repositoryStore.load(originalGitHub.repository.id),
+      commits: [],
+      trees: [],
+      directories: [],
+      blobs: [],
+    };
+
+    // Reload all commits
+    for (const commit of originalGitHub.commits) {
+      const reloaded = await this._repositoryStore.load(commit.id);
+      if (reloaded) replayed.commits.push(reloaded);
+    }
+
+    // Reload all blobs
+    for (const blob of originalGitHub.blobs) {
+      const reloaded = await this._repositoryStore.load(blob.id);
+      if (reloaded) replayed.blobs.push(reloaded);
+    }
+
+    // Verify reloaded objects match original canonical hashes
+    if (replayed.repository.canonical_hash !== originalGitHub.repository.canonical_hash) {
+      throw new Error('GitHub replay failed: repository hash mismatch');
+    }
+
+    return replayed;
   }
 
   /**
    * Replay Parser stage
+   * Constitutional Constraint: Re-parse from blob canonical bytes, not return original
    * @param {Object} originalParser - Original parser state
+   * @param {Object} replayedGitHub - Replayed GitHub state
    * @returns {Object} Replayed parser state
    */
-  async _replayParser(originalParser) {
+  async _replayParser(originalParser, replayedGitHub) {
     console.log('Replaying Parser stage...');
     
-    // In production, this would re-parse the source code
-    // For now, return the original state as placeholder
-    return originalParser;
+    // Constitutional: Re-parse from blob canonical bytes
+    const parser = new ConstitutionalParser();
+    const replayed = {
+      ast: null,
+      nodes: [],
+      symbols: [],
+      importGraph: null,
+      callGraph: null,
+      typeGraph: null,
+    };
+
+    // Re-parse the first blob (simplified - in production would parse all)
+    if (replayedGitHub.blobs.length > 0) {
+      const blob = replayedGitHub.blobs[0];
+      const sourceCode = blob.canonical_bytes.toString('utf8');
+      replayed.ast = parser.parse(blob, sourceCode).ast;
+    }
+
+    return replayed;
   }
 
   /**
    * Replay Knowledge stage
+   * Constitutional Constraint: Re-transform from parser objects, not return original
    * @param {Object} originalKnowledge - Original knowledge state
+   * @param {Object} replayedParser - Replayed parser state
    * @returns {Object} Replayed knowledge state
    */
-  async _replayKnowledge(originalKnowledge) {
+  async _replayKnowledge(originalKnowledge, replayedParser) {
     console.log('Replaying Knowledge stage...');
     
-    // In production, this would re-transform parser objects into knowledge objects
-    // For now, return the original state as placeholder
-    return originalKnowledge;
+    // Constitutional: Re-transform parser objects into knowledge objects
+    const knowledgeRuntime = new KnowledgeRuntime();
+    const replayed = knowledgeRuntime.transform(replayedParser);
+
+    return replayed;
   }
 
   /**
    * Replay Relationships stage
+   * Constitutional Constraint: Re-generate from knowledge objects, not return original
    * @param {Object} originalRelationships - Original relationships state
+   * @param {Object} replayedKnowledge - Replayed knowledge state
+   * @param {Object} replayedParser - Replayed parser state
    * @returns {Object} Replayed relationships state
    */
-  async _replayRelationships(originalRelationships) {
+  async _replayRelationships(originalRelationships, replayedKnowledge, replayedParser) {
     console.log('Replaying Relationships stage...');
     
-    // In production, this would re-generate relationship edges
-    // For now, return the original state as placeholder
-    return originalRelationships;
+    // Constitutional: Re-generate relationship edges from knowledge objects
+    const relationshipRuntime = new RelationshipRuntime();
+    const replayed = relationshipRuntime.generate(replayedKnowledge, replayedParser);
+
+    return replayed;
   }
 
   /**
    * Replay Graph stage
+   * Constitutional Constraint: Re-construct from knowledge and relationships, not return original
    * @param {Object} originalGraph - Original graph state
+   * @param {Object} replayedKnowledge - Replayed knowledge state
+   * @param {Object} replayedRelationships - Replayed relationships state
    * @returns {Object} Replayed graph state
    */
-  async _replayGraph(originalGraph) {
+  async _replayGraph(originalGraph, replayedKnowledge, replayedRelationships) {
     console.log('Replaying Graph stage...');
     
-    // In production, this would re-construct the knowledge graph
-    // For now, return the original state as placeholder
-    return originalGraph;
+    // Constitutional: Re-construct knowledge graph from knowledge and relationships
+    const graphRuntime = new KnowledgeGraphRuntime();
+    const replayed = graphRuntime.construct(replayedKnowledge, replayedRelationships.proposal);
+
+    return replayed;
   }
 
   /**
    * Replay Prompt stage
+   * Constitutional Constraint: Re-generate from graph and mission context, not return original
    * @param {Object} originalPrompt - Original prompt state
+   * @param {Object} replayedGraph - Replayed graph state
    * @returns {Object} Replayed prompt state
    */
-  async _replayPrompt(originalPrompt) {
+  async _replayPrompt(originalPrompt, replayedGraph) {
     console.log('Replaying Prompt stage...');
     
-    // In production, this would re-generate the prompt
-    // For now, return the original state as placeholder
-    return originalPrompt;
+    // Constitutional: Re-generate prompt from graph and mission context
+    const promptRuntime = new PromptRuntime();
+    const template = promptRuntime.createAnalysisTemplate(replayedGraph);
+    const variables = promptRuntime.extractVariables(replayedGraph);
+    const missionContext = originalPrompt.payload.mission_context;
+    const replayed = promptRuntime.generatePrompt(replayedGraph, missionContext, template, variables);
+
+    return replayed;
   }
 
   /**
    * Replay Reflection stage
+   * Constitutional Constraint: Reflection is LLM output, non-deterministic by design
+   * Only verify prompt determinism, not reflection
    * @param {Object} originalReflection - Original reflection state
-   * @returns {Object} Replayed reflection state
+   * @param {Object} replayedPrompt - Replayed prompt state
+   * @returns {Object} Replayed reflection state (null - not replayed)
    */
-  async _replayReflection(originalReflection) {
+  async _replayReflection(originalReflection, replayedPrompt) {
     console.log('Replaying Reflection stage...');
     
-    // In production, this would re-execute the prompt through Ollama
-    // For now, return the original state as placeholder
-    return originalReflection;
+    // Constitutional: Reflection is LLM output, non-deterministic
+    // We do not replay reflection - only verify prompt determinism
+    return null;
   }
 
   /**
