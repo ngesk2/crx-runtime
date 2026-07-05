@@ -63,6 +63,7 @@ class ReplayRuleSet {
    */
   getWhitelistedJSONStringify() {
     return [
+      '_computeWebhookSignature', // GitHub webhook signature verification requires standard JSON
       'webhook signature', // GitHub webhook signature verification requires standard JSON
       'console.log', // Debugging output (not replay-visible)
       'console.error', // Error logging (not replay-visible)

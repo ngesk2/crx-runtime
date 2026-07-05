@@ -28,7 +28,6 @@
  */
 const { RepositoryInterface } = require('./repository_interface');
 const { MigrationEngine } = require('./migration_engine');
-const { CanonicalAuthority } = require('./canonical_authority');
 
 class RepositoryStore extends RepositoryInterface {
   constructor(pool) {
@@ -60,9 +59,15 @@ class RepositoryStore extends RepositoryInterface {
       throw new Error('object_id is required (ID generation moved to caller)');
     }
 
+    // Constitutional Constraint: Persistence requires canonical_bytes from caller
+    // RepositoryStore must not manufacture canonical state
+    if (!object.canonical_bytes) {
+      throw new Error('RepositoryStore requires canonical_bytes from the caller');
+    }
+
     const metadata = object.metadata || {};
     const version = (metadata.version || 0) + 1;
-    const canonicalBytes = object.canonical_bytes || CanonicalAuthority.serialize(object);
+    const canonicalBytes = object.canonical_bytes;
 
     await useClient.query(`
       INSERT INTO repository_objects (object_id, kind, data, metadata, canonical_bytes, version)

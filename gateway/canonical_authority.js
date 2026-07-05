@@ -183,6 +183,23 @@ class CanonicalBytes {
 
 class CanonicalAuthority {
   /**
+   * Hash already-canonical bytes directly
+   * 
+   * Constitutional Constraint: Avoid double serialization
+   * Use this when you already have canonical bytes from CanonicalBytes.serialize()
+   * 
+   * @param {Buffer} bytes - Canonical bytes to hash
+   * @param {string} algorithm - Hash algorithm (default: sha256)
+   * @returns {string} Hexadecimal hash
+   */
+  static hashBytes(bytes, algorithm = 'sha256') {
+    if (!Buffer.isBuffer(bytes)) {
+      throw new Error('hashBytes() requires a Buffer input. Use hash() for objects.');
+    }
+    return crypto.createHash(algorithm).update(bytes).digest('hex');
+  }
+
+  /**
    * Compute canonical hash of object
    * 
    * @param {any} obj - Object to hash
@@ -191,7 +208,7 @@ class CanonicalAuthority {
    */
   static hash(obj, algorithm = 'sha256') {
     const bytes = CanonicalBytes.serialize(obj);
-    return crypto.createHash(algorithm).update(bytes).digest('hex');
+    return this.hashBytes(bytes, algorithm);
   }
 
   /**

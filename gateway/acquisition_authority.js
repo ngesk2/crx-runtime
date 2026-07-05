@@ -14,6 +14,7 @@ const { snapshotAuthority } = require('./snapshot_authority');
 const { semanticAuthority } = require('./semantic_authority');
 const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
 const { CanonicalAuthority } = require('./canonical_authority');
+const { identityAuthority } = require('./identity_authority');
 
 class AcquisitionAuthority {
   constructor(postgresPool, objectRegistry, eventBus) {

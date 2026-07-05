@@ -1,5 +1,4 @@
 const { CanonicalAuthority } = require('./canonical_authority');
-const { CanonicalBytes } = require('./canonical_authority');
 const { deterministicIdAuthority } = require('./deterministic_id_authority');
 const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
 const { RepositoryProvider } = require('./repository_provider');
@@ -360,28 +359,6 @@ class GitHubSnapshot extends RepositoryProvider {
     // Generate deterministic ID using CanonicalAuthority
     const input = `${GITHUB_OWNER}/${GITHUB_REPO}/${kind}/${identifier}`;
     return CanonicalAuthority.hash(input);
-  }
-
-  _canonicalStringify(obj) {
-    // Canonical JSON stringification for deterministic hashing
-    // Sorts object keys recursively to ensure consistent ordering
-    if (obj === null || obj === undefined) {
-      return String(obj);
-    }
-    if (typeof obj !== 'object') {
-      return CanonicalBytes.serialize(obj);
-    }
-    if (Array.isArray(obj)) {
-      return '[' + obj.map(item => this._canonicalStringify(item)).join(',') + ']';
-    }
-    const sortedKeys = Object.keys(obj).sort();
-    const sortedObj = {};
-    for (const key of sortedKeys) {
-      sortedObj[key] = obj[key];
-    }
-    return '{' + sortedKeys.map(key => 
-      CanonicalBytes.serialize(key) + ':' + this._canonicalStringify(sortedObj[key])
-    ).join(',') + '}';
   }
 
   async _paginate(path) {
