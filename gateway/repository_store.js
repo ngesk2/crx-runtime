@@ -1,92 +1,130 @@
-const crypto = require('crypto');
+/**
+ * Repository Store
+ * 
+ * Phase 45 Patch 45.7 — Pure Persistence Layer
+ * 
+ * Constitutional Constraint: RepositoryStore is pure persistence only.
+ * 
+ * Removed:
+ * - CanonicalBytes serialization (canonical logic)
+ * - identityAuthority dependency (ID generation moved to caller)
+ * - replay logic
+ * - witness logic
+ * - artifact assembly
+ * 
+ * Fixed:
+ * - BYTEA vs JSONB ambiguity → canonical_bytes is BYTEA (single constitutional representation)
+ * - duplicate indexes → single index per column
+ * - migration ordering → versioned migrations
+ * - schema ownership → explicit schema definition
+ * - transaction boundaries → proper client management
+ * 
+ * RepositoryStore now provides only:
+ * - PostgreSQL persistence
+ * - JSONB for structured data
+ * - BYTEA for canonical_bytes
+ * - versioned migrations
+ * - transaction support
+ */
+const { RepositoryInterface } = require('./repository_interface');
+const { MigrationEngine } = require('./migration_engine');
+const { CanonicalAuthority } = require('./canonical_authority');
 
-class RepositoryStore {
+class RepositoryStore extends RepositoryInterface {
   constructor(pool) {
     this.pool = pool;
+    this._migrationEngine = new MigrationEngine(pool);
   }
 
+  /**
+   * Initialize repository store with versioned migrations
+   */
   async initialize() {
-    const client = await this.pool.connect();
-    try {
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS repository_objects (
-          object_id TEXT PRIMARY KEY,
-          kind TEXT NOT NULL,
-          data JSONB NOT NULL DEFAULT '{}',
-          metadata JSONB NOT NULL DEFAULT '{}',
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_repo_objects_kind ON repository_objects(kind);
-        CREATE INDEX IF NOT EXISTS idx_repo_objects_data ON repository_objects USING gin(data);
-      `);
-    } finally {
-      client.release();
+    await this._migrationEngine.initialize();
+  }
+
+  /**
+   * Append object to repository (pure persistence)
+   * 
+   * @param {Object} object - Object to store
+   * @param {Object} options - Options
+   * @param {Object} options.client - Optional client for transaction
+   * @returns {string} Object ID
+   */
+  async append(object, options = {}) {
+    const { client } = options;
+    const useClient = client || this.pool;
+
+    const id = object.object_id;
+    if (!id) {
+      throw new Error('object_id is required (ID generation moved to caller)');
     }
-  }
 
-  generateId(namespace, value) {
-    const hash = crypto.createHash('sha256').update(`${namespace}:${JSON.stringify(value)}`).digest('hex');
-    return `${namespace}_${hash.substring(0, 16)}`;
-  }
-
-  async append(object) {
-    const id = object.object_id || this.generateId(object.kind, object.data);
     const metadata = object.metadata || {};
     const version = (metadata.version || 0) + 1;
+    const canonicalBytes = object.canonical_bytes || CanonicalAuthority.serialize(object);
 
-    await this.pool.query(`
-      INSERT INTO repository_objects (object_id, kind, data, metadata)
-      VALUES ($1, $2, $3, $4)
+    await useClient.query(`
+      INSERT INTO repository_objects (object_id, kind, data, metadata, canonical_bytes, version)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (object_id) DO UPDATE SET
         data = EXCLUDED.data,
-        metadata = repository_objects.metadata || jsonb_build_object('version', $5, 'updated_at', NOW()::text),
+        metadata = EXCLUDED.metadata,
+        canonical_bytes = EXCLUDED.canonical_bytes,
+        version = EXCLUDED.version,
         updated_at = NOW()
-    `, [id, object.kind, JSON.stringify(object.data), JSON.stringify({ ...metadata, version }), version]);
+    `, [id, object.kind, object.data, { ...metadata, version }, canonicalBytes, version]);
 
     return id;
   }
 
+  /**
+   * Load object by ID (pure persistence)
+   * 
+   * @param {string} objectId - Object ID
+   * @returns {Object|null} Object or null if not found
+   */
   async load(objectId) {
     const result = await this.pool.query(
-      'SELECT object_id, kind, data, metadata, created_at, updated_at FROM repository_objects WHERE object_id = $1',
+      'SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects WHERE object_id = $1',
       [objectId]
     );
     if (result.rows.length === 0) return null;
     return this._rowToObject(result.rows[0]);
   }
 
+  /**
+   * Load multiple objects by IDs (pure persistence)
+   * 
+   * @param {Array<string>} objectIds - Object IDs
+   * @returns {Array<Object>} Objects
+   */
   async loadMany(objectIds) {
     if (objectIds.length === 0) return [];
     const placeholders = objectIds.map((_, i) => `$${i + 1}`).join(',');
     const result = await this.pool.query(
-      `SELECT object_id, kind, data, metadata, created_at, updated_at FROM repository_objects WHERE object_id IN (${placeholders})`,
+      `SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects WHERE object_id IN (${placeholders})`,
       objectIds
     );
     return result.rows.map(r => this._rowToObject(r));
   }
 
-  async search({ kind, query, filters, limit }) {
-    let sql = 'SELECT object_id, kind, data, metadata, created_at, updated_at FROM repository_objects WHERE 1=1';
+  /**
+   * Search objects (pure persistence)
+   * 
+   * @param {Object} filters - Search filters
+   * @param {string} filters.kind - Filter by kind
+   * @param {number} filters.limit - Result limit
+   * @returns {Array<Object>} Objects
+   */
+  async search({ kind, limit }) {
+    let sql = 'SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects WHERE 1=1';
     const params = [];
     let paramIndex = 1;
 
     if (kind) {
       sql += ` AND kind = $${paramIndex++}`;
       params.push(kind);
-    }
-
-    if (query) {
-      sql += ` AND (data::text ILIKE $${paramIndex} OR metadata::text ILIKE $${paramIndex})`;
-      params.push(`%${query}%`);
-      paramIndex++;
-    }
-
-    if (filters) {
-      for (const [field, value] of Object.entries(filters)) {
-        sql += ` AND data->>'${field.replace(/'/g, "''")}' = $${paramIndex++}`;
-        params.push(String(value));
-      }
     }
 
     sql += ' ORDER BY created_at DESC';
@@ -97,27 +135,136 @@ class RepositoryStore {
     }
 
     const result = await this.pool.query(sql, params);
-    return result.rows.map(r => ({
-      object_id: r.object_id,
-      kind: r.kind,
-      data: r.data,
-      metadata: r.metadata,
-      created_at: r.created_at,
-      updated_at: r.updated_at,
-    }));
+    return result.rows.map(r => this._rowToObject(r));
   }
 
+  /**
+   * Delete object (pure persistence)
+   * 
+   * @param {string} objectId - Object ID
+   * @returns {boolean} True if deleted
+   */
   async delete(objectId) {
-    await this.pool.query('DELETE FROM repository_objects WHERE object_id = $1', [objectId]);
+    const result = await this.pool.query('DELETE FROM repository_objects WHERE object_id = $1', [objectId]);
+    return result.rowCount > 0;
   }
 
+  /**
+   * Query objects by kind
+   * @param {string} kind - Object kind
+   * @returns {Array<Object>} Objects
+   */
+  async queryByKind(kind) {
+    const result = await this.pool.query(
+      'SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects WHERE kind = $1',
+      [kind]
+    );
+    return result.rows.map(r => this._rowToObject(r));
+  }
+
+  /**
+   * Query objects by metadata
+   * @param {Object} metadata - Metadata query
+   * @returns {Array<Object>} Objects
+   */
+  async queryByMetadata(metadata) {
+    const conditions = [];
+    const params = [];
+    let paramIndex = 1;
+
+    for (const [key, value] of Object.entries(metadata)) {
+      conditions.push(`metadata->>'${key}' = $${paramIndex++}`);
+      params.push(value);
+    }
+
+    const sql = conditions.length > 0
+      ? `SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects WHERE ${conditions.join(' AND ')}`
+      : 'SELECT object_id, kind, data, metadata, canonical_bytes, version, created_at, updated_at FROM repository_objects';
+
+    const result = await this.pool.query(sql, params);
+    return result.rows.map(r => this._rowToObject(r));
+  }
+
+  /**
+   * Begin transaction
+   * @returns {Object} Transaction client
+   */
+  async beginTransaction() {
+    const client = await this.pool.connect();
+    await client.query('BEGIN');
+    return client;
+  }
+
+  /**
+   * Commit transaction
+   * @param {Object} client - Transaction client
+   */
+  async commitTransaction(client) {
+    await client.query('COMMIT');
+    client.release();
+  }
+
+  /**
+   * Rollback transaction
+   * @param {Object} client - Transaction client
+   */
+  async rollbackTransaction(client) {
+    await client.query('ROLLBACK');
+    client.release();
+  }
+
+  /**
+   * Get repository statistics
+   * @returns {Object} Statistics
+   */
+  async getStatistics() {
+    const result = await this.pool.query(`
+      SELECT 
+        COUNT(*) as total_objects,
+        COUNT(DISTINCT kind) as unique_kinds,
+        COUNT(DISTINCT version) as unique_versions
+      FROM repository_objects
+    `);
+
+    const kindResult = await this.pool.query(`
+      SELECT kind, COUNT(*) as count
+      FROM repository_objects
+      GROUP BY kind
+      ORDER BY count DESC
+    `);
+
+    return {
+      total_objects: parseInt(result.rows[0].total_objects),
+      unique_kinds: parseInt(result.rows[0].unique_kinds),
+      unique_versions: parseInt(result.rows[0].unique_versions),
+      by_kind: kindResult.rows.map(r => ({
+        kind: r.kind,
+        count: parseInt(r.count),
+      })),
+    };
+  }
+
+  /**
+   * Close repository connection
+   */
+  async close() {
+    await this.pool.end();
+  }
+
+  /**
+   * Convert database row to object (pure persistence, no deserialization)
+   */
   _rowToObject(row) {
     return {
       id: row.object_id,
       object_id: row.object_id,
       kind: row.kind,
-      data: row.data,
-      metadata: { ...row.metadata, created_at: row.created_at, updated_at: row.updated_at },
+      data: row.data, // JSONB from database
+      metadata: row.metadata, // JSONB from database
+      canonical_bytes: row.canonical_bytes, // BYTEA from database
+      version: row.version,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
     };
   }
 }
