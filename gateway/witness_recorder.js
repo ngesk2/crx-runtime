@@ -11,7 +11,7 @@
 const crypto = require('crypto');
 const { CanonicalAuthority } = require('./canonical_authority');
 const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { identityAuthority } = require('./identity_authority');
 const { deterministicKeyAuthority } = require('./deterministic_key_authority');
 
 class WitnessRecorder {
@@ -43,7 +43,9 @@ class WitnessRecorder {
     const verificationStatus = this._determineVerificationStatus(replayObject);
 
     // Create WitnessObject
-    const witnessId = deterministicIdAuthority.generateIdFromHash(CanonicalAuthority.hash(witnessRoot));
+    const witnessRootHash = CanonicalAuthority.hash(witnessRoot);
+    const witnessRootCanonicalBytes = Buffer.from(witnessRootHash, 'hex');
+    const witnessId = identityAuthority.generateFromCanonicalHash(witnessRootCanonicalBytes, 'witness');
     const timestamp = constitutionalTimeAuthority.now();
 
     const witnessObject = {
@@ -56,7 +58,7 @@ class WitnessRecorder {
         created_at: timestamp,
         created_by: 'WitnessRecorder',
       },
-      canonical_hash: CanonicalAuthority.hash(witnessRoot),
+      canonical_hash: witnessRootHash,
       lineage: {
         source_id: replayObject.id,
         derivation_path: ['ReplayObject', 'WitnessObject'],

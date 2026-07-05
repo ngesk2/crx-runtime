@@ -1,4 +1,5 @@
 const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { identityAuthority } = require('./identity_authority');
 const { runtimeFailureAuthority } = require('./runtime_failure_authority');
 const { witnessAuthority } = require('./witness_authority');
 const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
@@ -283,14 +284,13 @@ class ReplayCertificate {
      * Constitutional Constraint: Certificates must consume canonical_bytes, not objects.
      * This guarantees certificates survive serializer evolution.
      * 
-     * Pattern: canonical_bytes → hashBytes() → CertificateID
+     * Pattern: canonical_bytes → IdentityAuthority.generateFromCanonicalHash() → CertificateID
      */
     if (!certificateData.canonical_bytes) {
       throw new Error('Certificate requires canonical_bytes for constitutional ID generation');
     }
 
-    const hash = CanonicalAuthority.hashBytes(certificateData.canonical_bytes);
-    return `certificate_${hash.substring(0, 16)}`;
+    return identityAuthority.generateFromCanonicalHash(certificateData.canonical_bytes, 'certificate');
   }
 
   /**
