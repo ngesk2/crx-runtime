@@ -25,9 +25,14 @@
  * - BYTEA for canonical_bytes
  * - versioned migrations
  * - transaction support
+ * 
+ * Milestone 1: Constitutional Verification Enforcement
+ * - VerificationAuthority.verify(object) before RepositoryStore.append(object)
+ * - Persistence never stores unconstitutional artifacts
  */
 const { RepositoryInterface } = require('./repository_interface');
 const { MigrationEngine } = require('./migration_engine');
+const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
 
 class RepositoryStore extends RepositoryInterface {
   constructor(pool) {
@@ -45,6 +50,10 @@ class RepositoryStore extends RepositoryInterface {
   /**
    * Append object to repository (pure persistence)
    * 
+   * Milestone 1: Constitutional Verification Enforcement
+   * - VerificationAuthority.verify(object) before RepositoryStore.append(object)
+   * - Persistence never stores unconstitutional artifacts
+   * 
    * @param {Object} object - Object to store
    * @param {Object} options - Options
    * @param {Object} options.client - Optional client for transaction
@@ -53,6 +62,15 @@ class RepositoryStore extends RepositoryInterface {
   async append(object, options = {}) {
     const { client } = options;
     const useClient = client || this.pool;
+
+    // Milestone 1: Constitutional Verification Enforcement
+    const verification = constitutionalVerificationAuthority.verifyArtifact(object);
+    if (!verification.valid) {
+      const error = new Error(`Constitutional verification failed: ${verification.reason}`);
+      error.code = verification.code;
+      error.verification = verification;
+      throw error;
+    }
 
     const id = object.object_id;
     if (!id) {

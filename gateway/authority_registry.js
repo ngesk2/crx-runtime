@@ -49,6 +49,7 @@ const { RepositoryStore } = require('./repository_store');
 const { AppendOrchestrator } = require('./append_orchestrator');
 const { WitnessRecorder } = require('./witness_recorder');
 const { ReplayCertificate } = require('./replay_certificate');
+const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
 
 class AuthorityRegistry {
   constructor() {
@@ -235,6 +236,13 @@ class AuthorityRegistry {
       layer: 'foundation',
       dependencies: [],
       description: 'Deterministic cryptographic key authority',
+    });
+
+    this.register('ConstitutionalVerificationAuthority', constitutionalVerificationAuthority, {
+      version: '1.0.0',
+      layer: 'foundation',
+      dependencies: ['CanonicalAuthority', 'IdentityAuthority'],
+      description: 'Single constitutional verification authority',
     });
 
     // Layer 1: Object Creation
