@@ -118,10 +118,11 @@ class KnowledgeRuntime {
       knowledgeObjects.dependencies.push(dependencyObject);
     }
 
-    // Extract API knowledge from functions (placeholder logic)
+    // Extract API knowledge from functions (constitutional: derive from AST decorators)
+    const ast = parserObjects.ast;
     for (const functionObject of knowledgeObjects.functions) {
-      if (this._isAPIFunction(functionObject)) {
-        const apiMetadata = this._extractAPIMetadata(functionObject);
+      if (this._isAPIFunction(functionObject, ast)) {
+        const apiMetadata = this._extractAPIMetadata(functionObject, ast);
         const apiBuilder = new APIKnowledgeObject(functionObject, apiMetadata);
         const apiObject = apiBuilder.build();
         
@@ -134,8 +135,9 @@ class KnowledgeRuntime {
       }
     }
 
-    // Extract concepts from knowledge objects (placeholder logic)
-    const concepts = this._extractConcepts(knowledgeObjects);
+    // Extract concepts from knowledge objects (constitutional: derive from TypeGraph)
+    const typeGraph = parserObjects.typeGraph;
+    const concepts = this._extractConcepts(knowledgeObjects, typeGraph);
     for (const concept of concepts) {
       const conceptBuilder = new ConceptKnowledgeObject(concept.name, concept.description, concept.relatedIds);
       const conceptObject = conceptBuilder.build();
@@ -153,31 +155,83 @@ class KnowledgeRuntime {
 
   /**
    * Check if function is an API function
+   * Constitutional Constraint: Must derive from constitutional parser output, not naming conventions
    * @param {Object} functionObject - Function knowledge object
+   * @param {Object} astObject - AST object (for checking decorators/annotations)
    * @returns {boolean} Is API function
    */
-  _isAPIFunction(functionObject) {
-    // Placeholder: Detect API functions based on naming patterns or annotations
-    const name = functionObject.payload.name.toLowerCase();
-    return name.includes('handler') || name.includes('controller') || name.includes('route');
+  _isAPIFunction(functionObject, astObject) {
+    // Constitutional: Derive from AST annotations/decorators, not naming conventions
+    // Check if function has API-related decorators or annotations in AST
+    if (!astObject || !astObject.payload) return false;
+
+    // Check for API decorators in AST (placeholder - would check actual AST structure)
+    const hasAPIDecorator = this._hasAPIDecorator(astObject);
+    
+    return hasAPIDecorator;
+  }
+
+  /**
+   * Check if AST has API decorator
+   * @param {Object} astObject - AST object
+   * @returns {boolean} Has API decorator
+   */
+  _hasAPIDecorator(astObject) {
+    // Placeholder: Check AST for API decorators like @Get, @Post, @Route, etc.
+    // In production, this would analyze the actual AST structure
+    const body = astObject.payload.body || [];
+    
+    for (const node of body) {
+      if (node.decorators && Array.isArray(node.decorators)) {
+        for (const decorator of node.decorators) {
+          const decoratorName = decorator.expression?.name || decorator.expression?.callee?.name;
+          if (decoratorName && ['Get', 'Post', 'Put', 'Delete', 'Patch', 'Route', 'Controller'].includes(decoratorName)) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
   }
 
   /**
    * Extract API metadata from function
+   * Constitutional Constraint: Must derive from constitutional parser output, not naming conventions
    * @param {Object} functionObject - Function knowledge object
+   * @param {Object} astObject - AST object
    * @returns {Object} API metadata
    */
-  _extractAPIMetadata(functionObject) {
-    // Placeholder: Extract HTTP method and path from function name or annotations
-    const name = functionObject.payload.name.toLowerCase();
-    
+  _extractAPIMetadata(functionObject, astObject) {
+    // Constitutional: Extract from AST decorators, not naming conventions
+    if (!astObject || !astObject.payload) {
+      return {
+        method: 'GET',
+        path: `/${functionObject.payload.name}`,
+        authentication: 'none',
+        rate_limit: null,
+      };
+    }
+
+    const body = astObject.payload.body || [];
     let method = 'GET';
-    if (name.includes('post')) method = 'POST';
-    else if (name.includes('put')) method = 'PUT';
-    else if (name.includes('delete')) method = 'DELETE';
-    else if (name.includes('patch')) method = 'PATCH';
+    let path = `/${functionObject.payload.name}`;
     
-    const path = `/${name.replace(/handler|controller|route/g, '')}`;
+    for (const node of body) {
+      if (node.decorators && Array.isArray(node.decorators)) {
+        for (const decorator of node.decorators) {
+          const decoratorName = decorator.expression?.name || decorator.expression?.callee?.name;
+          if (decoratorName) {
+            if (['Get', 'Post', 'Put', 'Delete', 'Patch'].includes(decoratorName)) {
+              method = decoratorName.toUpperCase();
+            }
+            if (decoratorName === 'Route' && decorator.arguments && decorator.arguments[0]) {
+              path = decorator.arguments[0].value;
+            }
+          }
+        }
+      }
+    }
     
     return {
       method,
@@ -189,51 +243,66 @@ class KnowledgeRuntime {
 
   /**
    * Extract concepts from knowledge objects
+   * Constitutional Constraint: Must derive from constitutional parser output, not naming conventions
    * @param {Object} knowledgeObjects - Knowledge objects
+   * @param {Object} typeGraph - Type graph object
    * @returns {Array} Concepts
    */
-  _extractConcepts(knowledgeObjects) {
+  _extractConcepts(knowledgeObjects, typeGraph) {
     const concepts = [];
     
-    // Placeholder: Extract high-level concepts based on patterns
-    // Example: If there are multiple classes related to "User", create a "User" concept
+    // Constitutional: Derive concepts from TypeGraph relationships, not naming prefixes
+    // Concepts are derived from shared interfaces, inheritance hierarchies, or explicit annotations
     
-    const classNames = knowledgeObjects.classes.map(c => c.payload.name);
-    const uniquePrefixes = this._extractCommonPrefixes(classNames);
+    if (!typeGraph || !typeGraph.payload) return concepts;
     
-    for (const prefix of uniquePrefixes) {
-      const relatedClasses = knowledgeObjects.classes.filter(c => c.payload.name.startsWith(prefix));
-      if (relatedClasses.length > 1) {
+    // Extract concepts from shared interfaces
+    const interfaceImplementations = new Map();
+    
+    for (const cls of knowledgeObjects.classes) {
+      for (const implementedInterface of cls.payload.implements) {
+        if (!interfaceImplementations.has(implementedInterface)) {
+          interfaceImplementations.set(implementedInterface, []);
+        }
+        interfaceImplementations.get(implementedInterface).push(cls);
+      }
+    }
+    
+    // Create concepts from interfaces with multiple implementations
+    for (const [interfaceName, implementingClasses] of interfaceImplementations) {
+      if (implementingClasses.length > 1) {
         concepts.push({
-          name: prefix,
-          description: `${prefix} domain concept`,
-          relatedIds: relatedClasses.map(c => c.id),
+          name: interfaceName,
+          description: `${interfaceName} concept (shared interface)`,
+          relatedIds: implementingClasses.map(c => c.id),
+        });
+      }
+    }
+    
+    // Extract concepts from inheritance hierarchies
+    const inheritanceMap = new Map();
+    
+    for (const cls of knowledgeObjects.classes) {
+      for (const parentClass of cls.payload.extends) {
+        if (!inheritanceMap.has(parentClass)) {
+          inheritanceMap.set(parentClass, []);
+        }
+        inheritanceMap.get(parentClass).push(cls);
+      }
+    }
+    
+    // Create concepts from base classes with multiple children
+    for (const [baseClass, childClasses] of inheritanceMap) {
+      if (childClasses.length > 1) {
+        concepts.push({
+          name: baseClass,
+          description: `${baseClass} concept (inheritance hierarchy)`,
+          relatedIds: childClasses.map(c => c.id),
         });
       }
     }
     
     return concepts;
-  }
-
-  /**
-   * Extract common prefixes from class names
-   * @param {Array} classNames - Class names
-   * @returns {Array} Common prefixes
-   */
-  _extractCommonPrefixes(classNames) {
-    const prefixes = new Map();
-    
-    for (const name of classNames) {
-      const parts = name.split(/(?=[A-Z])/).filter(p => p.length > 0);
-      if (parts.length > 1) {
-        const prefix = parts[0];
-        prefixes.set(prefix, (prefixes.get(prefix) || 0) + 1);
-      }
-    }
-    
-    return Array.from(prefixes.entries())
-      .filter(([_, count]) => count > 1)
-      .map(([prefix, _]) => prefix);
   }
 }
 
