@@ -111,6 +111,9 @@ class GitHubSnapshot extends RepositoryProvider {
     return CanonicalAuthority.hash(input);
   }
 
+  // DEPRECATED: Providers should only return raw transport data
+  // Constitutional object creation moved to SnapshotAuthority
+  /*
   buildConstitutionalObjects(data, lifecycleId = null) {
     const objects = [];
     const now = constitutionalTimeAuthority.nowISO();
@@ -321,7 +324,11 @@ class GitHubSnapshot extends RepositoryProvider {
 
     return objects;
   }
+  */
 
+  // DEPRECATED: Providers should only return raw transport data
+  // Constitutional object creation moved to SnapshotAuthority
+  /*
   _createConstitutionalObject(kind, id, payload, timestamp, lifecycleId = null) {
     const canonicalHash = CanonicalAuthority.hash(payload);
 
@@ -360,6 +367,7 @@ class GitHubSnapshot extends RepositoryProvider {
     const input = `${GITHUB_OWNER}/${GITHUB_REPO}/${kind}/${identifier}`;
     return CanonicalAuthority.hash(input);
   }
+  */
 
   async _paginate(path) {
     // Automatic pagination for GitHub API
