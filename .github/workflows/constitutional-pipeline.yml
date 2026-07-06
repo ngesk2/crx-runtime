@@ -1,0 +1,538 @@
+name: Constitutional Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  constitutional-pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      # Phase 1: Manifest Verification
+      - name: Verify Technology Manifest
+        run: |
+          node -e "
+          const { TechnologyAuthority } = require('./gateway/technology_authority');
+          const crypto = require('crypto');
+          
+          const manifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: {
+              component: 'PostgreSQL',
+              version: '17',
+              checksum: 'sha256:abc123'
+            },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          manifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(manifest, Object.keys(manifest).sort()))
+            .digest('hex');
+          
+          const authority = new TechnologyAuthority();
+          const isValid = authority.verifyManifestIntegrity(manifest);
+          
+          if (!isValid) {
+            console.error('Technology Manifest integrity verification FAILED');
+            process.exit(1);
+          }
+          
+          console.log('✓ Technology Manifest integrity verified');
+          "
+      
+      # Phase 2: IR Generation
+      - name: Generate Adapter IR
+        run: |
+          node -e "
+          const { AdapterAuthority } = require('./gateway/adapter_authority');
+          const crypto = require('crypto');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              {
+                name: 'saveArtifact',
+                input: { artifact: 'Artifact' },
+                output: { artifact_id: 'string' },
+                constraints: { immutability: true, determinism: true }
+              }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const authority = new AdapterAuthority();
+          const ir = await authority.generateIR(capabilityContract);
+          
+          if (!ir.ir_metadata.hash) {
+            console.error('IR generation FAILED');
+            process.exit(1);
+          }
+          
+          console.log('✓ IR generated with hash:', ir.ir_metadata.hash.substring(0, 16));
+          "
+      
+      # Phase 3: Generate Adapter
+      - name: Generate Adapter
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          if (!artifact.approved) {
+            console.error('Adapter generation FAILED - not approved');
+            process.exit(1);
+          }
+          
+          console.log('✓ Adapter generated and approved');
+          console.log('  Adapter source hash:', artifact.adapter_source_hash.substring(0, 16));
+          console.log('  Witness hash:', artifact.witness_hash.substring(0, 16));
+          console.log('  Constitutional score:', artifact.constitutional_evaluation.weighted_score);
+          "
+      
+      # Phase 4: Compile Verification
+      - name: Verify Compilation
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          if (!artifact.witness.compilation_witness.compilation_success) {
+            console.error('Compilation verification FAILED');
+            process.exit(1);
+          }
+          
+          console.log('✓ Compilation verified');
+          "
+      
+      # Phase 5: Witness Verification
+      - name: Verify Witness
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const { WitnessGenerator } = require('./gateway/witness_generator');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          const wg = new WitnessGenerator();
+          const witnessValid = await wg.verifyWitnessIntegrity(artifact.witness);
+          
+          if (!witnessValid) {
+            console.error('Witness verification FAILED');
+            process.exit(1);
+          }
+          
+          console.log('✓ Witness verified');
+          "
+      
+      # Phase 6: Technology Authority Registration
+      - name: Register with Technology Authority
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const { TechnologyAuthority } = require('./gateway/technology_authority');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          const authority = new TechnologyAuthority();
+          const witnessHash = await authority.getAdapterWitnessHash(artifact.adapter.adapter_id);
+          
+          if (witnessHash !== artifact.witness_hash) {
+            console.error('Technology Authority registration FAILED');
+            process.exit(1);
+          }
+          
+          console.log('✓ Technology Authority registration verified');
+          "
+      
+      # Phase 7: Constitutional Authority Evaluation
+      - name: Constitutional Evaluation
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const { ConstitutionalAuthority } = require('./gateway/constitutional_authority_weighted');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          const authority = new ConstitutionalAuthority();
+          const threshold = authority.getApprovalThreshold();
+          
+          if (artifact.constitutional_evaluation.weighted_score < threshold) {
+            console.error('Constitutional evaluation FAILED - score below threshold');
+            process.exit(1);
+          }
+          
+          if (!artifact.approved) {
+            console.error('Constitutional evaluation FAILED - not approved');
+            process.exit(1);
+          }
+          
+          console.log('✓ Constitutional evaluation passed');
+          console.log('  Score:', artifact.constitutional_evaluation.weighted_score);
+          console.log('  Threshold:', threshold);
+          "
+      
+      # Phase 8: Replay Verification
+      - name: Replay Verification
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler1 = new AdapterCompiler();
+          const compiler2 = new AdapterCompiler();
+          
+          const inputs = {
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          };
+          
+          const artifact1 = await compiler1.compileAdapter(inputs);
+          const artifact2 = await compiler2.compileAdapter(inputs);
+          
+          if (artifact1.adapter_source_hash !== artifact2.adapter_source_hash) {
+            console.error('Replay verification FAILED - adapter source hash mismatch');
+            process.exit(1);
+          }
+          
+          if (artifact1.witness_hash !== artifact2.witness_hash) {
+            console.error('Replay verification FAILED - witness hash mismatch');
+            process.exit(1);
+          }
+          
+          if (artifact1.technology_manifest_hash !== artifact2.technology_manifest_hash) {
+            console.error('Replay verification FAILED - manifest hash mismatch');
+            process.exit(1);
+          }
+          
+          if (artifact1.constitutional_evaluation.weighted_score !== artifact2.constitutional_evaluation.weighted_score) {
+            console.error('Replay verification FAILED - constitutional score mismatch');
+            process.exit(1);
+          }
+          
+          console.log('✓ Replay verification passed');
+          "
+      
+      # Phase 9: Hash Equality
+      - name: Hash Equality Verification
+        run: |
+          node -e "
+          const { AdapterCompiler } = require('./gateway/adapter_compiler');
+          const crypto = require('crypto');
+          
+          const technologyManifest = {
+            manifest_id: 'tm_ci_1',
+            version: '1.0.0',
+            artifact_store: { component: 'PostgreSQL', version: '17', checksum: 'sha256:abc123' },
+            manifest_metadata: {
+              created_at: '2026-01-01T00:00:00Z',
+              created_by: 'TechnologyAuthority',
+              frozen: true,
+              hash: null,
+              previous_manifest_hash: null,
+              approval_reference: null
+            }
+          };
+          
+          technologyManifest.manifest_metadata.hash = crypto.createHash('sha256')
+            .update(JSON.stringify(technologyManifest, Object.keys(technologyManifest).sort()))
+            .digest('hex');
+          
+          const capabilityContract = {
+            capability_name: 'ArtifactStore',
+            version: '1.0.0',
+            methods: [
+              { name: 'saveArtifact', input: { artifact: 'Artifact' }, output: { artifact_id: 'string' }, constraints: { immutability: true, determinism: true } }
+            ],
+            requirements: { immutability: true, determinism: true, replay_safety: true }
+          };
+          
+          const adapterContract = {
+            adapter_name: 'PostgreSQLArtifactStoreAdapter',
+            vendor: 'PostgreSQL',
+            version: '1.0.0'
+          };
+          
+          const compiler = new AdapterCompiler();
+          const artifact = await compiler.compileAdapter({
+            technologyManifest,
+            adapterContract,
+            capabilityContract,
+            vendor: 'PostgreSQL'
+          });
+          
+          const computedSourceHash = crypto.createHash('sha256').update(artifact.adapter_source).digest('hex');
+          
+          if (artifact.adapter_source_hash !== computedSourceHash) {
+            console.error('Hash equality verification FAILED - source hash mismatch');
+            process.exit(1);
+          }
+          
+          console.log('✓ Hash equality verified');
+          "
+      
+      # Run full constitutional pipeline tests
+      - name: Run Constitutional Pipeline Tests
+        run: node test/run_constitutional_pipeline.js
+      
+      - name: Constitutional Pipeline PASSED
+        run: echo "✓ CI Constitutional Gate PASSED - No human approval required"

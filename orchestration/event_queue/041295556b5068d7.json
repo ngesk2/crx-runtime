@@ -1,0 +1,20 @@
+{
+  "event_id": "041295556b5068d7",
+  "type": "artifact_stored",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_f12aa620b2ff1322",
+    "missionId": "m1",
+    "type": "consensus_proof",
+    "workerId": "consensus_engine"
+  },
+  "mission_id": "m1",
+  "worker_id": "consensus_engine",
+  "artifact_id": "art_f12aa620b2ff1322",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "1ef4a8e53064",
+  "parent_event_id": null,
+  "global_sequence": 2
+}

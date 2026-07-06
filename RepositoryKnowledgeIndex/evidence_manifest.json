@@ -1,0 +1,43 @@
+{
+  "generator_version": "RKI_v1.0",
+  "generation_timestamp": "2026-07-04T23:56:31.582279+00:00",
+  "scope": [
+    "gateway",
+    "orchestration",
+    "runtime/kernel",
+    "package.json",
+    "pnpm-workspace.yaml",
+    "pnpm-lock.yaml",
+    "compose.yaml",
+    "docker-compose.yaml",
+    "Dockerfile"
+  ],
+  "parser_runtimes_used": [
+    "python-ast",
+    "typescript-compiler-api"
+  ],
+  "artifact_hashes": {
+    "filesystem.json": "109fbfee24a2baad974e57f74fd3774c26c95e07f691b0c71eb0e97df23d7dc3",
+    "dependency_graph.json": "3e887afe29de068131e17a8fb5d0b91a44cb8c74b196778ab7376e9047c2db17",
+    "execution_roots.json": "2298e5c3f0c67643054772461a7610ea3a45959cd4736dfe7fe712db0bc73042",
+    "runtime_graph_gateway_http.json": "d862ea4379532600bd886c614453d6cfb584ab532cdefdefee74ac5853c17d00",
+    "runtime_graph_gateway_cli.json": "1b0f43f67748d11aa488f272216e73d7bba9b78ccb49987886367a6234d65895",
+    "runtime_graph_kernel.json": "c17bf43b299cff701a7496e39eb82ec72c98f3a7218ceae4b49841893309048c",
+    "runtime_graph_legacy_commit_service.json": "1e6b7866f760066224f98aff65fbdd5527bd27c26c5b67abe2bc61866f0e9779",
+    "runtime_graph_workers.json": "056402698236a86efaf5a1338eacedca1c7c4024575492160dc5a0d9ae95f685",
+    "runtime_graph_build.json": "7e9cebd4134e07bacb8db93847f8ec23711f7b8a5d75065e55a69dfbcddf307c",
+    "runtime_graph_tests.json": "0bb94468bc88282fc5c24b522c6dc15502d99303fee81490b82fafca38b2dab7",
+    "runtime_graph_migrations.json": "153b15a05410be009c7938c8d7ca1e65e4de802598b1107283061199c822dba1",
+    "runtime_graph_replay.json": "56e0969e2990e2315553c5a198c6bb50562c84a28a647057ed5156b95b368148",
+    "runtime_graph_witness.json": "86603b2359dd0293fbe38437bfc302c07d70f41f6b50c3afbdf5d57a34f2b72a",
+    "route_matrix.json": "19a5ee3705a3dee7f82e6564126a0d43dfe54e0bebfae8f146cd3335a80bc828",
+    "mutation_surface.json": "a9500d8808ed150987b4df7017d69504addf2de3ce5b235927fc6a8bc7f9aa9d",
+    "service_inventory.json": "b6b0e9031801aa04946243098d4439837a88857dd8b03b679adab5bb9305dad7"
+  },
+  "schema_versions": {
+    "filesystem": "1.0",
+    "dependency_graph": "1.0",
+    "execution_roots": "1.0",
+    "runtime_graph": "1.0"
+  }
+}

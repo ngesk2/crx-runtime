@@ -1,0 +1,298 @@
+{
+  "artifact": "false_seam_inventory",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 9 - False Seams",
+  "description": "Identified seams that appear modular but are not, with explanations of hidden coupling",
+  "false_seams": [
+    {
+      "seam_id": "false_seam_001",
+      "component": "legacy_commit_service",
+      "type": "route",
+      "appears_isolated_because": "Has separate HTTP server on port 3000, independent entry point, own TypeScript compilation",
+      "secretly_coupled_by": [
+        "Shared Postgres database with gateway",
+        "Overlapping event persistence domain with gateway/event_repository.js",
+        "Overlapping artifact persistence domain with gateway/repository_store.js",
+        "Reachable imports from gateway routes via dependency graph",
+        "No transaction isolation between gateway and legacy service writes"
+      ],
+      "what_expands_if_touched": [
+        "gateway/routes/events.js must be updated if legacy service is retired",
+        "gateway/routes/repository.js must be updated if legacy service is retired",
+        "Postgres schema migration required to consolidate tables",
+        "Event write ownership must be unified",
+        "Artifact write ownership must be unified"
+      ],
+      "what_patch_actually_owns": "PATCH_005",
+      "true_seam_boundary": "Should be integrated into kernel runtime or retired entirely",
+      "coupling_strength": "high"
+    },
+    {
+      "seam_id": "false_seam_002",
+      "component": "gateway/canonical_authority.js",
+      "type": "authority",
+      "appears_isolated_because": "Pure function module with no side effects, deterministic serialization",
+      "secretly_coupled_by": [
+        "Used by 15 different modules across gateway and kernel",
+        "Imported by runtime/execution_runtime.js (kernel) but owned by gateway",
+        "Imported by gateway/event_repository.js (gateway mutation owner)",
+        "Imported by gateway/repository_store.js (gateway mutation owner)",
+        "Imported by gateway/routes/* (all gateway routes)",
+        "Hard coupling between gateway and kernel via shared authority"
+      ],
+      "what_expands_if_touched": [
+        "All 15 importing modules must be updated if authority interface changes",
+        "Kernel runtime cannot bootstrap without gateway-owned authority",
+        "Gateway routes cannot verify canonical bytes without kernel dependency",
+        "Cross-runtime coupling creates circular dependency risk"
+      ],
+      "what_patch_actually_owns": "PATCH_004",
+      "true_seam_boundary": "Should be kernel-owned to eliminate cross-runtime coupling",
+      "coupling_strength": "high"
+    },
+    {
+      "seam_id": "false_seam_003",
+      "component": "gateway/event_repository.js",
+      "type": "repository",
+      "appears_isolated_because": "Encapsulated Postgres client, single module, clear interface",
+      "secretly_coupled_by": [
+        "Shares Postgres database with legacy commit-service",
+        "Overlapping event table schema with runtime/kernel/commit-service/src/events/event_log.ts",
+        "No transaction coordination with legacy service",
+        "Gateway routes directly import and call, bypassing kernel boundary",
+        "Used by gateway/routes/context.js, gateway/routes/events.js, gateway/routes/system.js"
+      ],
+      "what_expands_if_touched": [
+        "All gateway routes that query events must be updated",
+        "Legacy commit-service event writes may conflict with gateway writes",
+        "Postgres schema migration required if tables are consolidated",
+        "Event read authority must be updated if repository interface changes"
+      ],
+      "what_patch_actually_owns": "PATCH_002",
+      "true_seam_boundary": "Should be kernel-owned to consolidate event write authority",
+      "coupling_strength": "high"
+    },
+    {
+      "seam_id": "false_seam_004",
+      "component": "gateway/repository_store.js",
+      "type": "repository",
+      "appears_isolated_because": "Encapsulated Postgres client, single module, clear interface",
+      "secretly_coupled_by": [
+        "Shares Postgres database with legacy commit-service",
+        "Overlapping artifact table schema with runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "No transaction coordination with legacy service",
+        "Gateway routes directly import and call, bypassing kernel boundary",
+        "Used by gateway/routes/repository.js, gateway/routes/events.js, gateway/routes/context.js"
+      ],
+      "what_expands_if_touched": [
+        "All gateway routes that store repository objects must be updated",
+        "Legacy commit-service artifact writes may conflict with gateway writes",
+        "Postgres schema migration required if tables are consolidated",
+        "Snapshot repository depends on repository store"
+      ],
+      "what_patch_actually_owns": "PATCH_006",
+      "true_seam_boundary": "Should be adapter-level gateway interface or kernel-owned",
+      "coupling_strength": "high"
+    },
+    {
+      "seam_id": "false_seam_005",
+      "component": "gateway/qdrant_bootstrap.js",
+      "type": "infrastructure",
+      "appears_isolated_because": "Single module for Qdrant client initialization, clear bootstrap pattern",
+      "secretly_coupled_by": [
+        "Shared Qdrant instance with worker runtime",
+        "Used by 4 different gateway authorities (checkpoint, context compression, memory, verifier)",
+        "No collection namespace isolation between gateway and worker",
+        "Worker writes to same Qdrant collections as gateway",
+        "Gateway routes indirectly depend on Qdrant through authorities"
+      ],
+      "what_expands_if_touched": [
+        "All 4 gateway authorities must be updated if Qdrant client changes",
+        "Worker projection sync may conflict with gateway memory writes",
+        "Qdrant collection schema changes affect both gateway and worker",
+        "Gateway routes that use memory authority are indirectly coupled"
+      ],
+      "what_patch_actually_owns": "PATCH_007",
+      "true_seam_boundary": "Should be infrastructure adapter with collection namespace isolation",
+      "coupling_strength": "medium"
+    },
+    {
+      "seam_id": "false_seam_006",
+      "component": "gateway/runtime/constitutional_execution_pipeline.js",
+      "type": "runtime",
+      "appears_isolated_because": "Encapsulated pipeline execution, clear interface, separate module",
+      "secretly_coupled_by": [
+        "Imports kernel components (ExecutionRuntime, DIContainer) but lives in gateway",
+        "Imports gateway policy authorities (CanonicalAuthority, TimeAuthority, IdentityAuthority)",
+        "Creates cross-runtime coupling between gateway and kernel",
+        "Used by gateway/bootstrap/constitutional_runtime.js",
+        "Dispatcher, ReducerRegistry, ProjectionRegistry all depend on DIContainer"
+      ],
+      "what_expands_if_touched": [
+        "Gateway bootstrap must be updated if pipeline interface changes",
+        "Kernel DIContainer registration must be synchronized",
+        "All runtime components (dispatcher, reducers, projections) must be updated",
+        "Cross-runtime coupling creates circular dependency risk"
+      ],
+      "what_patch_actually_owns": "PATCH_008",
+      "true_seam_boundary": "Should be kernel-owned to eliminate cross-runtime coupling",
+      "coupling_strength": "high"
+    },
+    {
+      "seam_id": "false_seam_007",
+      "component": "runtime/kernel/workers/qdrant_projection_worker.py",
+      "type": "worker",
+      "appears_isolated_because": "Separate Python process, independent entry point, scheduled task",
+      "secretly_coupled_by": [
+        "Shares Postgres database with gateway and legacy commit-service",
+        "Shares Qdrant instance with gateway",
+        "Writes to both Postgres and Qdrant without coordination",
+        "No transaction isolation with gateway writes",
+        "Projection synchronization depends on gateway event writes"
+      ],
+      "what_expands_if_touched": [
+        "Gateway event repository changes may break projection sync",
+        "Postgres schema changes affect worker queries",
+        "Qdrant collection changes affect worker projections",
+        "No coordination mechanism for worker restart on schema changes"
+      ],
+      "what_patch_actually_owns": "PATCH_009",
+      "true_seam_boundary": "Should be kernel-managed with dedicated projection authority",
+      "coupling_strength": "medium"
+    },
+    {
+      "seam_id": "false_seam_008",
+      "component": "gateway/event_read_authority.js",
+      "type": "authority",
+      "appears_isolated_because": "Read-only interface, no mutations, clear separation",
+      "secretly_coupled_by": [
+        "Depends on gateway/event_repository.js (gateway-owned)",
+        "Should read from kernel-owned event repository after PATCH_002",
+        "Used by gateway/routes/context.js, gateway/routes/events.js",
+        "Tight coupling to repository implementation, not abstract interface"
+      ],
+      "what_expands_if_touched": [
+        "Gateway routes must be updated if read authority interface changes",
+        "Event repository migration to kernel requires read authority update",
+        "No abstraction layer between read authority and repository"
+      ],
+      "what_patch_actually_owns": "PATCH_003",
+      "true_seam_boundary": "Should be kernel-owned or adapter-level gateway interface",
+      "coupling_strength": "medium"
+    },
+    {
+      "seam_id": "false_seam_009",
+      "component": "gateway/memory_authority.js",
+      "type": "authority",
+      "appears_isolated_because": "Encapsulated Qdrant client, clear memory interface",
+      "secretly_coupled_by": [
+        "Shares Qdrant instance with worker runtime",
+        "Depends on gateway/qdrant_bootstrap.js (gateway-owned)",
+        "Used by gateway/routes/context.js, gateway/routes/system.js",
+        "No collection namespace isolation from worker projections"
+      ],
+      "what_expands_if_touched": [
+        "Gateway routes must be updated if memory authority interface changes",
+        "Qdrant bootstrap changes affect memory authority",
+        "Worker projection writes may conflict with gateway memory writes"
+      ],
+      "what_patch_actually_owns": "PATCH_007",
+      "true_seam_boundary": "Should be infrastructure adapter with collection namespace isolation",
+      "coupling_strength": "medium"
+    },
+    {
+      "seam_id": "false_seam_010",
+      "component": "runtime/di_container.js",
+      "type": "runtime",
+      "appears_isolated_because": "Generic dependency injection container, reusable pattern",
+      "secretly_coupled_by": [
+        "Imported by gateway/runtime/* modules but lives in runtime/",
+        "Used by kernel ExecutionRuntime but gateway runtime modules also use it",
+        "Creates cross-runtime coupling between gateway and kernel",
+        "All runtime components (dispatcher, reducers, projections) depend on it",
+        "No isolation between gateway and kernel registrations"
+      ],
+      "what_expands_if_touched": [
+        "All gateway runtime modules must be updated if DI container changes",
+        "Kernel ExecutionRuntime must be updated if DI container changes",
+        "Cross-runtime coupling creates circular dependency risk",
+        "No namespace isolation for gateway vs kernel registrations"
+      ],
+      "what_patch_actually_owns": "PATCH_001",
+      "true_seam_boundary": "Should be kernel-owned with gateway adapter interface",
+      "coupling_strength": "high"
+    }
+  ],
+  "false_seam_summary": {
+    "total_false_seams": 10,
+    "by_type": {
+      "route": 1,
+      "authority": 3,
+      "repository": 2,
+      "infrastructure": 2,
+      "runtime": 2
+    },
+    "by_coupling_strength": {
+      "high": 6,
+      "medium": 4,
+      "low": 0
+    },
+    "by_patch_ownership": {
+      "PATCH_001": 1,
+      "PATCH_002": 1,
+      "PATCH_003": 1,
+      "PATCH_004": 1,
+      "PATCH_005": 1,
+      "PATCH_006": 1,
+      "PATCH_007": 2,
+      "PATCH_008": 1,
+      "PATCH_009": 1
+    },
+    "most_critical_false_seams": [
+      "legacy_commit_service",
+      "gateway/canonical_authority.js",
+      "gateway/event_repository.js",
+      "gateway/repository_store.js",
+      "gateway/runtime/constitutional_execution_pipeline.js",
+      "runtime/di_container.js"
+    ]
+  },
+  "false_seam_resolution_priority": [
+    {
+      "priority": 1,
+      "seam_id": "false_seam_002",
+      "component": "gateway/canonical_authority.js",
+      "reason": "Highest coupling, used by 15 modules, creates cross-runtime dependency"
+    },
+    {
+      "priority": 2,
+      "seam_id": "false_seam_001",
+      "component": "legacy_commit_service",
+      "reason": "Independent runtime but shares database and schema, creates data consistency risk"
+    },
+    {
+      "priority": 3,
+      "seam_id": "false_seam_006",
+      "component": "gateway/runtime/constitutional_execution_pipeline.js",
+      "reason": "Imports kernel components but lives in gateway, creates circular dependency"
+    },
+    {
+      "priority": 4,
+      "seam_id": "false_seam_010",
+      "component": "runtime/di_container.js",
+      "reason": "Used by both gateway and kernel, no registration namespace isolation"
+    },
+    {
+      "priority": 5,
+      "seam_id": "false_seam_003",
+      "component": "gateway/event_repository.js",
+      "reason": "Shares database with legacy service, overlapping schema"
+    },
+    {
+      "priority": 6,
+      "seam_id": "false_seam_004",
+      "component": "gateway/repository_store.js",
+      "reason": "Shares database with legacy service, overlapping schema"
+    }
+  ]
+}

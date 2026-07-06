@@ -1,0 +1,128 @@
+{
+  "mission": "VerifyReplay",
+  "intent": "Replay Verification",
+  "authorities": [
+    "ReplayAuthority"
+  ],
+  "specifications": [
+    "specs/replay-authority"
+  ],
+  "implementations": [
+    "runtime/kernel/replay"
+  ],
+  "evidence": [
+    "proofs/replay-proof.json"
+  ],
+  "proofs": [
+    "proofs/replay-proof.json"
+  ],
+  "plan": {
+    "ok": true,
+    "mission": "VerifyReplay",
+    "dag": [
+      {
+        "kind": "Mission",
+        "name": "VerifyReplay"
+      },
+      {
+        "kind": "Intent",
+        "name": "Replay Verification"
+      },
+      {
+        "kind": "Authority",
+        "name": "ReplayAuthority"
+      },
+      {
+        "kind": "Capability",
+        "name": "ReplayTranscript"
+      },
+      {
+        "kind": "Authority",
+        "name": "ExecutionAuthority"
+      },
+      {
+        "kind": "Authority",
+        "name": "RepositoryAuthority"
+      },
+      {
+        "kind": "Authority",
+        "name": "ProjectionAuthority"
+      },
+      {
+        "kind": "Evidence",
+        "name": "proofs/replay-proof.json"
+      },
+      {
+        "kind": "Proof",
+        "name": "proofs/replay-proof.json"
+      }
+    ],
+    "execution_graph": {
+      "mission": "VerifyReplay",
+      "tasks": [
+        {
+          "id": "plan",
+          "kind": "planner",
+          "depends_on": []
+        },
+        {
+          "id": "lease",
+          "kind": "resource",
+          "depends_on": [
+            "plan"
+          ]
+        },
+        {
+          "id": "worktree",
+          "kind": "worktree",
+          "depends_on": [
+            "lease"
+          ]
+        },
+        {
+          "id": "execute",
+          "kind": "execution",
+          "depends_on": [
+            "worktree"
+          ]
+        },
+        {
+          "id": "replay",
+          "kind": "replay",
+          "depends_on": [
+            "execute"
+          ]
+        },
+        {
+          "id": "witness",
+          "kind": "witness",
+          "depends_on": [
+            "replay"
+          ]
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "depends_on": [
+            "witness"
+          ]
+        }
+      ]
+    }
+  },
+  "diff": {
+    "ok": true,
+    "files_changed": [
+      "runtime/replay/",
+      "replay_worker.py"
+    ],
+    "authorities_changed": [
+      "ReplayAuthority"
+    ],
+    "mission_impact": [
+      "VerifyReplay"
+    ],
+    "proof": "semantic-diff-generated"
+  },
+  "status": "completed"
+}

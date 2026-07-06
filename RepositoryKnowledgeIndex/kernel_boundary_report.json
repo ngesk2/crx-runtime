@@ -1,0 +1,174 @@
+{
+  "generatedAt": "2026-07-05T00:00:00.000Z",
+  "reportType": "kernel_boundary_report",
+  "sourceArtifacts": [
+    "RepositoryKnowledgeIndex/evidence_manifest.json",
+    "RepositoryKnowledgeIndex/service_inventory.json",
+    "RepositoryKnowledgeIndex/route_matrix.json",
+    "RepositoryKnowledgeIndex/mutation_surface.json",
+    "runtime/execution_runtime.js",
+    "runtime/di_container.js",
+    "gateway/bootstrap/main.js",
+    "gateway/bootstrap/gateway_runtime.js",
+    "gateway/constitutional_time_authority.js",
+    "gateway/canonical_authority.js",
+    "gateway/identity_authority.js"
+  ],
+  "decisionSummary": {
+    "currentProductionPath": "gateway/bootstrap/main.js -> gateway/bootstrap/gateway_runtime.js -> GatewayRuntime -> route handlers",
+    "kernelPresentButUnwired": true,
+    "singleProductionEntrypoint": false,
+    "recommendedKernelBoundary": "ExecutionRuntime + DIContainer + authority implementations + artifact/replay/event lifecycle modules",
+    "recommendedGatewayBoundary": "Ingress, authentication, serialization, protocol adaptation, and route orchestration only",
+    "recommendedInfrastructureBoundary": "Postgres, Qdrant, Ollama, Docker, Git, filesystem, and network adapters only"
+  },
+  "classifications": [
+    {
+      "component": "ExecutionRuntime",
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "evidence": [
+        "runtime/execution_runtime.js"
+      ],
+      "rationale": "Owns execution lifecycle, infrastructure dispatch, artifact processing, lineage, witnesses, certification, publication, and event emission."
+    },
+    {
+      "component": "DIContainer",
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "evidence": [
+        "runtime/di_container.js"
+      ],
+      "rationale": "Provides the kernel-owned composition boundary for adapters, authorities, and services."
+    },
+    {
+      "component": "ConstitutionalTimeAuthority",
+      "classification": "kernel_owned_policy",
+      "status": "implemented_not_wired",
+      "evidence": [
+        "gateway/constitutional_time_authority.js"
+      ],
+      "rationale": "Deterministic time source for replay and execution semantics."
+    },
+    {
+      "component": "CanonicalAuthority",
+      "classification": "kernel_owned_policy",
+      "status": "implemented_not_wired",
+      "evidence": [
+        "gateway/canonical_authority.js"
+      ],
+      "rationale": "Defines canonical serialization and hashing policy for kernel artifacts."
+    },
+    {
+      "component": "IdentityAuthority",
+      "classification": "kernel_owned_policy",
+      "status": "implemented_not_wired",
+      "evidence": [
+        "gateway/identity_authority.js"
+      ],
+      "rationale": "Defines deterministic identity generation policy for kernel objects."
+    },
+    {
+      "component": "GatewayRuntime",
+      "classification": "gateway_owned",
+      "status": "production",
+      "evidence": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "rationale": "Owns ingress wiring and route mounting but should not execute missions or own policy."
+    },
+    {
+      "component": "RepositoryStore",
+      "classification": "adapter_owned",
+      "status": "production",
+      "evidence": [
+        "gateway/repository_store.js"
+      ],
+      "rationale": "Persistence adapter for repository objects; should be consumed by kernel services rather than owning execution."
+    },
+    {
+      "component": "EventReadAuthority",
+      "classification": "kernel_owned_runtime",
+      "status": "production",
+      "evidence": [
+        "gateway/event_read_authority.js"
+      ],
+      "rationale": "Read-side event access should be a kernel-owned runtime service, not a gateway-local policy implementation."
+    },
+    {
+      "component": "EventRepository",
+      "classification": "kernel_owned_runtime",
+      "status": "production",
+      "evidence": [
+        "gateway/event_repository.js"
+      ],
+      "rationale": "Persists execution events and replay structure; belongs to the kernel persistence boundary."
+    },
+    {
+      "component": "Ollama, Docker, Git, Qdrant, Postgres adapters",
+      "classification": "infrastructure_adapter",
+      "status": "production",
+      "evidence": [
+        "RepositoryKnowledgeIndex/mutation_surface.json",
+        "RepositoryKnowledgeIndex/service_inventory.json"
+      ],
+      "rationale": "These are infrastructure capabilities consumed by the kernel; they must not orchestrate execution."
+    }
+  ],
+  "services": [
+    {
+      "service": "gateway_http",
+      "classification": "gateway_owned",
+      "status": "production",
+      "notes": "Current runtime entrypoint for HTTP traffic."
+    },
+    {
+      "service": "legacy_commit_service",
+      "classification": "adapter_or_service",
+      "status": "dormant_or_isolated",
+      "notes": "Contains commit-oriented controllers and artifact persistence but is not the dominant execution kernel."
+    },
+    {
+      "service": "orchestration",
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "notes": "The orchestration execution modules exist but are not the production route for requests."
+    },
+    {
+      "service": "replay",
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "notes": "Replay concepts exist, but the current production path does not mediate through them."
+    },
+    {
+      "service": "witness",
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "notes": "Witnessing is present as a kernel concern but not yet a production mediator."
+    }
+  ],
+  "migrationContract": {
+    "singleProductionEntrypoint": "All externally initiated requests must enter through the kernel boundary before reaching infrastructure adapters.",
+    "gatewayMustDoOnly": [
+      "route matching",
+      "authentication",
+      "validation",
+      "serialization",
+      "protocol translation"
+    ],
+    "kernelMustOwn": [
+      "mission creation",
+      "planning",
+      "dispatch",
+      "artifact lifecycle",
+      "replay/witness/certification",
+      "event emission"
+    ],
+    "infrastructureMustNotOwn": [
+      "execution policy",
+      "mission orchestration",
+      "consensus",
+      "replay decisions"
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "artifact": "gateway_to_kernel_cutover_plan",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "summary": "Cutover plan to move runtime ownership from gateway-local event execution and persistence into kernel execution boundary, while preserving gateway ingress and adapter roles.",
+  "gateway_routes": [
+    {
+      "path": "/events",
+      "methods": [
+        "GET",
+        "POST",
+        "POST /processed",
+        "POST /failed",
+        "GET /unprocessed"
+      ],
+      "current_handler": "gateway/routes/events.js",
+      "recommended_kernel_delegate": "kernel.execute() for POST /events; kernel event read model for GET paths",
+      "notes": "Event write path is the highest priority cutover."
+    },
+    {
+      "path": "/api/v1/repository/objects",
+      "methods": [
+        "POST",
+        "GET",
+        "DELETE"
+      ],
+      "current_handler": "gateway/routes/repository.js",
+      "recommended_kernel_delegate": "keep as gateway persistence adapter for objects; if object workflow becomes kernel-owned, delegate to kernel service via adapter",
+      "notes": "Repository object storage may remain gateway adapter-level unless object semantics move into kernel."
+    },
+    {
+      "path": "/context",
+      "methods": [
+        "GET /recent-events",
+        "GET /worker-status",
+        "GET /runtime-digest",
+        "GET /latest-summaries",
+        "GET /recent-failures",
+        "GET /model-metrics",
+        "GET /daily-activity"
+      ],
+      "current_handler": "gateway/routes/context.js",
+      "recommended_kernel_delegate": "context read models from kernel-owned event store; keep gateway routes as read-only facade",
+      "notes": "Context queries should read the canonical repository persisted by kernel."
+    },
+    {
+      "path": "/system/state",
+      "methods": [
+        "GET"
+      ],
+      "current_handler": "gateway/routes/system.js",
+      "recommended_kernel_delegate": "system state should aggregate from kernel authorities and event state via EventReadAuthority",
+      "notes": "System authority remains gateway-facing operational guard."
+    },
+    {
+      "path": "/api/v1/ollama",
+      "methods": [
+        "POST /chat",
+        "GET /models",
+        "POST /autocomplete"
+      ],
+      "current_handler": "gateway/routes/ollama.js",
+      "recommended_kernel_delegate": "inference orchestration should call kernel inference authority or kernel-managed adapter, not raw adapter.",
+      "notes": "Ollama routing logic currently uses constitutionalTimeAuthority; keep gateway ingress only."
+    }
+  ],
+  "legacy_kernel_routes": [
+    {
+      "path": "/kernel/commit",
+      "handler": "runtime/kernel/commit-service/src/server.ts",
+      "recommended": "review as legacy conduit. If still needed, refactor to adapter role or retire."
+    },
+    {
+      "path": "/kernel/audit",
+      "handler": "runtime/kernel/commit-service/src/server.ts",
+      "recommended": "retain only if audit interface is required; otherwise remove from production route graph."
+    },
+    {
+      "path": "/kernel/audit/system",
+      "handler": "runtime/kernel/commit-service/src/server.ts",
+      "recommended": "same as above."
+    }
+  ],
+  "finalization": {
+    "handoff": "gateway routes remain ingress-only; kernel boundary owns mission execution, event persistence, witness, replay, and certification.",
+    "verification": "static route evidence should show gateway route -> kernel execution adapter -> runtime modules without gateway-local execution logic.",
+    "rollback": "phase 2 should preserve gateway route tests and allow rollback to current gateway-local execution if kernel adapter fails."
+  }
+}

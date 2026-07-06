@@ -1,0 +1,21 @@
+{
+  "event_id": "2f56cf96384961ed",
+  "type": "worker_state_changed",
+  "schema_version": "3.0.0",
+  "data": {
+    "from": "idle",
+    "load": 1,
+    "missionId": "m1",
+    "to": "assigned",
+    "workerId": "opencode:local"
+  },
+  "mission_id": "m1",
+  "worker_id": "opencode:local",
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "00801f6e544d",
+  "parent_event_id": null,
+  "global_sequence": 13
+}

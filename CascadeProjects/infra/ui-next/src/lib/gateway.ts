@@ -1,9 +1,36 @@
-const GATEWAY_URL = 'http://localhost:8080';
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 
 export interface SessionConfig {
   model: string;
   temperature?: number;
   stream?: boolean;
+}
+
+export interface SystemState {
+  version: string;
+  generated_at: string;
+  containers: { status: string; containers: any[] };
+  git: { status: string; branch: string; pending_changes: number; recent_commits: any[] };
+  repository: { status: string; intents: number; authorities: number; capabilities: number; specifications: number; total_nodes: number; total_edges: number; duplicate_warnings: number };
+  knowledge: { status: string; knowledge_objects: number; reflections: number; skills: number; policies: number; evidence: number; proofs: number; witnesses: number; replay_certificates: number; historical_snapshots: number };
+  missions: { status: string; queued: number; executing: number; completed: number; failed: number; blocked: number };
+  replay: { status: string; total_runs: number; success_rate: number; failures: number; latest_replay: string | null; witness_coverage: number };
+  postgres: { status: string; total_events: number; streams: number; event_types: number; oldest_event: string | null; newest_event: string | null };
+  qdrant: { status: string; collections: number; total_points: number; total_vectors: number };
+  metrics: { uptime_seconds: number; total_requests: number; total_errors: number };
+  organizational_health: { authority_violations: number; capability_violations: number; intent_conflicts: number; confidence_decay: number };
+}
+
+export async function fetchSystemState(): Promise<SystemState> {
+  const response = await fetch(`${GATEWAY_URL}/system/state`);
+  if (!response.ok) throw new Error(`Gateway error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchJson(path: string): Promise<any> {
+  const response = await fetch(`${GATEWAY_URL}${path}`);
+  if (!response.ok) throw new Error(`Gateway error: ${response.status}`);
+  return response.json();
 }
 
 export async function* streamChat(messages: Array<{role: string; content: string}>, config: SessionConfig): AsyncGenerator<string> {

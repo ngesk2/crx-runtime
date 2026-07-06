@@ -1,0 +1,19 @@
+{
+  "graph_id": "legacy_commit_service",
+  "roots": [
+    "runtime/kernel/commit-service/src/server.ts"
+  ],
+  "reachable_files": [
+    "runtime/kernel/commit-service/src/validation/dag_validator.ts",
+    "runtime/kernel/commit-service/src/utils/logger.ts",
+    "runtime/kernel/commit-service/src/api/audit_controller.ts",
+    "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+    "runtime/kernel/commit-service/src/server.ts",
+    "runtime/kernel/commit-service/src/events/event_log.ts",
+    "runtime/kernel/commit-service/src/persistence/db.ts",
+    "runtime/kernel/commit-service/src/api/commit_controller.ts"
+  ],
+  "unresolved_edges": [],
+  "dynamic_edge_warnings": [],
+  "generation_notes": []
+}

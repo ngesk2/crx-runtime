@@ -1,0 +1,29 @@
+{
+  "id": "art_dc02338004f26e2d",
+  "type": "proposal",
+  "content": {
+    "workerId": "w1",
+    "missionId": "m1",
+    "findings": [
+      {
+        "file": "x",
+        "line": 1,
+        "bypassType": "test",
+        "confidence": 0.9
+      }
+    ],
+    "patches": [],
+    "summary": ""
+  },
+  "hash": "feb05a55d95cac4126ea8ae9585a5851ecf0cc1149a9bd9ab4c6136db244aedf",
+  "bytes": "7b22636f6e666964656e6365223a302e392c22636f6e74656e74223a7b226d697373696f6e4964223a226d31222c22776f726b65724964223a227731227d2c2266696c6573223a5b5d2c226d65746164617461223a7b7d2c226d697373696f6e4964223a226d31222c22706172656e7441727469666163744964223a6e756c6c2c2274797065223a2270726f706f73616c222c22776f726b65724964223a227731227d",
+  "worker_id": "w1",
+  "mission_id": "m1",
+  "parent_artifact_id": null,
+  "files": [],
+  "confidence": 0.9,
+  "metadata": {
+    "proposalType": "standard"
+  },
+  "witness_hash": "7fcc9aacba170768505b84e4eef7dbf49d7539aaecc424366425ae2ecc305d9d"
+}

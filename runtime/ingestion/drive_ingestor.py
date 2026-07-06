@@ -97,7 +97,7 @@ class DriveIngestor:
             return False
     
     def connect_postgres(self) -> bool:
-        """Connect to PostgreSQL using RepositoryAdapter."""
+        """Connect to PostgreSQL using RepositoryAdapter pool."""
         try:
             from runtime.adapters.repository_adapter import get_repository_connection
             self.conn = get_repository_connection()
@@ -234,8 +234,9 @@ class DriveIngestor:
         try:
             self.sync_drive()
         finally:
-            if self.conn:
-                self.conn.close()
+            if hasattr(self, '_conn_ctx') and self._conn_ctx:
+                self._conn_ctx.__exit__(None, None, None)
+                self._conn_ctx = None
     
     def run_continuous(self, interval_seconds: int = 300):
         """Run continuous polling."""

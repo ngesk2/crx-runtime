@@ -1,0 +1,17 @@
+{
+  "event_id": "7b5b2eb777b44f6f",
+  "type": "git_diff",
+  "schema_version": "3.0.0",
+  "data": {
+    "diff": "x"
+  },
+  "mission_id": null,
+  "worker_id": null,
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "aad8c82e1369",
+  "parent_event_id": null,
+  "global_sequence": 1
+}

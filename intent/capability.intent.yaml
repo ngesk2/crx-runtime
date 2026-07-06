@@ -1,0 +1,15 @@
+intent: Capability Routing
+owner: CapabilityAuthority
+spec: specs/capability-engine
+implements:
+  - runtime/authorities/authority_router.py
+produces:
+  - CapabilityResolution
+consumes:
+  - RepositoryAuthority
+depends_on:
+  - GovernanceAuthority
+forbidden:
+  - duplicate_capability_registration
+proofs:
+  - proofs/capability-proof.json

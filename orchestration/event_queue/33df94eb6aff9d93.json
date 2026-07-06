@@ -1,0 +1,20 @@
+{
+  "event_id": "33df94eb6aff9d93",
+  "type": "artifact_stored",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_dc02338004f26e2d",
+    "missionId": "m1",
+    "type": "proposal",
+    "workerId": "w1"
+  },
+  "mission_id": "m1",
+  "worker_id": "w1",
+  "artifact_id": "art_dc02338004f26e2d",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "9663137fa040",
+  "parent_event_id": null,
+  "global_sequence": 4
+}

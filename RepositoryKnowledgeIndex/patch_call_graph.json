@@ -1,0 +1,948 @@
+{
+  "artifact": "patch_call_graph",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 3 - Complete Call Graph Expansion",
+  "description": "Expanded call graphs for all patch anchor files including imports, DI, routes, workers",
+  "call_graphs": {
+    "gateway/bootstrap/gateway_runtime.js": {
+      "imports": [
+        "express",
+        "./api_controller",
+        "./route_middleware",
+        "../routes/context",
+        "../routes/events",
+        "../routes/health",
+        "../routes/ollama",
+        "../routes/repository",
+        "../routes/system",
+        "../system_authority",
+        "../health_authority",
+        "../constitutional_time_authority",
+        "../canonical_authority",
+        "../identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [
+        "this._app.use('/context', contextRouter)",
+        "this._app.use('/events', eventsRouter)",
+        "this._app.use('/health', healthRouter)",
+        "this._app.use('/api/v1/ollama', ollamaRouter)",
+        "this._app.use('/api/v1/repository', repositoryRouter)",
+        "this._app.use('/system', systemRouter)"
+      ],
+      "middleware": [
+        "route_middleware"
+      ],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [
+        "GatewayRuntime.initialize",
+        "GatewayRuntime.start"
+      ],
+      "server_startup": [
+        "this._app.listen"
+      ],
+      "callers": [
+        "gateway/bootstrap/main.js",
+        "package.json (script:dev)"
+      ],
+      "callees": [
+        "gateway/api_controller.js",
+        "gateway/routes/context.js",
+        "gateway/routes/events.js",
+        "gateway/routes/health.js",
+        "gateway/routes/ollama.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/system.js",
+        "gateway/system_authority.js",
+        "gateway/health_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": true
+    },
+    "runtime/execution_runtime.js": {
+      "imports": [
+        "./di_container",
+        "../gateway/canonical_authority",
+        "../gateway/constitutional_time_authority",
+        "../gateway/identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "DIContainer"
+      ],
+      "container_registrations": [
+        "ExecutionRuntime.registerAuthorities",
+        "ExecutionRuntime.registerAdapters"
+      ],
+      "dependency_injection": [
+        "DIContainer.get"
+      ],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [
+        "ExecutionRuntime.initialize",
+        "ExecutionRuntime.execute"
+      ],
+      "server_startup": [],
+      "callers": [
+        "gateway/bootstrap/gateway_runtime.js (future)",
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "callees": [
+        "runtime/di_container.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": true
+    },
+    "runtime/di_container.js": {
+      "imports": [],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [
+        "DIContainer.register",
+        "DIContainer.registerSingleton",
+        "DIContainer.registerTransient"
+      ],
+      "dependency_injection": [
+        "DIContainer.get",
+        "DIContainer.resolve"
+      ],
+      "factory_wiring": [
+        "DIContainer.registerFactory"
+      ],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [
+        "DIContainer.initialize"
+      ],
+      "server_startup": [],
+      "callers": [
+        "runtime/execution_runtime.js",
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js"
+      ],
+      "callees": [],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": true
+    },
+    "gateway/event_repository.js": {
+      "imports": [
+        "./canonical_authority",
+        "./constitutional_time_authority",
+        "./identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/events.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "callees": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/routes/events.js": {
+      "imports": [
+        "express",
+        "../event_repository",
+        "../canonical_authority",
+        "../constitutional_time_authority",
+        "../identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [
+        "router.get('/')",
+        "router.get('/recent')",
+        "router.get('/stats')",
+        "router.get('/:stream')",
+        "router.post('/')"
+      ],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "callees": [
+        "gateway/event_repository.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/event_read_authority.js": {
+      "imports": [
+        "./event_repository",
+        "./canonical_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/events.js"
+      ],
+      "callees": [
+        "gateway/event_repository.js",
+        "gateway/canonical_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/canonical_authority.js": {
+      "imports": [],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/event_repository.js",
+        "gateway/event_read_authority.js",
+        "gateway/repository_store.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js",
+        "runtime/execution_runtime.js",
+        "gateway/adapter_authority.js",
+        "gateway/adapter_compiler_v2.js",
+        "gateway/deterministic_id_authority.js",
+        "gateway/witness_authority.js"
+      ],
+      "callees": [],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/constitutional_time_authority.js": {
+      "imports": [],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js",
+        "gateway/routes/health.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "runtime/execution_runtime.js",
+        "gateway/adapter_authority.js"
+      ],
+      "callees": [],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/identity_authority.js": {
+      "imports": [
+        "./canonical_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js",
+        "runtime/execution_runtime.js",
+        "gateway/adapter_authority.js",
+        "gateway/adapter_compiler_v2.js",
+        "gateway/deterministic_id_authority.js"
+      ],
+      "callees": [
+        "gateway/canonical_authority.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/repository_store.js": {
+      "imports": [
+        "./canonical_authority",
+        "./constitutional_time_authority",
+        "./identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/repository.js",
+        "gateway/routes/events.js",
+        "gateway/routes/context.js"
+      ],
+      "callees": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/routes/repository.js": {
+      "imports": [
+        "express",
+        "../repository_store",
+        "../canonical_authority",
+        "../constitutional_time_authority",
+        "../identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [
+        "router.post('/objects')",
+        "router.get('/objects/:id')",
+        "router.get('/objects')"
+      ],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "callees": [
+        "gateway/repository_store.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/routes/context.js": {
+      "imports": [
+        "express",
+        "../event_read_authority",
+        "../event_repository",
+        "../system_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [
+        "router.get('/recent-events')",
+        "router.get('/worker-status')",
+        "router.get('/runtime-digest')",
+        "router.get('/latest-summaries')",
+        "router.get('/recent-failures')",
+        "router.get('/model-metrics')",
+        "router.get('/daily-activity')"
+      ],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "callees": [
+        "gateway/event_read_authority.js",
+        "gateway/event_repository.js",
+        "gateway/system_authority.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "runtime/kernel/commit-service/src/server.ts": {
+      "imports": [
+        "express",
+        "./api/audit_controller",
+        "./api/commit_controller"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [
+        "app.post('/kernel/commit')",
+        "app.get('/kernel/audit')",
+        "app.get('/kernel/audit/system')"
+      ],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [
+        "app.listen"
+      ],
+      "callers": [
+        "package.json (script:dev:commit-service)"
+      ],
+      "callees": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "runtime_ownership": "legacy_commit_service",
+      "bootstrap_root": true
+    },
+    "runtime/kernel/commit-service/src/api/audit_controller.ts": {
+      "imports": [
+        "../persistence/db"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "callees": [
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ],
+      "runtime_ownership": "legacy_commit_service",
+      "bootstrap_root": false
+    },
+    "runtime/kernel/commit-service/src/events/event_log.ts": {
+      "imports": [
+        "../persistence/db"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "callees": [
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ],
+      "runtime_ownership": "legacy_commit_service",
+      "bootstrap_root": false
+    },
+    "runtime/kernel/commit-service/src/persistence/artifact_store.ts": {
+      "imports": [
+        "../persistence/db"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "callees": [
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ],
+      "runtime_ownership": "legacy_commit_service",
+      "bootstrap_root": false
+    },
+    "runtime/kernel/commit-service/src/persistence/lineage_store.ts": {
+      "imports": [
+        "../persistence/db"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "postgres_pool"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "callees": [
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ],
+      "runtime_ownership": "legacy_commit_service",
+      "bootstrap_root": false
+    },
+    "runtime/kernel/workers/qdrant_projection_worker.py": {
+      "imports": [
+        "qdrant_client",
+        "psycopg2"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [
+        "worker process"
+      ],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [
+        "python qdrant_projection_worker.py"
+      ],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "docker-compose.yaml",
+        "package.json (worker scripts)"
+      ],
+      "callees": [],
+      "runtime_ownership": "worker",
+      "bootstrap_root": true
+    },
+    "gateway/runtime/constitutional_execution_pipeline.js": {
+      "imports": [
+        "../../runtime/execution_runtime",
+        "../../runtime/di_container",
+        "../canonical_authority",
+        "../constitutional_time_authority",
+        "../identity_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "ExecutionRuntime",
+        "DIContainer"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [
+        "ConstitutionalExecutionPipeline.initialize"
+      ],
+      "server_startup": [],
+      "callers": [
+        "gateway/bootstrap/constitutional_runtime.js"
+      ],
+      "callees": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": true
+    },
+    "gateway/runtime/dispatcher.js": {
+      "imports": [
+        "../../runtime/di_container"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "DIContainer"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "callees": [
+        "runtime/di_container.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/runtime/reducer_registry.js": {
+      "imports": [
+        "../../runtime/di_container"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "DIContainer"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "callees": [
+        "runtime/di_container.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/runtime/projection_registry.js": {
+      "imports": [
+        "../../runtime/di_container"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "DIContainer"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "callees": [
+        "runtime/di_container.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/runtime/replay_decision_authority.js": {
+      "imports": [
+        "../../runtime/di_container",
+        "../canonical_authority"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "DIContainer"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "callees": [
+        "runtime/di_container.js",
+        "gateway/canonical_authority.js"
+      ],
+      "runtime_ownership": "kernel",
+      "bootstrap_root": false
+    },
+    "gateway/checkpoint_authority.js": {
+      "imports": [
+        "./qdrant_bootstrap"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "qdrant_client"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "callees": [
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/context_compression_authority.js": {
+      "imports": [
+        "./qdrant_bootstrap"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "qdrant_client"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/context.js"
+      ],
+      "callees": [
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/memory_authority.js": {
+      "imports": [
+        "./qdrant_bootstrap"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [
+        "qdrant_client"
+      ],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [],
+      "server_startup": [],
+      "callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "callees": [
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": false
+    },
+    "gateway/qdrant_bootstrap.js": {
+      "imports": [
+        "@qdrant/js-client-rest"
+      ],
+      "dynamic_imports": [],
+      "require_chains": [],
+      "constructor_injection": [],
+      "container_registrations": [],
+      "dependency_injection": [],
+      "factory_wiring": [],
+      "route_registration": [],
+      "middleware": [],
+      "worker_registration": [],
+      "docker_entrypoints": [],
+      "cli_entrypoints": [],
+      "bootstrap": [
+        "QdrantBootstrap.initialize"
+      ],
+      "server_startup": [],
+      "callers": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "callees": [],
+      "runtime_ownership": "gateway_http",
+      "bootstrap_root": true
+    }
+  },
+  "bootstrap_roots": {
+    "gateway_http": [
+      "gateway/bootstrap/gateway_runtime.js",
+      "gateway/api_controller.js",
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "kernel": [
+      "runtime/execution_runtime.js",
+      "runtime/di_container.js",
+      "gateway/runtime/constitutional_execution_pipeline.js"
+    ],
+    "legacy_commit_service": [
+      "runtime/kernel/commit-service/src/server.ts"
+    ],
+    "worker": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ]
+  },
+  "cross_runtime_imports": {
+    "gateway_http_to_kernel": [
+      "gateway/runtime/constitutional_execution_pipeline.js -> runtime/execution_runtime.js",
+      "gateway/runtime/constitutional_execution_pipeline.js -> runtime/di_container.js",
+      "gateway/runtime/dispatcher.js -> runtime/di_container.js",
+      "gateway/runtime/reducer_registry.js -> runtime/di_container.js",
+      "gateway/runtime/projection_registry.js -> runtime/di_container.js",
+      "gateway/runtime/replay_decision_authority.js -> runtime/di_container.js"
+    ],
+    "gateway_http_to_legacy_commit_service": [
+      "gateway/api_controller.js -> runtime/kernel/commit-service/src/server.ts",
+      "gateway/routes/events.js -> runtime/kernel/commit-service/src/api/audit_controller.ts",
+      "gateway/routes/events.js -> runtime/kernel/commit-service/src/events/event_log.ts",
+      "gateway/routes/repository.js -> runtime/kernel/commit-service/src/persistence/artifact_store.ts"
+    ],
+    "kernel_to_gateway": [
+      "runtime/execution_runtime.js -> gateway/canonical_authority.js",
+      "runtime/execution_runtime.js -> gateway/constitutional_time_authority.js",
+      "runtime/execution_runtime.js -> gateway/identity_authority.js"
+    ]
+  }
+}

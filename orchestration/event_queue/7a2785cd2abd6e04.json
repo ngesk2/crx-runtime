@@ -1,0 +1,35 @@
+{
+  "event_id": "7a2785cd2abd6e04",
+  "type": "worker_registered",
+  "schema_version": "3.0.0",
+  "data": {
+    "capabilities": [
+      "orchestration.plan",
+      "orchestration.review",
+      "orchestration.merge",
+      "authority.audit",
+      "authority.audit.time",
+      "authority.audit.identity",
+      "authority.audit.hash",
+      "authority.audit.serialization",
+      "authority.audit.subprocess",
+      "replay.verify",
+      "code.generate",
+      "code.refactor"
+    ],
+    "contextWindow": 128000,
+    "model": "opencode:big-pickle",
+    "replayCompatible": true,
+    "specialization": "orchestration",
+    "workerId": "opencode:local"
+  },
+  "mission_id": null,
+  "worker_id": "opencode:local",
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "ff906b8d84b4",
+  "parent_event_id": null,
+  "global_sequence": 8
+}

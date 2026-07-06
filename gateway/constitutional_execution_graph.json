@@ -1,0 +1,89 @@
+{
+  "graph_version": "1.0.0",
+  "constitutional_version": "7.0.0",
+  "graph_metadata": {
+    "frozen": true,
+    "hash": null,
+    "description": "Constitutional execution dependency graph - changing replay order requires constitutional version change"
+  },
+  "nodes": {
+    "runtime_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "runtime",
+      "dependencies": [],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "prompt_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "prompt",
+      "dependencies": ["runtime_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "inference_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "inference",
+      "dependencies": ["prompt_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "model_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "model",
+      "dependencies": ["inference_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "streaming_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "streaming",
+      "dependencies": ["inference_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "tool_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "tool",
+      "dependencies": ["inference_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "completion_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "completion",
+      "dependencies": ["streaming_witness", "tool_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "state_witness": {
+      "node_type": "verify_witness",
+      "witness_type": "state",
+      "dependencies": ["completion_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "relationship_proofs": {
+      "node_type": "prove_relationships",
+      "dependencies": ["state_witness"],
+      "purity": "deterministic",
+      "capabilities": []
+    }
+  },
+  "execution_order": [
+    "runtime_witness",
+    "prompt_witness",
+    "inference_witness",
+    "model_witness",
+    "streaming_witness",
+    "tool_witness",
+    "completion_witness",
+    "state_witness",
+    "relationship_proofs"
+  ],
+  "parallel_groups": [
+    ["model_witness", "streaming_witness", "tool_witness"]
+  ],
+  "external_nodes": [],
+  "capability_requirements": {}
+}

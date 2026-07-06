@@ -1,0 +1,2573 @@
+{
+  "version": "1.0.0",
+  "summary": {
+    "total_modules": 350,
+    "production": 35,
+    "dormant": 315,
+    "authorities": 111,
+    "entry_points": 8
+  },
+  "entry_points": [
+    {
+      "file": "server.js"
+    },
+    {
+      "file": "bootstrap/constitutional_runtime.js"
+    },
+    {
+      "file": "bootstrap/container.js"
+    },
+    {
+      "file": "bootstrap/gateway_runtime.js"
+    },
+    {
+      "file": "bootstrap/index.js"
+    },
+    {
+      "file": "bootstrap/lifecycle.js"
+    },
+    {
+      "file": "bootstrap/main.js"
+    },
+    {
+      "file": "bootstrap/wiring.js"
+    }
+  ],
+  "authorities": [
+    {
+      "path": "gateway/adapter_authority.js",
+      "exports": [
+        "AdapterAuthority"
+      ],
+      "lines": 427
+    },
+    {
+      "path": "gateway/agent_memory_authority.js",
+      "exports": [
+        "AgentMemoryAuthority"
+      ],
+      "lines": 753
+    },
+    {
+      "path": "gateway/approval_authority.js",
+      "exports": [
+        "ApprovalAuthority"
+      ],
+      "lines": 379
+    },
+    {
+      "path": "gateway/artifact_authority.js",
+      "exports": [
+        "ArtifactAuthority"
+      ],
+      "lines": 193
+    },
+    {
+      "path": "gateway/authority_container.js",
+      "exports": [
+        "AuthorityContainer"
+      ],
+      "lines": 103
+    },
+    {
+      "path": "gateway/authority_purity_audit.js",
+      "exports": [
+        "AuthorityPurityAudit"
+      ],
+      "lines": 425
+    },
+    {
+      "path": "gateway/authority_repository.js",
+      "exports": [
+        "AuthorityRepository"
+      ],
+      "lines": 245
+    },
+    {
+      "path": "gateway/bootstrap/constitutional_runtime.js",
+      "exports": [
+        "ConstitutionalRuntime"
+      ],
+      "lines": 43
+    },
+    {
+      "path": "gateway/bootstrap/gateway_runtime.js",
+      "exports": [
+        "GatewayRuntime"
+      ],
+      "lines": 64
+    },
+    {
+      "path": "gateway/boot_authority.js",
+      "exports": [
+        "BootAuthority"
+      ],
+      "lines": 81
+    },
+    {
+      "path": "gateway/canonical_authority.js",
+      "exports": [
+        "CanonicalBytes"
+      ],
+      "lines": 523
+    },
+    {
+      "path": "gateway/canonical_graph_authority.js",
+      "exports": [
+        "CanonicalGraphAuthority"
+      ],
+      "lines": 437
+    },
+    {
+      "path": "gateway/canonical_symbol_authority.js",
+      "exports": [
+        "CanonicalSymbolAuthority"
+      ],
+      "lines": 264
+    },
+    {
+      "path": "gateway/certification_authority.js",
+      "exports": [
+        "CertificationAuthority"
+      ],
+      "lines": 352
+    },
+    {
+      "path": "gateway/checkpoint_authority.js",
+      "exports": [
+        "CheckpointAuthority"
+      ],
+      "lines": 419
+    },
+    {
+      "path": "gateway/commit_authority.js",
+      "exports": [
+        "CommitAuthority"
+      ],
+      "lines": 308
+    },
+    {
+      "path": "gateway/compiler_authority.js",
+      "exports": [
+        "CompilerAuthority"
+      ],
+      "lines": 123
+    },
+    {
+      "path": "gateway/compiler_lineage_authority.js",
+      "exports": [
+        "CompilerLineageAuthority"
+      ],
+      "lines": 50
+    },
+    {
+      "path": "gateway/completion_authority.js",
+      "exports": [
+        "CompletionAuthority"
+      ],
+      "lines": 283
+    },
+    {
+      "path": "gateway/condition_authority.js",
+      "exports": [
+        "ConditionAuthority"
+      ],
+      "lines": 154
+    },
+    {
+      "path": "gateway/constitutional_authority.js",
+      "exports": [
+        "ConstitutionalAuthority"
+      ],
+      "lines": 205
+    },
+    {
+      "path": "gateway/constitutional_authority_registry.js",
+      "exports": [
+        "ConstitutionalAuthorityRegistry"
+      ],
+      "lines": 511
+    },
+    {
+      "path": "gateway/constitutional_authority_weighted.js",
+      "exports": [
+        "ConstitutionalAuthority"
+      ],
+      "lines": 338
+    },
+    {
+      "path": "gateway/constitutional_automatic_pipeline.js",
+      "exports": [
+        "ConstitutionalAutomaticPipeline"
+      ],
+      "lines": 162
+    },
+    {
+      "path": "gateway/constitutional_desktop_runtime.js",
+      "exports": [
+        "ConstitutionalDesktopRuntime"
+      ],
+      "lines": 1155
+    },
+    {
+      "path": "gateway/constitutional_execution_pipeline.js",
+      "exports": [
+        "ConstitutionalExecutionPipeline"
+      ],
+      "lines": 75
+    },
+    {
+      "path": "gateway/constitutional_reflection_authority.js",
+      "exports": [
+        "ConstitutionalReflectionAuthority"
+      ],
+      "lines": 461
+    },
+    {
+      "path": "gateway/constitutional_runtime.js",
+      "exports": [
+        "ConstitutionalRuntime"
+      ],
+      "lines": 540
+    },
+    {
+      "path": "gateway/constitutional_schema_authority.js",
+      "exports": [
+        "ConstitutionalSchemaAuthority"
+      ],
+      "lines": 500
+    },
+    {
+      "path": "gateway/constitutional_time_authority.js",
+      "exports": [
+        "ConstitutionalTimeAuthority"
+      ],
+      "lines": 129
+    },
+    {
+      "path": "gateway/constitution_version_authority.js",
+      "exports": [
+        "ConstitutionVersionAuthority"
+      ],
+      "lines": 307
+    },
+    {
+      "path": "gateway/context_compression_authority.js",
+      "exports": [
+        "ContextCompressionAuthority"
+      ],
+      "lines": 641
+    },
+    {
+      "path": "gateway/context_retrieval_authority.js",
+      "exports": [
+        "ContextRetrievalAuthority"
+      ],
+      "lines": 409
+    },
+    {
+      "path": "gateway/continuous_replay_authority.js",
+      "exports": [
+        "ContinuousReplayAuthority"
+      ],
+      "lines": 892
+    },
+    {
+      "path": "gateway/dead_letter_authority.js",
+      "exports": [
+        "DeadLetterAuthority"
+      ],
+      "lines": 417
+    },
+    {
+      "path": "gateway/deterministic_key_authority.js",
+      "exports": [
+        "DeterministicKeyAuthority"
+      ],
+      "lines": 133
+    },
+    {
+      "path": "gateway/dto_registry_authority.js",
+      "exports": [
+        "DTORegistryAuthority"
+      ],
+      "lines": 105
+    },
+    {
+      "path": "gateway/embedding_authority.js",
+      "exports": [
+        "EmbeddingAuthority"
+      ],
+      "lines": 323
+    },
+    {
+      "path": "gateway/event_read_authority.js",
+      "exports": [
+        "EventReadAuthority"
+      ],
+      "lines": 340
+    },
+    {
+      "path": "gateway/event_write_authority.js",
+      "exports": [
+        "EventWriteAuthority"
+      ],
+      "lines": 440
+    },
+    {
+      "path": "gateway/execution_authority.js",
+      "exports": [
+        "ExecutionAuthority"
+      ],
+      "lines": 291
+    },
+    {
+      "path": "gateway/execution_graph_authority.js",
+      "exports": [
+        "ExecutionGraphAuthority"
+      ],
+      "lines": 593
+    },
+    {
+      "path": "gateway/execution_metadata_authority.js",
+      "exports": [
+        "ExecutionMetadataAuthority"
+      ],
+      "lines": 265
+    },
+    {
+      "path": "gateway/execution_plan_authority.js",
+      "exports": [
+        "ExecutionPlanAuthority"
+      ],
+      "lines": 300
+    },
+    {
+      "path": "gateway/filesystem_authority.js",
+      "exports": [
+        "FilesystemAuthority"
+      ],
+      "lines": 351
+    },
+    {
+      "path": "gateway/health_authority.js",
+      "exports": [
+        "HealthAuthority"
+      ],
+      "lines": 118
+    },
+    {
+      "path": "gateway/identity_authority.js",
+      "exports": [
+        "IdentityAuthority"
+      ],
+      "lines": 273
+    },
+    {
+      "path": "gateway/inference_authority.js",
+      "exports": [
+        "InferenceAuthority"
+      ],
+      "lines": 382
+    },
+    {
+      "path": "gateway/lineage_authority.js",
+      "exports": [
+        "LineageAuthority"
+      ],
+      "lines": 358
+    },
+    {
+      "path": "gateway/local_first_execution_authority.js",
+      "exports": [
+        "LocalFirstExecutionAuthority"
+      ],
+      "lines": 899
+    },
+    {
+      "path": "gateway/memory_authority.js",
+      "exports": [
+        "MemoryAuthority"
+      ],
+      "lines": 731
+    },
+    {
+      "path": "gateway/mission_authority.js",
+      "exports": [
+        "MissionAuthority"
+      ],
+      "lines": 317
+    },
+    {
+      "path": "gateway/mission_authority_v2.js",
+      "exports": [
+        "MissionAuthority"
+      ],
+      "lines": 578
+    },
+    {
+      "path": "gateway/mission_execution_authority.js",
+      "exports": [
+        "MissionExecutionAuthority"
+      ],
+      "lines": 458
+    },
+    {
+      "path": "gateway/mission_rule_authority.js",
+      "exports": [
+        "MissionRuleAuthority"
+      ],
+      "lines": 315
+    },
+    {
+      "path": "gateway/model_authority.js",
+      "exports": [
+        "ModelAuthority"
+      ],
+      "lines": 259
+    },
+    {
+      "path": "gateway/ollama_session_authority.js",
+      "exports": [
+        "OllamaSessionAuthority"
+      ],
+      "lines": 316
+    },
+    {
+      "path": "gateway/parser_authority.js",
+      "exports": [
+        "ParserAuthority"
+      ],
+      "lines": 273
+    },
+    {
+      "path": "gateway/patch_authority.js",
+      "exports": [
+        "PatchAuthority"
+      ],
+      "lines": 627
+    },
+    {
+      "path": "gateway/patch_authority_v2.js",
+      "exports": [
+        "PatchAuthority"
+      ],
+      "lines": 782
+    },
+    {
+      "path": "gateway/persistent_queue_authority.js",
+      "exports": [
+        "PersistentQueueAuthority"
+      ],
+      "lines": 827
+    },
+    {
+      "path": "gateway/platform_authority.js",
+      "exports": [
+        "PlatformAuthority"
+      ],
+      "lines": 181
+    },
+    {
+      "path": "gateway/prompt_assembler_authority.js",
+      "exports": [
+        "PromptAssemblerAuthority"
+      ],
+      "lines": 401
+    },
+    {
+      "path": "gateway/prompt_authority.js",
+      "exports": [
+        "PromptAuthority"
+      ],
+      "lines": 222
+    },
+    {
+      "path": "gateway/proof_authority.js",
+      "exports": [
+        "ProofAuthority"
+      ],
+      "lines": 307
+    },
+    {
+      "path": "gateway/provenance_authority.js",
+      "exports": [
+        "ProvenanceAuthority"
+      ],
+      "lines": 454
+    },
+    {
+      "path": "gateway/publication_authority.js",
+      "exports": [
+        "PublicationAuthority"
+      ],
+      "lines": 289
+    },
+    {
+      "path": "gateway/reducer_authority.js",
+      "exports": [
+        "ReducerAuthority"
+      ],
+      "lines": 173
+    },
+    {
+      "path": "gateway/reflection_authority.js",
+      "exports": [
+        "ReflectionAuthority"
+      ],
+      "lines": 422
+    },
+    {
+      "path": "gateway/replay_authority.js",
+      "exports": [
+        "ReplayAuthority"
+      ],
+      "lines": 293
+    },
+    {
+      "path": "gateway/replay_canonicalizer_authority.js",
+      "exports": [
+        "ReplayCanonicalizerAuthority"
+      ],
+      "lines": 179
+    },
+    {
+      "path": "gateway/replay_certificate_authority.js",
+      "exports": [
+        "ReplayCertificateAuthority"
+      ],
+      "lines": 213
+    },
+    {
+      "path": "gateway/replay_determinism_authority.js",
+      "exports": [
+        "ReplayDeterminismAuthority"
+      ],
+      "lines": 107
+    },
+    {
+      "path": "gateway/replay_plan_authority.js",
+      "exports": [
+        "ReplayPlanAuthority"
+      ],
+      "lines": 385
+    },
+    {
+      "path": "gateway/replay_recorder_authority.js",
+      "exports": [
+        "ReplayRecorderAuthority"
+      ],
+      "lines": 219
+    },
+    {
+      "path": "gateway/replay_time_authority.js",
+      "exports": [
+        "ReplayTimeAuthority"
+      ],
+      "lines": 92
+    },
+    {
+      "path": "gateway/replay_validator_authority.js",
+      "exports": [
+        "ReplayValidatorAuthority"
+      ],
+      "lines": 231
+    },
+    {
+      "path": "gateway/repository_authority.js",
+      "exports": [
+        "RepositoryAuthority"
+      ],
+      "lines": 279
+    },
+    {
+      "path": "gateway/repository_discovery_authority.js",
+      "exports": [
+        "RepositoryDiscoveryAuthority"
+      ],
+      "lines": 89
+    },
+    {
+      "path": "gateway/reproducible_build_authority.js",
+      "exports": [
+        "ReproducibleBuildAuthority"
+      ],
+      "lines": 106
+    },
+    {
+      "path": "gateway/retry_authority.js",
+      "exports": [
+        "RetryAuthority"
+      ],
+      "lines": 285
+    },
+    {
+      "path": "gateway/runtime/constitutional_execution_pipeline.js",
+      "exports": [
+        "ConstitutionalExecutionPipeline"
+      ],
+      "lines": 162
+    },
+    {
+      "path": "gateway/runtime/dispatcher.js",
+      "exports": [
+        "Dispatcher"
+      ],
+      "lines": 13
+    },
+    {
+      "path": "gateway/runtime/execution_artifact.js",
+      "exports": [
+        "ExecutionArtifact"
+      ],
+      "lines": 76
+    },
+    {
+      "path": "gateway/runtime/projection_registry.js",
+      "exports": [
+        "ProjectionRegistry"
+      ],
+      "lines": 28
+    },
+    {
+      "path": "gateway/runtime/reducer_registry.js",
+      "exports": [
+        "ReducerRegistry"
+      ],
+      "lines": 41
+    },
+    {
+      "path": "gateway/runtime/replay_decision_authority.js",
+      "exports": [
+        "ReplayDecisionAuthority"
+      ],
+      "lines": 24
+    },
+    {
+      "path": "gateway/runtime_clock.js",
+      "exports": [
+        "RuntimeClock"
+      ],
+      "lines": 67
+    },
+    {
+      "path": "gateway/runtime_failure_authority.js",
+      "exports": [
+        "RuntimeFailureAuthority"
+      ],
+      "lines": 404
+    },
+    {
+      "path": "gateway/runtime_identity_authority.js",
+      "exports": [
+        "RuntimeIdentityAuthority"
+      ],
+      "lines": 193
+    },
+    {
+      "path": "gateway/streaming_authority.js",
+      "exports": [
+        "StreamingAuthority"
+      ],
+      "lines": 363
+    },
+    {
+      "path": "gateway/system_authority.js",
+      "exports": [
+        "SystemAuthority"
+      ],
+      "lines": 271
+    },
+    {
+      "path": "gateway/technology_authority.js",
+      "exports": [
+        "TechnologyAuthority"
+      ],
+      "lines": 678
+    },
+    {
+      "path": "gateway/temporal_runtime.js",
+      "exports": [
+        "TemporalRuntime"
+      ],
+      "lines": 142
+    },
+    {
+      "path": "gateway/tool_authority.js",
+      "exports": [
+        "ToolAuthority"
+      ],
+      "lines": 389
+    },
+    {
+      "path": "gateway/transcript_authority.js",
+      "exports": [
+        "TranscriptAuthority"
+      ],
+      "lines": 257
+    },
+    {
+      "path": "gateway/treesitter_parser_authority.js",
+      "exports": [
+        "TreeSitterParserAuthority"
+      ],
+      "lines": 439
+    },
+    {
+      "path": "gateway/trigger_authority.js",
+      "exports": [
+        "TriggerAuthority"
+      ],
+      "lines": 507
+    },
+    {
+      "path": "gateway/verification_authority.js",
+      "exports": [
+        "VerificationAuthority"
+      ],
+      "lines": 292
+    },
+    {
+      "path": "gateway/verification_pipeline.js",
+      "exports": [
+        "VerificationPipeline"
+      ],
+      "lines": 57
+    },
+    {
+      "path": "gateway/verify/10_pipeline.js",
+      "exports": [],
+      "lines": 122
+    },
+    {
+      "path": "gateway/witness_authority.js",
+      "exports": [
+        "WitnessAuthority"
+      ],
+      "lines": 192
+    },
+    {
+      "path": "gateway/workflow_identity_authority.js",
+      "exports": [
+        "WorkflowIdentityAuthority"
+      ],
+      "lines": 65
+    },
+    {
+      "path": "gateway/workflow_replay_authority.js",
+      "exports": [
+        "WorkflowReplayAuthority"
+      ],
+      "lines": 199
+    },
+    {
+      "path": "runtime/artifact_pipeline.js",
+      "exports": [
+        "ArtifactPipeline"
+      ],
+      "lines": 71
+    },
+    {
+      "path": "runtime/di_container.js",
+      "exports": [
+        "DIContainer"
+      ],
+      "lines": 254
+    },
+    {
+      "path": "runtime/event_catalog.js",
+      "exports": [
+        "EventCatalog"
+      ],
+      "lines": 253
+    },
+    {
+      "path": "runtime/execution_runtime.js",
+      "exports": [
+        "ExecutionRuntime"
+      ],
+      "lines": 538
+    },
+    {
+      "path": "runtime/infrastructure_dispatcher.js",
+      "exports": [
+        "InfrastructureDispatcher"
+      ],
+      "lines": 114
+    },
+    {
+      "path": "runtime/infrastructure_registry.js",
+      "exports": [
+        "InfrastructureRegistry"
+      ],
+      "lines": 117
+    },
+    {
+      "path": "runtime/rollback_coordinator.js",
+      "exports": [
+        "RollbackCoordinator"
+      ],
+      "lines": 101
+    }
+  ],
+  "production_modules": [
+    {
+      "path": "gateway/bootstrap/gateway_runtime.js",
+      "lines": 64,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/bootstrap/main.js",
+      "lines": 43,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/canonical_authority.js",
+      "lines": 523,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/constitutional_time_authority.js",
+      "lines": 129,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/dockerode_adapter.js",
+      "lines": 85,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/docker_port.js",
+      "lines": 42,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/event_read_authority.js",
+      "lines": 340,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/event_repository.js",
+      "lines": 179,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/identity_authority.js",
+      "lines": 273,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/inference_adapter.js",
+      "lines": 187,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/ollama_provider_adapter.js",
+      "lines": 144,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/openai_provider_adapter.js",
+      "lines": 114,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/reducer_authority.js",
+      "lines": 173,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/repository_port.js",
+      "lines": 58,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/repository_store.js",
+      "lines": 129,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/context.js",
+      "lines": 58,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/events.js",
+      "lines": 58,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/health.js",
+      "lines": 16,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/ollama.js",
+      "lines": 72,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/repository.js",
+      "lines": 46,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/routes/system.js",
+      "lines": 24,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/route_middleware.js",
+      "lines": 80,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/constitutional_execution_pipeline.js",
+      "lines": 162,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/dispatcher.js",
+      "lines": 13,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/execution_artifact.js",
+      "lines": 76,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/projection_registry.js",
+      "lines": 28,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/reducer_registry.js",
+      "lines": 41,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime/replay_decision_authority.js",
+      "lines": 24,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime_clock.js",
+      "lines": 67,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/runtime_identity_authority.js",
+      "lines": 193,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/server.js",
+      "lines": 2,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/simple_git_adapter.js",
+      "lines": 109,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/standard_event_schema.js",
+      "lines": 310,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/system_authority.js",
+      "lines": 271,
+      "classification": "production"
+    },
+    {
+      "path": "gateway/witness_authority.js",
+      "lines": 192,
+      "classification": "production"
+    }
+  ],
+  "dormant_modules": [
+    {
+      "path": "gateway/activities/compiler.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/index.js",
+      "lines": 30,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/knowledge.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/mission.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/reflection.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/replay.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/activities/repository.activity.js",
+      "lines": 34,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/adapters/github/github_dto.js",
+      "lines": 107,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/adapters/ollama_adapter.js",
+      "lines": 495,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/adapter_authority.js",
+      "lines": 427,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/adapter_compiler_v2.js",
+      "lines": 349,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/advisory_lock.js",
+      "lines": 267,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/agent_memory_authority.js",
+      "lines": 753,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/agent_registry_v2.js",
+      "lines": 852,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/api_controller.js",
+      "lines": 187,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/application_port.js",
+      "lines": 59,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/approval_authority.js",
+      "lines": 379,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/artifact_authority.js",
+      "lines": 193,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/artifact_builder.js",
+      "lines": 225,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/artifact_repository_port.js",
+      "lines": 113,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/artifact_type_registry.js",
+      "lines": 481,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/authority_container.js",
+      "lines": 103,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/authority_purity_audit.js",
+      "lines": 425,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/authority_repository.js",
+      "lines": 245,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/automatic_mission_generator.js",
+      "lines": 675,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/background_workers.js",
+      "lines": 44,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/base_worker.js",
+      "lines": 89,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/best_in_class_integration.js",
+      "lines": 727,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrap/constitutional_runtime.js",
+      "lines": 43,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrap/container.js",
+      "lines": 73,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrap/index.js",
+      "lines": 53,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrap/lifecycle.js",
+      "lines": 106,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrap/wiring.js",
+      "lines": 120,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bootstrapping_validation.js",
+      "lines": 300,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/boot_authority.js",
+      "lines": 81,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/boot_graph_repository.js",
+      "lines": 135,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/bullmq_adapter.js",
+      "lines": 145,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/canonical_graph_authority.js",
+      "lines": 437,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/canonical_graph_compiler.js",
+      "lines": 562,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/canonical_symbol_authority.js",
+      "lines": 264,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/canonical_symbol_objects.js",
+      "lines": 792,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/capability_scheduler.js",
+      "lines": 668,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/certification_authority.js",
+      "lines": 352,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/checkpoint_authority.js",
+      "lines": 419,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/circuit_breaker.js",
+      "lines": 200,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/code_generator.js",
+      "lines": 347,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/commit_authority.js",
+      "lines": 308,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/compilation_policy.js",
+      "lines": 127,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/compiler_authority.js",
+      "lines": 123,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/compiler_lineage_authority.js",
+      "lines": 50,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/compiler_lineage_witness.js",
+      "lines": 110,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/completion_authority.js",
+      "lines": 283,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/condition_authority.js",
+      "lines": 154,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/console_event_port.js",
+      "lines": 40,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_acquisition_loop.js",
+      "lines": 488,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_acquisition_runner.js",
+      "lines": 434,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_authority.js",
+      "lines": 205,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_authority_registry.js",
+      "lines": 511,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_authority_weighted.js",
+      "lines": 338,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_automatic_pipeline.js",
+      "lines": 162,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_blockers.js",
+      "lines": 426,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_bootstrap.js",
+      "lines": 428,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_capability_graph.js",
+      "lines": 430,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_ci_check.js",
+      "lines": 355,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_code_retrieval.js",
+      "lines": 596,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_command_center.js",
+      "lines": 657,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_compatibility_scorer.js",
+      "lines": 719,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_dependency_graph.js",
+      "lines": 510,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_desktop_runtime.js",
+      "lines": 1155,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_discovery_system.js",
+      "lines": 449,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_dispatcher.js",
+      "lines": 39,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_event_sourcing.js",
+      "lines": 512,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_execution_pipeline.js",
+      "lines": 75,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_execution_planner.js",
+      "lines": 559,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_freeze.js",
+      "lines": 240,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_fuzzer.js",
+      "lines": 437,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_gap_analysis.js",
+      "lines": 435,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_mission_control.js",
+      "lines": 429,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_ollama_integration.js",
+      "lines": 535,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_pattern_database.js",
+      "lines": 907,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_persistent_history.js",
+      "lines": 299,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_proof_artifact.js",
+      "lines": 538,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_record.js",
+      "lines": 160,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_refactoring_missions.js",
+      "lines": 466,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_reflection_authority.js",
+      "lines": 461,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_regression_corpus.js",
+      "lines": 264,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_result.js",
+      "lines": 209,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_rfc_generator.js",
+      "lines": 599,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_runtime.js",
+      "lines": 540,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_schema_authority.js",
+      "lines": 500,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_seed_repositories.js",
+      "lines": 301,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_technology_evaluator.js",
+      "lines": 476,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_validation_harness.js",
+      "lines": 875,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitutional_watchers.js",
+      "lines": 458,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/constitution_version_authority.js",
+      "lines": 307,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/content_addressing.js",
+      "lines": 301,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/context_compression_authority.js",
+      "lines": 641,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/context_retrieval_authority.js",
+      "lines": 409,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/continuous_acquisition.js",
+      "lines": 579,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/continuous_background_analyst.js",
+      "lines": 688,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/continuous_reflection_loop.js",
+      "lines": 322,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/continuous_replay_authority.js",
+      "lines": 892,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/control_center_subscription.js",
+      "lines": 278,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/conversation_memory.js",
+      "lines": 246,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/cross_repository_reasoning.js",
+      "lines": 538,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/dead_letter_authority.js",
+      "lines": 417,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/dependency_graph.js",
+      "lines": 328,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/dependency_scheduler.js",
+      "lines": 341,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/deterministic_failure_envelope.js",
+      "lines": 126,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/deterministic_key_authority.js",
+      "lines": 133,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/devin_work_item_generator.js",
+      "lines": 620,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/distributed_desktop_agents.js",
+      "lines": 714,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/document_ingestion.js",
+      "lines": 370,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/document_tracker.js",
+      "lines": 389,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/dto_registry_authority.js",
+      "lines": 105,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/ecosystem_intelligence.js",
+      "lines": 436,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/embedding_authority.js",
+      "lines": 323,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/embedding_batcher.js",
+      "lines": 198,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/embedding_cache.js",
+      "lines": 258,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/embedding_provider.js",
+      "lines": 159,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/end_to_end_replay_test.js",
+      "lines": 404,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/end_to_end_verifier.js",
+      "lines": 525,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/eventstore_persistence.js",
+      "lines": 424,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/event_bus.js",
+      "lines": 204,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/event_outbox.js",
+      "lines": 297,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/event_port.js",
+      "lines": 111,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/event_write_authority.js",
+      "lines": 440,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_authority.js",
+      "lines": 291,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_graph_authority.js",
+      "lines": 593,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_metadata_authority.js",
+      "lines": 265,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_planner.js",
+      "lines": 228,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_plan_authority.js",
+      "lines": 300,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/execution_repository_port.js",
+      "lines": 114,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/filesystem_authority.js",
+      "lines": 351,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/file_watcher.js",
+      "lines": 225,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/functional_utils.js",
+      "lines": 168,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/generator_manifest.js",
+      "lines": 141,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/generator_witness.js",
+      "lines": 148,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/github_adapter.js",
+      "lines": 122,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/github_ingestion.js",
+      "lines": 75,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/github_release_watcher.js",
+      "lines": 298,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/github_snapshot.js",
+      "lines": 401,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/git_driven_ollama.js",
+      "lines": 491,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/git_persistence_backend.js",
+      "lines": 242,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/graceful_shutdown.js",
+      "lines": 138,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/graph_persistence.js",
+      "lines": 306,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/graph_schema.js",
+      "lines": 357,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/health_authority.js",
+      "lines": 118,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/inference_authority.js",
+      "lines": 382,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/inference_witness.js",
+      "lines": 238,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/integration_intelligence.js",
+      "lines": 767,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/knowledge_compiler.js",
+      "lines": 890,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/knowledge_object.js",
+      "lines": 112,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/knowledge_retrieval.js",
+      "lines": 168,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/lifecycle_context.js",
+      "lines": 121,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/lifecycle_visualizer.js",
+      "lines": 432,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/lineage_authority.js",
+      "lines": 358,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/llvm_ir_generator.js",
+      "lines": 419,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/local_first_execution_authority.js",
+      "lines": 899,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/markdown_parser.js",
+      "lines": 281,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/materialized_views.js",
+      "lines": 230,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mcp_registry.js",
+      "lines": 381,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/memory_authority.js",
+      "lines": 731,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/merkle_replay_graph.js",
+      "lines": 420,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/merkle_transcript.js",
+      "lines": 474,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/messaging_port.js",
+      "lines": 140,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/metadata_extractor.js",
+      "lines": 288,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/metrics_port.js",
+      "lines": 119,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_authority.js",
+      "lines": 317,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_authority_v2.js",
+      "lines": 578,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_event_bus.js",
+      "lines": 268,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_execution_authority.js",
+      "lines": 458,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_execution_graph.js",
+      "lines": 566,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_generator.js",
+      "lines": 238,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_planner.js",
+      "lines": 354,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_repository_port.js",
+      "lines": 113,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/mission_rule_authority.js",
+      "lines": 315,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/model_authority.js",
+      "lines": 259,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/model_registry.js",
+      "lines": 342,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/multi_language_parser.js",
+      "lines": 565,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/node_registry.js",
+      "lines": 419,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/nversion_determinism.js",
+      "lines": 411,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/object_registry.js",
+      "lines": 216,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/ollama_adapter.js",
+      "lines": 339,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/ollama_analyst_tools.js",
+      "lines": 371,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/ollama_provider.js",
+      "lines": 357,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/ollama_session_authority.js",
+      "lines": 316,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/opentelemetry_witness_instrumentation.js",
+      "lines": 513,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/operational_envelope.js",
+      "lines": 571,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/parser_authority.js",
+      "lines": 273,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/patch_authority.js",
+      "lines": 627,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/patch_authority_v2.js",
+      "lines": 782,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/performance_baseline_witness.js",
+      "lines": 238,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/persistence_adapter.js",
+      "lines": 215,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/persistence_port.js",
+      "lines": 129,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/persistent_ollama_analyst.js",
+      "lines": 639,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/persistent_queue_authority.js",
+      "lines": 827,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/platform_authority.js",
+      "lines": 181,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/policy_ir.js",
+      "lines": 171,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/projection_executor.js",
+      "lines": 84,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/prompt_assembler_authority.js",
+      "lines": 401,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/prompt_authority.js",
+      "lines": 222,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/proof_authority.js",
+      "lines": 307,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/proposal_admission.js",
+      "lines": 390,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/proposal_objects.js",
+      "lines": 363,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/provenance_authority.js",
+      "lines": 454,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/provider_interface.js",
+      "lines": 168,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/publication_authority.js",
+      "lines": 289,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/publication_port.js",
+      "lines": 71,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/qdrant_bootstrap.js",
+      "lines": 284,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/qdrant_client.js",
+      "lines": 108,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/qdrant_integration.js",
+      "lines": 407,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/queue_port.js",
+      "lines": 70,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/quicktype_type_generator.js",
+      "lines": 439,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/reducer_executor.js",
+      "lines": 51,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/reflection_authority.js",
+      "lines": 422,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/reflection_generator.js",
+      "lines": 211,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/reflection_pass.js",
+      "lines": 217,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_authority.js",
+      "lines": 293,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_canonicalizer_authority.js",
+      "lines": 179,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_certificate.js",
+      "lines": 332,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_certificate_authority.js",
+      "lines": 213,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_determinism_authority.js",
+      "lines": 107,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_execution_port.js",
+      "lines": 97,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_kernel_audit.js",
+      "lines": 722,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_log.js",
+      "lines": 257,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_persistence_port.js",
+      "lines": 99,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_plan_authority.js",
+      "lines": 385,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_recorder_authority.js",
+      "lines": 219,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_repository_port.js",
+      "lines": 113,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_scheduler.js",
+      "lines": 41,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_time_authority.js",
+      "lines": 92,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_transcript.js",
+      "lines": 309,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_transcript_port.js",
+      "lines": 114,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_validator_authority.js",
+      "lines": 231,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_verification_port.js",
+      "lines": 99,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_verifier.js",
+      "lines": 427,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/replay_worker.js",
+      "lines": 28,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repositories/checkpoint_repository.js",
+      "lines": 144,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repositories/execution_repository.js",
+      "lines": 137,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repositories/mission_repository.js",
+      "lines": 169,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repositories/queue_repository.js",
+      "lines": 251,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repository_authority.js",
+      "lines": 279,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repository_discovery_authority.js",
+      "lines": 89,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/repository_fingerprinting.js",
+      "lines": 806,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/reproducible_build_authority.js",
+      "lines": 106,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/retry_authority.js",
+      "lines": 285,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/retry_policy.js",
+      "lines": 264,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/runtime_failure_authority.js",
+      "lines": 404,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/scheduler_port.js",
+      "lines": 100,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/schedule_repository_port.js",
+      "lines": 114,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/schema_compiler.js",
+      "lines": 127,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/self_improvement_loop.js",
+      "lines": 306,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/semantic_chunker.js",
+      "lines": 316,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/snapshot_repository.js",
+      "lines": 82,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/stages.js",
+      "lines": 36,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/stage_registry.js",
+      "lines": 290,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/step_registry.js",
+      "lines": 296,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/streaming_authority.js",
+      "lines": 363,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/structural_index.js",
+      "lines": 307,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/technology_authority.js",
+      "lines": 678,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/telemetry_subsystem.js",
+      "lines": 472,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/temporal_runtime.js",
+      "lines": 142,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/temporal_scheduler_provider.js",
+      "lines": 82,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/temporal_workflows.js",
+      "lines": 37,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/tests/adapter.mock.test.js",
+      "lines": 145,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/tests/adapter.test.js",
+      "lines": 106,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/tests/ingest.test.js",
+      "lines": 173,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/time_port.js",
+      "lines": 98,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/tool_authority.js",
+      "lines": 389,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/tool_gateway.js",
+      "lines": 495,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/trace_port.js",
+      "lines": 132,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/transaction_boundary.js",
+      "lines": 206,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/transaction_port.js",
+      "lines": 115,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/transcript_authority.js",
+      "lines": 257,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/treesitter_chunker.js",
+      "lines": 283,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/treesitter_parser_authority.js",
+      "lines": 439,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/trigger_authority.js",
+      "lines": 507,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/universal_symbol_graph.js",
+      "lines": 387,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verification_authority.js",
+      "lines": 292,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verification_pipeline.js",
+      "lines": 57,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/00_repository.js",
+      "lines": 107,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/01_build.js",
+      "lines": 107,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/02_typescript.js",
+      "lines": 83,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/03_python.js",
+      "lines": 92,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/04_containers.js",
+      "lines": 124,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/05_database.js",
+      "lines": 120,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/06_gateway.js",
+      "lines": 124,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/07_workers.js",
+      "lines": 118,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/08_authorities.js",
+      "lines": 153,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/09_replay.js",
+      "lines": 118,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/10_pipeline.js",
+      "lines": 122,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/11_ollama.js",
+      "lines": 119,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/12_end_to_end.js",
+      "lines": 99,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/constitutional_blockers.js",
+      "lines": 64,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/constitutional_closure_audit.js",
+      "lines": 174,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify/negative_path_verification.js",
+      "lines": 322,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/verify.js",
+      "lines": 136,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/witness_chain.js",
+      "lines": 413,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/witness_generator.js",
+      "lines": 303,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/witness_recorder.js",
+      "lines": 185,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/witness_registry.js",
+      "lines": 520,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/witness_relationship_prover.js",
+      "lines": 415,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/worker_port.js",
+      "lines": 110,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/worker_registry.js",
+      "lines": 335,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/workflow_identity_authority.js",
+      "lines": 65,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/workflow_replay_authority.js",
+      "lines": 199,
+      "classification": "dormant"
+    },
+    {
+      "path": "gateway/yjs_crdt_merger.js",
+      "lines": 398,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/artifact_pipeline.js",
+      "lines": 71,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/di_container.js",
+      "lines": 254,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/event_catalog.js",
+      "lines": 253,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/execution_runtime.js",
+      "lines": 538,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/infrastructure_dispatcher.js",
+      "lines": 114,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/infrastructure_registry.js",
+      "lines": 117,
+      "classification": "dormant"
+    },
+    {
+      "path": "runtime/rollback_coordinator.js",
+      "lines": 101,
+      "classification": "dormant"
+    }
+  ],
+  "violations": {
+    "time": [],
+    "identity": [],
+    "hash": [],
+    "serialization": []
+  }
+}

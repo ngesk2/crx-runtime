@@ -5,6 +5,12 @@ from typing import Any, Optional
 from runtime.config.configuration_authority import ConfigurationAuthority
 
 
+def get_inference_adapter():
+    from runtime.adapters.inference_adapter import get_inference_adapter as _get_inference_adapter
+
+    return _get_inference_adapter()
+
+
 class EmbeddingAuthority:
     """Single authority for embedding model loading and Hugging Face auth."""
 
@@ -28,6 +34,11 @@ class EmbeddingAuthority:
         except Exception:
             pass
         return token
+
+    def embed_text(self, text: str, **kwargs: Any) -> Optional[list[float]]:
+        """Generate an embedding through the inference authority rather than direct provider access."""
+        adapter = get_inference_adapter()
+        return adapter.embed(text)
 
     def load_model(self, model_name: Optional[str] = None, **kwargs: Any):
         token = self.authenticate()

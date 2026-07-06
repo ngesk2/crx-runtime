@@ -4,9 +4,33 @@
   "description": "CRX Gateway Service",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "constitutional:e2e": "node end_to_end_verifier.js",
+    "verify": "node verify.js",
+    "verify:all": "node verify.js all",
+    "verify:repository": "node verify.js 00_repository",
+    "verify:build": "node verify.js 01_build",
+    "verify:typescript": "node verify.js 02_typescript",
+    "verify:python": "node verify.js 03_python",
+    "verify:containers": "node verify.js 04_containers",
+    "verify:database": "node verify.js 05_database",
+    "verify:gateway": "node verify.js 06_gateway",
+    "verify:workers": "node verify.js 07_workers",
+    "verify:authorities": "node verify.js 08_authorities",
+    "verify:replay": "node verify.js 09_replay",
+    "verify:pipeline": "node verify.js 10_pipeline",
+    "verify:ollama": "node verify.js 11_ollama",
+    "verify:e2e": "node verify.js 12_end_to_end"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "pg": "^8.22.0",
+    "@temporalio/client": "^1.8.0",
+    "@temporalio/worker": "^1.8.0",
+    "@temporalio/activity": "^1.8.0",
+    "dockerode": "^4.0.0",
+    "simple-git": "^3.22.0",
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.4.0"
   }
 }

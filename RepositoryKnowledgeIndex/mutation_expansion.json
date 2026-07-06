@@ -1,0 +1,673 @@
+{
+  "artifact": "mutation_expansion",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 4 - Mutation Expansion",
+  "description": "Expanded mutation owners with complete caller, runtime, route, and execution path analysis",
+  "mutation_owners": [
+    {
+      "module": "gateway/event_repository.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "event persistence",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel/event authority or gateway adapter only",
+      "callers": [
+        "gateway/routes/events.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js"
+      ],
+      "routes": [
+        "gateway/routes/events.js::POST::/",
+        "gateway/routes/events.js::GET::/",
+        "gateway/routes/events.js::GET::/recent",
+        "gateway/routes/context.js::GET::/recent-events"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/event_repository.js::append",
+        "gateway/event_repository.js::load",
+        "gateway/event_repository.js::query"
+      ],
+      "witness_paths": [
+        "gateway/event_repository.js::append"
+      ],
+      "lineage_paths": [
+        "gateway/event_repository.js::append"
+      ],
+      "audit_paths": [
+        "gateway/event_repository.js::query"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["append", "load", "query"],
+        "transitive_mutations": [],
+        "shared_state": ["events table", "replay_chain table"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/repository_store.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "repository object storage",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel ownership or adapter-level gateway interface",
+      "callers": [
+        "gateway/routes/repository.js",
+        "gateway/routes/events.js",
+        "gateway/routes/context.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js"
+      ],
+      "routes": [
+        "gateway/routes/repository.js::POST::/objects",
+        "gateway/routes/repository.js::GET::/objects/:id",
+        "gateway/routes/repository.js::GET::/objects"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/repository_store.js::append",
+        "gateway/repository_store.js::load"
+      ],
+      "witness_paths": [
+        "gateway/repository_store.js::append"
+      ],
+      "lineage_paths": [
+        "gateway/repository_store.js::append"
+      ],
+      "audit_paths": [
+        "gateway/repository_store.js::load"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["append", "load", "delete"],
+        "transitive_mutations": [],
+        "shared_state": ["repository_objects table"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/snapshot_repository.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "snapshot persistence",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel snapshot authority or gateway adapter only",
+      "callers": [
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/repository.js::GET::/objects"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/snapshot_repository.js::save",
+        "gateway/snapshot_repository.js::load"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [
+        "gateway/snapshot_repository.js::save"
+      ],
+      "audit_paths": [
+        "gateway/snapshot_repository.js::load"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["save", "load"],
+        "transitive_mutations": [],
+        "shared_state": ["snapshots table"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/mcp_registry.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "registry/config state",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway only if transport adapter; otherwise consolidate under canonical kernel authority",
+      "callers": [
+        "gateway/routes/system.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/system.js::GET::/state"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/mcp_registry.js::register",
+        "gateway/mcp_registry.js::lookup"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [
+        "gateway/mcp_registry.js::lookup"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["register", "lookup", "unregister"],
+        "transitive_mutations": [],
+        "shared_state": ["mcp_registry table"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/checkpoint_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "vector/checkpoint memory writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "infrastructure adapter boundary, not canonical authority",
+      "callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/context.js::GET::/recent-events",
+        "gateway/routes/system.js::GET::/state"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/checkpoint_authority.js::save",
+        "gateway/checkpoint_authority.js::load"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [
+        "gateway/checkpoint_authority.js::load"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["save", "load", "delete"],
+        "transitive_mutations": [],
+        "shared_state": ["qdrant checkpoints collection"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/context_compression_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "vector memory / context compression",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or dedicated memory authority, not source-of-truth owner",
+      "callers": [
+        "gateway/routes/context.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/context.js::GET::/recent-events"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/context_compression_authority.js::compress",
+        "gateway/context_compression_authority.js::decompress"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["compress", "decompress"],
+        "transitive_mutations": [],
+        "shared_state": ["qdrant context collection"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/memory_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "memory/vector store",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or kernel-managed infrastructure authority",
+      "callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/context.js::GET::/recent-events",
+        "gateway/routes/system.js::GET::/state"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/memory_authority.js::store",
+        "gateway/memory_authority.js::retrieve"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [
+        "gateway/memory_authority.js::retrieve"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["store", "retrieve", "search"],
+        "transitive_mutations": [],
+        "shared_state": ["qdrant memory collection"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/qdrant_bootstrap.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "Qdrant collection setup and operational writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or dedicated bootstrap service",
+      "callers": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "indirect_callers": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "gateway/qdrant_bootstrap.js::ensureCollection",
+        "gateway/qdrant_bootstrap.js::healthCheck"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [
+        "gateway/qdrant_bootstrap.js::healthCheck"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["ensureCollection", "healthCheck", "createCollection"],
+        "transitive_mutations": [],
+        "shared_state": ["qdrant collections"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "gateway/end_to_end_verifier.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "verification/vector writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway verifier adapter only",
+      "callers": [
+        "gateway/routes/system.js"
+      ],
+      "indirect_callers": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "runtimes": ["gateway_http"],
+      "execution_roots": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "routes": [
+        "gateway/routes/system.js::GET::/state"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["verify"],
+        "transitive_mutations": [],
+        "shared_state": ["qdrant verification collection"],
+        "isolation_level": "gateway-local"
+      }
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/api/audit_controller.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "audit persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "legacy kernel boundary or migrate into canonical kernel service",
+      "callers": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "indirect_callers": [
+        "package.json (script:dev:commit-service)"
+      ],
+      "runtimes": ["legacy_commit_service"],
+      "execution_roots": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit/system"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [],
+      "witness_paths": [],
+      "lineage_paths": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts::record"
+      ],
+      "audit_paths": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts::query"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["record", "query"],
+        "transitive_mutations": [],
+        "shared_state": ["audit table"],
+        "isolation_level": "legacy_commit_service-isolated"
+      }
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/events/event_log.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "event log persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical kernel event authority",
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "indirect_callers": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "runtimes": ["legacy_commit_service"],
+      "execution_roots": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "runtime/kernel/commit-service/src/events/event_log.ts::append",
+        "runtime/kernel/commit-service/src/events/event_log.ts::query"
+      ],
+      "witness_paths": [
+        "runtime/kernel/commit-service/src/events/event_log.ts::append"
+      ],
+      "lineage_paths": [
+        "runtime/kernel/commit-service/src/events/event_log.ts::append"
+      ],
+      "audit_paths": [
+        "runtime/kernel/commit-service/src/events/event_log.ts::query"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["append", "query"],
+        "transitive_mutations": [],
+        "shared_state": ["event_log table"],
+        "isolation_level": "legacy_commit_service-isolated"
+      }
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "artifact persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical kernel artifact authority or retire legacy surface",
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "indirect_callers": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "runtimes": ["legacy_commit_service"],
+      "execution_roots": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts::store",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts::retrieve"
+      ],
+      "witness_paths": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts::store"
+      ],
+      "lineage_paths": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts::store"
+      ],
+      "audit_paths": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts::retrieve"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["store", "retrieve"],
+        "transitive_mutations": [],
+        "shared_state": ["artifacts table"],
+        "isolation_level": "legacy_commit_service-isolated"
+      }
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "lineage persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical lineage authority or retire legacy surface",
+      "callers": [
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "indirect_callers": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "runtimes": ["legacy_commit_service"],
+      "execution_roots": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit"
+      ],
+      "workers": [],
+      "scheduled_tasks": [],
+      "replay_paths": [],
+      "witness_paths": [],
+      "lineage_paths": [
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts::record"
+      ],
+      "audit_paths": [
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts::query"
+      ],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["record", "query"],
+        "transitive_mutations": [],
+        "shared_state": ["lineage table"],
+        "isolation_level": "legacy_commit_service-isolated"
+      }
+    },
+    {
+      "module": "runtime/kernel/workers/qdrant_projection_worker.py",
+      "store": "postgres, qdrant",
+      "mutation_kinds": ["postgres_write", "qdrant_write"],
+      "runtime_owner": "worker",
+      "inferred_domain": "projection synchronization",
+      "current_write_owner": "worker runtime",
+      "recommended_target_owner": "dedicated projection authority with canonical source-of-truth separation",
+      "callers": [
+        "docker-compose.yaml",
+        "package.json (worker scripts)"
+      ],
+      "indirect_callers": [],
+      "runtimes": ["worker"],
+      "execution_roots": [
+        "docker-compose.yaml",
+        "package.json"
+      ],
+      "routes": [],
+      "workers": ["qdrant_projection_worker"],
+      "scheduled_tasks": ["projection sync"],
+      "replay_paths": [
+        "qdrant_projection_worker.py::sync"
+      ],
+      "witness_paths": [],
+      "lineage_paths": [],
+      "audit_paths": [],
+      "mutation_expansion_boundaries": {
+        "direct_mutations": ["sync", "project"],
+        "transitive_mutations": [],
+        "shared_state": ["postgres projection tables", "qdrant projection collections"],
+        "isolation_level": "worker-isolated"
+      }
+    }
+  ],
+  "mutation_domain_conflicts": [
+    {
+      "conflict_id": "postgres_event_overlap",
+      "conflict_type": "overlapping_write_domains",
+      "modules": [
+        "gateway/event_repository.js",
+        "runtime/kernel/commit-service/src/events/event_log.ts"
+      ],
+      "shared_tables": ["events"],
+      "conflict_description": "Gateway and legacy commit-service both write to event persistence",
+      "resolution_required": "Consolidate under single kernel event authority"
+    },
+    {
+      "conflict_id": "postgres_artifact_overlap",
+      "conflict_type": "overlapping_write_domains",
+      "modules": [
+        "gateway/repository_store.js",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts"
+      ],
+      "shared_tables": ["repository_objects", "artifacts"],
+      "conflict_description": "Gateway and legacy commit-service both write to artifact persistence",
+      "resolution_required": "Consolidate under single kernel artifact authority"
+    },
+    {
+      "conflict_id": "qdrant_memory_overlap",
+      "conflict_type": "overlapping_write_domains",
+      "modules": [
+        "gateway/memory_authority.js",
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "shared_collections": ["memory", "checkpoints", "context"],
+      "conflict_description": "Gateway and worker both write to Qdrant memory collections",
+      "resolution_required": "Isolate to dedicated memory authority or adapter boundary"
+    }
+  ],
+  "mutation_ownership_after_patches": {
+    "after_PATCH_001": {
+      "gateway_http": 9,
+      "legacy_commit_service": 4,
+      "worker": 1,
+      "kernel": 0
+    },
+    "after_PATCH_002": {
+      "gateway_http": 8,
+      "legacy_commit_service": 4,
+      "worker": 1,
+      "kernel": 1
+    },
+    "after_PATCH_003": {
+      "gateway_http": 7,
+      "legacy_commit_service": 4,
+      "worker": 1,
+      "kernel": 2
+    },
+    "after_PATCH_004": {
+      "gateway_http": 4,
+      "legacy_commit_service": 4,
+      "worker": 1,
+      "kernel": 5
+    },
+    "after_PATCH_005": {
+      "gateway_http": 4,
+      "legacy_commit_service": 0,
+      "worker": 1,
+      "kernel": 5
+    },
+    "after_PATCH_006": {
+      "gateway_http": 3,
+      "legacy_commit_service": 0,
+      "worker": 1,
+      "kernel": 6
+    },
+    "after_PATCH_007": {
+      "gateway_http": 0,
+      "legacy_commit_service": 0,
+      "worker": 1,
+      "kernel": 6
+    },
+    "after_PATCH_008": {
+      "gateway_http": 0,
+      "legacy_commit_service": 0,
+      "worker": 1,
+      "kernel": 6
+    },
+    "after_PATCH_009": {
+      "gateway_http": 0,
+      "legacy_commit_service": 0,
+      "worker": 1,
+      "kernel": 6
+    }
+  }
+}

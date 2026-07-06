@@ -1,0 +1,16 @@
+{
+  "path": "orchestration/worker_memory.js",
+  "lines": 160,
+  "authority_score": 50,
+  "replay_score": 10,
+  "dependency_score": 0,
+  "deletion_confidence": 45,
+  "migration_candidate": false,
+  "resurrection_candidate": false,
+  "dependent_modules": 0,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 44,
+  "recommendation": "needs_review",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

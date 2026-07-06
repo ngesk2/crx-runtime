@@ -1,0 +1,21 @@
+{
+  "event_id": "fd9f0f45837e0ea9",
+  "type": "worker_state_changed",
+  "schema_version": "3.0.0",
+  "data": {
+    "from": "idle",
+    "load": 1,
+    "missionId": "m_test",
+    "to": "assigned",
+    "workerId": "opencode:local"
+  },
+  "mission_id": "m_test",
+  "worker_id": "opencode:local",
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "3bc2d28535e1",
+  "parent_event_id": null,
+  "global_sequence": 9
+}

@@ -1,0 +1,24 @@
+{
+  "id": "art_f12aa620b2ff1322",
+  "type": "consensus_proof",
+  "content": {
+    "decisionId": "test1",
+    "missionId": "m1",
+    "agreed": true,
+    "confidence": 0.9,
+    "variance": 0,
+    "strongConsensus": false,
+    "sharedFindings": 0,
+    "workerCount": 0,
+    "workerDetails": []
+  },
+  "hash": "3efc88dcfda74ed2483b006996604a9ba19a8f3f2f4acf5d6d9c8d215e2d87ea",
+  "bytes": "7b22636f6e666964656e6365223a302e392c22636f6e74656e74223a7b22636f6e666964656e6365223a302e392c226d697373696f6e4964223a226d31227d2c2266696c6573223a5b5d2c226d65746164617461223a7b7d2c226d697373696f6e4964223a226d31222c22706172656e7441727469666163744964223a6e756c6c2c2274797065223a22636f6e73656e7375735f70726f6f66222c22776f726b65724964223a22636f6e73656e7375735f656e67696e65227d",
+  "worker_id": "consensus_engine",
+  "mission_id": "m1",
+  "parent_artifact_id": null,
+  "files": [],
+  "confidence": 0.9,
+  "metadata": {},
+  "witness_hash": "ea31b0cebcb18f71e09e6a656961e1cef68e2f37639160ac6220508de75f03db"
+}

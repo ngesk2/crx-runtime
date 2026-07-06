@@ -1,0 +1,440 @@
+{
+  "artifact": "bootstrap_expansion_graph",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 6 - Bootstrap Expansion",
+  "description": "Identified every runtime composition root with DI factory, container, service registration, startup, shutdown, configuration, environment, and runtime ownership",
+  "composition_roots": {
+    "gateway_http": {
+      "runtime_ownership": "gateway_http",
+      "entry_points": [
+        "gateway/bootstrap/main.js",
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "di_factory": [],
+      "container": [],
+      "service_registration": [
+        "gateway/bootstrap/gateway_runtime.js::registerRoutes"
+      ],
+      "startup": [
+        "gateway/bootstrap/gateway_runtime.js::initialize",
+        "gateway/bootstrap/gateway_runtime.js::start",
+        "gateway/api_controller.js::initialize",
+        "gateway/qdrant_bootstrap.js::initialize"
+      ],
+      "shutdown": [
+        "gateway/bootstrap/gateway_runtime.js::shutdown",
+        "gateway/qdrant_bootstrap.js::close"
+      ],
+      "configuration": [
+        "PORT",
+        "HOST",
+        "NODE_ENV"
+      ],
+      "environment": [
+        "GITHUB_TOKEN",
+        "GITHUB_OWNER",
+        "GITHUB_REPO",
+        "QDRANT_URL",
+        "POSTGRES_URL"
+      ],
+      "bootstrap_dependencies": [
+        "express",
+        "./api_controller",
+        "./route_middleware",
+        "../routes/context",
+        "../routes/events",
+        "../routes/health",
+        "../routes/ollama",
+        "../routes/repository",
+        "../routes/system",
+        "../system_authority",
+        "../health_authority",
+        "../constitutional_time_authority",
+        "../canonical_authority",
+        "../identity_authority",
+        "../qdrant_bootstrap"
+      ],
+      "runtime_components": [
+        "express server",
+        "route middleware",
+        "health authority",
+        "system authority"
+      ]
+    },
+    "kernel": {
+      "runtime_ownership": "kernel",
+      "entry_points": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js",
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "di_factory": [
+        "runtime/di_container.js::registerFactory"
+      ],
+      "container": [
+        "runtime/di_container.js::DIContainer",
+        "runtime/di_container.js::register",
+        "runtime/di_container.js::registerSingleton",
+        "runtime/di_container.js::registerTransient",
+        "runtime/di_container.js::get",
+        "runtime/di_container.js::resolve"
+      ],
+      "service_registration": [
+        "runtime/execution_runtime.js::registerAuthorities",
+        "runtime/execution_runtime.js::registerAdapters",
+        "gateway/runtime/dispatcher.js::registerHandlers",
+        "gateway/runtime/reducer_registry.js::registerReducers",
+        "gateway/runtime/projection_registry.js::registerProjections"
+      ],
+      "startup": [
+        "runtime/execution_runtime.js::initialize",
+        "runtime/di_container.js::initialize",
+        "gateway/runtime/constitutional_execution_pipeline.js::initialize"
+      ],
+      "shutdown": [
+        "runtime/execution_runtime.js::shutdown",
+        "runtime/di_container.js::dispose"
+      ],
+      "configuration": [
+        "KERNEL_MODE",
+        "EXECUTION_TIMEOUT"
+      ],
+      "environment": [
+        "QDRANT_URL",
+        "POSTGRES_URL"
+      ],
+      "bootstrap_dependencies": [
+        "./di_container",
+        "../gateway/canonical_authority",
+        "../gateway/constitutional_time_authority",
+        "../gateway/identity_authority",
+        "../gateway/runtime/dispatcher",
+        "../gateway/runtime/reducer_registry",
+        "../gateway/runtime/projection_registry",
+        "../gateway/runtime/replay_decision_authority"
+      ],
+      "runtime_components": [
+        "DIContainer",
+        "ExecutionRuntime",
+        "Dispatcher",
+        "ReducerRegistry",
+        "ProjectionRegistry",
+        "ReplayDecisionAuthority"
+      ]
+    },
+    "legacy_commit_service": {
+      "runtime_ownership": "legacy_commit_service",
+      "entry_points": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "di_factory": [],
+      "container": [],
+      "service_registration": [
+        "runtime/kernel/commit-service/src/server.ts::registerRoutes"
+      ],
+      "startup": [
+        "runtime/kernel/commit-service/src/server.ts::app.listen"
+      ],
+      "shutdown": [
+        "runtime/kernel/commit-service/src/server.ts::app.close"
+      ],
+      "configuration": [
+        "COMMIT_SERVICE_PORT",
+        "COMMIT_SERVICE_HOST"
+      ],
+      "environment": [
+        "POSTGRES_URL"
+      ],
+      "bootstrap_dependencies": [
+        "express",
+        "./api/audit_controller",
+        "./api/commit_controller",
+        "./persistence/db"
+      ],
+      "runtime_components": [
+        "express server",
+        "audit controller",
+        "commit controller",
+        "postgres connection pool"
+      ]
+    },
+    "worker": {
+      "runtime_ownership": "worker",
+      "entry_points": [
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "di_factory": [],
+      "container": [],
+      "service_registration": [],
+      "startup": [
+        "qdrant_projection_worker.py::main",
+        "qdrant_projection_worker.py::initialize_clients"
+      ],
+      "shutdown": [
+        "qdrant_projection_worker.py::cleanup",
+        "qdrant_projection_worker.py::close_clients"
+      ],
+      "configuration": [
+        "WORKER_INTERVAL",
+        "WORKER_BATCH_SIZE"
+      ],
+      "environment": [
+        "QDRANT_URL",
+        "POSTGRES_URL",
+        "WORKER_MODE"
+      ],
+      "bootstrap_dependencies": [
+        "qdrant_client",
+        "psycopg2"
+      ],
+      "runtime_components": [
+        "qdrant client",
+        "postgres connection",
+        "projection sync loop"
+      ]
+    },
+    "build": {
+      "runtime_ownership": "build",
+      "entry_points": [
+        "package.json"
+      ],
+      "di_factory": [],
+      "container": [],
+      "service_registration": [],
+      "startup": [
+        "pnpm build",
+        "pnpm -r build"
+      ],
+      "shutdown": [],
+      "configuration": [
+        "BUILD_MODE",
+        "TARGET"
+      ],
+      "environment": [
+        "NODE_ENV"
+      ],
+      "bootstrap_dependencies": [
+        "typescript",
+        "tsc",
+        "rollup",
+        "webpack"
+      ],
+      "runtime_components": [
+        "typescript compiler",
+        "build tools"
+      ]
+    },
+    "tests": {
+      "runtime_ownership": "tests",
+      "entry_points": [
+        "package.json"
+      ],
+      "di_factory": [],
+      "container": [],
+      "service_registration": [],
+      "startup": [
+        "pnpm test",
+        "pnpm -r test",
+        "node test/run_constitutional_pipeline.js"
+      ],
+      "shutdown": [],
+      "configuration": [
+        "TEST_MODE",
+        "COVERAGE"
+      ],
+      "environment": [
+        "NODE_ENV",
+        "TEST_DATABASE_URL"
+      ],
+      "bootstrap_dependencies": [
+        "jest",
+        "mocha",
+        "test runners"
+      ],
+      "runtime_components": [
+        "test framework",
+        "test runners"
+      ]
+    }
+  },
+  "bootstrap_coupling": {
+    "gateway_http_to_kernel": {
+      "coupling_type": "runtime_coupling",
+      "coupling_strength": "high",
+      "description": "Gateway HTTP runtime currently owns kernel components that should be migrated",
+      "coupling_points": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js",
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js",
+        "gateway/runtime/replay_decision_authority.js"
+      ]
+    },
+    "gateway_http_to_legacy_commit_service": {
+      "coupling_type": "runtime_coupling",
+      "coupling_strength": "medium",
+      "description": "Gateway HTTP runtime has reachable imports to legacy commit-service modules",
+      "coupling_points": [
+        "runtime/kernel/commit-service/src/server.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts"
+      ]
+    },
+    "kernel_to_gateway": {
+      "coupling_type": "bootstrap_coupling",
+      "coupling_strength": "high",
+      "description": "Kernel runtime depends on gateway-owned policy authorities",
+      "coupling_points": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ]
+    },
+    "worker_to_gateway": {
+      "coupling_type": "infrastructure_coupling",
+      "coupling_strength": "low",
+      "description": "Worker shares infrastructure (Qdrant, Postgres) with gateway",
+      "coupling_points": [
+        "Qdrant",
+        "Postgres"
+      ]
+    }
+  },
+  "bootstrap_dependency_matrix": {
+    "gateway_http": {
+      "depends_on": ["kernel"],
+      "provides_to": ["legacy_commit_service"],
+      "shared_infrastructure": ["Qdrant", "Postgres"],
+      "shared_configuration": ["QDRANT_URL", "POSTGRES_URL"]
+    },
+    "kernel": {
+      "depends_on": [],
+      "provides_to": ["gateway_http"],
+      "shared_infrastructure": ["Postgres"],
+      "shared_configuration": ["POSTGRES_URL"]
+    },
+    "legacy_commit_service": {
+      "depends_on": ["gateway_http"],
+      "provides_to": [],
+      "shared_infrastructure": ["Postgres"],
+      "shared_configuration": ["POSTGRES_URL"]
+    },
+    "worker": {
+      "depends_on": [],
+      "provides_to": [],
+      "shared_infrastructure": ["Qdrant", "Postgres"],
+      "shared_configuration": ["QDRANT_URL", "POSTGRES_URL"]
+    },
+    "build": {
+      "depends_on": [],
+      "provides_to": ["gateway_http", "kernel", "legacy_commit_service"],
+      "shared_infrastructure": [],
+      "shared_configuration": ["NODE_ENV"]
+    },
+    "tests": {
+      "depends_on": ["gateway_http", "kernel"],
+      "provides_to": [],
+      "shared_infrastructure": ["Postgres"],
+      "shared_configuration": ["TEST_DATABASE_URL"]
+    }
+  },
+  "bootstrap_cutover_impact": {
+    "PATCH_001": {
+      "affected_bootstrap_roots": ["gateway_http", "kernel"],
+      "bootstrap_changes": [
+        "gateway/bootstrap/gateway_runtime.js must call kernel.execute()",
+        "runtime/execution_runtime.js must expose execute() interface",
+        "runtime/di_container.js must register kernel services"
+      ],
+      "startup_changes": [
+        "gateway/bootstrap/gateway_runtime.js::initialize must initialize kernel adapter",
+        "runtime/execution_runtime.js::initialize must be called by gateway"
+      ],
+      "shutdown_changes": [
+        "gateway/bootstrap/gateway_runtime.js::shutdown must call kernel.shutdown()"
+      ]
+    },
+    "PATCH_002": {
+      "affected_bootstrap_roots": ["gateway_http", "kernel"],
+      "bootstrap_changes": [
+        "gateway/event_repository.js must be registered in kernel DI container",
+        "gateway/routes/events.js must call kernel for event persistence"
+      ],
+      "startup_changes": [
+        "runtime/execution_runtime.js::initialize must register EventRepository"
+      ],
+      "shutdown_changes": [
+        "runtime/execution_runtime.js::shutdown must close EventRepository connections"
+      ]
+    },
+    "PATCH_004": {
+      "affected_bootstrap_roots": ["gateway_http", "kernel"],
+      "bootstrap_changes": [
+        "gateway/canonical_authority.js must be registered in kernel DI container",
+        "gateway/constitutional_time_authority.js must be registered in kernel DI container",
+        "gateway/identity_authority.js must be registered in kernel DI container"
+      ],
+      "startup_changes": [
+        "runtime/execution_runtime.js::initialize must register policy authorities",
+        "runtime/di_container.js::initialize must resolve authorities"
+      ],
+      "shutdown_changes": []
+    },
+    "PATCH_005": {
+      "affected_bootstrap_roots": ["legacy_commit_service"],
+      "bootstrap_changes": [
+        "runtime/kernel/commit-service/src/server.ts must be retired or reclassed as kernel adapter"
+      ],
+      "startup_changes": [
+        "If retired: remove from startup sequence",
+        "If adapter: register in kernel DI container"
+      ],
+      "shutdown_changes": [
+        "If retired: remove from shutdown sequence",
+        "If adapter: kernel.shutdown() must close adapter"
+      ]
+    },
+    "PATCH_008": {
+      "affected_bootstrap_roots": ["gateway_http", "kernel"],
+      "bootstrap_changes": [
+        "gateway/runtime/constitutional_execution_pipeline.js must be registered in kernel DI container",
+        "gateway/runtime/dispatcher.js must be registered in kernel DI container",
+        "gateway/runtime/reducer_registry.js must be registered in kernel DI container",
+        "gateway/runtime/projection_registry.js must be registered in kernel DI container",
+        "gateway/runtime/replay_decision_authority.js must be registered in kernel DI container"
+      ],
+      "startup_changes": [
+        "runtime/execution_runtime.js::initialize must register runtime components",
+        "runtime/di_container.js::initialize must resolve runtime components"
+      ],
+      "shutdown_changes": [
+        "runtime/execution_runtime.js::shutdown must dispose runtime components"
+      ]
+    }
+  },
+  "bootstrap_ordering": {
+    "current_order": [
+      "build",
+      "gateway_http",
+      "legacy_commit_service",
+      "worker",
+      "tests"
+    ],
+    "target_order": [
+      "build",
+      "kernel",
+      "gateway_http",
+      "worker",
+      "tests"
+    ],
+    "ordering_changes": [
+      "kernel must bootstrap before gateway_http",
+      "legacy_commit_service must be retired or integrated into kernel",
+      "gateway_http must demote to ingress-only role"
+    ]
+  }
+}

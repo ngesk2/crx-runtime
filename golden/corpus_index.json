@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "constitutional_version": "5.0.0",
+  "total_tests": 0,
+  "test_categories": {
+    "basic_prompt": 0,
+    "tool_execution": 0,
+    "streaming": 0,
+    "multi_tool": 0,
+    "checkpoint_recovery": 0,
+    "unicode_handling": 0,
+    "async_scheduling": 0,
+    "error_recovery": 0
+  },
+  "platforms": ["windows", "linux", "mac", "docker", "wsl"],
+  "tests": []
+}

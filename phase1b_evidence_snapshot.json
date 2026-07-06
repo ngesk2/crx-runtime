@@ -1,0 +1,15 @@
+{
+  "total_files": 10442,
+  "entrypoints": [
+    "gateway/api_controller.js",
+    "gateway/bootstrap/gateway_runtime.js",
+    "orchestration/index.js",
+    "orchestration/execution/engine.js",
+    "runtime/kernel/commit-service/src/server.ts"
+  ],
+  "metadata_files": [
+    "package.json",
+    "pnpm-workspace.yaml",
+    "compose.yaml"
+  ]
+}

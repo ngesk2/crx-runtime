@@ -1,0 +1,15 @@
+intent: Deterministic Execution
+owner: ExecutionAuthority
+spec: specs/execution-context
+implements:
+  - runtime/authorities/execution_authority.py
+produces:
+  - ExecutionContext
+consumes:
+  - ConfigurationAuthority
+depends_on:
+  - RepositoryAuthority
+forbidden:
+  - subprocess
+proofs:
+  - proofs/execution-proof.json

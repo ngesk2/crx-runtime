@@ -8,7 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Objects table
 CREATE TABLE objects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     object_id UUID NOT NULL UNIQUE,
     content_hash VARCHAR(64) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -31,7 +31,7 @@ CREATE INDEX idx_objects_archived_at ON objects(archived_at) WHERE archived_at I
 
 -- Events table
 CREATE TABLE events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id UUID NOT NULL UNIQUE,
     event_type VARCHAR(255) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -69,7 +69,7 @@ CREATE INDEX idx_events_aggregate_timestamp ON events(aggregate_id, timestamp);
 
 -- Lineage table
 CREATE TABLE lineage (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     lineage_id UUID NOT NULL UNIQUE,
     root_object_id UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -83,7 +83,7 @@ CREATE INDEX idx_lineage_root_object_id ON lineage(root_object_id);
 
 -- Projections table
 CREATE TABLE projections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     projection_id UUID NOT NULL UNIQUE,
     projection_type VARCHAR(255) NOT NULL,
     projection_name VARCHAR(255) NOT NULL,
@@ -105,7 +105,7 @@ CREATE INDEX idx_projections_updated_at ON projections(updated_at);
 
 -- System metadata table
 CREATE TABLE system_metadata (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     key VARCHAR(255) NOT NULL UNIQUE,
     value JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -119,7 +119,7 @@ CREATE INDEX idx_system_metadata_updated_at ON system_metadata(updated_at);
 
 -- Audit log table
 CREATE TABLE audit_log (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     audit_id UUID NOT NULL UNIQUE,
     action VARCHAR(255) NOT NULL,
     actor VARCHAR(255) NOT NULL,

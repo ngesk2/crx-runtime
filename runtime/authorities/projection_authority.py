@@ -6,6 +6,7 @@ No worker or tool creates QdrantClient directly.
 
 from typing import Optional, List, Dict, Any
 from runtime.config.configuration_authority import ConfigurationAuthority
+from runtime.authorities.embedding_authority import EmbeddingAuthority
 
 
 class ProjectionAuthority:
@@ -48,20 +49,10 @@ class ProjectionAuthority:
         except Exception:
             return None
 
-        # Generate embedding
+        # Generate embedding through the constitutional embedding authority.
         embedding = None
         try:
-            import requests
-            _ocfg = ConfigurationAuthority.current().get_ollama_config()
-            ollama_base = _ocfg.get('base_url', 'http://localhost:11434')
-            embed_model = _ocfg.get('embed_model', 'nomic-embed-text')
-            resp = requests.post(
-                f'{ollama_base}/api/embeddings',
-                json={'model': embed_model, 'prompt': query},
-                timeout=30
-            )
-            if resp.status_code == 200:
-                embedding = resp.json().get('embedding')
+            embedding = EmbeddingAuthority().embed_text(query)
         except Exception:
             pass
 

@@ -1,0 +1,13 @@
+{
+  "graph_id": "tests",
+  "roots": [
+    "package.json",
+    "package.json"
+  ],
+  "reachable_files": [
+    "package.json"
+  ],
+  "unresolved_edges": [],
+  "dynamic_edge_warnings": [],
+  "generation_notes": []
+}

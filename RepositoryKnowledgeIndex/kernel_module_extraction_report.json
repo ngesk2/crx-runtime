@@ -1,0 +1,93 @@
+{
+  "artifact": "kernel_module_extraction_report",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "scope": {
+    "gateway_modules": [
+      "gateway/bootstrap/main.js",
+      "gateway/bootstrap/gateway_runtime.js",
+      "gateway/bootstrap/constitutional_runtime.js",
+      "gateway/api_controller.js",
+      "gateway/route_middleware.js",
+      "gateway/routes/events.js",
+      "gateway/routes/repository.js",
+      "gateway/routes/context.js",
+      "gateway/routes/system.js",
+      "gateway/routes/ollama.js",
+      "gateway/repository_store.js",
+      "gateway/event_read_authority.js",
+      "gateway/event_repository.js",
+      "gateway/canonical_authority.js",
+      "gateway/constitutional_time_authority.js",
+      "gateway/identity_authority.js",
+      "gateway/inference_adapter.js",
+      "gateway/ollama_provider_adapter.js",
+      "gateway/simple_git_adapter.js",
+      "gateway/dockerode_adapter.js",
+      "gateway/system_authority.js",
+      "gateway/health_authority.js"
+    ],
+    "kernel_modules": [
+      "runtime/execution_runtime.js",
+      "runtime/di_container.js",
+      "runtime/artifact_pipeline.js",
+      "runtime/infrastructure_dispatcher.js",
+      "runtime/infrastructure_registry.js",
+      "runtime/rollback_coordinator.js",
+      "runtime/event_catalog.js",
+      "runtime/constitutional_runtime.js",
+      "gateway/bootstrap/constitutional_runtime.js",
+      "gateway/runtime/constitutional_execution_pipeline.js",
+      "gateway/runtime/dispatcher.js",
+      "gateway/runtime/reducer_registry.js",
+      "gateway/runtime/projection_registry.js",
+      "gateway/runtime/replay_decision_authority.js",
+      "gateway/event_repository.js",
+      "gateway/constitutional_desktop_runtime.js",
+      "runtime/replay/*",
+      "runtime/witness/*",
+      "runtime/authorities/*"
+    ]
+  },
+  "classifications": {
+    "gateway_only": [
+      "gateway/api_controller.js",
+      "gateway/bootstrap/gateway_runtime.js",
+      "gateway/routes/events.js",
+      "gateway/routes/repository.js",
+      "gateway/routes/context.js",
+      "gateway/routes/system.js",
+      "gateway/routes/ollama.js",
+      "gateway/repository_store.js",
+      "gateway/route_middleware.js"
+    ],
+    "kernel_candidates": [
+      "gateway/event_repository.js",
+      "gateway/event_read_authority.js",
+      "gateway/canonical_authority.js",
+      "gateway/constitutional_time_authority.js",
+      "gateway/identity_authority.js",
+      "gateway/bootstrap/constitutional_runtime.js",
+      "gateway/runtime/constitutional_execution_pipeline.js",
+      "gateway/runtime/dispatcher.js",
+      "gateway/runtime/reducer_registry.js",
+      "gateway/runtime/projection_registry.js",
+      "gateway/runtime/replay_decision_authority.js",
+      "runtime/execution_runtime.js",
+      "runtime/di_container.js",
+      "runtime/artifact_pipeline.js",
+      "runtime/infrastructure_dispatcher.js",
+      "runtime/rollback_coordinator.js",
+      "runtime/event_catalog.js"
+    ],
+    "infrastructure_adapters": [
+      "gateway/repository_store.js",
+      "gateway/inference_adapter.js",
+      "gateway/ollama_provider_adapter.js",
+      "gateway/simple_git_adapter.js",
+      "gateway/dockerode_adapter.js",
+      "gateway/qdrant_bootstrap.js",
+      "gateway/memory_authority.js",
+      "gateway/checkpoint_authority.js"
+    ]
+  }
+}

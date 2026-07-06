@@ -1,0 +1,15 @@
+intent: Source Parsing
+owner: ParserAuthority
+spec: specs/parser-boundary
+implements:
+  - constitutional-compiler/frontends
+produces:
+  - ParsedSource
+consumes:
+  - RepositoryAuthority
+depends_on:
+  - TreeSitter
+forbidden:
+  - ad_hoc_parse_logic
+proofs:
+  - proofs/parser-proof.json

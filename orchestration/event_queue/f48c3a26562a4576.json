@@ -1,0 +1,23 @@
+{
+  "event_id": "f48c3a26562a4576",
+  "type": "worker_assigned",
+  "schema_version": "3.0.0",
+  "data": {
+    "assignments": [
+      {
+        "capability": "authority.audit",
+        "workerId": "opencode:local"
+      }
+    ],
+    "missionId": "m_test2"
+  },
+  "mission_id": "m_test2",
+  "worker_id": null,
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "00aa7babc50d",
+  "parent_event_id": null,
+  "global_sequence": 11
+}

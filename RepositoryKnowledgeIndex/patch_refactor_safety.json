@@ -1,0 +1,501 @@
+{
+  "artifact": "patch_refactor_safety",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 11 - Refactor Safety",
+  "description": "Classified safety for every patch across multiple dimensions",
+  "patch_safety": [
+    {
+      "patch_id": "PATCH_001",
+      "replay_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Introduces kernel adapter interface which changes execution path. Replay must verify that adapter correctly delegates to kernel execution."
+      },
+      "witness_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Adapter layer may obscure witness path. Must ensure witness certificates are generated at kernel boundary, not gateway."
+      },
+      "verification_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Adapter interface is well-defined and can be verified through integration tests."
+      },
+      "lineage_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Lineage tracking should continue through adapter delegation if properly implemented."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by adapter interface."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by adapter interface."
+      },
+      "bootstrap_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Bootstrap sequence changes to initialize kernel adapter. Must verify kernel starts before gateway."
+      },
+      "route_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Routes delegate to adapter but HTTP interface remains unchanged."
+      },
+      "di_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "DI container registration changes to include kernel adapter. Must verify dependency resolution."
+      },
+      "migration_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Cross-runtime dependency introduced. Must verify kernel is available before gateway starts."
+      },
+      "overall_safety": "MEDIUM_RISK"
+    },
+    {
+      "patch_id": "PATCH_002",
+      "replay_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "EventRepository moves to kernel. Replay must verify event persistence is replayable from kernel location."
+      },
+      "witness_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Event witness generation moves to kernel. Must verify witness certificates are correctly generated."
+      },
+      "verification_safety": {
+        "classification": "LOW_RISK",
+        "reason": "EventRepository interface is stable. Verification can test kernel-owned repository."
+      },
+      "lineage_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Event lineage must be preserved during migration. Must verify lineage chain is not broken."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by EventRepository migration."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by EventRepository migration."
+      },
+      "bootstrap_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Bootstrap must register EventRepository in kernel DI container before gateway starts."
+      },
+      "route_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Routes call kernel for event persistence but HTTP interface remains unchanged."
+      },
+      "di_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "DI container registration changes. Must verify EventRepository is resolvable from kernel."
+      },
+      "migration_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Event persistence moves between runtimes. Must verify data migration and no event loss."
+      },
+      "overall_safety": "MEDIUM_RISK"
+    },
+    {
+      "patch_id": "PATCH_003",
+      "replay_safety": {
+        "classification": "SAFE",
+        "reason": "EventReadAuthority is read-only. Replay safety is not affected."
+      },
+      "witness_safety": {
+        "classification": "SAFE",
+        "reason": "Read authority does not generate witnesses. No witness safety impact."
+      },
+      "verification_safety": {
+        "classification": "SAFE",
+        "reason": "Read authority interface is stable. Verification can test kernel-owned authority."
+      },
+      "lineage_safety": {
+        "classification": "SAFE",
+        "reason": "Read authority does not modify lineage. No lineage safety impact."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by read authority migration."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by read authority migration."
+      },
+      "bootstrap_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Bootstrap must register EventReadAuthority in kernel DI container."
+      },
+      "route_safety": {
+        "classification": "SAFE",
+        "reason": "Routes call kernel for event reads but HTTP interface remains unchanged."
+      },
+      "di_safety": {
+        "classification": "LOW_RISK",
+        "reason": "DI container registration changes. Must verify EventReadAuthority is resolvable from kernel."
+      },
+      "migration_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Read authority migration is low risk as it does not modify data."
+      },
+      "overall_safety": "SAFE"
+    },
+    {
+      "patch_id": "PATCH_004",
+      "replay_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Policy authorities move to kernel. Replay must verify canonical bytes, time, and identity are still deterministic."
+      },
+      "witness_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Canonical authority is used for witness generation. Must verify witness certificates are still valid."
+      },
+      "verification_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Policy authorities are used by 15 modules. Must verify all modules work with kernel-owned authorities."
+      },
+      "lineage_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Identity authority moves to kernel. Must verify identity generation is still deterministic and lineage is preserved."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by policy authority migration."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by policy authority migration."
+      },
+      "bootstrap_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Bootstrap must register all policy authorities in kernel before any module can use them."
+      },
+      "route_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "All routes depend on policy authorities. Must verify routes can resolve authorities from kernel."
+      },
+      "di_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "DI container registration changes for 3 authorities. Must verify all 15 modules can resolve them."
+      },
+      "migration_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Policy authorities are fundamental to constitutional objects. Must verify no identity corruption."
+      },
+      "overall_safety": "HIGH_RISK"
+    },
+    {
+      "patch_id": "PATCH_005",
+      "replay_safety": {
+        "classification": "SAFE",
+        "reason": "Legacy commit-service retirement does not affect replay if not used."
+      },
+      "witness_safety": {
+        "classification": "SAFE",
+        "reason": "Legacy commit-service retirement does not affect witness generation if not used."
+      },
+      "verification_safety": {
+        "classification": "SAFE",
+        "reason": "Legacy commit-service retirement removes code. Verification becomes simpler."
+      },
+      "lineage_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "If legacy service owns lineage data, must verify lineage is preserved before retirement."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by legacy service retirement."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by legacy service retirement."
+      },
+      "bootstrap_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Bootstrap removes legacy service startup. Simpler bootstrap sequence."
+      },
+      "route_safety": {
+        "classification": "SAFE",
+        "reason": "Legacy routes are retired. No route safety impact if not used."
+      },
+      "di_safety": {
+        "classification": "SAFE",
+        "reason": "DI container removes legacy service registrations. Simpler DI configuration."
+      },
+      "migration_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Must verify no active dependencies on legacy service before retirement."
+      },
+      "overall_safety": "SAFE"
+    },
+    {
+      "patch_id": "PATCH_006",
+      "replay_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "RepositoryStore moves to adapter role. Replay must verify repository persistence is still accessible."
+      },
+      "witness_safety": {
+        "classification": "LOW_RISK",
+        "reason": "RepositoryStore witness generation should continue through adapter interface."
+      },
+      "verification_safety": {
+        "classification": "LOW_RISK",
+        "reason": "RepositoryStore interface is stable. Verification can test adapter interface."
+      },
+      "lineage_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Repository lineage must be preserved during adapter migration. Must verify lineage chain is not broken."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by RepositoryStore adapter migration."
+      },
+      "projection_safety": {
+        "classification": "SAFE",
+        "reason": "No projection changes introduced by RepositoryStore adapter migration."
+      },
+      "bootstrap_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Bootstrap must register RepositoryStore as adapter in kernel DI container."
+      },
+      "route_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Routes call adapter for repository persistence but HTTP interface remains unchanged."
+      },
+      "di_safety": {
+        "classification": "LOW_RISK",
+        "reason": "DI container registration changes. Must verify RepositoryStore is resolvable as adapter."
+      },
+      "migration_safety": {
+        "classification": "LOW_RISK",
+        "reason": "RepositoryStore adapter migration is low risk as it only changes ownership, not interface."
+      },
+      "overall_safety": "LOW_RISK"
+    },
+    {
+      "patch_id": "PATCH_007",
+      "replay_safety": {
+        "classification": "SAFE",
+        "reason": "Qdrant memory writes isolation does not affect replay if data is preserved."
+      },
+      "witness_safety": {
+        "classification": "SAFE",
+        "reason": "Qdrant memory writes do not generate witnesses. No witness safety impact."
+      },
+      "verification_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Qdrant adapter interface is stable. Verification can test adapter interface."
+      },
+      "lineage_safety": {
+        "classification": "SAFE",
+        "reason": "Qdrant memory writes do not affect lineage. No lineage safety impact."
+      },
+      "memory_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Qdrant memory writes are isolated. Must verify memory data is not lost during isolation."
+      },
+      "projection_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Qdrant collections may be reorganized. Must verify projections still work."
+      },
+      "bootstrap_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Bootstrap must register Qdrant adapters with collection namespace isolation."
+      },
+      "route_safety": {
+        "classification": "SAFE",
+        "reason": "Routes call adapters for memory operations but HTTP interface remains unchanged."
+      },
+      "di_safety": {
+        "classification": "LOW_RISK",
+        "reason": "DI container registration changes. Must verify Qdrant adapters are resolvable."
+      },
+      "migration_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Qdrant collection namespace changes may require data migration."
+      },
+      "overall_safety": "LOW_RISK"
+    },
+    {
+      "patch_id": "PATCH_008",
+      "replay_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Kernel runtime modules move to execution boundary. Replay must verify execution path is still deterministic."
+      },
+      "witness_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Execution pipeline moves to kernel. Must verify witness generation still works at kernel boundary."
+      },
+      "verification_safety": {
+        "classification": "LOW_RISK",
+        "reason": "Runtime module interfaces are stable. Verification can test kernel-owned modules."
+      },
+      "lineage_safety": {
+        "classification": "SAFE",
+        "reason": "Runtime modules do not modify lineage. No lineage safety impact."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by runtime module migration."
+      },
+      "projection_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Projection registry moves to kernel. Must verify projections still work."
+      },
+      "bootstrap_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Bootstrap must register all runtime modules in kernel DI container before execution."
+      },
+      "route_safety": {
+        "classification": "SAFE",
+        "reason": "Runtime modules are internal to execution boundary. No route safety impact."
+      },
+      "di_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "DI container registration changes for 5 runtime modules. Must verify all are resolvable."
+      },
+      "migration_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Runtime modules move between runtimes. Must verify execution is not broken."
+      },
+      "overall_safety": "MEDIUM_RISK"
+    },
+    {
+      "patch_id": "PATCH_009",
+      "replay_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Postgres write domain consolidation changes persistence layer. Replay must verify data is still accessible."
+      },
+      "witness_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Write consolidation may affect witness generation if persistence changes."
+      },
+      "verification_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Postgres write consolidation affects 9 modules. Must verify all modules work with consolidated writes."
+      },
+      "lineage_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Lineage store consolidation may affect lineage tracking. Must verify lineage is preserved."
+      },
+      "memory_safety": {
+        "classification": "SAFE",
+        "reason": "No memory mutations introduced by Postgres write consolidation."
+      },
+      "projection_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Worker projection depends on Postgres writes. Must verify projections still work."
+      },
+      "bootstrap_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "Bootstrap must register consolidated write authorities in kernel before any writes."
+      },
+      "route_safety": {
+        "classification": "MEDIUM_RISK",
+        "reason": "Write consolidation affects 6 routes. Must verify routes can still write data."
+      },
+      "di_safety": {
+        "classification": "HIGH_RISK",
+        "reason": "DI container registration changes for consolidated write authorities."
+      },
+      "migration_safety": {
+        "classification": "BLOCKED",
+        "reason": "Postgres write consolidation requires data migration and schema changes. High risk of data loss."
+      },
+      "overall_safety": "HIGH_RISK"
+    }
+  ],
+  "safety_summary": {
+    "total_patches": 9,
+    "by_overall_safety": {
+      "SAFE": 2,
+      "LOW_RISK": 2,
+      "MEDIUM_RISK": 4,
+      "HIGH_RISK": 1,
+      "BLOCKED": 0
+    },
+    "highest_risk_patches": [
+      {
+        "patch_id": "PATCH_009",
+        "overall_safety": "HIGH_RISK",
+        "reason": "Postgres write consolidation is BLOCKED due to data migration risk"
+      },
+      {
+        "patch_id": "PATCH_004",
+        "overall_safety": "HIGH_RISK",
+        "reason": "Policy authorities are fundamental to constitutional objects and used by 15 modules"
+      }
+    ],
+    "safest_patches": [
+      {
+        "patch_id": "PATCH_003",
+        "overall_safety": "SAFE",
+        "reason": "Read authority migration is read-only and low risk"
+      },
+      {
+        "patch_id": "PATCH_005",
+        "overall_safety": "SAFE",
+        "reason": "Legacy service retirement removes code and simplifies system"
+      }
+    ],
+    "safety_by_dimension": {
+      "replay_safety": {
+        "SAFE": 2,
+        "LOW_RISK": 0,
+        "MEDIUM_RISK": 5,
+        "HIGH_RISK": 2
+      },
+      "witness_safety": {
+        "SAFE": 4,
+        "LOW_RISK": 1,
+        "MEDIUM_RISK": 3,
+        "HIGH_RISK": 1
+      },
+      "verification_safety": {
+        "SAFE": 3,
+        "LOW_RISK": 4,
+        "MEDIUM_RISK": 1,
+        "HIGH_RISK": 1
+      },
+      "lineage_safety": {
+        "SAFE": 5,
+        "LOW_RISK": 0,
+        "MEDIUM_RISK": 3,
+        "HIGH_RISK": 1
+      },
+      "memory_safety": {
+        "SAFE": 9,
+        "LOW_RISK": 0,
+        "MEDIUM_RISK": 0,
+        "HIGH_RISK": 0
+      },
+      "projection_safety": {
+        "SAFE": 6,
+        "LOW_RISK": 0,
+        "MEDIUM_RISK": 3,
+        "HIGH_RISK": 0
+      },
+      "bootstrap_safety": {
+        "SAFE": 0,
+        "LOW_RISK": 4,
+        "MEDIUM_RISK": 2,
+        "HIGH_RISK": 3
+      },
+      "route_safety": {
+        "SAFE": 4,
+        "LOW_RISK": 4,
+        "MEDIUM_RISK": 1,
+        "HIGH_RISK": 0
+      },
+      "di_safety": {
+        "SAFE": 1,
+        "LOW_RISK": 3,
+        "MEDIUM_RISK": 2,
+        "HIGH_RISK": 3
+      },
+      "migration_safety": {
+        "SAFE": 0,
+        "LOW_RISK": 2,
+        "MEDIUM_RISK": 5,
+        "HIGH_RISK": 1,
+        "BLOCKED": 1
+      }
+    }
+  }
+}

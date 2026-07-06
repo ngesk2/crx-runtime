@@ -1,0 +1,17 @@
+name: Constitutional Operating Mode
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  constitutional-operating-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execute mission and review
+        run: python scripts/constitutional_operating_mode.py VerifyReplay && python scripts/constitutional_review_bot.py runtime/replay/ replay_worker.py

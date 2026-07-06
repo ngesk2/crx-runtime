@@ -166,15 +166,13 @@ services:
       dockerfile: Dockerfile
     container_name: ping-gateway
     restart: unless-stopped
+    env_file:
+      - .env.base
     environment:
-      OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:14b}
-      NODE_ENV: ${NODE_ENV:-production}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-ping_runtime}
+      QDRANT_URL: http://qdrant:6333
+      INFERENCE_BASE_URL: http://ollama:11434
+      EMBEDDING_MODEL: nomic-embed-text
+      CHAT_MODEL: qwen2.5-coder:14b
     ports:
       - "8080:8080"
     networks:
@@ -313,6 +311,29 @@ services:
       - postgres
     profiles:
       - dev
+
+  # Worker Runtime - Constitutional Pipeline Driver
+  worker-runtime:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-runtime
+    container_name: ping-worker-runtime
+    restart: unless-stopped
+    env_file:
+      - .env.base
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      POLL_INTERVAL: "5.0"
+      MAX_RETRIES: "3"
+      WORKER_NAME: worker_runtime
+    networks:
+      - ping_internal
+    depends_on:
+      gateway:
+        condition: service_started
+    profiles:
+      - dev
+      - prod
 
   # ============================================
   # UI LAYER

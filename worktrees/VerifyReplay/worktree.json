@@ -1,0 +1,11 @@
+{
+  "mission": "VerifyReplay",
+  "path": "C:\\Users\\nolan\\PING\\worktrees\\VerifyReplay",
+  "mode": "git-worktree",
+  "status": "prepared",
+  "notes": [
+    "no-commit",
+    "no-edit-main-tree",
+    "replay-required"
+  ]
+}

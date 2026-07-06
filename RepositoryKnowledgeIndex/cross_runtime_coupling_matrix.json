@@ -1,0 +1,428 @@
+{
+  "artifact": "cross_runtime_coupling_matrix",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 7 - Cross-Runtime Coupling",
+  "description": "Located shared dependencies between runtimes and classified coupling types",
+  "coupling_matrix": [
+    {
+      "source_runtime": "gateway_http",
+      "target_runtime": "kernel",
+      "coupling_type": "hard_coupling",
+      "coupling_description": "Gateway HTTP runtime directly imports and instantiates kernel components",
+      "shared_dependencies": [
+        {
+          "type": "import",
+          "dependency": "runtime/execution_runtime.js",
+          "usage": "gateway/runtime/constitutional_execution_pipeline.js imports ExecutionRuntime"
+        },
+        {
+          "type": "import",
+          "dependency": "runtime/di_container.js",
+          "usage": "gateway/runtime/constitutional_execution_pipeline.js imports DIContainer"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/canonical_authority.js",
+          "usage": "runtime/execution_runtime.js imports CanonicalAuthority"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/constitutional_time_authority.js",
+          "usage": "runtime/execution_runtime.js imports ConstitutionalTimeAuthority"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/identity_authority.js",
+          "usage": "runtime/execution_runtime.js imports IdentityAuthority"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "shared_database_pools": [],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "runtime_coupling",
+      "impact": "high",
+      "breakage_risk": "high"
+    },
+    {
+      "source_runtime": "gateway_http",
+      "target_runtime": "legacy_commit_service",
+      "coupling_type": "soft_coupling",
+      "coupling_description": "Gateway HTTP runtime has reachable imports to legacy commit-service modules but does not directly import them",
+      "shared_dependencies": [
+        {
+          "type": "reachable_import",
+          "dependency": "runtime/kernel/commit-service/src/server.ts",
+          "usage": "gateway/api_controller.js reachable via dependency graph"
+        },
+        {
+          "type": "reachable_import",
+          "dependency": "runtime/kernel/commit-service/src/api/audit_controller.ts",
+          "usage": "gateway/routes/events.js reachable via dependency graph"
+        },
+        {
+          "type": "reachable_import",
+          "dependency": "runtime/kernel/commit-service/src/events/event_log.ts",
+          "usage": "gateway/routes/events.js reachable via dependency graph"
+        },
+        {
+          "type": "reachable_import",
+          "dependency": "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+          "usage": "gateway/routes/repository.js reachable via dependency graph"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Both gateway and legacy commit-service use Postgres"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "runtime_coupling",
+      "impact": "medium",
+      "breakage_risk": "medium"
+    },
+    {
+      "source_runtime": "kernel",
+      "target_runtime": "gateway_http",
+      "coupling_type": "hard_coupling",
+      "coupling_description": "Kernel runtime depends on gateway-owned policy authorities",
+      "shared_dependencies": [
+        {
+          "type": "import",
+          "dependency": "gateway/canonical_authority.js",
+          "usage": "runtime/execution_runtime.js imports CanonicalAuthority"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/constitutional_time_authority.js",
+          "usage": "runtime/execution_runtime.js imports ConstitutionalTimeAuthority"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/identity_authority.js",
+          "usage": "runtime/execution_runtime.js imports IdentityAuthority"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "shared_database_pools": [],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "runtime_coupling",
+      "impact": "high",
+      "breakage_risk": "high"
+    },
+    {
+      "source_runtime": "gateway_http",
+      "target_runtime": "worker",
+      "coupling_type": "infrastructure_coupling",
+      "coupling_description": "Gateway and worker share infrastructure (Qdrant, Postgres) but no direct code coupling",
+      "shared_dependencies": [
+        {
+          "type": "infrastructure",
+          "dependency": "Qdrant",
+          "usage": "Both gateway and worker use Qdrant for vector storage"
+        },
+        {
+          "type": "infrastructure",
+          "dependency": "Postgres",
+          "usage": "Both gateway and worker use Postgres for persistence"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Both gateway and worker use Postgres"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "infrastructure_coupling",
+      "impact": "low",
+      "breakage_risk": "low"
+    },
+    {
+      "source_runtime": "legacy_commit_service",
+      "target_runtime": "gateway_http",
+      "coupling_type": "soft_coupling",
+      "coupling_description": "Legacy commit-service has no direct imports to gateway but shares Postgres infrastructure",
+      "shared_dependencies": [
+        {
+          "type": "infrastructure",
+          "dependency": "Postgres",
+          "usage": "Both legacy commit-service and gateway use Postgres"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Both legacy commit-service and gateway use Postgres"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "infrastructure_coupling",
+      "impact": "low",
+      "breakage_risk": "low"
+    },
+    {
+      "source_runtime": "legacy_commit_service",
+      "target_runtime": "kernel",
+      "coupling_type": "accidental_coupling",
+      "coupling_description": "Legacy commit-service is isolated but should be integrated into kernel",
+      "shared_dependencies": [],
+      "shared_repositories": [],
+      "shared_event_types": [
+        {
+          "type": "event",
+          "dependency": "events",
+          "usage": "Both legacy commit-service and gateway write to events"
+        },
+        {
+          "type": "event",
+          "dependency": "artifacts",
+          "usage": "Both legacy commit-service and gateway write to artifacts"
+        }
+      ],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Both legacy commit-service and kernel would use Postgres"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "schema_coupling",
+      "impact": "medium",
+      "breakage_risk": "medium"
+    },
+    {
+      "source_runtime": "tests",
+      "target_runtime": "gateway_http",
+      "coupling_type": "test_coupling",
+      "coupling_description": "Tests import and test gateway runtime components",
+      "shared_dependencies": [
+        {
+          "type": "import",
+          "dependency": "gateway/bootstrap/gateway_runtime.js",
+          "usage": "Tests import GatewayRuntime"
+        },
+        {
+          "type": "import",
+          "dependency": "gateway/api_controller.js",
+          "usage": "Tests import ApiController"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js"
+      ],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Tests use test Postgres database"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "test_coupling",
+      "impact": "low",
+      "breakage_risk": "low"
+    },
+    {
+      "source_runtime": "tests",
+      "target_runtime": "kernel",
+      "coupling_type": "test_coupling",
+      "coupling_description": "Tests import and test kernel runtime components",
+      "shared_dependencies": [
+        {
+          "type": "import",
+          "dependency": "runtime/execution_runtime.js",
+          "usage": "Tests import ExecutionRuntime"
+        },
+        {
+          "type": "import",
+          "dependency": "runtime/di_container.js",
+          "usage": "Tests import DIContainer"
+        }
+      ],
+      "shared_repositories": [],
+      "shared_event_types": [],
+      "shared_dtos": [],
+      "shared_schemas": [],
+      "shared_imports": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js"
+      ],
+      "shared_database_pools": [
+        {
+          "type": "postgres",
+          "dependency": "Postgres",
+          "usage": "Tests use test Postgres database"
+        }
+      ],
+      "shared_transaction_managers": [],
+      "shared_singletons": [],
+      "shared_factories": [],
+      "shared_adapters": [],
+      "shared_middleware": [],
+      "shared_event_emitters": [],
+      "classification": "test_coupling",
+      "impact": "low",
+      "breakage_risk": "low"
+    }
+  ],
+  "coupling_summary": {
+    "total_couplings": 8,
+    "by_type": {
+      "hard_coupling": 2,
+      "soft_coupling": 2,
+      "infrastructure_coupling": 2,
+      "accidental_coupling": 1,
+      "test_coupling": 2
+    },
+    "by_impact": {
+      "high": 2,
+      "medium": 2,
+      "low": 4
+    },
+    "by_breakage_risk": {
+      "high": 2,
+      "medium": 2,
+      "low": 4
+    },
+    "shared_infrastructure_count": {
+      "postgres": 5,
+      "qdrant": 2
+    },
+    "shared_imports_count": {
+      "runtime/execution_runtime.js": 3,
+      "runtime/di_container.js": 3,
+      "gateway/canonical_authority.js": 4,
+      "gateway/constitutional_time_authority.js": 3,
+      "gateway/identity_authority.js": 3
+    }
+  },
+  "coupling_resolution_plan": {
+    "hard_coupling_gateway_to_kernel": {
+      "resolution": "Introduce gateway-to-kernel adapter interface",
+      "affected_patches": ["PATCH_001"],
+      "steps": [
+        "Create kernel adapter in gateway that wraps ExecutionRuntime",
+        "Replace direct imports with adapter calls",
+        "Move kernel components to kernel runtime ownership"
+      ]
+    },
+    "hard_coupling_kernel_to_gateway": {
+      "resolution": "Move policy authorities to kernel runtime",
+      "affected_patches": ["PATCH_004"],
+      "steps": [
+        "Move CanonicalAuthority to kernel",
+        "Move ConstitutionalTimeAuthority to kernel",
+        "Move IdentityAuthority to kernel",
+        "Update kernel imports to use kernel-local authorities"
+      ]
+    },
+    "soft_coupling_gateway_to_legacy": {
+      "resolution": "Retire or integrate legacy commit-service",
+      "affected_patches": ["PATCH_005"],
+      "steps": [
+        "Evaluate legacy commit-service routes",
+        "Retire or reclassify as kernel adapter",
+        "Remove reachable imports from gateway"
+      ]
+    },
+    "infrastructure_coupling": {
+      "resolution": "Accept as infrastructure sharing",
+      "affected_patches": [],
+      "steps": [
+        "Document shared infrastructure dependencies",
+        "Ensure infrastructure adapters are properly isolated",
+        "Configure separate connection pools if needed"
+      ]
+    },
+    "accidental_coupling_legacy_to_kernel": {
+      "resolution": "Integrate legacy commit-service into kernel",
+      "affected_patches": ["PATCH_005", "PATCH_009"],
+      "steps": [
+        "Migrate legacy commit-service persistence to kernel",
+        "Consolidate Postgres write domains",
+        "Remove duplicate schema definitions"
+      ]
+    }
+  }
+}

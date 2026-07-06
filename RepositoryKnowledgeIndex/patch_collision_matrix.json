@@ -1,0 +1,329 @@
+{
+  "artifact": "patch_collision_matrix",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 10 - Patch Collision Analysis",
+  "description": "Determined which patches conflict based on files, symbols, authorities, runtimes, and routes",
+  "patch_collisions": [
+    {
+      "collision_id": "collision_001",
+      "patch_1": "PATCH_001",
+      "patch_2": "PATCH_004",
+      "collision_type": "file_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "shared_symbols": [
+        "CanonicalAuthority",
+        "ConstitutionalTimeAuthority",
+        "IdentityAuthority"
+      ],
+      "shared_authorities": [
+        "CanonicalAuthority",
+        "ConstitutionalTimeAuthority",
+        "IdentityAuthority"
+      ],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": ["all gateway routes"],
+      "conflict_description": "PATCH_001 introduces kernel adapter interface which may require policy authorities, while PATCH_004 moves policy authorities to kernel. Both patches modify the same authority files.",
+      "resolution": "Execute PATCH_004 before PATCH_001 to ensure authorities are in kernel before adapter is introduced",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_002",
+      "patch_1": "PATCH_001",
+      "patch_2": "PATCH_008",
+      "collision_type": "file_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js"
+      ],
+      "shared_symbols": [
+        "ExecutionRuntime",
+        "DIContainer"
+      ],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": [],
+      "conflict_description": "PATCH_001 introduces kernel adapter interface that wraps ExecutionRuntime, while PATCH_008 moves kernel runtime modules to execution boundary. Both patches modify ExecutionRuntime and DIContainer.",
+      "resolution": "Execute PATCH_008 before PATCH_001 to ensure kernel runtime modules are properly registered before adapter is introduced",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_003",
+      "patch_1": "PATCH_002",
+      "patch_2": "PATCH_003",
+      "collision_type": "file_collision",
+      "collision_severity": "medium",
+      "shared_files": [
+        "gateway/event_repository.js",
+        "gateway/routes/events.js"
+      ],
+      "shared_symbols": [
+        "EventRepository",
+        "POST /events"
+      ],
+      "shared_authorities": ["EventReadAuthority"],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": [
+        "gateway/routes/events.js::GET::/",
+        "gateway/routes/events.js::GET::/recent",
+        "gateway/routes/events.js::GET::/stats",
+        "gateway/routes/events.js::GET::/:stream",
+        "gateway/routes/events.js::POST::/"
+      ],
+      "conflict_description": "PATCH_002 moves EventRepository to kernel, while PATCH_003 moves EventReadAuthority to kernel. Both modify event-related files and routes.",
+      "resolution": "Execute PATCH_002 before PATCH_003 to ensure EventRepository is in kernel before EventReadAuthority is moved",
+      "blocking": false
+    },
+    {
+      "collision_id": "collision_004",
+      "patch_1": "PATCH_002",
+      "patch_2": "PATCH_009",
+      "collision_type": "file_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "gateway/event_repository.js"
+      ],
+      "shared_symbols": [
+        "EventRepository"
+      ],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http", "kernel", "legacy_commit_service"],
+      "shared_routes": [
+        "gateway/routes/events.js::POST::/"
+      ],
+      "conflict_description": "PATCH_002 moves EventRepository to kernel, while PATCH_009 consolidates Postgres write domains including event persistence. Both modify EventRepository.",
+      "resolution": "Execute PATCH_002 before PATCH_009 to ensure EventRepository is properly owned before write consolidation",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_005",
+      "patch_1": "PATCH_003",
+      "patch_2": "PATCH_004",
+      "collision_type": "file_collision",
+      "collision_severity": "medium",
+      "shared_files": [
+        "gateway/canonical_authority.js"
+      ],
+      "shared_symbols": [
+        "CanonicalAuthority"
+      ],
+      "shared_authorities": [
+        "CanonicalAuthority",
+        "EventReadAuthority"
+      ],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": [
+        "gateway/routes/events.js::GET::/",
+        "gateway/routes/events.js::GET::/recent",
+        "gateway/routes/events.js::GET::/stats",
+        "gateway/routes/events.js::GET::/:stream"
+      ],
+      "conflict_description": "PATCH_003 moves EventReadAuthority to kernel (which depends on CanonicalAuthority), while PATCH_004 moves CanonicalAuthority to kernel. Both modify authority files.",
+      "resolution": "Execute PATCH_004 before PATCH_003 to ensure CanonicalAuthority is in kernel before EventReadAuthority is moved",
+      "blocking": false
+    },
+    {
+      "collision_id": "collision_006",
+      "patch_1": "PATCH_005",
+      "patch_2": "PATCH_009",
+      "collision_type": "file_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts"
+      ],
+      "shared_symbols": [
+        "EventLog",
+        "ArtifactStore",
+        "LineageStore",
+        "AuditController"
+      ],
+      "shared_authorities": [],
+      "shared_runtimes": ["legacy_commit_service"],
+      "shared_routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit/system"
+      ],
+      "conflict_description": "PATCH_005 retires or reclassifies legacy commit-service, while PATCH_009 consolidates Postgres write domains including legacy commit-service modules. Both modify the same legacy service files.",
+      "resolution": "Execute PATCH_005 before PATCH_009 to determine if legacy service is retired before consolidation",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_007",
+      "patch_1": "PATCH_006",
+      "patch_2": "PATCH_009",
+      "collision_type": "file_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "gateway/repository_store.js"
+      ],
+      "shared_symbols": [
+        "RepositoryStore"
+      ],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": [
+        "gateway/routes/repository.js::POST::/objects",
+        "gateway/api_controller.js::POST::/api/ingest"
+      ],
+      "conflict_description": "PATCH_006 moves RepositoryStore to adapter role, while PATCH_009 consolidates Postgres write domains including repository persistence. Both modify RepositoryStore.",
+      "resolution": "Execute PATCH_006 before PATCH_009 to ensure RepositoryStore is properly classified before write consolidation",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_008",
+      "patch_1": "PATCH_007",
+      "patch_2": "PATCH_009",
+      "collision_type": "infrastructure_collision",
+      "collision_severity": "medium",
+      "shared_files": [],
+      "shared_symbols": [],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http", "worker"],
+      "shared_routes": [],
+      "conflict_description": "PATCH_007 isolates Qdrant memory writes to infrastructure adapters, while PATCH_009 consolidates Postgres write domains. Both touch infrastructure but different stores (Qdrant vs Postgres).",
+      "resolution": "No direct conflict, can execute in parallel",
+      "blocking": false
+    },
+    {
+      "collision_id": "collision_009",
+      "patch_1": "PATCH_004",
+      "patch_2": "PATCH_008",
+      "collision_type": "runtime_collision",
+      "collision_severity": "high",
+      "shared_files": [
+        "runtime/di_container.js"
+      ],
+      "shared_symbols": [
+        "DIContainer"
+      ],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http", "kernel"],
+      "shared_routes": [],
+      "conflict_description": "PATCH_004 moves policy authorities to kernel (which are registered in DIContainer), while PATCH_008 moves kernel runtime modules to execution boundary (which also use DIContainer). Both modify DIContainer registration.",
+      "resolution": "Execute PATCH_004 before PATCH_008 to ensure authorities are registered before runtime modules",
+      "blocking": true
+    },
+    {
+      "collision_id": "collision_010",
+      "patch_1": "PATCH_001",
+      "patch_2": "PATCH_006",
+      "collision_type": "route_collision",
+      "collision_severity": "medium",
+      "shared_files": [
+        "gateway/routes/repository.js"
+      ],
+      "shared_symbols": [],
+      "shared_authorities": [],
+      "shared_runtimes": ["gateway_http"],
+      "shared_routes": [
+        "gateway/routes/repository.js::POST::/objects",
+        "gateway/routes/repository.js::GET::/objects/:id",
+        "gateway/routes/repository.js::GET::/objects"
+      ],
+      "conflict_description": "PATCH_001 introduces kernel adapter interface which affects all routes including repository routes, while PATCH_006 moves RepositoryStore to adapter role. Both modify repository routes.",
+      "resolution": "Execute PATCH_006 before PATCH_001 to ensure RepositoryStore is adapter before route changes",
+      "blocking": false
+    }
+  ],
+  "collision_summary": {
+    "total_collisions": 10,
+    "by_severity": {
+      "high": 6,
+      "medium": 4,
+      "low": 0
+    },
+    "by_type": {
+      "file_collision": 7,
+      "infrastructure_collision": 1,
+      "runtime_collision": 1,
+      "route_collision": 1
+    },
+    "blocking_collisions": 5,
+    "non_blocking_collisions": 5,
+    "most_collided_patches": [
+      {
+        "patch_id": "PATCH_001",
+        "collision_count": 3,
+        "collides_with": ["PATCH_004", "PATCH_008", "PATCH_006"]
+      },
+      {
+        "patch_id": "PATCH_004",
+        "collision_count": 3,
+        "collides_with": ["PATCH_001", "PATCH_003", "PATCH_008"]
+      },
+      {
+        "patch_id": "PATCH_009",
+        "collision_count": 3,
+        "collides_with": ["PATCH_002", "PATCH_005", "PATCH_006"]
+      }
+    ]
+  },
+  "collision_resolution_order": {
+    "phase_1_order": ["PATCH_001"],
+    "phase_2_order": ["PATCH_004", "PATCH_002", "PATCH_003"],
+    "phase_3_order": ["PATCH_005"],
+    "phase_4_order": ["PATCH_008", "PATCH_006", "PATCH_007", "PATCH_009"],
+    "critical_path": [
+      "PATCH_004 (move authorities to kernel)",
+      "PATCH_008 (move runtime modules to kernel)",
+      "PATCH_001 (introduce kernel adapter)",
+      "PATCH_002 (move EventRepository to kernel)",
+      "PATCH_003 (move EventReadAuthority to kernel)",
+      "PATCH_005 (retire legacy commit-service)",
+      "PATCH_006 (move RepositoryStore to adapter)",
+      "PATCH_007 (isolate Qdrant writes)",
+      "PATCH_009 (consolidate Postgres writes)"
+    ],
+    "parallel_execution_groups": [
+      {
+        "group": 1,
+        "patches": ["PATCH_004"],
+        "reason": "Must be first to establish kernel authorities"
+      },
+      {
+        "group": 2,
+        "patches": ["PATCH_008"],
+        "reason": "Must follow PATCH_004 to register runtime modules"
+      },
+      {
+        "group": 3,
+        "patches": ["PATCH_001"],
+        "reason": "Must follow PATCH_008 to introduce kernel adapter"
+      },
+      {
+        "group": 4,
+        "patches": ["PATCH_002"],
+        "reason": "Must follow PATCH_001 to move EventRepository"
+      },
+      {
+        "group": 5",
+        "patches": ["PATCH_003"],
+        "reason": "Must follow PATCH_002 to move EventReadAuthority"
+      },
+      {
+        "group": 6",
+        "patches": ["PATCH_005"],
+        "reason": "Can execute independently after kernel is established"
+      },
+      {
+        "group": 7",
+        "patches": ["PATCH_006", "PATCH_007"],
+        "reason": "Can execute in parallel, different domains"
+      },
+      {
+        "group": 8",
+        "patches": ["PATCH_009"],
+        "reason": "Must be last to consolidate all write domains"
+      }
+    ]
+  }
+}

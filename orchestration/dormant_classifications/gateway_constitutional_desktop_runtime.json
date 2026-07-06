@@ -1,0 +1,16 @@
+{
+  "path": "gateway/constitutional_desktop_runtime.js",
+  "lines": 1155,
+  "authority_score": 80,
+  "replay_score": 10,
+  "dependency_score": 0,
+  "deletion_confidence": 18,
+  "migration_candidate": true,
+  "resurrection_candidate": false,
+  "dependent_modules": 0,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 0,
+  "recommendation": "migrate",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

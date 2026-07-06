@@ -1,0 +1,15 @@
+intent: Constitutional Governance
+owner: GovernanceAuthority
+spec: specs/governance-engine
+implements:
+  - runtime/authorities/authority_router.py
+produces:
+  - GovernanceDecision
+consumes:
+  - RepositoryAuthority
+depends_on:
+  - CapabilityAuthority
+forbidden:
+  - direct_policy_override
+proofs:
+  - proofs/governance-proof.json

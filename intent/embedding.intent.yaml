@@ -1,0 +1,15 @@
+intent: Semantic Embedding
+owner: EmbeddingAuthority
+spec: specs/embedding-authority
+implements:
+  - runtime/authorities/embedding_authority.py
+produces:
+  - EmbeddingModel
+consumes:
+  - ConfigurationAuthority
+depends_on:
+  - HuggingFaceHub
+forbidden:
+  - direct_hf_token_access
+proofs:
+  - proofs/embedding-proof.json

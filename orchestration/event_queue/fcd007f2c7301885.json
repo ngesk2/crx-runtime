@@ -1,0 +1,21 @@
+{
+  "event_id": "fcd007f2c7301885",
+  "type": "worker_state_changed",
+  "schema_version": "3.0.0",
+  "data": {
+    "from": "running",
+    "load": 1,
+    "missionId": "m1",
+    "to": "waiting",
+    "workerId": "opencode:local"
+  },
+  "mission_id": "m1",
+  "worker_id": "opencode:local",
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "02a0c9b6b9f0",
+  "parent_event_id": null,
+  "global_sequence": 15
+}

@@ -9,22 +9,45 @@
  * No business logic may call this adapter directly.
  */
 
+const http = require('http');
+const https = require('https');
+const { URL } = require('url');
+
 class OllamaProviderAdapter {
   constructor(baseUrl, embeddingModel, chatModel) {
     this.baseUrl = baseUrl;
     this.embeddingModel = embeddingModel;
     this.chatModel = chatModel;
+    
+    // Create HTTP agent with connection pooling and keep-alive
+    const parsedUrl = new URL(baseUrl);
+    const isHttps = parsedUrl.protocol === 'https:';
+    const AgentClass = isHttps ? https.Agent : http.Agent;
+    
+    this._httpAgent = new AgentClass({
+      keepAlive: true,
+      keepAliveMsecs: 1000,
+      maxSockets: 10,
+      maxFreeSockets: 5,
+      timeout: 30000,
+      scheduling: 'lifo'
+    });
   }
   
   async embed(text) {
     try {
       const response = await fetch(`${this.baseUrl}/api/embeddings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Connection': 'keep-alive'
+        },
         body: JSON.stringify({
           model: this.embeddingModel,
           prompt: text
-        })
+        }),
+        // @ts-ignore - agent is not in standard fetch types but works in Node.js
+        agent: this._httpAgent
       });
       
       if (response.ok) {
@@ -53,8 +76,13 @@ class OllamaProviderAdapter {
       
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: { 
+          'Content-Type': 'application/json',
+          'Connection': 'keep-alive'
+        },
+        body: JSON.stringify(payload),
+        // @ts-ignore - agent is not in standard fetch types but works in Node.js
+        agent: this._httpAgent
       });
       
       if (response.ok) {
@@ -71,7 +99,11 @@ class OllamaProviderAdapter {
   
   async health() {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        headers: { 'Connection': 'keep-alive' },
+        // @ts-ignore - agent is not in standard fetch types but works in Node.js
+        agent: this._httpAgent
+      });
       return response.ok;
     } catch (error) {
       console.error(`Health check failed: ${error.message}`);
@@ -81,7 +113,11 @@ class OllamaProviderAdapter {
   
   async modelCapability(model, capability) {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        headers: { 'Connection': 'keep-alive' },
+        // @ts-ignore - agent is not in standard fetch types but works in Node.js
+        agent: this._httpAgent
+      });
       if (response.ok) {
         const data = await response.json();
         const models = data.models || [];
@@ -91,6 +127,15 @@ class OllamaProviderAdapter {
     } catch (error) {
       console.error(`Capability check failed: ${error.message}`);
       return false;
+    }
+  }
+
+  /**
+   * Cleanup HTTP agent
+   */
+  destroy() {
+    if (this._httpAgent) {
+      this._httpAgent.destroy();
     }
   }
 }

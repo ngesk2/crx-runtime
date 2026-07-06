@@ -1,0 +1,81 @@
+{
+  "graph_version": "1.0.0",
+  "constitutional_version": "9.0.0",
+  "graph_metadata": {
+    "frozen": true,
+    "hash": null,
+    "description": "Constitutional boot graph - startup sequence becomes constitutional data"
+  },
+  "nodes": {
+    "load_constitution": {
+      "node_type": "load_constitution",
+      "dependencies": [],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "verify_constitution": {
+      "node_type": "verify_constitution",
+      "dependencies": ["load_constitution"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "load_authorities": {
+      "node_type": "load_authorities",
+      "dependencies": ["verify_constitution"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "verify_authorities": {
+      "node_type": "verify_authorities",
+      "dependencies": ["load_authorities"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "load_dependency_graph": {
+      "node_type": "load_dependency_graph",
+      "dependencies": ["verify_authorities"],
+      "purity": "deterministic",
+      "capabilities": ["filesystem"]
+    },
+    "verify_dependency_graph": {
+      "node_type": "verify_dependency_graph",
+      "dependencies": ["load_dependency_graph"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "register_capabilities": {
+      "node_type": "register_capabilities",
+      "dependencies": ["verify_dependency_graph"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "verify_capability_registry": {
+      "node_type": "verify_capability_registry",
+      "dependencies": ["register_capabilities"],
+      "purity": "deterministic",
+      "capabilities": []
+    },
+    "runtime_ready": {
+      "node_type": "runtime_ready",
+      "dependencies": ["verify_capability_registry"],
+      "purity": "deterministic",
+      "capabilities": []
+    }
+  },
+  "execution_order": [
+    "load_constitution",
+    "verify_constitution",
+    "load_authorities",
+    "verify_authorities",
+    "load_dependency_graph",
+    "verify_dependency_graph",
+    "register_capabilities",
+    "verify_capability_registry",
+    "runtime_ready"
+  ],
+  "parallel_groups": [],
+  "external_nodes": [],
+  "capability_requirements": {
+    "load_dependency_graph": ["filesystem"]
+  }
+}

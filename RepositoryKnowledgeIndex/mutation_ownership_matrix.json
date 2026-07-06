@@ -1,0 +1,167 @@
+{
+  "artifact": "mutation_ownership_matrix",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "evidence_inputs": [
+    "RepositoryKnowledgeIndex/mutation_surface.json",
+    "RepositoryKnowledgeIndex/service_inventory.json",
+    "RepositoryKnowledgeIndex/execution_roots.json",
+    "RepositoryKnowledgeIndex/route_matrix.json"
+  ],
+  "summary": "The current repository shows overlapping write authority across gateway runtime, legacy commit-service runtime, and worker runtime. Gateway modules currently own both canonical app state writes and Qdrant memory writes, while legacy commit-service owns separate Postgres persistence domains.",
+  "rows": [
+    {
+      "module": "gateway/event_repository.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "event persistence",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel/event authority or gateway adapter only",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "This gateway module is a direct Postgres writer for events and should not coexist with separate commit-service event persistence ownership."
+    },
+    {
+      "module": "gateway/repository_store.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "repository object storage",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel ownership or adapter-level gateway interface",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Repository object writes are currently owned by gateway logic and should be consolidated under a single authoritative write boundary."
+    },
+    {
+      "module": "gateway/snapshot_repository.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "snapshot persistence",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel snapshot authority or gateway adapter only",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Snapshot persistence is a distinct write domain that currently lives in gateway."
+    },
+    {
+      "module": "gateway/mcp_registry.js",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "registry/config state",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway only if transport adapter; otherwise consolidate under canonical kernel authority",
+      "evidence": ["mutation_surface.json"],
+      "notes": "MCP registry writes appear in gateway and increase the number of gateway-owned Postgres mutation domains."
+    },
+    {
+      "module": "gateway/checkpoint_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "vector/checkpoint memory writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "infrastructure adapter boundary, not canonical authority",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Qdrant checkpoint writes are gateway-side memory/state mutations and should be treated as infrastructure writes separate from canonical persistence."
+    },
+    {
+      "module": "gateway/context_compression_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "vector memory / context compression",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or dedicated memory authority, not source-of-truth owner",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Gateway context compression writes also mutate Qdrant."
+    },
+    {
+      "module": "gateway/memory_authority.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "memory/vector store",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or kernel-managed infrastructure authority",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Memory authority writes are operational vector mutations inside gateway."
+    },
+    {
+      "module": "gateway/qdrant_bootstrap.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "Qdrant collection setup and operational writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway adapter or dedicated bootstrap service",
+      "evidence": ["mutation_surface.json", "route_matrix.json"],
+      "notes": "Bootstrap and collection mutations are currently in gateway and should be isolated from canonical write semantics."
+    },
+    {
+      "module": "gateway/end_to_end_verifier.js",
+      "store": "qdrant",
+      "mutation_kinds": ["qdrant_write"],
+      "runtime_owner": "gateway_http",
+      "inferred_domain": "verification/vector writes",
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "gateway verifier adapter only",
+      "evidence": ["mutation_surface.json"],
+      "notes": "End-to-end verification appears to write to Qdrant, making gateway a second owner of vector state."
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/api/audit_controller.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "audit persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "legacy kernel boundary or migrate into canonical kernel service",
+      "evidence": ["mutation_surface.json", "service_inventory.json", "route_matrix.json"],
+      "notes": "Audit persistence is currently owned by the legacy commit-service runtime."
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/events/event_log.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "event log persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical kernel event authority",
+      "evidence": ["mutation_surface.json", "service_inventory.json", "route_matrix.json"],
+      "notes": "This module owns an event log write domain that overlaps gateway event writes."
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "artifact persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical kernel artifact authority or retire legacy surface",
+      "evidence": ["mutation_surface.json", "service_inventory.json", "route_matrix.json"],
+      "notes": "Artifact persistence is owned by the legacy commit-service runtime and should be consolidated."
+    },
+    {
+      "module": "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+      "store": "postgres",
+      "mutation_kinds": ["postgres_write"],
+      "runtime_owner": "legacy_commit_service",
+      "inferred_domain": "lineage persistence",
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical lineage authority or retire legacy surface",
+      "evidence": ["mutation_surface.json", "service_inventory.json", "route_matrix.json"],
+      "notes": "Lineage writes are a separate persistence domain in legacy commit-service."
+    },
+    {
+      "module": "runtime/kernel/workers/qdrant_projection_worker.py",
+      "store": "postgres, qdrant",
+      "mutation_kinds": ["postgres_write", "qdrant_write"],
+      "runtime_owner": "worker",
+      "inferred_domain": "projection synchronization",
+      "current_write_owner": "worker runtime",
+      "recommended_target_owner": "dedicated projection authority with canonical source-of-truth separation",
+      "evidence": ["mutation_surface.json"],
+      "notes": "This worker owns both Postgres and Qdrant writes, making it a distinct third write owner."
+    }
+  ]
+}

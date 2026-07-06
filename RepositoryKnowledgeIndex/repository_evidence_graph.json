@@ -1,0 +1,541 @@
+{
+  "artifact": "repository_evidence_graph",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 1 - Build Single Evidence Graph",
+  "description": "Unified evidence graph merging filesystem, dependency, runtime, route, mutation, service, and execution root data",
+  "nodes": {},
+  "edges": [],
+  "runtime_boundaries": {
+    "gateway_http": {
+      "classification": "gateway_owned",
+      "status": "production",
+      "roots": [
+        "gateway/api_controller.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/routes/context.js",
+        "gateway/routes/events.js",
+        "gateway/routes/health.js",
+        "gateway/routes/ollama.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/system.js"
+      ],
+      "reachable_files": [
+        "gateway/repository_store.js",
+        "runtime/kernel/commit-service/src/validation/dag_validator.ts",
+        "gateway/routes/events.js",
+        "gateway/simple_git_adapter.js",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "gateway/api_controller.js",
+        "gateway/dockerode_adapter.js",
+        "runtime/kernel/commit-service/src/server.ts",
+        "gateway/route_middleware.js",
+        "gateway/routes/context.js",
+        "runtime/kernel/commit-service/src/utils/logger.ts",
+        "gateway/routes/health.js",
+        "gateway/health_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "gateway/openai_provider_adapter.js",
+        "runtime/kernel/commit-service/src/persistence/db.ts",
+        "gateway/routes/repository.js",
+        "gateway/canonical_authority.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/event_read_authority.js",
+        "gateway/docker_port.js",
+        "gateway/application_port.js",
+        "gateway/runtime_clock.js",
+        "gateway/ollama_provider_adapter.js",
+        "runtime/kernel/commit-service/src/api/commit_controller.ts",
+        "gateway/routes/ollama.js",
+        "gateway/inference_adapter.js",
+        "gateway/repository_port.js",
+        "gateway/routes/system.js",
+        "gateway/identity_authority.js",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "gateway/system_authority.js"
+      ],
+      "routes": 25,
+      "mutation_owners": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js",
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "gateway/end_to_end_verifier.js"
+      ]
+    },
+    "legacy_commit_service": {
+      "classification": "adapter_or_service",
+      "status": "dormant_or_isolated",
+      "roots": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "reachable_files": [
+        "runtime/kernel/commit-service/src/validation/dag_validator.ts",
+        "runtime/kernel/commit-service/src/utils/logger.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/server.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/db.ts",
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "routes": 3,
+      "mutation_owners": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ]
+    },
+    "kernel": {
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "roots": [],
+      "reachable_files": [],
+      "routes": 0,
+      "mutation_owners": []
+    },
+    "orchestration": {
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "roots": [],
+      "reachable_files": [],
+      "routes": 0,
+      "mutation_owners": []
+    },
+    "replay": {
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "roots": [],
+      "reachable_files": [],
+      "routes": 0,
+      "mutation_owners": []
+    },
+    "witness": {
+      "classification": "kernel_owned",
+      "status": "implemented_not_wired",
+      "roots": [],
+      "reachable_files": [],
+      "routes": 0,
+      "mutation_owners": []
+    },
+    "workers": {
+      "classification": "worker",
+      "status": "unknown",
+      "roots": [],
+      "reachable_files": [],
+      "routes": 0,
+      "mutation_owners": [
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ]
+    },
+    "build": {
+      "classification": "build",
+      "status": "active",
+      "roots": ["package.json"],
+      "reachable_files": ["package.json"],
+      "routes": 0,
+      "mutation_owners": []
+    },
+    "tests": {
+      "classification": "test",
+      "status": "active",
+      "roots": ["package.json"],
+      "reachable_files": ["package.json"],
+      "routes": 0,
+      "mutation_owners": []
+    }
+  },
+  "mutation_domains": {
+    "postgres_gateway": {
+      "store": "postgres",
+      "runtime_owner": "gateway_http",
+      "modules": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js"
+      ],
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "canonical kernel/event authority or gateway adapter only"
+    },
+    "postgres_legacy_commit_service": {
+      "store": "postgres",
+      "runtime_owner": "legacy_commit_service",
+      "modules": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "current_write_owner": "legacy commit-service",
+      "recommended_target_owner": "canonical kernel event authority"
+    },
+    "postgres_worker": {
+      "store": "postgres",
+      "runtime_owner": "worker",
+      "modules": [
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "current_write_owner": "worker runtime",
+      "recommended_target_owner": "dedicated projection authority"
+    },
+    "qdrant_gateway": {
+      "store": "qdrant",
+      "runtime_owner": "gateway_http",
+      "modules": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "gateway/end_to_end_verifier.js"
+      ],
+      "current_write_owner": "gateway application",
+      "recommended_target_owner": "infrastructure adapter boundary"
+    },
+    "qdrant_worker": {
+      "store": "qdrant",
+      "runtime_owner": "worker",
+      "modules": [
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "current_write_owner": "worker runtime",
+      "recommended_target_owner": "dedicated projection authority"
+    }
+  },
+  "component_classifications": {
+    "true_policy_authorities": [
+      {
+        "component": "ConstitutionalTimeAuthority",
+        "file": "gateway/constitutional_time_authority.js",
+        "owner": "kernel",
+        "classification": "true_policy_authority",
+        "reason": "Provides deterministic temporal semantics for replay and execution consistency."
+      },
+      {
+        "component": "CanonicalAuthority",
+        "file": "gateway/canonical_authority.js",
+        "owner": "kernel",
+        "classification": "true_policy_authority",
+        "reason": "Defines the canonical serialization and hashing policy used by kernel artifacts."
+      },
+      {
+        "component": "IdentityAuthority",
+        "file": "gateway/identity_authority.js",
+        "owner": "kernel",
+        "classification": "true_policy_authority",
+        "reason": "Defines deterministic identity generation policy for kernel objects."
+      }
+    ],
+    "misplaced_runtime_logic": [
+      {
+        "component": "EventReadAuthority",
+        "file": "gateway/event_read_authority.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Read-side event access is operational runtime logic, not policy; it should live behind the kernel runtime boundary."
+      },
+      {
+        "component": "EventRepository",
+        "file": "gateway/event_repository.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Persists event history and replay chain state; belongs to kernel persistence rather than gateway policy."
+      },
+      {
+        "component": "ExecutionRuntime",
+        "file": "runtime/execution_runtime.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "This is the execution engine itself and must be the exclusive runtime owner once the gateway is demoted to ingress."
+      },
+      {
+        "component": "DIContainer",
+        "file": "runtime/di_container.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "The runtime composition boundary should be kernel-owned so dependencies cannot be created ad hoc outside the execution path."
+      },
+      {
+        "component": "ConstitutionalExecutionPipeline",
+        "file": "gateway/runtime/constitutional_execution_pipeline.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "A pipeline coordinator that should be a kernel-owned execution service, not gateway logic."
+      },
+      {
+        "component": "Dispatcher",
+        "file": "gateway/runtime/dispatcher.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Dispatch logic belongs to the kernel execution plane."
+      },
+      {
+        "component": "ReducerRegistry",
+        "file": "gateway/runtime/reducer_registry.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Reducer coordination is execution semantics and should remain kernel-owned."
+      },
+      {
+        "component": "ProjectionRegistry",
+        "file": "gateway/runtime/projection_registry.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Projection semantics are runtime behavior, not gateway policy."
+      },
+      {
+        "component": "ReplayDecisionAuthority",
+        "file": "gateway/runtime/replay_decision_authority.js",
+        "owner": "kernel",
+        "classification": "misplaced_runtime_logic",
+        "reason": "Replay decisions are execution-state questions and should be resolved by the kernel."
+      }
+    ],
+    "gateway_or_adapter_components": [
+      {
+        "component": "GatewayRuntime",
+        "file": "gateway/bootstrap/gateway_runtime.js",
+        "owner": "gateway",
+        "classification": "ingress_service",
+        "reason": "Owns route wiring and translation but should not decide execution."
+      },
+      {
+        "component": "RepositoryStore",
+        "file": "gateway/repository_store.js",
+        "owner": "adapter",
+        "classification": "persistence_adapter",
+        "reason": "Storage adapter consumed by the kernel."
+      },
+      {
+        "component": "HealthAuthority",
+        "file": "gateway/health_authority.js",
+        "owner": "gateway",
+        "classification": "guard_or_observability",
+        "reason": "Observability and health checks are gateway-facing concerns."
+      },
+      {
+        "component": "SystemAuthority",
+        "file": "gateway/system_authority.js",
+        "owner": "gateway",
+        "classification": "operational_guard",
+        "reason": "System-level operational logic should remain outside the policy core."
+      }
+    ]
+  },
+  "execution_roots": [
+    {
+      "root_id": "script:dev",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "pnpm --filter \"./gateway\" dev",
+      "runtime": "gateway_http"
+    },
+    {
+      "root_id": "script:dev:commit-service",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "pnpm --filter \"./runtime/kernel/commit-service\" dev",
+      "runtime": "legacy_commit_service"
+    },
+    {
+      "root_id": "script:build",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "pnpm -r build",
+      "runtime": "build"
+    },
+    {
+      "root_id": "script:test",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "pnpm -r test",
+      "runtime": "tests"
+    },
+    {
+      "root_id": "script:lint",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "pnpm -r lint",
+      "runtime": "build"
+    },
+    {
+      "root_id": "script:test:constitutional-pipeline",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "launch_command": "node test/run_constitutional_pipeline.js",
+      "runtime": "tests"
+    },
+    {
+      "root_id": "ast_root:gateway/api_controller.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/api_controller.js",
+      "runtime_language": "javascript",
+      "launch_command": "node gateway/api_controller.js",
+      "runtime": "gateway_http"
+    },
+    {
+      "root_id": "ast_root:gateway/bootstrap/gateway_runtime.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/bootstrap/gateway_runtime.js",
+      "runtime_language": "javascript",
+      "launch_command": "node gateway/bootstrap/gateway_runtime.js",
+      "runtime": "gateway_http"
+    },
+    {
+      "root_id": "ast_root:runtime/kernel/commit-service/src/server.ts",
+      "root_type": "ast_detected",
+      "entry_file": "runtime/kernel/commit-service/src/server.ts",
+      "runtime_language": "typescript",
+      "launch_command": "node runtime/kernel/commit-service/src/server.ts",
+      "runtime": "legacy_commit_service"
+    }
+  ],
+  "route_categories": [
+    {
+      "category": "gateway_http",
+      "route_count": 25,
+      "description": "Primary observed HTTP surface. Gateway route graphs also include legacy commit-service modules in reachable subgraphs.",
+      "sample_routes": [
+        "gateway/api_controller.js::GET::/health",
+        "gateway/api_controller.js::POST::/api/ingest",
+        "gateway/routes/context.js::GET::/recent-events"
+      ],
+      "reachable_writer_modules": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "mediation_status": "no static proof"
+    },
+    {
+      "category": "legacy_commit_service",
+      "route_count": 3,
+      "description": "Independent legacy HTTP surface rooted at runtime/kernel/commit-service/src/server.ts.",
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit/system"
+      ],
+      "reachable_writer_modules": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "mediation_status": "independent runtime"
+    }
+  ],
+  "cutover_phases": [
+    {
+      "phase": 1,
+      "title": "Gateway demotion to ingress and protocol adapter",
+      "description": "Leave gateway route wiring and HTTP concerns in place; move execution decisions behind a kernel execute() interface.",
+      "actions": [
+        "Introduce a gateway-to-kernel adapter that wraps ExecutionRuntime.initialize/execute.",
+        "Replace direct gateway pipeline creation and event persistence with kernel boundary invocation.",
+        "Keep gateway routes /events, /api/v1/repository, /context, /system, /api/v1/ollama, /health as ingress only."
+      ]
+    },
+    {
+      "phase": 2,
+      "title": "Kernel boundary promotion for event write and execution lifecycle",
+      "description": "Redirect event creation and mission execution flows from gateway runtime to kernel runtime.",
+      "actions": [
+        "Refactor gateway/routes/events.js POST /events to call kernel.execute() instead of gateway-local pipeline.execute.",
+        "Move EventRepository persistence, event schema creation, verification, reducer dispatch, projection, and replay decision logic into kernel runtime modules.",
+        "Retain EventReadAuthority in gateway for query-only paths, but ensure it reads the canonical repository created by kernel runtime."
+      ]
+    },
+    {
+      "phase": 3,
+      "title": "Kernel mediation proof and route ownership consolidation",
+      "description": "Ensure static route graph evidence shows gateway routes delegating to kernel runtime instead of owning execution semantics.",
+      "actions": [
+        "Use static invocation boundaries: gateway route -> kernel execute adapter -> runtime/ExecutionRuntime -> authorities/adapters.",
+        "Remove or retire legacy_commit_service routes unless they are explicitly reclassed as kernel service adapters.",
+        "Mark all gateway route handlers as gateway-only, with any event mutation or infrastructure call delegated to kernel authorities."
+      ]
+    },
+    {
+      "phase": 4,
+      "title": "Runtime cleanup and adapter boundary enforcement",
+      "description": "Finalize the cutover by enforcing the kernel authority boundary and cleaning residual gateway execution logic.",
+      "actions": [
+        "Audit gateway modules for execution logic and move remaining runtime control responsibilities into kernel modules.",
+        "Keep gateway adapters only for transport and persistence, not execution policy.",
+        "Ensure event emission, witness certification, and replay decisions are solely kernel-owned."
+      ]
+    }
+  ],
+  "kernel_target_boundary": {
+    "kernel_owned_components": [
+      "runtime/execution_runtime.js",
+      "runtime/di_container.js",
+      "runtime/constitutional_runtime.js",
+      "gateway/bootstrap/constitutional_runtime.js",
+      "gateway/runtime/constitutional_execution_pipeline.js",
+      "gateway/runtime/dispatcher.js",
+      "gateway/runtime/reducer_registry.js",
+      "gateway/runtime/projection_registry.js",
+      "gateway/runtime/replay_decision_authority.js",
+      "gateway/event_repository.js",
+      "gateway/event_read_authority.js",
+      "gateway/canonical_authority.js",
+      "gateway/constitutional_time_authority.js",
+      "gateway/identity_authority.js"
+    ],
+    "gateway_owned_components": [
+      "gateway/bootstrap/gateway_runtime.js",
+      "gateway/api_controller.js",
+      "gateway/routes/*.js",
+      "gateway/route_middleware.js",
+      "gateway/repository_store.js",
+      "gateway/system_authority.js",
+      "gateway/health_authority.js"
+    ],
+    "infrastructure_adapters": [
+      "gateway/repository_store.js",
+      "gateway/inference_adapter.js",
+      "gateway/ollama_provider_adapter.js",
+      "gateway/simple_git_adapter.js",
+      "gateway/dockerode_adapter.js",
+      "gateway/qdrant_*",
+      "gateway/postgres_*"
+    ]
+  },
+  "current_state_summary": {
+    "gateway_routes": 25,
+    "legacy_kernel_routes": 3,
+    "routes_without_static_mediation": 28,
+    "current_production_entrypoint": "gateway/bootstrap/main.js -> gateway/bootstrap/gateway_runtime.js -> route handlers",
+    "kernel_present": true,
+    "kernel_wiring_status": "unwired",
+    "mutation_owners": {
+      "gateway_http": 9,
+      "legacy_commit_service": 4,
+      "worker": 1
+    },
+    "postgres_write_domains": 3,
+    "qdrant_write_domains": 2,
+    "total_mutation_modules": 14
+  }
+}

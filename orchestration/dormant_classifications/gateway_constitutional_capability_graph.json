@@ -1,0 +1,16 @@
+{
+  "path": "gateway/constitutional_capability_graph.js",
+  "lines": 430,
+  "authority_score": 20,
+  "replay_score": 10,
+  "dependency_score": 20,
+  "deletion_confidence": 58,
+  "migration_candidate": false,
+  "resurrection_candidate": false,
+  "dependent_modules": 1,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 0,
+  "recommendation": "needs_review",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

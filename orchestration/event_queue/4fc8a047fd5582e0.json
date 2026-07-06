@@ -1,0 +1,22 @@
+{
+  "event_id": "4fc8a047fd5582e0",
+  "type": "artifact_produced",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_f12aa620b2ff1322",
+    "hash": "3efc88dcfda74ed2483b006996604a9ba19a8f3f2f4acf5d6d9c8d215e2d87ea",
+    "missionId": "m1",
+    "type": "consensus_proof",
+    "witnessHash": "ea31b0cebcb18f71e09e6a656961e1cef68e2f37639160ac6220508de75f03db",
+    "workerId": "consensus_engine"
+  },
+  "mission_id": "m1",
+  "worker_id": "consensus_engine",
+  "artifact_id": "art_f12aa620b2ff1322",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "12615d55d11b",
+  "parent_event_id": null,
+  "global_sequence": 3
+}

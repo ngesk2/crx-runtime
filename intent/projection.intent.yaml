@@ -1,0 +1,15 @@
+intent: Projection Delivery
+owner: ProjectionAuthority
+spec: specs/projection-authority
+implements:
+  - runtime/kernel/workers/qdrant_projection_worker.py
+produces:
+  - ProjectionVector
+consumes:
+  - EmbeddingAuthority
+depends_on:
+  - Qdrant
+forbidden:
+  - direct_sql_inserts
+proofs:
+  - proofs/projection-proof.json

@@ -1,0 +1,103 @@
+{
+  "artifact": "canonical_event_path_map",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "evidence_inputs": [
+    "RepositoryKnowledgeIndex/route_matrix.json",
+    "RepositoryKnowledgeIndex/mutation_surface.json",
+    "RepositoryKnowledgeIndex/service_inventory.json"
+  ],
+  "summary": "Route graphs show gateway_http routes reaching legacy commit-service persistence modules and gateway persistence modules. There is no static mediation proof that gateway routes are delegating via a single canonical kernel boundary.",
+  "route_categories": [
+    {
+      "category": "gateway_http",
+      "route_count": 25,
+      "description": "Primary observed HTTP surface. Gateway route graphs also include legacy commit-service modules in reachable subgraphs.",
+      "sample_routes": [
+        "gateway/api_controller.js::GET::/health",
+        "gateway/api_controller.js::POST::/api/ingest",
+        "gateway/routes/context.js::GET::/recent-events"
+      ],
+      "reachable_writer_modules": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "mediation_status": "no static proof",
+      "notes": "These routes are currently implemented in gateway_http and their reachable subgraphs include both gateway and commit-service persistence modules."
+    },
+    {
+      "category": "legacy_commit_service",
+      "route_count": 3,
+      "description": "Independent legacy HTTP surface rooted at runtime/kernel/commit-service/src/server.ts.",
+      "routes": [
+        "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit",
+        "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit/system"
+      ],
+      "reachable_writer_modules": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "mediation_status": "independent runtime",
+      "notes": "Legacy commit-service is a separate executable HTTP service and not simply a library behind gateway_http."
+    }
+  ],
+  "event_path_map": [
+    {
+      "path_pattern": "/api/ingest, POST /",
+      "runtime": "gateway_http",
+      "current_handler_files": ["gateway/api_controller.js", "gateway/routes/events.js"],
+      "reachable_writer_modules": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts"
+      ],
+      "interpretation": "Event ingest currently has a mixed reachable persistence surface, including gateway event writes and legacy commit-service event/audit writes."
+    },
+    {
+      "path_pattern": "/api/v1/repository/objects",
+      "runtime": "gateway_http",
+      "current_handler_files": ["gateway/routes/repository.js"],
+      "reachable_writer_modules": ["gateway/repository_store.js"],
+      "interpretation": "Repository object writes are currently owned by gateway and do not show a separate kernel mediation path in the route evidence."
+    },
+    {
+      "path_pattern": "/kernel/audit*",
+      "runtime": "legacy_commit_service",
+      "current_handler_files": ["runtime/kernel/commit-service/src/server.ts"],
+      "reachable_writer_modules": ["runtime/kernel/commit-service/src/api/audit_controller.ts", "runtime/kernel/commit-service/src/persistence/db.ts"],
+      "interpretation": "Audit writes are currently distinct legacy service state, separate from gateway_http."
+    },
+    {
+      "path_pattern": "Qdrant / memory writes",
+      "runtime": "gateway_http + worker",
+      "current_handler_files": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "reachable_writer_modules": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js",
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "interpretation": "Vector memory writes are a separate mutation domain and currently span gateway-side authorities plus a worker."
+    }
+  ]
+}

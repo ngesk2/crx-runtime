@@ -1,0 +1,22 @@
+{
+  "event_id": "ef00f40194850997",
+  "type": "artifact_produced",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_dc02338004f26e2d",
+    "hash": "feb05a55d95cac4126ea8ae9585a5851ecf0cc1149a9bd9ab4c6136db244aedf",
+    "missionId": "m1",
+    "type": "proposal",
+    "witnessHash": "7fcc9aacba170768505b84e4eef7dbf49d7539aaecc424366425ae2ecc305d9d",
+    "workerId": "w1"
+  },
+  "mission_id": "m1",
+  "worker_id": "w1",
+  "artifact_id": "art_dc02338004f26e2d",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "4bda5273b448",
+  "parent_event_id": null,
+  "global_sequence": 5
+}

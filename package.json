@@ -8,6 +8,7 @@
     "dev:commit-service": "pnpm --filter \"./runtime/kernel/commit-service\" dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test:constitutional-pipeline": "node test/run_constitutional_pipeline.js"
   }
 }

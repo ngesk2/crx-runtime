@@ -38,8 +38,7 @@ def run_psql_query(query):
     """Run psql query via docker exec through the execution authority."""
     try:
         authority = ExecutionAuthority()
-        result = authority.run_command(
-            'docker',
+        result = authority.run_docker(
             ['exec', POSTGRES_CONTAINER, 'psql', '-U', POSTGRES_USER, '-d', POSTGRES_DB, '-t', '-c', query],
             timeout=30,
         )

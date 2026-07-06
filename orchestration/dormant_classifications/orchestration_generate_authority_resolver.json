@@ -1,0 +1,16 @@
+{
+  "path": "orchestration/generate_authority_resolver.js",
+  "lines": 158,
+  "authority_score": 80,
+  "replay_score": 60,
+  "dependency_score": 0,
+  "deletion_confidence": 8,
+  "migration_candidate": true,
+  "resurrection_candidate": false,
+  "dependent_modules": 0,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 6,
+  "recommendation": "migrate",
+  "classified_at": "2026-07-05T00:26:16.327Z"
+}

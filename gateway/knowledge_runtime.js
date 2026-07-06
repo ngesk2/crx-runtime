@@ -38,7 +38,7 @@ const {
   DependencyKnowledgeObject,
   ConceptKnowledgeObject,
 } = require('./knowledge_objects');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../runtime/kernel/authorities/verification_authority');
 
 class KnowledgeRuntime {
   constructor() {

@@ -1,0 +1,16 @@
+{
+  "path": "orchestration/dispatcher.js",
+  "lines": 199,
+  "authority_score": 20,
+  "replay_score": 10,
+  "dependency_score": 0,
+  "deletion_confidence": 72,
+  "migration_candidate": false,
+  "resurrection_candidate": false,
+  "dependent_modules": 0,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 30,
+  "recommendation": "needs_review",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

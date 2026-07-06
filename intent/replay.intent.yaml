@@ -1,0 +1,16 @@
+intent: Replay Verification
+owner: ReplayAuthority
+spec: specs/replay-authority
+implements:
+  - runtime/kernel/replay
+produces:
+  - ReplayProof
+consumes:
+  - EventStore
+depends_on:
+  - CanonicalHashAuthority
+forbidden:
+  - subprocess
+  - os.getenv
+proofs:
+  - proofs/replay-proof.json

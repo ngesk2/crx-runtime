@@ -66,3 +66,7 @@ class ExecutionAuthority:
     def run_command(self, command: str, args: Optional[List[str]] = None, cwd: Optional[str] = None, timeout: Optional[float] = None, input_data: Optional[bytes] = None) -> Any:
         request = ExecutionRequest(command=command, args=args or [], cwd=cwd, timeout=timeout, input_data=input_data)
         return self.adapter.execute(request)
+
+    def run_docker(self, args: List[str], cwd: Optional[str] = None, timeout: Optional[float] = None, input_data: Optional[bytes] = None) -> Any:
+        """Run a docker command through the constitutional execution authority."""
+        return self.run_command("docker", args=args, cwd=cwd, timeout=timeout, input_data=input_data)

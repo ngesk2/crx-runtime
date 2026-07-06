@@ -321,19 +321,34 @@
 **Key Files:**
 - `reports/runtime-audit.md` (6605 bytes)
 
-### Abandoned Subsystems (DELETE)
+### Critical Misclassification: Root Kernel Arena
 
-#### `kernel/` - Kernel (Empty)
+#### `kernel/` - Core Constitutional Runtime (HEAVILY POPULATED)
 
-**Purpose:** Kernel (empty)  
-**Size:** 0 items  
-**Primary Language:** N/A  
+**Purpose:** The Root Kernel Arena  
+**Size:** 18 subdirectories, 120+ active files  
+**Primary Language:** TypeScript (with Python anomalies)  
 **Owner Subsystem:** PING Runtime  
-**Activity Level:** ABANDONED  
-**Last Modification:** Unknown  
-**Recommendation:** DELETE
+**Activity Level:** HIGH  
+**Last Modification:** Recent  
+**Recommendation:** KEEP (but requires severe Canonicalization / Entropy Reduction)
 
-**Note:** This directory is completely empty. The actual kernel is in `runtime/kernel/commit-service/`.
+**Note:** The previous audit erroneously classified this as empty. It is fully populated but suffers from extreme architectural entropy and duplication.
+
+### DEEPER ISSUES IN THE ROOT KERNEL ARENA (Entropy Audit Phase 1A-1D)
+
+1. **Commit Authority Duplication:**
+   - `runtime/kernel/commit-service/` (Express API for commits) exists alongside `runtime/kernel/repository/repository-authority.ts`. This indicates a duplicate implementation of the commit pathway (one as an Express server, one as an internal authority).
+
+2. **Language/Worker Isolation Leakage:**
+   - `runtime/kernel/workers/qdrant_projection_worker.py` is deeply embedded inside a TypeScript worker arena (`runtime/kernel/workers/`). Python scripts should not live inside the core TypeScript kernel boundary; they belong behind provider adapters.
+
+3. **Replay Engine Bloat & Test Leakage:**
+   - `runtime/kernel/replay/` contains production code alongside test logic (`__tests__/`, `forensics/`, `corpus/`). 
+   - Non-runtime forensics (`FORENSIC_PHASE2...md`, `FORENSIC_PROVENANCE_MAP.md`, `constitutional_test_runner.ts`) are polluting the production root kernel.
+
+4. **Authority Duplication (Hashing/Certificates):**
+   - The replay directory contains overlapping implementations for identity/hashing: `canonical_certificate.ts`, `certificate_authority.ts`, `canonical_hash_authority.ts`, `canonical_json.ts`. Proof of behavioral redundancy is required before consolidation.
 
 #### `workspace/` - Workspace Cache
 

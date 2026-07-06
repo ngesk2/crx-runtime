@@ -1,0 +1,22 @@
+{
+  "event_id": "2e89404c3eb78dd4",
+  "type": "artifact_produced",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_22009771086db070",
+    "hash": "f085490c0eb99889aec536d392ea5e2201bfc479aca30cdeb808a510f7e90a48",
+    "missionId": "m1",
+    "type": "merge_decision",
+    "witnessHash": "d5dc8b0d53e343f1d0713fb697c8aee18d94f5e8b518ad82b1551645b5d61314",
+    "workerId": "merge_gate"
+  },
+  "mission_id": "m1",
+  "worker_id": "merge_gate",
+  "artifact_id": "art_22009771086db070",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "019e8fbcd192",
+  "parent_event_id": null,
+  "global_sequence": 7
+}

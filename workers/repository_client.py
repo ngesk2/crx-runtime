@@ -26,7 +26,7 @@ def _request(method, path, body=None):
 def emit_event(event_type, aggregate_id, aggregate_type, event_data):
     import uuid
     event_id = str(uuid.uuid4())
-    result = _request('POST', '/api/v1/events', {
+    result = _request('POST', '/events', {
         'event_id': event_id,
         'event_type': event_type,
         'aggregate_id': aggregate_id,

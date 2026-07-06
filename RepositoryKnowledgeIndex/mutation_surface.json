@@ -1,0 +1,587 @@
+[
+  {
+    "mutation_id": "gateway/checkpoint_authority.js::this._qdrant.upsert::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/checkpoint_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/checkpoint_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.upsert"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/checkpoint_authority.js::this._qdrant.search::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/checkpoint_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/checkpoint_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.search"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/checkpoint_authority.js::this._qdrant.delete::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/checkpoint_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/checkpoint_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.delete"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/context_compression_authority.js::this._qdrant.upsert::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/context_compression_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/context_compression_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.upsert"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/end_to_end_verifier.js::this._qdrant.getCollectionInfo::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/end_to_end_verifier.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/end_to_end_verifier.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.getCollectionInfo"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/event_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/event_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/event_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/event_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/event_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/event_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/event_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/event_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/event_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/event_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/event_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/event_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/mcp_registry.js::pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/mcp_registry.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/mcp_registry.js"
+    ],
+    "call_evidence": [
+      "pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/memory_authority.js::this._qdrant.createCollection::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/memory_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/memory_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.createCollection"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/memory_authority.js::this._qdrant.search::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/memory_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/memory_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.search"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/memory_authority.js::this._qdrant.upsert::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/memory_authority.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/memory_authority.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.upsert"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.healthCheck::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.healthCheck"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.ensureCollection::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.ensureCollection"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.getCollectionInfo::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.getCollectionInfo"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.upsert::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.upsert"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.getPoint::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.getPoint"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.search::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.search"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.search::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.search"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/qdrant_bootstrap.js::this._qdrant.delete::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/qdrant_bootstrap.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "gateway/qdrant_bootstrap.js"
+    ],
+    "call_evidence": [
+      "this._qdrant.delete"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/repository_store.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/repository_store.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/repository_store.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/repository_store.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/repository_store.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/repository_store.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/repository_store.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/repository_store.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/repository_store.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/repository_store.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/repository_store.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/repository_store.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/snapshot_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/snapshot_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/snapshot_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/snapshot_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/snapshot_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/snapshot_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "gateway/snapshot_repository.js::this.pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "gateway/snapshot_repository.js",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "gateway/snapshot_repository.js"
+    ],
+    "call_evidence": [
+      "this.pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/commit-service/src/api/audit_controller.ts::pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/commit-service/src/api/audit_controller.ts",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/commit-service/src/api/audit_controller.ts"
+    ],
+    "call_evidence": [
+      "pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/commit-service/src/events/event_log.ts::pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/commit-service/src/events/event_log.ts",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/commit-service/src/events/event_log.ts"
+    ],
+    "call_evidence": [
+      "pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/commit-service/src/persistence/artifact_store.ts::pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/commit-service/src/persistence/artifact_store.ts"
+    ],
+    "call_evidence": [
+      "pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/commit-service/src/persistence/lineage_store.ts::pool.query::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+    ],
+    "call_evidence": [
+      "pool.query"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::unknown.get_qdrant_config::qdrant_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "qdrant_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "unknown.get_qdrant_config"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::unknown.get_postgres_config::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "unknown.get_postgres_config"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::postgres_config.get::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "postgres_config.get"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::postgres_config.get::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "postgres_config.get"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::postgres_config.get::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "postgres_config.get"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::postgres_config.get::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "postgres_config.get"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  },
+  {
+    "mutation_id": "runtime/kernel/workers/qdrant_projection_worker.py::postgres_config.get::postgres_write",
+    "origin_type": "route_handler_or_script",
+    "origin": "runtime/kernel/workers/qdrant_projection_worker.py",
+    "runtime_graph": "unknown",
+    "mutation_kind": "postgres_write",
+    "evidence_path": [
+      "runtime/kernel/workers/qdrant_projection_worker.py"
+    ],
+    "call_evidence": [
+      "postgres_config.get"
+    ],
+    "confidence": "high",
+    "diagnostics": []
+  }
+]

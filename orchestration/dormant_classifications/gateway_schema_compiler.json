@@ -1,0 +1,16 @@
+{
+  "path": "gateway/schema_compiler.js",
+  "lines": 127,
+  "authority_score": 20,
+  "replay_score": 10,
+  "dependency_score": 60,
+  "deletion_confidence": 29,
+  "migration_candidate": false,
+  "resurrection_candidate": true,
+  "dependent_modules": 3,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 16,
+  "recommendation": "keep_dormant",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

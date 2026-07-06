@@ -1,0 +1,142 @@
+{
+  "generatedAt": "2026-07-05T00:00:00.000Z",
+  "reportType": "authority_policy_split_report",
+  "sourceArtifacts": [
+    "RepositoryKnowledgeIndex/evidence_manifest.json",
+    "RepositoryKnowledgeIndex/service_inventory.json",
+    "gateway/constitutional_time_authority.js",
+    "gateway/canonical_authority.js",
+    "gateway/identity_authority.js",
+    "gateway/event_read_authority.js",
+    "gateway/event_repository.js",
+    "runtime/execution_runtime.js",
+    "runtime/di_container.js"
+  ],
+  "summary": "The repository contains a small set of genuine policy authorities and a larger set of runtime modules whose logic should be promoted into the kernel rather than left as gateway-local or adapter-local implementations.",
+  "truePolicyAuthorities": [
+    {
+      "component": "ConstitutionalTimeAuthority",
+      "owner": "kernel",
+      "classification": "true_policy_authority",
+      "reason": "Provides deterministic temporal semantics for replay and execution consistency."
+    },
+    {
+      "component": "CanonicalAuthority",
+      "owner": "kernel",
+      "classification": "true_policy_authority",
+      "reason": "Defines the canonical serialization and hashing policy used by kernel artifacts."
+    },
+    {
+      "component": "IdentityAuthority",
+      "owner": "kernel",
+      "classification": "true_policy_authority",
+      "reason": "Defines deterministic identity generation policy for kernel objects."
+    }
+  ],
+  "misplacedRuntimeLogic": [
+    {
+      "component": "EventReadAuthority",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Read-side event access is operational runtime logic, not policy; it should live behind the kernel runtime boundary."
+    },
+    {
+      "component": "EventRepository",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Persists event history and replay chain state; belongs to kernel persistence rather than gateway policy."
+    },
+    {
+      "component": "ExecutionRuntime",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "This is the execution engine itself and must be the exclusive runtime owner once the gateway is demoted to ingress."
+    },
+    {
+      "component": "DIContainer",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "The runtime composition boundary should be kernel-owned so dependencies cannot be created ad hoc outside the execution path."
+    },
+    {
+      "component": "ConstitutionalExecutionPipeline",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "A pipeline coordinator that should be a kernel-owned execution service, not gateway logic."
+    },
+    {
+      "component": "Dispatcher",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Dispatch logic belongs to the kernel execution plane."
+    },
+    {
+      "component": "ReducerRegistry",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Reducer coordination is execution semantics and should remain kernel-owned."
+    },
+    {
+      "component": "ProjectionRegistry",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Projection semantics are runtime behavior, not gateway policy."
+    },
+    {
+      "component": "ReplayDecisionAuthority",
+      "owner": "kernel",
+      "classification": "misplaced_runtime_logic",
+      "reason": "Replay decisions are execution-state questions and should be resolved by the kernel."
+    }
+  ],
+  "gatewayOrAdapterComponents": [
+    {
+      "component": "GatewayRuntime",
+      "owner": "gateway",
+      "classification": "ingress_service",
+      "reason": "Owns route wiring and translation but should not decide execution."
+    },
+    {
+      "component": "RepositoryStore",
+      "owner": "adapter",
+      "classification": "persistence_adapter",
+      "reason": "Storage adapter consumed by the kernel."
+    },
+    {
+      "component": "HealthAuthority",
+      "owner": "gateway",
+      "classification": "guard_or_observability",
+      "reason": "Observability and health checks are gateway-facing concerns."
+    },
+    {
+      "component": "SystemAuthority",
+      "owner": "gateway",
+      "classification": "operational_guard",
+      "reason": "System-level operational logic should remain outside the policy core."
+    }
+  ],
+  "recommendation": {
+    "keepAsPolicy": [
+      "ConstitutionalTimeAuthority",
+      "CanonicalAuthority",
+      "IdentityAuthority"
+    ],
+    "promoteToKernelRuntime": [
+      "ExecutionRuntime",
+      "DIContainer",
+      "EventReadAuthority",
+      "EventRepository",
+      "ConstitutionalExecutionPipeline",
+      "Dispatcher",
+      "ReducerRegistry",
+      "ProjectionRegistry",
+      "ReplayDecisionAuthority"
+    ],
+    "keepAsGatewayOrAdapter": [
+      "GatewayRuntime",
+      "RepositoryStore",
+      "HealthAuthority",
+      "SystemAuthority"
+    ]
+  }
+}

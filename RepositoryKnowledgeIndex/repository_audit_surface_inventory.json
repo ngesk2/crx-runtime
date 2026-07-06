@@ -1,0 +1,388 @@
+{
+  "artifact": "repository_audit_surface_inventory",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 0 - Complete Audit Surface Inventory",
+  "source_directory": "RepositoryKnowledgeIndex",
+  "total_artifacts": 18,
+  "artifacts": [
+    {
+      "name": "evidence_manifest.json",
+      "purpose": "Master manifest of all audit artifacts with hashes and schema versions",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": [],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "authority_policy_split_report.json",
+        "canonical_event_path_map.json",
+        "cutover_order.json",
+        "kernel_boundary_report.json",
+        "kernel_migration_plan.json",
+        "kernel_module_extraction_report.json",
+        "mutation_ownership_matrix.json",
+        "gateway_to_kernel_cutover_plan.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "filesystem.json",
+      "purpose": "Complete file inventory with paths, sizes, hashes, and timestamps",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": [],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "dependency_graph.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "dependency_graph.json",
+      "purpose": "Complete import/export graph for all files",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["filesystem.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "execution_roots.json",
+      "purpose": "All runtime entry points (scripts, AST-detected servers, CLI)",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["filesystem.json", "dependency_graph.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "cutover_order.json",
+        "kernel_migration_plan.json",
+        "kernel_boundary_report.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "route_matrix.json",
+      "purpose": "Complete HTTP route inventory with reachable subgraphs",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "canonical_event_path_map.json",
+        "cutover_order.json",
+        "kernel_migration_plan.json",
+        "mutation_ownership_matrix.json",
+        "gateway_to_kernel_cutover_plan.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_gateway_http.json",
+      "purpose": "Runtime graph for gateway_http service",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_gateway_cli.json",
+      "purpose": "Runtime graph for gateway CLI",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_kernel.json",
+      "purpose": "Runtime graph for kernel service",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_legacy_commit_service.json",
+      "purpose": "Runtime graph for legacy commit-service",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_workers.json",
+      "purpose": "Runtime graph for worker services",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_build.json",
+      "purpose": "Runtime graph for build process",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_tests.json",
+      "purpose": "Runtime graph for test execution",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_migrations.json",
+      "purpose": "Runtime graph for database migrations",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_replay.json",
+      "purpose": "Runtime graph for replay execution",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_graph_witness.json",
+      "purpose": "Runtime graph for witness execution",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "mutation_surface.json",
+      "purpose": "Complete inventory of all mutation operations (postgres_write, qdrant_write)",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "route_matrix.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "mutation_ownership_matrix.json",
+        "canonical_event_path_map.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "service_inventory.json",
+      "purpose": "Service inventory with entry roots, reachable files, and infrastructure touchpoints",
+      "producer": "RepositoryKnowledgeIndex generator",
+      "dependencies": ["dependency_graph.json", "execution_roots.json", "route_matrix.json"],
+      "freshness": "2026-07-04T23:56:31.582279+00:00",
+      "superseded": false,
+      "consumed_by": [
+        "authority_policy_split_report.json",
+        "kernel_boundary_report.json",
+        "canonical_event_path_map.json",
+        "mutation_ownership_matrix.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "authority_policy_split_report.json",
+      "purpose": "Classification of authorities into true policy vs misplaced runtime logic",
+      "producer": "Derived audit report",
+      "dependencies": ["evidence_manifest.json", "service_inventory.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [
+        "kernel_boundary_report.json",
+        "kernel_migration_plan.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "canonical_event_path_map.json",
+      "purpose": "Maps event paths to current handlers and reachable writer modules",
+      "producer": "Derived audit report",
+      "dependencies": ["route_matrix.json", "mutation_surface.json", "service_inventory.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [
+        "cutover_order.json",
+        "kernel_migration_plan.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "cutover_order.json",
+      "purpose": "Recommended ordering for gateway→kernel cutover",
+      "producer": "Derived audit report",
+      "dependencies": ["mutation_surface.json", "service_inventory.json", "execution_roots.json", "route_matrix.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [
+        "kernel_migration_plan.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "kernel_boundary_report.json",
+      "purpose": "Classification of components into kernel-owned, gateway-owned, adapter-owned",
+      "producer": "Derived audit report",
+      "dependencies": ["evidence_manifest.json", "service_inventory.json", "route_matrix.json", "mutation_surface.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [
+        "kernel_migration_plan.json",
+        "kernel_module_extraction_report.json"
+      ],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "gateway_to_kernel_cutover_plan.json",
+      "purpose": "Specific route-by-route cutover plan",
+      "producer": "Derived audit report",
+      "dependencies": ["route_matrix.json", "mutation_surface.json", "service_inventory.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "kernel_migration_plan.json",
+      "purpose": "Phased migration plan with route cutover summary",
+      "producer": "Derived audit report",
+      "dependencies": ["cutover_order.json", "kernel_boundary_report.json", "canonical_event_path_map.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "kernel_module_extraction_report.json",
+      "purpose": "Classification of gateway vs kernel modules",
+      "producer": "Derived audit report",
+      "dependencies": ["kernel_boundary_report.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "mutation_ownership_matrix.json",
+      "purpose": "Matrix of mutation owners by module, store, and runtime",
+      "producer": "Derived audit report",
+      "dependencies": ["mutation_surface.json", "service_inventory.json", "execution_roots.json", "route_matrix.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    },
+    {
+      "name": "runtime_gateway_mediation_report.json",
+      "purpose": "Report on gateway mediation detection (empty - no mediation found)",
+      "producer": "Derived audit report",
+      "dependencies": ["route_matrix.json"],
+      "freshness": "2026-07-05T00:00:00.000Z",
+      "superseded": false,
+      "consumed_by": [],
+      "authoritative": true,
+      "status": "active"
+    }
+  ],
+  "dependency_graph_summary": {
+    "root_artifacts": [
+      "evidence_manifest.json",
+      "filesystem.json"
+    ],
+    "intermediate_artifacts": [
+      "dependency_graph.json",
+      "execution_roots.json",
+      "route_matrix.json",
+      "runtime_graph_*.json",
+      "mutation_surface.json",
+      "service_inventory.json"
+    ],
+    "derived_reports": [
+      "authority_policy_split_report.json",
+      "canonical_event_path_map.json",
+      "cutover_order.json",
+      "kernel_boundary_report.json",
+      "gateway_to_kernel_cutover_plan.json",
+      "kernel_migration_plan.json",
+      "kernel_module_extraction_report.json",
+      "mutation_ownership_matrix.json",
+      "runtime_gateway_mediation_report.json"
+    ]
+  },
+  "audit_dependency_graph": {
+    "evidence_manifest.json": [],
+    "filesystem.json": [],
+    "dependency_graph.json": ["filesystem.json"],
+    "execution_roots.json": ["filesystem.json", "dependency_graph.json"],
+    "route_matrix.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_gateway_http.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_gateway_cli.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_kernel.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_legacy_commit_service.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_workers.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_build.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_tests.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_migrations.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_replay.json": ["dependency_graph.json", "execution_roots.json"],
+    "runtime_graph_witness.json": ["dependency_graph.json", "execution_roots.json"],
+    "mutation_surface.json": ["dependency_graph.json", "route_matrix.json"],
+    "service_inventory.json": ["dependency_graph.json", "execution_roots.json", "route_matrix.json"],
+    "authority_policy_split_report.json": ["evidence_manifest.json", "service_inventory.json"],
+    "canonical_event_path_map.json": ["route_matrix.json", "mutation_surface.json", "service_inventory.json"],
+    "cutover_order.json": ["mutation_surface.json", "service_inventory.json", "execution_roots.json", "route_matrix.json"],
+    "kernel_boundary_report.json": ["evidence_manifest.json", "service_inventory.json", "route_matrix.json", "mutation_surface.json"],
+    "gateway_to_kernel_cutover_plan.json": ["route_matrix.json", "mutation_surface.json", "service_inventory.json"],
+    "kernel_migration_plan.json": ["cutover_order.json", "kernel_boundary_report.json", "canonical_event_path_map.json"],
+    "kernel_module_extraction_report.json": ["kernel_boundary_report.json"],
+    "mutation_ownership_matrix.json": ["mutation_surface.json", "service_inventory.json", "execution_roots.json", "route_matrix.json"],
+    "runtime_gateway_mediation_report.json": ["route_matrix.json"]
+  }
+}

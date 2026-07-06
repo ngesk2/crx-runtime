@@ -1,0 +1,16 @@
+{
+  "path": "gateway/authority_repository.js",
+  "lines": 245,
+  "authority_score": 80,
+  "replay_score": 60,
+  "dependency_score": 100,
+  "deletion_confidence": 0,
+  "migration_candidate": true,
+  "resurrection_candidate": true,
+  "dependent_modules": 6,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 8,
+  "recommendation": "migrate",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

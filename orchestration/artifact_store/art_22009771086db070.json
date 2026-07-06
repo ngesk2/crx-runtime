@@ -1,0 +1,22 @@
+{
+  "id": "art_22009771086db070",
+  "type": "merge_decision",
+  "content": {
+    "missionId": "m1",
+    "files": [],
+    "violations": [],
+    "blocking": 0,
+    "warnings": [],
+    "canCommit": true,
+    "consensusArtifactId": "art_f12aa620b2ff1322"
+  },
+  "hash": "f085490c0eb99889aec536d392ea5e2201bfc479aca30cdeb808a510f7e90a48",
+  "bytes": "7b22636f6e666964656e6365223a312c22636f6e74656e74223a7b2266696c6573223a5b5d2c226d697373696f6e4964223a226d31227d2c2266696c6573223a5b5d2c226d65746164617461223a7b7d2c226d697373696f6e4964223a226d31222c22706172656e7441727469666163744964223a226172745f66313261613632306232666631333232222c2274797065223a226d657267655f6465636973696f6e222c22776f726b65724964223a226d657267655f67617465227d",
+  "worker_id": "merge_gate",
+  "mission_id": "m1",
+  "parent_artifact_id": "art_f12aa620b2ff1322",
+  "files": [],
+  "confidence": 1,
+  "metadata": {},
+  "witness_hash": "d5dc8b0d53e343f1d0713fb697c8aee18d94f5e8b518ad82b1551645b5d61314"
+}

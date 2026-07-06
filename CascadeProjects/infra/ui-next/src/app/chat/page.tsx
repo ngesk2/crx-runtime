@@ -3,25 +3,25 @@
 import { useState } from 'react'
 import MissionControlHeader from '@/components/MissionControlHeader'
 import PremiumChatBubble from '@/components/PremiumChatBubble'
-import ObservatoryMode from '@/components/ObservatoryMode'
 import ArchitectureView from '@/components/ArchitectureView'
+import CockpitDashboard from '@/components/CockpitDashboard'
 import EmptyStateRedesign from '@/components/EmptyStateRedesign'
 import PromptLibrary from '@/components/PromptLibrary'
-import { Send, LayoutGrid, Monitor, Activity } from 'lucide-react'
+import { Send, LayoutGrid, Monitor, Activity, Gauge } from 'lucide-react'
 
-type ViewMode = 'chat' | 'observatory' | 'architecture'
+type ViewMode = 'cockpit' | 'chat' | 'architecture'
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Array<{role: string, content: string, metadata?: any, timestamp?: Date}>>([])
   const [input, setInput] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('chat')
+  const [viewMode, setViewMode] = useState<ViewMode>('cockpit')
   const [isStreaming, setIsStreaming] = useState(false)
 
   const sendMessage = async () => {
     if (!input.trim()) return
-    
-    const userMessage = { 
-      role: 'user', 
+
+    const userMessage = {
+      role: 'user',
       content: input,
       timestamp: new Date()
     }
@@ -35,10 +35,10 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: [...messages, userMessage] })
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        
+
         const assistantMessage = {
           role: 'assistant',
           content: data.content,
@@ -49,7 +49,7 @@ export default function ChatPage() {
           },
           timestamp: new Date()
         }
-        
+
         setMessages(prev => [...prev, assistantMessage])
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
@@ -76,8 +76,8 @@ export default function ChatPage() {
       <MissionControlHeader />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Prompt Library Sidebar */}
-        <PromptLibrary />
+        {/* Prompt Library Sidebar (only in chat mode) */}
+        {viewMode === 'chat' && <PromptLibrary />}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
@@ -85,10 +85,21 @@ export default function ChatPage() {
           <div className="bg-historical-900 border-b border-historical-700 px-4 py-2">
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setViewMode('cockpit')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  viewMode === 'cockpit'
+                    ? 'bg-constitutional-600 text-white'
+                    : 'text-historical-400 hover:bg-historical-800'
+                }`}
+              >
+                <Gauge className="w-4 h-4" />
+                Cockpit
+              </button>
+              <button
                 onClick={() => setViewMode('chat')}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  viewMode === 'chat' 
-                    ? 'bg-runtime-600 text-white' 
+                  viewMode === 'chat'
+                    ? 'bg-runtime-600 text-white'
                     : 'text-historical-400 hover:bg-historical-800'
                 }`}
               >
@@ -96,21 +107,10 @@ export default function ChatPage() {
                 Chat
               </button>
               <button
-                onClick={() => setViewMode('observatory')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  viewMode === 'observatory' 
-                    ? 'bg-runtime-600 text-white' 
-                    : 'text-historical-400 hover:bg-historical-800'
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-                Observatory
-              </button>
-              <button
                 onClick={() => setViewMode('architecture')}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  viewMode === 'architecture' 
-                    ? 'bg-runtime-600 text-white' 
+                  viewMode === 'architecture'
+                    ? 'bg-runtime-600 text-white'
                     : 'text-historical-400 hover:bg-historical-800'
                 }`}
               >
@@ -121,6 +121,12 @@ export default function ChatPage() {
           </div>
 
           {/* Content Area */}
+          {viewMode === 'cockpit' && (
+            <div className="flex-1 overflow-y-auto">
+              <CockpitDashboard />
+            </div>
+          )}
+
           {viewMode === 'chat' && (
             <>
               {/* Messages Area */}
@@ -174,12 +180,6 @@ export default function ChatPage() {
                 </div>
               </div>
             </>
-          )}
-
-          {viewMode === 'observatory' && (
-            <div className="flex-1 overflow-y-auto">
-              <ObservatoryMode />
-            </div>
           )}
 
           {viewMode === 'architecture' && (

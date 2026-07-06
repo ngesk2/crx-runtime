@@ -82,6 +82,11 @@ services:
     image: ollama/ollama:latest
     container_name: brain-ollama
     restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_NUM_PARALLEL: 4
+      OLLAMA_MAX_LOADED_MODELS: 3
+      OLLAMA_KEEP_ALIVE: 5m
     volumes:
       - ollama_data:/root/.ollama
     networks:

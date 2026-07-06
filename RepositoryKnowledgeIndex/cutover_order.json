@@ -1,0 +1,60 @@
+{
+  "artifact": "cutover_order",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "evidence_inputs": [
+    "RepositoryKnowledgeIndex/mutation_surface.json",
+    "RepositoryKnowledgeIndex/service_inventory.json",
+    "RepositoryKnowledgeIndex/execution_roots.json",
+    "RepositoryKnowledgeIndex/route_matrix.json"
+  ],
+  "current_state": "Mixed gateway_http and legacy_commit_service write ownership; no single proven canonical kernel boundary for event or write authority.",
+  "recommended_order": [
+    {
+      "step": 1,
+      "title": "Establish canonical event write ownership",
+      "description": "Choose a single authoritative runtime for event persistence and event log writes, then assign gateway modules only adapter/ingress roles where possible.",
+      "actions": [
+        "Identify whether gateway/event_repository.js or runtime/kernel/commit-service/src/events/event_log.ts will act as canonical event persistence.",
+        "Stop any new gateway-local event persistence flows from mutating semantic event state in parallel with legacy commit-service event logs.",
+        "Preserve gateway routes as ingress points while migrating write semantics into a single canonical runtime."
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Consolidate legacy commit-service persistence domains",
+      "description": "Treat audit, artifact, and lineage writes as a single legacy kernel surface and decide whether to retain, refactor, or retire it as a canonical service.",
+      "actions": [
+        "Map legacy commit-service write modules into one canonical persistence boundary or retire them from production route exposure.",
+        "Avoid keeping both gateway and legacy commit-service Postgres write owners for overlapping domains."
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Migrate gateway repository and snapshot writes",
+      "description": "Move gateway-side object, snapshot, and registry writes into the chosen canonical owner or downgrade them to transport adapters only.",
+      "actions": [
+        "Refactor gateway/repository_store.js and gateway/snapshot_repository.js so they no longer own the canonical write semantics unless the gateway is the single canonical owner.",
+        "If gateway remains only ingress, route these operations through the canonical kernel boundary."
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Isolate Qdrant and vector memory writes",
+      "description": "Separate vector memory writes from canonical persistence and decide whether they remain gateway-side adapters or are moved to a dedicated kernel-managed memory authority.",
+      "actions": [
+        "Classify gateway/checkpoint_authority.js, gateway/memory_authority.js, gateway/context_compression_authority.js, and gateway/qdrant_bootstrap.js as infrastructure mutation adapters, not source-of-truth owners.",
+        "Ensure runtime/kernel/workers/qdrant_projection_worker.py does not create a third conflicting canonical write owner."
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Prove static mediation for route ownership",
+      "description": "Use route handler evidence and reachable file graphs to show that gateway routes delegate to a single kernel boundary instead of owning mixed persistence semantics.",
+      "actions": [
+        "Produce static evidence that gateway routes call a kernel adapter interface rather than directly mutating Postgres or Qdrant state.",
+        "If gateway routes continue to reach commit-service files in reachable graphs, treat that as a signal that the runtime boundary is still mixed."
+      ]
+    }
+  ],
+  "notes": "This order is based only on the available evidence set and treats gateway_http and legacy_commit_service as coexisting runtime surfaces. It does not assume a dedicated mediation artifact exists."
+}

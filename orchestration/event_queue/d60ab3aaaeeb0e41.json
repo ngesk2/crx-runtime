@@ -1,0 +1,20 @@
+{
+  "event_id": "d60ab3aaaeeb0e41",
+  "type": "artifact_stored",
+  "schema_version": "3.0.0",
+  "data": {
+    "artifactId": "art_22009771086db070",
+    "missionId": "m1",
+    "type": "merge_decision",
+    "workerId": "merge_gate"
+  },
+  "mission_id": "m1",
+  "worker_id": "merge_gate",
+  "artifact_id": "art_22009771086db070",
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "b18b4ddd87fe",
+  "parent_event_id": null,
+  "global_sequence": 6
+}

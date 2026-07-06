@@ -1,0 +1,16 @@
+{
+  "path": "gateway/constitutional_blockers.js",
+  "lines": 426,
+  "authority_score": 20,
+  "replay_score": 10,
+  "dependency_score": 40,
+  "deletion_confidence": 43,
+  "migration_candidate": false,
+  "resurrection_candidate": true,
+  "dependent_modules": 2,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 16,
+  "recommendation": "keep_dormant",
+  "classified_at": "2026-07-04T02:04:18.096Z"
+}

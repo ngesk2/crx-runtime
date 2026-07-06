@@ -1,0 +1,160 @@
+{
+  "roots": [
+    {
+      "root_id": "script:dev",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.dev"
+      ],
+      "launch_command": "pnpm --filter \"./gateway\" dev"
+    },
+    {
+      "root_id": "script:dev:commit-service",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.dev:commit-service"
+      ],
+      "launch_command": "pnpm --filter \"./runtime/kernel/commit-service\" dev"
+    },
+    {
+      "root_id": "script:build",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.build"
+      ],
+      "launch_command": "pnpm -r build"
+    },
+    {
+      "root_id": "script:test",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.test"
+      ],
+      "launch_command": "pnpm -r test"
+    },
+    {
+      "root_id": "script:lint",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.lint"
+      ],
+      "launch_command": "pnpm -r lint"
+    },
+    {
+      "root_id": "script:test:constitutional-pipeline",
+      "root_type": "script",
+      "entry_file": "package.json",
+      "runtime_language": "shell",
+      "source_of_discovery": [
+        "package.json:scripts.test:constitutional-pipeline"
+      ],
+      "launch_command": "node test/run_constitutional_pipeline.js"
+    },
+    {
+      "root_id": "ast_root:gateway/api_controller.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/api_controller.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express",
+        "ast:express.json",
+        "ast:this._app.listen"
+      ],
+      "launch_command": "node gateway/api_controller.js"
+    },
+    {
+      "root_id": "ast_root:gateway/bootstrap/gateway_runtime.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/bootstrap/gateway_runtime.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express",
+        "ast:express.json",
+        "ast:this._app.listen"
+      ],
+      "launch_command": "node gateway/bootstrap/gateway_runtime.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/context.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/context.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/context.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/events.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/events.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/events.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/health.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/health.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/health.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/ollama.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/ollama.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/ollama.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/repository.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/repository.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/repository.js"
+    },
+    {
+      "root_id": "ast_root:gateway/routes/system.js",
+      "root_type": "ast_detected",
+      "entry_file": "gateway/routes/system.js",
+      "runtime_language": "javascript",
+      "source_of_discovery": [
+        "ast:express.Router"
+      ],
+      "launch_command": "node gateway/routes/system.js"
+    },
+    {
+      "root_id": "ast_root:runtime/kernel/commit-service/src/server.ts",
+      "root_type": "ast_detected",
+      "entry_file": "runtime/kernel/commit-service/src/server.ts",
+      "runtime_language": "typescript",
+      "source_of_discovery": [
+        "ast:express",
+        "ast:express.json",
+        "ast:app.listen"
+      ],
+      "launch_command": "node runtime/kernel/commit-service/src/server.ts"
+    }
+  ]
+}

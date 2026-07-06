@@ -1,0 +1,26 @@
+{
+  "total_classified": 343,
+  "total_lines": null,
+  "by_recommendation": {
+    "needs_review": {
+      "count": 230,
+      "lines": 64429
+    },
+    "migrate": {
+      "count": 91,
+      "lines": 31644
+    },
+    "keep_dormant": {
+      "count": 21,
+      "lines": 7950
+    },
+    "undefined": {
+      "count": 1,
+      "lines": null
+    }
+  },
+  "high_confidence_deletions": 0,
+  "migration_candidates": 91,
+  "resurrection_candidates": 30,
+  "needs_review": 230
+}

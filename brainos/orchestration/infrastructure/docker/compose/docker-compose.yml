@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL - Canonical State (Layer 2)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: brain-postgres
     restart: unless-stopped
     env_file:
@@ -186,6 +186,11 @@ services:
     image: ollama/ollama:latest
     container_name: brain-ollama
     restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_NUM_PARALLEL: 4
+      OLLAMA_MAX_LOADED_MODELS: 3
+      OLLAMA_KEEP_ALIVE: 5m
     volumes:
       - ollama_data:/root/.ollama
     networks:
@@ -193,10 +198,11 @@ services:
     ports:
       - "11434:11434"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 
   # Open WebUI - AI Interface
   openwebui:

@@ -1,0 +1,25 @@
+name: Constitutional Learning Loop
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+  push:
+    branches: ['**']
+
+jobs:
+  learning-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pyyaml
+      - name: Run learning loop
+        run: python scripts/learning_loop.py
+      - name: Run reasoning worker
+        run: python scripts/ollama_reasoning_worker.py
+      - name: Prepare mission workspace
+        run: python scripts/workspace_builder.py VerifyReplay

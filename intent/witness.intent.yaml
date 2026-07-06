@@ -1,0 +1,15 @@
+intent: Witness Verification
+owner: WitnessAuthority
+spec: specs/replay-authority
+implements:
+  - runtime/kernel/replay/witness_authority.ts
+produces:
+  - WitnessProof
+consumes:
+  - ReplayAuthority
+depends_on:
+  - CanonicalHashAuthority
+forbidden:
+  - direct_hash_bypass
+proofs:
+  - proofs/witness-proof.json

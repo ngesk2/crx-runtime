@@ -1,0 +1,735 @@
+{
+  "artifact": "patch_execution_expansion",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "phase": "Phase 2 - Complete Patch Decomposition",
+  "description": "Exploded patch implementation packets with complete file and symbol impact analysis",
+  "patches": [
+    {
+      "patch_id": "PATCH_001",
+      "goal": "Introduce gateway-to-kernel adapter interface",
+      "owner_domain": "kernel",
+      "current_owner": "gateway",
+      "target_owner": "kernel",
+      "cutover_phase": 1,
+      "anchor_files": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js"
+      ],
+      "anchor_symbols": [
+        "GatewayRuntime",
+        "ExecutionRuntime.initialize",
+        "ExecutionRuntime.execute",
+        "DIContainer.register"
+      ],
+      "entry_functions": [
+        "GatewayRuntime.initialize",
+        "GatewayRuntime.start"
+      ],
+      "exit_functions": [
+        "GatewayRuntime.shutdown",
+        "ExecutionRuntime.shutdown"
+      ],
+      "files_that_must_change": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/api_controller.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js",
+        "gateway/routes/health.js"
+      ],
+      "files_that_must_read": [
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js",
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_should_never_change": [
+        "runtime/kernel/commit-service/src/server.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "files_that_may_break": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/event_read_authority.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "runtime/execution_runtime.js",
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_replay_tested": [],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [],
+      "files_that_must_be_bootstrap_tested": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/bootstrap/main.js"
+      ],
+      "files_that_must_be_route_tested": [
+        "gateway/api_controller.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js",
+        "gateway/routes/health.js"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_import_tested": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "runtime/execution_runtime.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/route_middleware.js",
+        "gateway/system_authority.js",
+        "gateway/health_authority.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_002",
+      "goal": "Move EventRepository to kernel runtime",
+      "owner_domain": "kernel",
+      "current_owner": "gateway",
+      "target_owner": "kernel",
+      "cutover_phase": 2,
+      "anchor_files": [
+        "gateway/event_repository.js",
+        "gateway/routes/events.js",
+        "runtime/execution_runtime.js"
+      ],
+      "anchor_symbols": [
+        "EventRepository",
+        "EventRepository.append",
+        "EventRepository.load",
+        "EventRepository.query",
+        "POST /events handler"
+      ],
+      "entry_functions": [
+        "EventRepository.append",
+        "POST /events"
+      ],
+      "exit_functions": [
+        "EventRepository.close"
+      ],
+      "files_that_must_change": [
+        "gateway/event_repository.js",
+        "gateway/routes/events.js",
+        "gateway/event_read_authority.js",
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_read": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_should_never_change": [
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ],
+      "files_that_may_break": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/event_repository.js",
+        "gateway/event_read_authority.js"
+      ],
+      "files_that_must_be_replay_tested": [
+        "gateway/event_repository.js"
+      ],
+      "files_that_must_be_witness_tested": [
+        "gateway/event_repository.js"
+      ],
+      "files_that_must_be_lineage_tested": [
+        "gateway/event_repository.js"
+      ],
+      "files_that_must_be_bootstrap_tested": [
+        "gateway/bootstrap/gateway_runtime.js"
+      ],
+      "files_that_must_be_route_tested": [
+        "gateway/routes/events.js",
+        "gateway/routes/context.js"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_import_tested": [
+        "gateway/event_repository.js",
+        "gateway/routes/events.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_003",
+      "goal": "Move EventReadAuthority to kernel runtime (read-only)",
+      "owner_domain": "kernel",
+      "current_owner": "gateway",
+      "target_owner": "kernel",
+      "cutover_phase": 2,
+      "anchor_files": [
+        "gateway/event_read_authority.js",
+        "gateway/routes/context.js",
+        "gateway/routes/events.js"
+      ],
+      "anchor_symbols": [
+        "EventReadAuthority",
+        "EventReadAuthority.query",
+        "EventReadAuthority.getRecentEvents",
+        "GET /recent-events"
+      ],
+      "entry_functions": [
+        "EventReadAuthority.query",
+        "EventReadAuthority.getRecentEvents"
+      ],
+      "exit_functions": [],
+      "files_that_must_change": [
+        "gateway/event_read_authority.js",
+        "gateway/routes/context.js",
+        "gateway/routes/events.js"
+      ],
+      "files_that_must_read": [
+        "gateway/event_repository.js"
+      ],
+      "files_that_should_never_change": [
+        "runtime/kernel/commit-service/src/api/audit_controller.ts"
+      ],
+      "files_that_may_break": [
+        "gateway/routes/system.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/event_read_authority.js"
+      ],
+      "files_that_must_be_replay_tested": [],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [],
+      "files_that_must_be_bootstrap_tested": [],
+      "files_that_must_be_route_tested": [
+        "gateway/routes/context.js",
+        "gateway/routes/events.js"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [],
+      "files_that_must_be_import_tested": [
+        "gateway/event_read_authority.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/repository_store.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_004",
+      "goal": "Move policy authorities to kernel runtime",
+      "owner_domain": "kernel",
+      "current_owner": "gateway",
+      "target_owner": "kernel",
+      "cutover_phase": 2,
+      "anchor_files": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js",
+        "runtime/execution_runtime.js"
+      ],
+      "anchor_symbols": [
+        "CanonicalAuthority",
+        "CanonicalBytes.serialize",
+        "CanonicalAuthority.hashBytes",
+        "constitutionalTimeAuthority.now",
+        "identityAuthority.generateFromCanonicalHash"
+      ],
+      "entry_functions": [
+        "CanonicalBytes.serialize",
+        "constitutionalTimeAuthority.now",
+        "identityAuthority.generateFromCanonicalHash"
+      ],
+      "exit_functions": [],
+      "files_that_must_change": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js",
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_read": [],
+      "files_that_should_never_change": [],
+      "files_that_may_break": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/event_read_authority.js",
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js",
+        "gateway/routes/ollama.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_must_be_replay_tested": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_must_be_witness_tested": [
+        "gateway/canonical_authority.js"
+      ],
+      "files_that_must_be_lineage_tested": [
+        "gateway/identity_authority.js"
+      ],
+      "files_that_must_be_bootstrap_tested": [
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_be_route_tested": [],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_import_tested": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/adapter_authority.js",
+        "gateway/adapter_compiler_v2.js",
+        "gateway/deterministic_id_authority.js",
+        "gateway/witness_authority.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_005",
+      "goal": "Retire or reclassify legacy commit-service routes",
+      "owner_domain": "kernel",
+      "current_owner": "legacy_commit_service",
+      "target_owner": "kernel_adapter_or_retire",
+      "cutover_phase": 3,
+      "anchor_files": [
+        "runtime/kernel/commit-service/src/server.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "anchor_symbols": [
+        "server.ts::app.listen",
+        "POST /kernel/commit",
+        "GET /kernel/audit",
+        "GET /kernel/audit/system"
+      ],
+      "entry_functions": [
+        "server.ts::app.listen",
+        "audit_controller.ts::handler",
+        "commit_controller.ts::handler"
+      ],
+      "exit_functions": [
+        "server.ts::app.close"
+      ],
+      "files_that_must_change": [
+        "runtime/kernel/commit-service/src/server.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/commit-service/src/api/commit_controller.ts"
+      ],
+      "files_that_must_read": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+        "runtime/kernel/commit-service/src/events/event_log.ts"
+      ],
+      "files_that_should_never_change": [
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/event_repository.js"
+      ],
+      "files_that_may_break": [
+        "runtime/kernel/commit-service/src/persistence/db.ts",
+        "runtime/kernel/commit-service/src/validation/dag_validator.ts"
+      ],
+      "files_that_must_be_verified": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "files_that_must_be_replay_tested": [],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "files_that_must_be_bootstrap_tested": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "files_that_must_be_route_tested": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [],
+      "files_that_must_be_import_tested": [
+        "runtime/kernel/commit-service/src/server.ts"
+      ],
+      "transitive_dependencies": [
+        "runtime/kernel/commit-service/src/utils/logger.ts",
+        "runtime/kernel/commit-service/src/validation/dag_validator.ts"
+      ]
+    },
+    {
+      "patch_id": "PATCH_006",
+      "goal": "Move RepositoryStore to adapter role",
+      "owner_domain": "adapter",
+      "current_owner": "gateway",
+      "target_owner": "adapter",
+      "cutover_phase": 4,
+      "anchor_files": [
+        "gateway/repository_store.js",
+        "gateway/routes/repository.js",
+        "runtime/execution_runtime.js"
+      ],
+      "anchor_symbols": [
+        "RepositoryStore",
+        "RepositoryStore.append",
+        "RepositoryStore.load",
+        "POST /objects",
+        "GET /objects/:id"
+      ],
+      "entry_functions": [
+        "RepositoryStore.append",
+        "RepositoryStore.load"
+      ],
+      "exit_functions": [
+        "RepositoryStore.close"
+      ],
+      "files_that_must_change": [
+        "gateway/repository_store.js",
+        "gateway/routes/repository.js",
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_read": [
+        "gateway/canonical_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_should_never_change": [
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts"
+      ],
+      "files_that_may_break": [
+        "gateway/routes/events.js",
+        "gateway/routes/context.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/repository_store.js"
+      ],
+      "files_that_must_be_replay_tested": [
+        "gateway/repository_store.js"
+      ],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [
+        "gateway/repository_store.js"
+      ],
+      "files_that_must_be_bootstrap_tested": [
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_be_route_tested": [
+        "gateway/routes/repository.js"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_import_tested": [
+        "gateway/repository_store.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_007",
+      "goal": "Isolate Qdrant memory writes to infrastructure adapters",
+      "owner_domain": "adapter",
+      "current_owner": "gateway",
+      "target_owner": "adapter",
+      "cutover_phase": 4,
+      "anchor_files": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "anchor_symbols": [
+        "CheckpointAuthority",
+        "ContextCompressionAuthority",
+        "MemoryAuthority",
+        "QdrantBootstrap"
+      ],
+      "entry_functions": [
+        "CheckpointAuthority.save",
+        "ContextCompressionAuthority.compress",
+        "MemoryAuthority.store",
+        "QdrantBootstrap.ensureCollection"
+      ],
+      "exit_functions": [],
+      "files_that_must_change": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "files_that_must_read": [],
+      "files_that_should_never_change": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js"
+      ],
+      "files_that_may_break": [
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "files_that_must_be_replay_tested": [],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [],
+      "files_that_must_be_bootstrap_tested": [],
+      "files_that_must_be_route_tested": [
+        "gateway/routes/context.js"
+      ],
+      "files_that_must_be_memory_tested": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "files_that_must_be_projection_tested": [],
+      "files_that_must_be_di_tested": [],
+      "files_that_must_be_import_tested": [
+        "gateway/checkpoint_authority.js",
+        "gateway/context_compression_authority.js",
+        "gateway/memory_authority.js",
+        "gateway/qdrant_bootstrap.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/end_to_end_verifier.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_008",
+      "goal": "Move kernel runtime modules to execution boundary",
+      "owner_domain": "kernel",
+      "current_owner": "gateway",
+      "target_owner": "kernel",
+      "cutover_phase": 4,
+      "anchor_files": [
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js",
+        "gateway/runtime/replay_decision_authority.js",
+        "runtime/execution_runtime.js"
+      ],
+      "anchor_symbols": [
+        "ConstitutionalExecutionPipeline",
+        "Dispatcher",
+        "ReducerRegistry",
+        "ProjectionRegistry",
+        "ReplayDecisionAuthority"
+      ],
+      "entry_functions": [
+        "ConstitutionalExecutionPipeline.execute",
+        "Dispatcher.dispatch",
+        "ReducerRegistry.register",
+        "ProjectionRegistry.register",
+        "ReplayDecisionAuthority.shouldReplay"
+      ],
+      "exit_functions": [],
+      "files_that_must_change": [
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js",
+        "gateway/runtime/replay_decision_authority.js",
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_read": [
+        "gateway/canonical_authority.js",
+        "gateway/constitutional_time_authority.js",
+        "gateway/identity_authority.js"
+      ],
+      "files_that_should_never_change": [
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js"
+      ],
+      "files_that_may_break": [
+        "gateway/bootstrap/gateway_runtime.js",
+        "gateway/bootstrap/constitutional_runtime.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js",
+        "gateway/runtime/replay_decision_authority.js"
+      ],
+      "files_that_must_be_replay_tested": [
+        "gateway/runtime/replay_decision_authority.js"
+      ],
+      "files_that_must_be_witness_tested": [
+        "gateway/runtime/constitutional_execution_pipeline.js"
+      ],
+      "files_that_must_be_lineage_tested": [],
+      "files_that_must_be_bootstrap_tested": [
+        "runtime/execution_runtime.js"
+      ],
+      "files_that_must_be_route_tested": [],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [
+        "gateway/runtime/projection_registry.js"
+      ],
+      "files_that_must_be_di_tested": [
+        "runtime/di_container.js"
+      ],
+      "files_that_must_be_import_tested": [
+        "gateway/runtime/constitutional_execution_pipeline.js",
+        "gateway/runtime/dispatcher.js",
+        "gateway/runtime/reducer_registry.js",
+        "gateway/runtime/projection_registry.js",
+        "gateway/runtime/replay_decision_authority.js"
+      ],
+      "transitive_dependencies": [
+        "gateway/bootstrap/constitutional_runtime.js"
+      ]
+    },
+    {
+      "patch_id": "PATCH_009",
+      "goal": "Consolidate Postgres write domains",
+      "owner_domain": "kernel",
+      "current_owner": "gateway_http, legacy_commit_service, worker",
+      "target_owner": "kernel",
+      "cutover_phase": 2,
+      "anchor_files": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "anchor_symbols": [
+        "EventRepository",
+        "RepositoryStore",
+        "SnapshotRepository",
+        "MCPRegistry",
+        "EventLog",
+        "ArtifactStore",
+        "LineageStore",
+        "AuditController",
+        "QdrantProjectionWorker"
+      ],
+      "entry_functions": [
+        "EventRepository.append",
+        "RepositoryStore.append",
+        "SnapshotRepository.append",
+        "EventLog.append",
+        "ArtifactStore.store",
+        "LineageStore.store",
+        "AuditController.record",
+        "QdrantProjectionWorker.sync"
+      ],
+      "exit_functions": [],
+      "files_that_must_change": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js",
+        "runtime/kernel/commit-service/src/events/event_log.ts",
+        "runtime/kernel/commit-service/src/persistence/artifact_store.ts",
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts",
+        "runtime/kernel/commit-service/src/api/audit_controller.ts",
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "files_that_must_read": [],
+      "files_that_should_never_change": [],
+      "files_that_may_break": [
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js",
+        "gateway/routes/context.js",
+        "gateway/routes/system.js"
+      ],
+      "files_that_must_be_verified": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js"
+      ],
+      "files_that_must_be_replay_tested": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js"
+      ],
+      "files_that_must_be_witness_tested": [],
+      "files_that_must_be_lineage_tested": [
+        "runtime/kernel/commit-service/src/persistence/lineage_store.ts"
+      ],
+      "files_that_must_be_bootstrap_tested": [],
+      "files_that_must_be_route_tested": [
+        "gateway/routes/events.js",
+        "gateway/routes/repository.js"
+      ],
+      "files_that_must_be_memory_tested": [],
+      "files_that_must_be_projection_tested": [
+        "runtime/kernel/workers/qdrant_projection_worker.py"
+      ],
+      "files_that_must_be_di_tested": [],
+      "files_that_must_be_import_tested": [
+        "gateway/event_repository.js",
+        "gateway/repository_store.js",
+        "gateway/snapshot_repository.js",
+        "gateway/mcp_registry.js"
+      ],
+      "transitive_dependencies": [
+        "runtime/kernel/commit-service/src/persistence/db.ts"
+      ]
+    }
+  ],
+  "patch_summary": {
+    "total_patches": 9,
+    "patches_by_phase": {
+      "phase_1": 1,
+      "phase_2": 4,
+      "phase_3": 1,
+      "phase_4": 3
+    },
+    "patches_by_owner_domain": {
+      "kernel": 6,
+      "adapter": 2,
+      "kernel_adapter_or_retire": 1
+    },
+    "total_files_that_must_change": 47,
+    "total_files_that_must_be_verified": 32,
+    "total_files_that_must_be_route_tested": 17,
+    "total_files_that_must_be_bootstrap_tested": 6,
+    "total_files_that_must_be_replay_tested": 8,
+    "total_files_that_must_be_witness_tested": 3,
+    "total_files_that_must_be_lineage_tested": 4,
+    "total_files_that_must_be_memory_tested": 4,
+    "total_files_that_must_be_projection_tested": 2,
+    "total_files_that_must_be_di_tested": 6,
+    "total_files_that_must_be_import_tested": 28
+  }
+}

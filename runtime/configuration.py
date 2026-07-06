@@ -16,6 +16,36 @@ from runtime.config.configuration_authority import ConfigurationAuthority
 _config: ConfigurationAuthority = None
 
 
+class Configuration:
+    """Compatibility wrapper that preserves the older Configuration API."""
+
+    def __init__(self, secret_adapter=None):
+        self._secret_adapter = secret_adapter
+        self._authority = ConfigurationAuthority.get_instance()
+
+    def get_postgres_config(self) -> Dict[str, Any]:
+        cfg = self._authority.get_postgres_config()
+        if self._secret_adapter is not None:
+            password = self._secret_adapter.get_postgres_password()
+            if password:
+                cfg["password"] = password
+        return cfg
+
+    def get_qdrant_config(self) -> Dict[str, Any]:
+        cfg = self._authority.get_qdrant_config()
+        if self._secret_adapter is not None:
+            api_key = self._secret_adapter.get_qdrant_key()
+            if api_key:
+                cfg["api_key"] = api_key
+        return cfg
+
+    def get_ollama_config(self) -> Dict[str, Any]:
+        return self._authority.get_ollama_config()
+
+    def get_inference_config(self) -> Dict[str, Any]:
+        return self._authority.get_inference_config()
+
+
 def get_configuration() -> ConfigurationAuthority:
     global _config
     if _config is None:

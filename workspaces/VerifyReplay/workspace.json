@@ -1,0 +1,27 @@
+{
+  "mission": "VerifyReplay",
+  "path": "C:\\Users\\nolan\\PING\\workspaces\\VerifyReplay",
+  "mode": "isolated-worktree",
+  "status": "prepared",
+  "workspace": {
+    "intent": "Replay Verification",
+    "authorities": [
+      "ReplayAuthority"
+    ],
+    "specifications": [
+      "specs/replay-authority"
+    ],
+    "implementations": [
+      "runtime/kernel/replay"
+    ],
+    "evidence": [
+      "proofs/replay-proof.json"
+    ],
+    "tests": [
+      "tests/test_mission_graph.py"
+    ],
+    "proofs": [
+      "proofs/replay-proof.json"
+    ]
+  }
+}

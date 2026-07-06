@@ -1,0 +1,369 @@
+{
+  "artifact": "kernel_migration_plan",
+  "generated_at": "2026-07-05T00:00:00.000Z",
+  "current_state": {
+    "gateway_routes": 25,
+    "legacy_kernel_routes": 3,
+    "routes_without_static_mediation": 28,
+    "current_production_entrypoint": "gateway/bootstrap/main.js -> gateway/bootstrap/gateway_runtime.js -> route handlers",
+    "kernel_present": true,
+    "kernel_wiring_status": "unwired"
+  },
+  "target_kernel_boundary": {
+    "kernel_owned_components": [
+      "runtime/execution_runtime.js",
+      "runtime/di_container.js",
+      "runtime/constitutional_runtime.js",
+      "gateway/bootstrap/constitutional_runtime.js",
+      "gateway/runtime/constitutional_execution_pipeline.js",
+      "gateway/runtime/dispatcher.js",
+      "gateway/runtime/reducer_registry.js",
+      "gateway/runtime/projection_registry.js",
+      "gateway/runtime/replay_decision_authority.js",
+      "gateway/event_repository.js",
+      "gateway/event_read_authority.js",
+      "gateway/canonical_authority.js",
+      "gateway/constitutional_time_authority.js",
+      "gateway/identity_authority.js"
+    ],
+    "gateway_owned_components": [
+      "gateway/bootstrap/gateway_runtime.js",
+      "gateway/api_controller.js",
+      "gateway/routes/*.js",
+      "gateway/route_middleware.js",
+      "gateway/repository_store.js",
+      "gateway/system_authority.js",
+      "gateway/health_authority.js"
+    ],
+    "infrastructure_adapters": [
+      "gateway/repository_store.js",
+      "gateway/inference_adapter.js",
+      "gateway/ollama_provider_adapter.js",
+      "gateway/simple_git_adapter.js",
+      "gateway/dockerode_adapter.js",
+      "gateway/qdrant_*",
+      "gateway/postgres_*"
+    ]
+  },
+  "recommended_cutover_phases": [
+    {
+      "phase": 1,
+      "title": "Gateway demotion to ingress and protocol adapter",
+      "description": "Leave gateway route wiring and HTTP concerns in place; move execution decisions behind a kernel execute() interface.",
+      "actions": [
+        "Introduce a gateway-to-kernel adapter that wraps ExecutionRuntime.initialize/execute.",
+        "Replace direct gateway pipeline creation and event persistence with kernel boundary invocation.",
+        "Keep gateway routes /events, /api/v1/repository, /context, /system, /api/v1/ollama, /health as ingress only."
+      ]
+    },
+    {
+      "phase": 2,
+      "title": "Kernel boundary promotion for event write and execution lifecycle",
+      "description": "Redirect event creation and mission execution flows from gateway runtime to kernel runtime.",
+      "actions": [
+        "Refactor gateway/routes/events.js POST /events to call kernel.execute() instead of gateway-local pipeline.execute.",
+        "Move EventRepository persistence, event schema creation, verification, reducer dispatch, projection, and replay decision logic into kernel runtime modules.",
+        "Retain EventReadAuthority in gateway for query-only paths, but ensure it reads the canonical repository created by kernel runtime."
+      ]
+    },
+    {
+      "phase": 3,
+      "title": "Kernel mediation proof and route ownership consolidation",
+      "description": "Ensure static route graph evidence shows gateway routes delegating to kernel runtime instead of owning execution semantics.",
+      "actions": [
+        "Use static invocation boundaries: gateway route -> kernel execute adapter -> runtime/ExecutionRuntime -> authorities/adapters.",
+        "Remove or retire legacy_commit_service routes unless they are explicitly reclassed as kernel service adapters.",
+        "Mark all gateway route handlers as gateway-only, with any event mutation or infrastructure call delegated to kernel authorities."
+      ]
+    },
+    {
+      "phase": 4,
+      "title": "Runtime cleanup and adapter boundary enforcement",
+      "description": "Finalize the cutover by enforcing the kernel authority boundary and cleaning residual gateway execution logic.",
+      "actions": [
+        "Audit gateway modules for execution logic and move remaining runtime control responsibilities into kernel modules.",
+        "Keep gateway adapters only for transport and persistence, not execution policy.",
+        "Ensure event emission, witness certification, and replay decisions are solely kernel-owned."
+      ]
+    }
+  ],
+  "route_cutover_summary": [
+    {
+      "route_id": "gateway/api_controller.js::GET::/health",
+      "method": "GET",
+      "path": "/health",
+      "declaring_file": "gateway/api_controller.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/api_controller.js::GET::/api/stats",
+      "method": "GET",
+      "path": "/api/stats",
+      "declaring_file": "gateway/api_controller.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/api_controller.js::POST::/api/chat",
+      "method": "POST",
+      "path": "/api/chat",
+      "declaring_file": "gateway/api_controller.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/api_controller.js::POST::/api/ingest",
+      "method": "POST",
+      "path": "/api/ingest",
+      "declaring_file": "gateway/api_controller.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/api_controller.js::POST::/api/backup",
+      "method": "POST",
+      "path": "/api/backup",
+      "declaring_file": "gateway/api_controller.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/recent-events",
+      "method": "GET",
+      "path": "/recent-events",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/worker-status",
+      "method": "GET",
+      "path": "/worker-status",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/runtime-digest",
+      "method": "GET",
+      "path": "/runtime-digest",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/latest-summaries",
+      "method": "GET",
+      "path": "/latest-summaries",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/recent-failures",
+      "method": "GET",
+      "path": "/recent-failures",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/model-metrics",
+      "method": "GET",
+      "path": "/model-metrics",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/context.js::GET::/daily-activity",
+      "method": "GET",
+      "path": "/daily-activity",
+      "declaring_file": "gateway/routes/context.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/events.js::GET::/",
+      "method": "GET",
+      "path": "/",
+      "declaring_file": "gateway/routes/events.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/events.js::GET::/recent",
+      "method": "GET",
+      "path": "/recent",
+      "declaring_file": "gateway/routes/events.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/events.js::GET::/stats",
+      "method": "GET",
+      "path": "/stats",
+      "declaring_file": "gateway/routes/events.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/events.js::GET::/:stream",
+      "method": "GET",
+      "path": "/:stream",
+      "declaring_file": "gateway/routes/events.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/events.js::POST::/",
+      "method": "POST",
+      "path": "/",
+      "declaring_file": "gateway/routes/events.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/health.js::GET::/",
+      "method": "GET",
+      "path": "/",
+      "declaring_file": "gateway/routes/health.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/ollama.js::POST::/chat",
+      "method": "POST",
+      "path": "/chat",
+      "declaring_file": "gateway/routes/ollama.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/ollama.js::GET::/models",
+      "method": "GET",
+      "path": "/models",
+      "declaring_file": "gateway/routes/ollama.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/ollama.js::POST::/autocomplete",
+      "method": "POST",
+      "path": "/autocomplete",
+      "declaring_file": "gateway/routes/ollama.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/repository.js::POST::/objects",
+      "method": "POST",
+      "path": "/objects",
+      "declaring_file": "gateway/routes/repository.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/repository.js::GET::/objects/:id",
+      "method": "GET",
+      "path": "/objects/:id",
+      "declaring_file": "gateway/routes/repository.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/repository.js::GET::/objects",
+      "method": "GET",
+      "path": "/objects",
+      "declaring_file": "gateway/routes/repository.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "gateway/routes/system.js::GET::/state",
+      "method": "GET",
+      "path": "/state",
+      "declaring_file": "gateway/routes/system.js",
+      "current_runtime": "gateway_http",
+      "gateway_mediation_static_proof": false,
+      "recommended_mediation": "kernel boundary should own execution and event write; gateway should only delegate to kernel execute",
+      "notes": "Route is currently implemented inside gateway HTTP stack and has no static kernel mediation proof."
+    },
+    {
+      "route_id": "runtime/kernel/commit-service/src/server.ts::POST::/kernel/commit",
+      "method": "POST",
+      "path": "/kernel/commit",
+      "declaring_file": "runtime/kernel/commit-service/src/server.ts",
+      "current_runtime": "legacy_commit_service",
+      "recommended_mediation": "Legacy commit service is isolated; evaluate as kernel adapter or retire it in favor of kernel boundary.",
+      "notes": "Legacy kernel service route exists alongside gateway runtime."
+    },
+    {
+      "route_id": "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit",
+      "method": "GET",
+      "path": "/kernel/audit",
+      "declaring_file": "runtime/kernel/commit-service/src/server.ts",
+      "current_runtime": "legacy_commit_service",
+      "recommended_mediation": "Legacy commit service is isolated; evaluate as kernel adapter or retire it in favor of kernel boundary.",
+      "notes": "Legacy kernel service route exists alongside gateway runtime."
+    },
+    {
+      "route_id": "runtime/kernel/commit-service/src/server.ts::GET::/kernel/audit/system",
+      "method": "GET",
+      "path": "/kernel/audit/system",
+      "declaring_file": "runtime/kernel/commit-service/src/server.ts",
+      "current_runtime": "legacy_commit_service",
+      "recommended_mediation": "Legacy commit service is isolated; evaluate as kernel adapter or retire it in favor of kernel boundary.",
+      "notes": "Legacy kernel service route exists alongside gateway runtime."
+    }
+  ]
+}
