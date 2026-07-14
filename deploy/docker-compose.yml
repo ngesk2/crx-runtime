@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: constitutional-postgres
+    environment:
+      POSTGRES_DB: constitutional
+      POSTGRES_USER: constitutional
+      POSTGRES_PASSWORD: constitutional
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - constitutional-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U constitutional -d constitutional"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: constitutional-nats
+    command: "-js"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - constitutional-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8222/varz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: constitutional-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - constitutional-net
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: constitutional-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - constitutional-net
+    depends_on:
+      - prometheus
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: constitutional-api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://constitutional:constitutional@postgres:5432/constitutional
+      NATS_URL: nats://nats:4222
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      OTEL_EXPORTER_PROMETHEUS_HOST: 0.0.0.0
+      OTEL_EXPORTER_PROMETHEUS_PORT: 9464
+    ports:
+      - "8000:8000"
+      - "9464:9464"
+    networks:
+      - constitutional-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  grafana_data:
+  prometheus_data:
+
+networks:
+  constitutional-net:
+    driver: bridge

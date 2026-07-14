@@ -1,0 +1,26 @@
+# fly.toml for Lightweight Worker Runtime
+
+app = "ping-worker"
+primary_region = "iad"
+
+[build]
+  dockerfile = "../deploy/Dockerfile"
+
+[env]
+  WORKER_MODE = "fly"
+  OTEL_SERVICE_NAME = "ping-worker"
+
+[processes]
+  app = "python -m runtime.worker"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024
+
+[deploy]
+  strategy = "rolling"
+
+[metrics]
+  port = 9464
+  path = "/metrics"

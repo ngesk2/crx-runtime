@@ -1,0 +1,415 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: ping-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ping}
+      POSTGRES_USER: ${POSTGRES_USER:-ping}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+      - api
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ping} -d ${POSTGRES_DB:-ping}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ping-qdrant
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - internal
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Temporal Server
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: ping-temporal
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-ping}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=temporal
+      - POSTGRES_USER=${POSTGRES_USER:-ping}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=temporal
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    ports:
+      - "127.0.0.1:7233:7233"
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Temporal UI
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: ping-temporal-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      - "127.0.0.1:8088:8088"
+    networks:
+      - internal
+    depends_on:
+      - temporal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # LiteLLM Gateway
+  litellm:
+    image: ghcr.io/berriai/litellm:latest
+    container_name: ping-litellm
+    environment:
+      - LITELM_PORT=4000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-ping}:${POSTGRES_PASSWORD}@postgres:5432/litellm
+    ports:
+      - "127.0.0.1:4000:4000"
+    volumes:
+      - ./config/litellm.yaml:/app/config.yaml
+    networks:
+      - internal
+      - api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Ollama Inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ping-ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: ping-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - otel_data:/var/log/otel
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:8888:8888"
+    networks:
+      - internal
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ping-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ping-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - internal
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Loki
+  loki:
+    image: grafana/loki:latest
+    container_name: ping-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./config/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    networks:
+      - internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PING API
+  ping-api:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile
+    container_name: ping-api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ping}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ping}
+      QDRANT_URL: http://qdrant:6333
+      TEMPORAL_ADDRESS: temporal:7233
+      LITELM_URL: http://litellm:4000
+      OLLAMA_URL: http://ollama:11434
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: ping-api
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+      litellm:
+        condition: service_started
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # PING Workers
+  ping-workers:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile
+    container_name: ping-workers
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ping}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ping}
+      QDRANT_URL: http://qdrant:6333
+      TEMPORAL_ADDRESS: temporal:7233
+      LITELM_URL: http://litellm:4000
+      OLLAMA_URL: http://ollama:11434
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: ping-workers
+      WORKER_MODE: temporal
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+      litellm:
+        condition: service_started
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # Mission Control
+  mission-control:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile
+    container_name: ping-mission-control
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ping}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ping}
+      QDRANT_URL: http://qdrant:6333
+      TEMPORAL_ADDRESS: temporal:7233
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: mission-control
+      MISSION_CONTROL_MODE: scheduler
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # Reverse Proxy (Traefik)
+  traefik:
+    image: traefik:v3.0
+    container_name: ping-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - api
+      - internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  ollama_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  loki_data:
+    driver: local
+  otel_data:
+    driver: local
+  traefik_letsencrypt:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  api:
+    driver: bridge

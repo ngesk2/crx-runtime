@@ -1,0 +1,19 @@
+model_list:
+  - model_name: ollama/llama3
+    litellm_params:
+      model: ollama/llama3
+      api_base: http://ollama:11434
+
+  - model_name: ollama/mistral
+    litellm_params:
+      model: ollama/mistral
+      api_base: http://ollama:11434
+
+  - model_name: openai/gpt-4
+    litellm_params:
+      model: gpt-4
+      api_key: ${OPENAI_API_KEY}
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false

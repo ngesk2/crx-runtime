@@ -1,0 +1,41 @@
+# Bootstrap Manifest - Constitutional Runtime Components
+
+# Capabilities to register on startup
+capabilities:
+  - github.acquire_repository
+  # Future capabilities:
+  # - filesystem.read
+  # - filesystem.write
+  # - network.http_get
+  # - network.http_post
+  # - storage.get
+  # - storage.set
+  # - search.index
+  # - search.query
+  # - agent.execute
+  # - tool.execute
+  # - workflow.execute
+
+# Authorities to register on startup
+authorities:
+  - aggregate
+  - projection
+  # Future authorities:
+  # - migration
+  # - validation
+  # - governance
+
+# Connectors to register on startup
+connectors:
+  - github
+  # Future connectors:
+  # - postgres
+  # - mysql
+  # - oracle
+  # - redis
+  # - docker
+  # - kubernetes
+  # - jira
+  # - slack
+  # - ollama
+  # - openrouter

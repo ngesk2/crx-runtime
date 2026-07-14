@@ -1,0 +1,24 @@
+{
+  "Hermes": {
+    "owns": [
+      "runtime",
+      "pipeline",
+      "execution"
+    ]
+  },
+  "Testing": {
+    "owns": [
+      "tests"
+    ]
+  },
+  "Oracle": {
+    "owns": [
+      "architecture"
+    ]
+  },
+  "Documentation": {
+    "owns": [
+      "docs"
+    ]
+  }
+}
