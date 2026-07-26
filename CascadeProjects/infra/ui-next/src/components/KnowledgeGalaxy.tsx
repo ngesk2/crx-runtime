@@ -155,10 +155,22 @@ export default function KnowledgeGalaxy() {
     }
   }, [data])
 
+  // throttle wheel updates with requestAnimationFrame to avoid jank
+  const wheelRef = useMemo(() => ({ ticking: false, delta: 0 }), [])
   const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.deltaY < 0) setScale(s => Math.min(s + 0.1, 3))
-    else setScale(s => Math.max(s - 0.1, 0.2))
-  }, [])
+    // accumulate delta and schedule a single RAF update
+    wheelRef.delta += e.deltaY
+    if (!wheelRef.ticking) {
+      wheelRef.ticking = true
+      requestAnimationFrame(() => {
+        const d = wheelRef.delta
+        if (d < 0) setScale(s => Math.min(s + Math.min(0.25, Math.abs(d) / 200), 3))
+        else setScale(s => Math.max(s - Math.min(0.25, Math.abs(d) / 200), 0.2))
+        wheelRef.delta = 0
+        wheelRef.ticking = false
+      })
+    }
+  }, [wheelRef])
 
   if (loading) {
     return (
@@ -241,7 +253,13 @@ export default function KnowledgeGalaxy() {
           setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y })
         }}
         onMouseMove={e => {
-          if (isPanning) setPanOffset({ x: e.clientX - panStart.x, y: e.clientY - panStart.y })
+          // throttle pan updates to RAF to reduce renders
+          if (isPanning) {
+            // use RAF to batch frequent mousemove updates
+            requestAnimationFrame(() => {
+              setPanOffset({ x: e.clientX - panStart.x, y: e.clientY - panStart.y })
+            })
+          }
         }}
         onMouseUp={() => setIsPanning(false)}
         onMouseLeave={() => { setIsPanning(false); setHoveredNode(null) }}

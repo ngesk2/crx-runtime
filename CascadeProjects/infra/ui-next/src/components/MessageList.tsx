@@ -139,7 +139,8 @@ export default function MessageList({
   // Auto-scroll unless user scrolled up
   useEffect(() => {
     if (!userScrolled) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      // use instant scroll to avoid cumulative smooth-scroll animation jank
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
   }, [messages, streaming, userScrolled]);
 
