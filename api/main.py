@@ -89,11 +89,24 @@ app = create_app(default_settings)
 # Endpoints
 @app.get("/health", response_model=HealthResponseDTO)
 async def health(request) -> HealthResponseDTO:
-    """Health check endpoint with dependency injection (Phase 15 Item 1)"""
-    settings = request.app.state.settings
+    """Live health check - delegates to runtime dependency state (not static)."""
+    deps: dict[str, bool] = {}
+    try:
+        async with get_session() as session:
+            await session.execute("SELECT 1")
+        deps["postgres"] = True
+    except Exception:
+        deps["postgres"] = False
+    try:
+        nats_transport = await get_nats_transport()
+        deps["nats"] = await nats_transport.health_check()
+    except Exception:
+        deps["nats"] = False
+    status = "healthy" if all(deps.values()) else "degraded"
     return HealthResponseDTO(
-        status="healthy",
+        status=status,
         timestamp=datetime.utcnow(),
+        dependencies=deps,
     )
 
 
@@ -342,6 +355,48 @@ async def metrics(request) -> JSONResponse:
     observability = request.app.state.observability
     metrics_data = observability.get_metrics()
     return Response(content=metrics_data, media_type="text/plain")
+
+
+@app.get("/ops")
+async def ops(request) -> JSONResponse:
+    """Live operational state - exposes existing runtime telemetry (no new architecture)."""
+    deps: dict[str, bool] = {}
+    try:
+        async with get_session() as session:
+            await session.execute("SELECT 1")
+        deps["postgres"] = True
+    except Exception:
+        deps["postgres"] = False
+    try:
+        nats_transport = await get_nats_transport()
+        deps["nats"] = await nats_transport.health_check()
+    except Exception:
+        deps["nats"] = False
+
+    event_count = 0
+    last_seq = 0
+    try:
+        async with get_session() as session:
+            from sqlalchemy import select, func
+            result = await session.execute(select(func.count()).select_from(EventModel))
+            event_count = result.scalar() or 0
+            result2 = await session.execute(select(func.max(EventModel.global_sequence)))
+            last_seq = result2.scalar() or 0
+    except Exception:
+        pass
+
+    observability = request.app.state.observability
+    metrics = observability.get_metrics()
+    status = "operational" if all(deps.values()) else "degraded"
+    return JSONResponse(content={
+        "status": status,
+        "timestamp": datetime.utcnow().isoformat(),
+        "event_count": event_count,
+        "last_global_sequence": last_seq,
+        "replay_available": True,
+        "dependencies": deps,
+        "metrics_sample": (metrics[:500] if metrics else ""),
+    })
 
 
 if __name__ == "__main__":

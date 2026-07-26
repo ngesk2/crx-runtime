@@ -181,13 +181,32 @@ class BootstrapLoader:
         Load connector by name.
         
         Args:
-            connector_name: Connector identifier
+            connector_name: Connector identifier (e.g., "github", "postgres", "oracle")
         
         Returns:
             Connector instance or None
         """
-        # Placeholder for connector loading
-        # Future: implement connector loading logic
+        parts = connector_name.split(".")
+        name = parts[-1] if parts else connector_name
+        # Try known connector module locations (reuse existing modules - no new architecture)
+        candidate_modules = [
+            f"connectors.{name}",
+            f"capabilities.{name}",
+            f"storage.{name}",
+        ]
+        for module_path in candidate_modules:
+            try:
+                module = importlib.import_module(module_path)
+                if hasattr(module, 'CONNECTOR_CLASS'):
+                    return getattr(module, 'CONNECTOR_CLASS')()
+                if hasattr(module, 'create_connector'):
+                    return getattr(module, 'create_connector')()
+                class_name = name.replace("_", " ").title().replace(" ", "")
+                if hasattr(module, class_name):
+                    return getattr(module, class_name)()
+            except (ImportError, AttributeError):
+                continue
+        print(f"Connector {connector_name} not found in any known module")
         return None
     
     async def register_all(self) -> None:

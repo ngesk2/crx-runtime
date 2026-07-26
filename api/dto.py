@@ -16,6 +16,7 @@ class HealthResponseDTO(BaseModel):
     """Health check response DTO"""
     status: str
     timestamp: datetime
+    dependencies: Optional[dict[str, bool]] = None
 
 
 class ReadyResponseDTO(BaseModel):
