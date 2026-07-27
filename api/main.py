@@ -14,7 +14,7 @@ from transport.nats.transport import get_nats_transport, close_nats_transport
 from config.settings import Settings
 from config.logging import configure_logging, get_logger
 from runtime.observability import Observability
-from analytics.business_projections import BusinessProjectionEngine
+from analytics.business_projections import compute_business_facts, compute_health_models
 from api.dto import (
     HealthResponseDTO,
     ReadyResponseDTO,
@@ -214,7 +214,22 @@ async def create_event(request: EventRequestDTO) -> EventResponseDTO:
     except Exception as e:
         # Log error but don't fail the request (event is already persisted)
         logger.error("Failed to publish event to NATS", event_id=event.event_id, error=str(e))
-    
+
+    # PostHog mirror (Week 4): PING guarantees delivery of business events.
+    # PostHog is a projection, never the source of truth (BI Boundary).
+    try:
+        from integrations.posthog import PostHogMirror
+        mirror = PostHogMirror()
+        await mirror.deliver({
+            "event_id": event.event_id,
+            "event_type": event.event_type,
+            "payload": event.payload,
+            "occurred_at": event.occurred_at.isoformat() if event.occurred_at else None,
+            "recorded_at": event.recorded_at.isoformat() if event.recorded_at else None,
+        })
+    except Exception as e:
+        logger.warning("PostHog mirror skipped", event_id=event.event_id, error=str(e))
+
     return EventResponseDTO(
         event_id=event.event_id,
         event_type=event.event_type,
@@ -402,8 +417,10 @@ async def ops(request) -> JSONResponse:
 
 @app.get("/business")
 async def business(request) -> JSONResponse:
-    """Business KPIs projected from canonical events (Operational Intelligence)."""
-    engine = BusinessProjectionEngine()
+    """Business health models projected from canonical events (Operational Intelligence).
+
+    Exposes DECISIONS (health status), not raw metric classes.
+    """
     events: list[dict] = []
     try:
         async with get_session() as session:
@@ -422,11 +439,74 @@ async def business(request) -> JSONResponse:
             ]
     except Exception as ex:
         logger.error("Failed to load events for business projection", error=str(ex))
-    kpis = engine.compute_all(events)
+
+    facts = compute_business_facts(events)
+    deps: dict[str, bool] = {}
+    try:
+        async with get_session() as session:
+            await session.execute("SELECT 1")
+        deps["postgres"] = True
+    except Exception:
+        deps["postgres"] = False
+    try:
+        nats_transport = await get_nats_transport()
+        deps["nats"] = await nats_transport.health_check()
+    except Exception:
+        deps["nats"] = False
+    health_models = compute_health_models(facts, deps)
     return JSONResponse(content={
         "timestamp": datetime.utcnow().isoformat(),
         "event_window": len(events),
-        "kpis": kpis,
+        "health_models": health_models,
+    })
+
+
+@app.get("/ceo")
+async def ceo(request) -> JSONResponse:
+    """Executive dashboard - one view of business + operational health.
+
+    Fed by health models (decisions), not raw metrics. Small by design.
+    """
+    events: list[dict] = []
+    try:
+        async with get_session() as session:
+            from sqlalchemy import select
+            result = await session.execute(
+                select(EventModel).order_by(EventModel.global_sequence).limit(2000)
+            )
+            rows = result.scalars().all()
+            events = [
+                {"event_type": e.event_type, "payload": e.payload,
+                 "global_sequence": e.global_sequence}
+                for e in rows
+            ]
+    except Exception as ex:
+        logger.error("Failed to load events for CEO dashboard", error=str(ex))
+
+    facts = compute_business_facts(events)
+    deps: dict[str, bool] = {}
+    try:
+        async with get_session() as session:
+            await session.execute("SELECT 1")
+        deps["postgres"] = True
+    except Exception:
+        deps["postgres"] = False
+    try:
+        nats_transport = await get_nats_transport()
+        deps["nats"] = await nats_transport.health_check()
+    except Exception:
+        deps["nats"] = False
+    health_models = compute_health_models(facts, deps)
+    return JSONResponse(content={
+        "timestamp": datetime.utcnow().isoformat(),
+        "health": health_models,
+        "facts": {
+            "leads": facts["lead_count"],
+            "pipeline_value": facts["total_pipeline_value"],
+            "avg_rating": facts["avg_rating"],
+            "delivery_rate": facts["delivery_rate"],
+        },
+        "dependencies": deps,
     })
 
 
