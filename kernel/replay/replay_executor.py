@@ -11,6 +11,7 @@ from kernel.replay.replay_planner import ReplayPlan
 from constitution.models.event import EventEnvelope
 from constitution.transcript import ReplayTranscript
 from runtime.context import RuntimeContext
+from runtime.event_emitter import emit_event
 
 
 class ReplayExecutor:
@@ -58,5 +59,17 @@ class ReplayExecutor:
             from_sequence=plan.from_sequence,
             metadata={"final_state": state},
         )
-        
+
+        # Observation Layer (Step 1): emit canonical event (best-effort)
+        await emit_event(
+            "ReplayFinished",
+            {
+                "strategy": plan.strategy,
+                "from_sequence": plan.from_sequence,
+                "event_count": len(events),
+                "authority_version": plan.authority_version,
+            },
+            producer_id="replay",
+        )
+
         return transcript
