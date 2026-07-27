@@ -14,6 +14,7 @@ from transport.nats.transport import get_nats_transport, close_nats_transport
 from config.settings import Settings
 from config.logging import configure_logging, get_logger
 from runtime.observability import Observability
+from analytics.business_projections import BusinessProjectionEngine
 from api.dto import (
     HealthResponseDTO,
     ReadyResponseDTO,
@@ -396,6 +397,36 @@ async def ops(request) -> JSONResponse:
         "replay_available": True,
         "dependencies": deps,
         "metrics_sample": (metrics[:500] if metrics else ""),
+    })
+
+
+@app.get("/business")
+async def business(request) -> JSONResponse:
+    """Business KPIs projected from canonical events (Operational Intelligence)."""
+    engine = BusinessProjectionEngine()
+    events: list[dict] = []
+    try:
+        async with get_session() as session:
+            from sqlalchemy import select
+            result = await session.execute(
+                select(EventModel).order_by(EventModel.global_sequence).limit(2000)
+            )
+            rows = result.scalars().all()
+            events = [
+                {
+                    "event_type": e.event_type,
+                    "payload": e.payload,
+                    "global_sequence": e.global_sequence,
+                }
+                for e in rows
+            ]
+    except Exception as ex:
+        logger.error("Failed to load events for business projection", error=str(ex))
+    kpis = engine.compute_all(events)
+    return JSONResponse(content={
+        "timestamp": datetime.utcnow().isoformat(),
+        "event_window": len(events),
+        "kpis": kpis,
     })
 
 
