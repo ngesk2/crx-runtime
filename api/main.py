@@ -14,7 +14,7 @@ from transport.nats.transport import get_nats_transport, close_nats_transport
 from config.settings import Settings
 from config.logging import configure_logging, get_logger
 from runtime.observability import Observability
-from analytics.business_projections import compute_business_facts, compute_health_models
+from analytics.business_projections import compute_business_facts, compute_business_signals, compute_health_models, prioritize_health
 from api.dto import (
     HealthResponseDTO,
     ReadyResponseDTO,
@@ -434,6 +434,7 @@ async def business(request) -> JSONResponse:
                     "event_type": e.event_type,
                     "payload": e.payload,
                     "global_sequence": e.global_sequence,
+                    "occurred_at": e.occurred_at.isoformat() if e.occurred_at else None,
                 }
                 for e in rows
             ]
@@ -441,6 +442,7 @@ async def business(request) -> JSONResponse:
         logger.error("Failed to load events for business projection", error=str(ex))
 
     facts = compute_business_facts(events)
+    signals = compute_business_signals(events)
     deps: dict[str, bool] = {}
     try:
         async with get_session() as session:
@@ -453,11 +455,20 @@ async def business(request) -> JSONResponse:
         deps["nats"] = await nats_transport.health_check()
     except Exception:
         deps["nats"] = False
-    health_models = compute_health_models(facts, deps)
+    health_models = compute_health_models(facts, signals)
     return JSONResponse(content={
         "timestamp": datetime.utcnow().isoformat(),
         "event_window": len(events),
-        "health_models": health_models,
+        "signals": {
+            k: {
+                "direction": v.direction,
+                "magnitude": v.magnitude,
+                "current_rate": v.current_rate,
+                "prior_rate": v.prior_rate,
+            }
+            for k, v in signals.items()
+        },
+        "health_models": [m.to_dict() for m in health_models],
     })
 
 
@@ -477,13 +488,15 @@ async def ceo(request) -> JSONResponse:
             rows = result.scalars().all()
             events = [
                 {"event_type": e.event_type, "payload": e.payload,
-                 "global_sequence": e.global_sequence}
+                 "global_sequence": e.global_sequence,
+                 "occurred_at": e.occurred_at.isoformat() if e.occurred_at else None}
                 for e in rows
             ]
     except Exception as ex:
         logger.error("Failed to load events for CEO dashboard", error=str(ex))
 
     facts = compute_business_facts(events)
+    signals = compute_business_signals(events)
     deps: dict[str, bool] = {}
     try:
         async with get_session() as session:
@@ -496,10 +509,12 @@ async def ceo(request) -> JSONResponse:
         deps["nats"] = await nats_transport.health_check()
     except Exception:
         deps["nats"] = False
-    health_models = compute_health_models(facts, deps)
+    health_models = compute_health_models(facts, signals)
+    problems = prioritize_health(health_models)
     return JSONResponse(content={
         "timestamp": datetime.utcnow().isoformat(),
-        "health": health_models,
+        "health": [m.to_dict() for m in health_models],
+        "priority": problems,
         "facts": {
             "leads": facts["lead_count"],
             "pipeline_value": facts["total_pipeline_value"],
