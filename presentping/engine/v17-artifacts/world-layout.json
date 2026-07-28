@@ -1,0 +1,204 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-19T22:03:22.329Z",
+  "districts": [
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "owner": "External",
+      "scale": 1.7,
+      "visualIdentity": {
+        "shape": "hexagonal",
+        "silhouette": "port",
+        "color": "#00E5FF",
+        "accent": "#008B8B"
+      },
+      "position": {
+        "x": 3.3,
+        "y": -0.02499999999999991,
+        "w": 3.4,
+        "h": 2.55
+      }
+    },
+    {
+      "id": "witness",
+      "name": "Witness",
+      "owner": "Kernel",
+      "scale": 2.8,
+      "visualIdentity": {
+        "shape": "complex_observatory",
+        "silhouette": "landmark",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "highest"
+      },
+      "position": {
+        "x": 4.365,
+        "y": 0.40000000000000036,
+        "w": 5.6,
+        "h": 4.199999999999999
+      }
+    },
+    {
+      "id": "bedrock",
+      "name": "Bedrock",
+      "owner": "Kernel",
+      "scale": 2.3,
+      "visualIdentity": {
+        "shape": "layered_strata",
+        "silhouette": "foundation",
+        "color": "#404040",
+        "accent": "#606060",
+        "dominance": "foundational"
+      },
+      "position": {
+        "x": 4.865,
+        "y": 3.2750000000000004,
+        "w": 4.6,
+        "h": 3.4499999999999997
+      }
+    },
+    {
+      "id": "replay",
+      "name": "Replay",
+      "owner": "Agent-RX",
+      "scale": 1.9,
+      "visualIdentity": {
+        "shape": "temporal_lattice",
+        "silhouette": "timeline",
+        "color": "#C0C0C0",
+        "accent": "#808080"
+      },
+      "position": {
+        "x": 3.1,
+        "y": 4.825,
+        "w": 3.8,
+        "h": 2.8499999999999996
+      }
+    },
+    {
+      "id": "builder",
+      "name": "Builder",
+      "owner": "Agent-BX",
+      "scale": 1.9,
+      "visualIdentity": {
+        "shape": "industrial_foundry",
+        "silhouette": "kinetic",
+        "color": "#00FF00",
+        "accent": "#008000"
+      },
+      "position": {
+        "x": 0.935,
+        "y": 3.575,
+        "w": 3.8,
+        "h": 2.8499999999999996
+      }
+    },
+    {
+      "id": "governance",
+      "name": "Governance",
+      "owner": "Constitution",
+      "scale": 2,
+      "visualIdentity": {
+        "shape": "fortified_gate",
+        "silhouette": "barrier",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "authoritative"
+      },
+      "position": {
+        "x": 0.835,
+        "y": 1,
+        "w": 4,
+        "h": 3
+      }
+    }
+  ],
+  "failureDestinations": [
+    {
+      "id": "rejection_sink",
+      "position": {
+        "x": 8.5,
+        "y": 6
+      },
+      "bounds": {
+        "w": 1.2,
+        "h": 0.8
+      },
+      "visualIdentity": {
+        "shape": "sink",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "rollback_vault",
+      "position": {
+        "x": 0.5,
+        "y": 6
+      },
+      "bounds": {
+        "w": 1.2,
+        "h": 0.8
+      },
+      "visualIdentity": {
+        "shape": "vault",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "violation_log",
+      "position": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "bounds": {
+        "w": 1.2,
+        "h": 0.8
+      },
+      "visualIdentity": {
+        "shape": "log",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "failure_channel",
+      "position": {
+        "x": 4.5,
+        "y": 7
+      },
+      "bounds": {
+        "w": 1,
+        "h": 0.5
+      },
+      "visualIdentity": {
+        "shape": "channel",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "ownership_conflict_zone",
+      "position": {
+        "x": 8.5,
+        "y": 0.5
+      },
+      "bounds": {
+        "w": 1.2,
+        "h": 0.8
+      },
+      "visualIdentity": {
+        "shape": "zone",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    }
+  ]
+}

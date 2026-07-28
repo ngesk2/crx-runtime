@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-06-23T03:12:54.062518",
+  "vault_path": "C:\\Users\\nolan\\PING\\vault",
+  "files": {
+    "AUTHORITY_MAP.md": {
+      "hash": "8dacb4e4126d74fbc72bb518770fa9047edfd9a9df6dc3f64fdf5a4985929f5e",
+      "size": 4259,
+      "modified": "2026-06-22T21:12:51.305057"
+    },
+    "VAULT_INDEX.md": {
+      "hash": "3c2ad9b70ee0bbc0150cf392bb967a3245cc4d6aa86d30ff5848d5aa814a0f3b",
+      "size": 3030,
+      "modified": "2026-06-22T21:12:43.577477"
+    },
+    "audits\\CONTINUITY_DESTRUCTION_AUDIT.md": {
+      "hash": "018eef3f9519e69c58989a91b59d8a3f16a388548bbec028f8d2c7f94eca5123",
+      "size": 12148,
+      "modified": "2026-06-22T19:20:36.511760"
+    },
+    "audits\\CREDENTIAL_AUTHORITY_CENSUS.md": {
+      "hash": "01e9e894479b2554d487ba6fed83808955d8a57ae0417035172f82c6dfbb29d4",
+      "size": 12877,
+      "modified": "2026-06-22T19:50:49.654666"
+    },
+    "audits\\EXECUTION_SUMMARY.md": {
+      "hash": "a64902506074330ee3a6971d696971afde947f942ff77f166f07f4bb8b9e9763",
+      "size": 11366,
+      "modified": "2026-06-22T19:54:44.996563"
+    },
+    "audits\\HUMAN_OBSERVABILITY_CERTIFICATION.md": {
+      "hash": "109e3a414125ca6fe66e83c13aabece04ff594ff6ff37b65dad8493eae00ee99",
+      "size": 12621,
+      "modified": "2026-06-22T20:01:17.105816"
+    },
+    "audits\\POSTGRES_SURVIVABILITY_REPORT.md": {
+      "hash": "6a9923ef69b7f29c6c6c0628fad13ba2059fe73232be180a4b36fd5b18487c9b",
+      "size": 8337,
+      "modified": "2026-06-22T19:52:12.911662"
+    },
+    "audits\\QDRANT_OPERATIONAL_PROOF.md": {
+      "hash": "c898c809f1e194163d30d1fbbedaa3776acc0f7ce5d7645d37b106e2300a9b5a",
+      "size": 6026,
+      "modified": "2026-06-22T19:49:43.445477"
+    },
+    "audits\\REALITY_CHECK.md": {
+      "hash": "7c4b46c28f464933bcbca0762b538d17719a3d213c80162fc9b11a96ca796109",
+      "size": 12387,
+      "modified": "2026-06-22T19:48:36.276257"
+    },
+    "capabilities\\CREDENTIAL_SURVIVABILITY_MATRIX.md": {
+      "hash": "d44ea1f24a6a0371248e364218c05e479a0df36dafdde28d9a3f3d91108b9303",
+      "size": 8900,
+      "modified": "2026-06-22T20:00:38.473362"
+    },
+    "capabilities\\MISSION_CONTROL_CAPABILITY_MATRIX.md": {
+      "hash": "4a876ee395d082c87fff6a2b7277b51a9119902a8f88f5e404e3436b71ad8387",
+      "size": 5120,
+      "modified": "2026-06-22T19:59:40.869887"
+    },
+    "capabilities\\OBSERVABILITY_MATRIX.md": {
+      "hash": "12e93cb152ae7af0652ab20fa08798417cad272921b08ba6c0e7ca26015386d7",
+      "size": 5859,
+      "modified": "2026-06-22T19:59:23.425968"
+    },
+    "capabilities\\OPENWEBUI_MISSION_CONTROL_INTEGRATION.md": {
+      "hash": "e33bd5a8ce6da04cae4b83586ea6bac77d5196b6a6b748012a74fc31f5aab30f",
+      "size": 10314,
+      "modified": "2026-06-22T19:54:11.621907"
+    },
+    "constitution\\CONSTITUTION.md": {
+      "hash": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+      "size": 9279,
+      "modified": "2026-06-14T18:44:26.789673"
+    },
+    "laws\\IDENTITY_LAW.md": {
+      "hash": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b",
+      "size": 8231,
+      "modified": "2026-06-14T19:11:28.056133"
+    },
+    "laws\\REPLAY_LAW.md": {
+      "hash": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+      "size": 7696,
+      "modified": "2026-06-14T19:12:28.251106"
+    },
+    "laws\\WITNESS_LAW.md": {
+      "hash": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+      "size": 6694,
+      "modified": "2026-06-09T12:29:18"
+    },
+    "runbooks\\OPERATOR_RUNBOOKS.md": {
+      "hash": "9578ba3f6b2520dfd312ad40b15cbb903df1bc46a99121d4bb0ee5b4096c927c",
+      "size": 11839,
+      "modified": "2026-06-22T20:00:57.409944"
+    }
+  }
+}

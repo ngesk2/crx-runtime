@@ -1,0 +1,276 @@
+# Intent Map — Generated
+# Maps every intent to its authority, capabilities, specs, implementation, and evidence.
+
+Replay:
+  Authority: ReplayAuthority
+  Capabilities:
+    - ReplayTranscript
+    - ReplayVerifier
+    - ReplayWitness
+    - ReplayExecution
+  Specifications:
+    - specs/replay-authority
+  Implementation: runtime/kernel/replay/
+  Tests: tests/certification/replay-*
+  Evidence: audit/phase-s15
+  ADR: TBD
+  Status: implemented
+  KillList: true
+
+Governance:
+  Authority: GovernanceAuthority
+  Capabilities:
+    - ConstitutionalRuleEnforcement
+    - PolicyEvaluation
+    - AuthorityRouting
+  Specifications:
+    - specs/governance-engine
+  Implementation: runtime/kernel/governance/
+  Tests: none
+  Evidence: PROVEN — interface only
+  Status: missing_implementation
+  KillList: true
+
+Ownership:
+  Authority: OwnershipAuthority
+  Capabilities:
+    - OwnershipResolution
+    - OwnershipVerification
+    - DependencyAnalysis
+  Specifications:
+    - specs/ownership-engine
+  Implementation: constitutional-compiler/engines/ownership-engine.ts
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Capability:
+  Authority: CapabilityAuthority
+  Capabilities:
+    - CapabilityResolution
+    - CapabilityVerification
+    - CapabilityRegistry
+  Specifications:
+    - specs/capability-engine
+  Implementation: runtime/kernel/capability/ICapabilityAuthority.ts
+  Tests: none
+  Evidence: PROVEN — interface only, 6 competing systems
+  Status: missing_implementation
+  KillList: true
+
+Witness:
+  Authority: WitnessAuthority
+  Capabilities:
+    - WitnessGeneration
+    - WitnessVerification
+    - CertificateVerification
+  Specifications:
+    - specs/replay-authority
+  Implementation: runtime/kernel/replay/witness_authority.ts
+  Tests: none
+  Evidence: PROVEN — fragmented, duplicate subsystem in witness/
+  Status: fragmented
+  KillList: true
+
+Hashing:
+  Authority: CanonicalHashAuthority
+  Capabilities:
+    - CanonicalSHA256
+    - CanonicalJSON
+    - DomainSeparatedHashing
+    - HashRouting
+  Specifications:
+    - specs/hash-authority
+  Implementation: runtime/kernel/witness/certificate_authority.ts
+  Tests: none
+  Evidence: PROVEN — ~67 hash sites, only 3 route canonical
+  Status: missing_package
+  KillList: true
+
+Evidence:
+  Authority: EvidenceAuthority
+  Capabilities:
+    - EvidenceStorage
+    - EvidenceVerification
+    - CounterEvidence
+    - EvidenceQuery
+  Specifications:
+    - specs/evidence-graph
+  Implementation: constitutional-compiler/evidence/
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Parsing:
+  Authority: "Delegated to Tree-sitter"
+  Capabilities:
+    - SourceParsing
+    - CSTGeneration
+    - LanguageDetection
+  Specifications:
+    - specs/parser-boundary
+  Implementation: constitutional-compiler/frontends/ (to be replaced)
+  Tests: none
+  Evidence: PROVEN — currently TS Compiler API, to be replaced
+  Status: commodity
+  KillList: false
+
+Compiler:
+  Authority: CompilerAuthority
+  Capabilities:
+    - PipelineOrchestration
+    - IRManagement
+    - AnalysisCoordination
+  Specifications:
+    - specs/constitutional-ir
+  Implementation: constitutional-compiler/
+  Tests: none
+  Evidence: PROVEN — pipeline exists, 3/10 stages implemented
+  Status: partial
+
+Execution:
+  Authority: ExecutionContextBuilder
+  Capabilities:
+    - ContextConstruction
+    - DeterministicTime
+    - ExecutionScope
+  Specifications:
+    - specs/execution-context
+  Implementation: runtime/kernel/execution/
+  Tests: none
+  Evidence: PROVEN — implemented, 35 consumers of CanonicalClock
+  Status: mostly_intact
+
+Graph:
+  Authority: "Delegated (commodity)"
+  Capabilities:
+    - GraphStorage
+    - GraphAlgorithms
+    - GraphQuery
+  Specifications:
+    - specs/overlay-graph
+  Implementation: constitutional-compiler/graph/
+  Tests: none
+  Evidence: PROVEN — commodity, to be replaced by Joern
+  Status: commodity
+  KillList: false
+
+Repair:
+  Authority: RepairAuthority
+  Capabilities:
+    - ViolationDetection
+    - RepairPlanning
+    - EditGeneration
+  Specifications:
+    - specs/repair-planner
+  Implementation: constitutional-compiler/repair/automatic-repair-engine.ts
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Diagnostics:
+  Authority: DiagnosticAuthority
+  Capabilities:
+    - DiagnosticGeneration
+    - ViolationReporting
+    - SeverityClassification
+  Specifications:
+    - specs/diagnostics
+  Implementation: constitutional-compiler/diagnostics/constitutional-diagnostics.ts
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Identity:
+  Authority: CanonicalIdentityService
+  Capabilities:
+    - IdentityGeneration
+    - IdentityVerification
+    - IdentityRegistry
+  Specifications:
+    - specs/identity-authority
+  Implementation: runtime/kernel/identity/canonical-identity-service.ts
+  Tests: none
+  Evidence: PROVEN — fragmented, 12 Python uuid.uuid4() bypasses
+  Status: fragmented
+  KillList: true
+
+Scheduler:
+  Authority: SchedulerAuthority
+  Capabilities:
+    - WorkScheduling
+    - DispatchRouting
+    - ExecutionCoordination
+  Specifications:
+    - specs/scheduler-authority
+  Implementation: runtime/kernel/scheduler/
+  Tests: none
+  Evidence: PROVEN — interface only
+  Status: missing_implementation
+  KillList: true
+
+Repository:
+  Authority: RepositoryAuthority
+  Capabilities:
+    - EventPersistence
+    - EventRetrieval
+    - StreamManagement
+  Specifications:
+    - specs/repository-authority
+  Implementation: runtime/kernel/repository/
+  Tests: none
+  Evidence: PROVEN — interface only
+  Status: missing_implementation
+  KillList: true
+
+ConstitutionalIR:
+  Authority: ConstitutionalIRAuthority
+  Capabilities:
+    - TypeDefinition
+    - Serialization
+    - Validation
+  Specifications:
+    - specs/constitutional-ir
+  Implementation: runtime/kernel/replay/ + runtime/kernel/identity/
+  Tests: none
+  Evidence: PROVEN — 4 distinct layers, zero cross-imports
+  Status: ratified
+
+RuleEngine:
+  Authority: RuleAuthority
+  Capabilities:
+    - RuleExecution
+    - RuleProvenance
+    - RuleCoverage
+  Specifications:
+    - specs/rule-engine
+  Implementation: constitutional-compiler/rules/
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Proof:
+  Authority: ProofAuthority
+  Capabilities:
+    - ProofConstruction
+    - EvidenceAggregation
+    - ProofVerification
+  Specifications:
+    - specs/proof-objects
+  Implementation: constitutional-compiler/proof/
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented
+
+Query:
+  Authority: QueryAuthority
+  Capabilities:
+    - ConstitutionalQuery
+    - RelationshipQuery
+    - StateQuery
+  Specifications:
+    - specs/constitutional-query
+  Implementation: constitutional-compiler/query/constitutional-query-language.ts
+  Tests: none
+  Evidence: PROVEN — implemented
+  Status: implemented

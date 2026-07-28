@@ -1,0 +1,173 @@
+# Optional Brain Services Profile
+# Usage: docker compose --profile brain up
+# These are Brain-specific services that are not constitutional primitives
+
+services:
+  # Neo4j - Knowledge Graph Database
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: ping-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_dbms_memory_pagecache_size: 1G
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 512m
+    volumes:
+      - ping_neo4j_data:/data
+      - ping_neo4j_logs:/logs
+    networks:
+      - ping_internal
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - brain
+
+  # Temporal - Workflow Engine
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: ping-temporal
+    restart: unless-stopped
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
+      DB: postgres
+      DB_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ping_runtime}
+      POSTGRES_SEEDS: postgres
+    networks:
+      - ping_internal
+    ports:
+      - "7233:7233"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - brain
+
+  # Kafka - Event Streaming
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: ping-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - ping_kafka_data:/var/lib/kafka/data
+    networks:
+      - ping_internal
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - brain
+
+  # Zookeeper - Required for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: ping-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ping_zookeeper_data:/var/lib/zookeeper/data
+      - ping_zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - ping_internal
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - brain
+
+  # DuckDB - Analytics Database
+  duckdb:
+    image: ghcr.io/duckdb/duckdb:latest
+    container_name: ping-duckdb
+    restart: unless-stopped
+    volumes:
+      - ping_duckdb_data:/data
+      - ./data/analytics:/analytics
+    networks:
+      - ping_internal
+    profiles:
+      - brain
+
+  # OpenSearch - Search Engine
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    container_name: ping-opensearch
+    restart: unless-stopped
+    environment:
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_PASSWORD}
+      DISABLE_SECURITY_PLUGIN: 'false'
+      DISABLE_DETECTION_MODE: 'true'
+    volumes:
+      - ping_opensearch_data:/usr/share/opensearch/data
+    networks:
+      - ping_internal
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - brain
+
+  # Apache Tika - Document Parsing
+  tika:
+    image: apache/tika:latest
+    container_name: ping-tika
+    restart: unless-stopped
+    networks:
+      - ping_internal
+    ports:
+      - "9998:9998"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9998"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - brain
+
+networks:
+  ping_internal:
+    external: true
+
+volumes:
+  ping_neo4j_data:
+    driver: local
+  ping_neo4j_logs:
+    driver: local
+  ping_kafka_data:
+    driver: local
+  ping_zookeeper_data:
+    driver: local
+  ping_zookeeper_logs:
+    driver: local
+  ping_duckdb_data:
+    driver: local
+  ping_opensearch_data:
+    driver: local

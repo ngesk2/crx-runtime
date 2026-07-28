@@ -1,0 +1,488 @@
+﻿C:\Users\nolan\PING\AUTHORITY_TRACE_REPORT.md|### Violation 1: Buffer Usage in canonical_event_envelope.ts
+C:\Users\nolan\PING\AUTHORITY_TRACE_REPORT.md|**Action:** Remove kernel/commit-service canonical_engine.ts and identity_engine.ts
+C:\Users\nolan\PING\AUTHORITY_TRACE_REPORT.md|**Action:** Replace Buffer with Uint8Array in canonical_event_envelope.ts
+C:\Users\nolan\PING\audit\source_of_truth_sweep.md|**Current State:** WitnessAuthority class in witness_authority.ts
+C:\Users\nolan\PING\audit\source_of_truth_sweep.md|**Current State:** CanonicalHashAuthority class in canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|canonical_json.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|canonical_certificate.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|witness_authority.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|canonical_event_envelope.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|**Current State:** WitnessAuthority class in witness_authority.ts
+C:\Users\nolan\PING\audit\semantic_graph_sweep.md|**Current State:** CanonicalHashAuthority class in canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\authority_inventory.md|**Current State:** WitnessAuthority class exists in witness_authority.ts
+C:\Users\nolan\PING\docs\constitutional\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|- File: canonical_event_envelope.ts
+C:\Users\nolan\PING\docs\constitutional\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|- File: canonical_hash_authority.ts
+C:\Users\nolan\PING\docs\constitutional\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|- File: canonical_json.ts
+C:\Users\nolan\PING\audit\replay_boundary_sweep.md|**Location:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\docs\constitutional\SWEEP2_IDENTITY_CANONICAL_AUDIT.md|- No hash generation in event_emitter.py
+C:\Users\nolan\PING\docs\constitutional\SWEEP2_IDENTITY_CANONICAL_AUDIT.md|**File:** canonical_json.ts
+C:\Users\nolan\PING\docs\constitutional\SWEEP2_IDENTITY_CANONICAL_AUDIT.md|**File:** canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**Current State:** Witness Authority class in witness_authority.ts
+C:\Users\nolan\PING\audit\replay_protocol_closure_audit.md|**Current State:** Canonical Hash Authority class in canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_ENFORCEMENT_AUDIT.md|- PING/runtime/replay contains canonical_hash_authority.ts, witness_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_ENFORCEMENT_AUDIT.md|   - PING/runtime/replay contains canonical_hash_authority.ts, witness_authority.ts
+C:\Users\nolan\PING\CIVILIZATION_DETECTION_AUDIT_COMPLETE.md|  method: canonical_fingerprint_service.js
+C:\Users\nolan\PING\docs\constitutional\SWEEP18-25_CONSOLIDATION_ONLY_REPORT.md|12. canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_DELEGATION_AUDIT.md|- Applications do NOT execute PING's identity_engine.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_DELEGATION_AUDIT.md|- Applications do NOT execute PING's canonical_json.ts
+C:\Users\nolan\PING\CERTIFICATE_CERTIFICATION.md|   - Implementation: Pure TypeScript in canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|1. Merge identity_engine.ts into canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|  Replace identity_engine.ts with canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|   - Move identity_engine.ts logic into canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|  Γö£ΓöÇ Calls identity_engine.ts
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|structural_identity_stability_test_suite.js
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|#### witness_authority.ts
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|#### canonical_hash_authority.ts
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|#### canonical_json.ts
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|#### canonical_event_envelope.ts
+C:\Users\nolan\PING\VALIDATION_AUDITS_BEFORE_IMPLEMENTATION.md|**Audit 2:** Preimage format comparison from canonical_fingerprint_service.js vs. merkle_tree.ts
+C:\Users\nolan\PING\DEAD_CODE_REPORT.md|- runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\DEAD_CODE_REPORT.md|- runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\DEAD_CODE_REPORT.md|- runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|1. **Identity Authority** - identity_engine.ts, canonical_engine.ts, canonical_hash_authority.ts, replay_types.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|2. **Lineage Authority** - lineage_store.ts, dag_validator.ts, ledger_schema.sql, replay_types.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|3. **Event Recording Authority** - event_emitter.js, event_log.ts, events.sql, canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|5. **Witness Authority** - witness_authority.ts, merkle_tree.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|6. **Canonical Authority** - canonical_engine.ts, canonical_json.ts, canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\MASTER_PING_FIRST_CONSTITUTIONAL_INVENTORY.md|7. **Hash Authority** - identity_engine.ts, canonical_hash_authority.ts, event_emitter.js
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_FINAL_REPORT.md|- Identity: PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_FINAL_REPORT.md|- Canonicalization: PING/runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_PHASE8_DELETE_CANDIDATES.md|### Delete Candidate 4: compare_stacks.py
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_PHASE8_DELETE_CANDIDATES.md|**Path:** C:\Users\nolan\PING\compare_stacks.py
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_PHASE3_DUPLICATION_AUDIT.md|- Identity: PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\docs\constitutional\CONSOLIDATION_AUDIT_PHASE3_DUPLICATION_AUDIT.md|- Canonicalization: PING/runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\constitutional_claim_verification.md|- Files: C:\Users\nolan\PING\runtime\replay\witness_authority.ts, C:\Users\nolan\PING\runtime\replay\merkle_tree.ts
+C:\Users\nolan\PING\brainos\newsletter\constitutional_claim_verification.md|- Functions: witness_authority.ts, merkle_tree.ts
+C:\Users\nolan\PING\brainos\newsletter\constitutional_claim_verification.md|- Files: C:\Users\nolan\PING\runtime\replay\canonical_json.ts, C:\Users\nolan\PING\runtime\replay\canonical_event_envelope.ts, C:\Users\nolan\PING\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\constitutional_claim_verification.md|- Functions: canonical_json.ts, canonical_event_envelope.ts, canonical_hash_authority.ts
+C:\Users\nolan\PING\CONVERGENCE_REPORT.md|21. compare_stacks.py
+C:\Users\nolan\PING\audit\constitutional_remediation_patches.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\constitutional_remediation_patches.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\CONVERGENCE_READINESS.md|- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\docs\constitutional\CONSTITUTIONAL_KERNEL_SOVEREIGNTY_RETROFIT.md|// ping/runtime/identity/IdentityAuthority.ts
+C:\Users\nolan\PING\audit\constitutional_influence_authority_audit.md|**FILE:** runtime/replay/canonical_json.ts, runtime/replay/certificate_authority.ts
+C:\Users\nolan\PING\audit\constitutional_influence_authority_audit.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_influence_authority_audit.md|**Current State:** Witness Authority class in witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_influence_authority_audit.md|**Current State:** Canonical Hash Authority class in canonical_hash_authority.ts
+C:\Users\nolan\PING\docs\constitutional\CONSTITUTIONAL_KERNEL_PATCH_SETS.md|canonical_event_envelope.ts
+C:\Users\nolan\PING\CONVERGENCE_FINAL.md|- compare_stacks.py
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**FILE:** runtime/replay/canonical_json.ts, runtime/replay/certificate_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**Current State:** Witness Authority class in witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|**Current State:** Canonical Hash Authority class in canonical_hash_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|   - File: runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\audit\constitutional_derived_state_authority_sweep.md|   - File: runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\docs\adr\ADR-000Y-REPLAY-COMMITMENT-CERTIFICATION-PROTOCOL.md|    witness_verifier.ts
+C:\Users\nolan\PING\docs\adr\ADR-000Y-REPLAY-COMMITMENT-CERTIFICATION-PROTOCOL.md|    canonical_hash.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  File: canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  File: canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  File: canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  File: canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  File: canonical_json.ts
+C:\Users\nolan\PING\CONSTITUTIONAL_TEST_SUITE_GUIDE.md|  constitutional-integration-lab/extracted/js_txt/canonical_fingerprint_service.js
+C:\Users\nolan\PING\DUPLICATION_AUDIT.md|   - File: C:\Users\nolan\PING\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\DUPLICATION_AUDIT.md|2. **Identity (Hash)** - PING gateway/event_emitter.js vs PING runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\EXECUTION_GRAPH.md|**Usage**: Imported by commit-service via canonical_engine.ts
+C:\Users\nolan\PING\MIGRATION_ROADMAP.md|- runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|1. **Identity Authority** - identity_engine.ts, canonical_engine.ts, canonical_hash_authority.ts, replay_types.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|2. **Lineage Authority** - lineage_store.ts, dag_validator.ts, ledger_schema.sql, replay_types.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|3. **Event Recording Authority** - event_emitter.js, event_log.ts, events.sql, canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|5. **Witness Authority** - witness_authority.ts, merkle_tree.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|6. **Canonical Authority** - canonical_engine.ts, canonical_json.ts, canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\authority_inventory.md|7. **Hash Authority** - identity_engine.ts, canonical_hash_authority.ts, event_emitter.js
+C:\Users\nolan\PING\ENV_DRIFT_MATRIX.md|// - lineage_store.ts
+C:\Users\nolan\PING\LAYER1_READINESS.md|### Change 1: Fix Buffer Usage in canonical_event_envelope.ts
+C:\Users\nolan\PING\FAILURE_CERTIFICATION.md|### File: canonical_json.ts
+C:\Users\nolan\PING\FAILURE_CERTIFICATION.md|### File: witness_authority.ts
+C:\Users\nolan\PING\FAILURE_CERTIFICATION.md|### File: canonical_event_envelope.ts
+C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md|file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/engines/identity_engine.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/engines/canonical_engine.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/persistence/lineage_store.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/engines/identity_engine.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/engines/canonical_engine.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- src/persistence/lineage_store.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_json.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_event_envelope.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_hash_authority.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_certificate.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_json.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_event_envelope.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_hash_authority.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- canonical_certificate.ts
+C:\Users\nolan\PING\IMPORT_AUTHORITY_REPORT.md|- witness_authority.ts
+C:\Users\nolan\PING\PATCHSET_CONVERGENCE.md|**File**: kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\PATCHSET_CONVERGENCE.md|**File**: kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\PATCHSET_CONVERGENCE.md|**File**: runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\PATCHSET_CONVERGENCE.md|**File**: kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\PATCHSET_CONVERGENCE.md|**File**: runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\FUTURE_PROOFING_GAP_ANALYSIS.md|- Existing Components Reusable: PING/runtime/kernel/commit-service/src/engines/identity_engine.ts, PING/runtime/replay/replay_types.ts, PING/runtime/replay/canonical_hash_authority.ts, PING/runtime/replay/canonical_json.ts, PING/runtime/replay/canonical_event_envelope.ts, PING/runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\FUTURE_PROOFING_GAP_ANALYSIS.md|- Existing Components Reusable: PING/runtime/replay/witness_authority.ts, PING/runtime/replay/merkle_tree.ts, PING/runtime/replay/canonical_certificate.ts
+C:\Users\nolan\PING\SWEEP10_KERNEL_AUTHORITY_AUDIT.md|- runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\SWEEP10_KERNEL_AUTHORITY_AUDIT.md|- runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\REPLAY_REACHABILITY_REPORT.md|**Attempted Import**: runtime/kernel/commit-service/src/engines/canonical_engine.ts ΓåÆ runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\REPLAY_REACHABILITY_REPORT.md|**Attempted Import**: kernel/commit-service/src/engines/canonical_engine.ts ΓåÆ runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|# No lineage tracking in event_emitter.py
+C:\Users\nolan\PING\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|// PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\SWEEP_A1_AUTHORITY_PATH_MATRIX.md|// PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\replay\canonical_certificate.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\replay\canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service/src\engines\canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service/src\engines\identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service/src\engines\identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\engines\canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\dead_constitution_report.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\REBRAND_MATRIX.md|- runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\replay\canonical_certificate.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\replay\canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\engines\canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_proof_matrix.md|- C:\Users\nolan\PING\runtime\kernel\commit-service\src\persistence\lineage_store.ts
+C:\Users\nolan\PING\SAFE_TO_DELETE.md|### compare_stacks.py
+C:\Users\nolan\PING\SAFE_TO_DELETE.md|**Evidence**: `grep_search` shows no references to compare_stacks.py
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:83:**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:167:**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:199:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:296:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:447:**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:491:- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\CONVERGENCE_READINESS.md:35:- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md:3:file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:52:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:65:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:112:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:155:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:169:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:183:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:194:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:205:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:216:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:249:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:260:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:271:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:282:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:293:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:304:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:315:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:326:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:337:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:348:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:359:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:370:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:381:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:392:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:149:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:83:**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:167:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:167:**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:171:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:199:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:182:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:296:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:205:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:447:**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:210:C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:491:- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:993:C:\Users\nolan\PING\CONVERGENCE_READINESS.md:35:- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2428:C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md:3:file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2566:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:52:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2567:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:65:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2571:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:112:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2573:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:155:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2574:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:169:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2575:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:183:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2576:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:194:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2577:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:205:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2578:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:216:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2581:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:249:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2582:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:260:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2583:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:271:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2584:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:282:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2585:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:293:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2586:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:304:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2587:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:315:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2588:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:326:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2589:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:337:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2590:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:348:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2591:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:359:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2592:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:370:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2593:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:381:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt:2594:C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:392:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_MIGRATION_ORDER.md|- Integrate PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_MIGRATION_ORDER.md|- Integrate PING/runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_MIGRATION_ORDER.md|- Integrate PING/runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_MIGRATION_ORDER.md|- Integrate PING/runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_MIGRATION_ORDER.md|- Integrate PING/runtime/replay/canonical_certificate.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|documentation|- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\CONVERGENCE_READINESS.md|documentation|- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md|documentation|file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|documentation|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:83:**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:167:**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:199:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:296:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:447:**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:491:- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\CONVERGENCE_READINESS.md:35:- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md:3:file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:52:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:65:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:112:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:155:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:169:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:183:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:194:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:205:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:216:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:249:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:260:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:271:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:282:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:293:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:304:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:315:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:326:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:337:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:348:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:359:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:370:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:381:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_PROCESSED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|unknown|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:392:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\PING_CONSTITUTIONAL_READINESS_AUDIT.md|- `find . -iname "*canonical*"`: Found 8 files including canonical_json.ts, canonical_hash_authority.ts, canonical_certificate.ts, canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\PING_CONSTITUTIONAL_READINESS_AUDIT.md|- Witness Authority: runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\PING_CONSTITUTIONAL_READINESS_AUDIT.md|- Witness Verification: compareWitnessRoots() in replay_verification.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\MINIMUM_REPLAYABLE_KERNEL.md|- Integrate PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\MINIMUM_REPLAYABLE_KERNEL.md|- Integrate PING/runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\MINIMUM_REPLAYABLE_KERNEL.md|- Integrate PING/runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md|.md|- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\CONVERGENCE_READINESS.md|.md|- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md|.md|file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:83:**PATH:** C:\Users\nolan\CRX\CascadeProjects\infra\ui-next\next.config.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:167:**PATH:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:199:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:296:**FILE:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:447:**CANONICAL:** C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\audit\crx_runtime_archaeology_canonical_stack_audit.md:491:- Gateway: C:\Users\nolan\CRX\gateway\server.js
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\CONVERGENCE_READINESS.md:35:- @crx/replay import established in canonical_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\IMPORT_GRAPH_FAILURES.md:3:file: C:\Users\nolan\CRX\kernel\commit-service\src\engines\identity_engine.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:52:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:65:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:112:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:155:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:169:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:183:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:194:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:205:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:216:**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:249:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:260:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:271:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:282:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:293:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:304:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:315:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:326:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:337:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:348:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:359:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:370:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:381:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\REBRAND_AUDIT_CATEGORIZED.txt|C:\Users\nolan\PING\REBRAND_AUDIT_RAW.txt|.txt|C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md:392:**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\SWEEP10_TIME_AUTHORITY_AUDIT.md|- runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\PROTECTED_SYSTEMS.md|- VERIFIED: Runtime contains deterministic_replay_engine.ts, replay_state_machine.ts, canonical_event_envelope.ts
+C:\Users\nolan\PING\PRODUCTION_EXECUTION_GRAPH.md|**Import**: runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\PRODUCTION_EXECUTION_GRAPH.md|**Import**: runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_core.md|- PING/runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_core.md|- PING/runtime/replay/canonical_certificate.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_core.md|- PING/runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_core.md|- PING/runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\PRE_PATCH_STATE.md|- compare_stacks.py
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/replay/canonical_certificate.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\constitutional_collapse_report.md|- PING/runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/kernel/commit-service/src/persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\CONSTITUTIONAL_AUTHORITY_CONVERGENCE_AUDIT.md|// runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_json.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\CONSTITUTIONAL_AUTHORITY_AUDIT.md|**File Path**: C:\Users\nolan\CRX\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\PING_REPOSITORY_TRUTH_AUDIT.md|- VERIFIED: Runtime contains deterministic_replay_engine.ts, replay_state_machine.ts, canonical_event_envelope.ts
+C:\Users\nolan\PING\PING_REPOSITORY_TRUTH_AUDIT.md|IMPLEMENTATION: canonical_json.ts
+C:\Users\nolan\PING\PING_REPOSITORY_TRUTH_AUDIT.md|IMPLEMENTATION: witness_authority.ts, merkle_tree.ts
+C:\Users\nolan\PING\PING_LAYER_0_DEFINITION.md|1. **Canonical Authority** - runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_LAYER_0_DEFINITION.md|2. **Identity Authority** - runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_LAYER_0_DEFINITION.md|3. **Lineage Authority** - runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_LAYER_0_DEFINITION.md|7. **Witness Authority** - runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_certificate.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_event_envelope.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**IMPLEMENTATION OWNER:** runtime/replay/certificate_authority.ts, runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**IMPLEMENTATION OWNER:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**IMPLEMENTATION OWNER:** runtime/replay/canonical_json.ts, runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILES:** runtime/replay/certificate_authority.ts, runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILES:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILES:** runtime/replay/canonical_json.ts, runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILES:** runtime/replay/witness_authority.ts, runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|### runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILE:** runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|### runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILE:** runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|### runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**FILE:** runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**RUNTIME OWNER:** runtime/replay/certificate_authority.ts, runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**RUNTIME OWNER:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**RUNTIME OWNER:** runtime/replay/witness_authority.ts, runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_json.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|- runtime/replay/witness_authority.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**RUNTIME OWNER:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**RUNTIME OWNER:** runtime/replay/witness_authority.ts (buildLineageGraph), runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**CURRENT OWNER:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**TARGET OWNER:** runtime/replay/witness_authority.ts, runtime/replay/merkle_tree.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**CURRENT OWNER:** runtime/replay/witness_authority.ts (buildLineageGraph), runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\PING_AUTHORITY_OWNERSHIP_MAP.md|**TARGET OWNER:** runtime/replay/witness_authority.ts (buildLineageGraph), runtime/replay/state_serializer.ts
+C:\Users\nolan\PING\PING_ECOSYSTEM_INVENTORY.md|- Path: C:\Users\nolan\PING\runtime\replay\witness_authority.ts
+C:\Users\nolan\PING\PING_ECOSYSTEM_INVENTORY.md|12. C:\Users\nolan\PING\runtime\kernel\commit-service\src\engines\canonical_hash_authority.ts
+C:\Users\nolan\PING\PING_ECOSYSTEM_INVENTORY.md|- Action: DELETE canonical_hash_authority.ts
+C:\Users\nolan\PING\POST_CONVERGENCE_STATE.md|- PATCH 1: Fixed broken import in kernel/commit-service/src/engines/identity_engine.ts
+C:\Users\nolan\PING\runtime\replay\canonical_hash_authority.ts| * Ported from constitutional-integration-lab/extracted/js_txt/canonical_fingerprint_service.js
+C:\Users\nolan\PING\brainos\newsletter\docs\constitutional\actual_authority_graph.md|### SOURCE: PING/runtime/kernel/commit-service/src/engines/canonical_engine.ts
+C:\Users\nolan\PING\runtime\replay\FORENSIC_PROVENANCE_MAP.md|Γö£ΓöÇΓöÇ identity_engine.ts
+C:\Users\nolan\PING\runtime\replay\FORENSIC_PROVENANCE_MAP.md|ΓööΓöÇΓöÇ canonical_engine.ts
+C:\Users\nolan\PING\runtime\replay\FINAL_CONSTITUTIONAL_AUDIT.md|- canonical_json.ts
+C:\Users\nolan\PING\runtime\replay\FINAL_CONSTITUTIONAL_AUDIT.md|- canonical_hash_authority.ts
+C:\Users\nolan\PING\runtime\replay\FINAL_CONSTITUTIONAL_AUDIT.md|- witness_authority.ts
+C:\Users\nolan\PING\runtime\replay\FORENSIC_PHASE2_AUTHORITY_RECONCILIATION.md|- MerkleTree does NOT use canonical_fingerprint_service.js
+C:\Users\nolan\PING\runtime\replay\FORENSIC_PHASE2_AUTHORITY_RECONCILIATION.md|- No delegation to canonical_fingerprint_service.js
+C:\Users\nolan\PING\runtime\replay\FORENSIC_PHASE2_AUTHORITY_RECONCILIATION.md|- Archive embeds TextEncoder/Uint8Array inside canonical_fingerprint_service.js
+C:\Users\nolan\PING\POST_PATCH_EXECUTION_GRAPH.md|Γöé  Γö£ΓöÇ ../engines/identity_engine.ts
+C:\Users\nolan\PING\POST_PATCH_EXECUTION_GRAPH.md|Γöé  Γö£ΓöÇ ../persistence/lineage_store.ts
+C:\Users\nolan\PING\POST_PATCH_EXECUTION_GRAPH.md|Γöé  Γö£ΓöÇ ../engines/identity_engine.ts
+C:\Users\nolan\PING\POST_PATCH_EXECUTION_GRAPH.md|Γöé  Γö£ΓöÇ ../persistence/lineage_store.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|  - PING: canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|- Canonical Source: PING canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|  - PING: witness_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|- Canonical Source: PING witness_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|  - PING: canonical_json.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|- Canonical Source: PING canonical_json.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|5. PING Gateway JSON.stringify ΓåÆ Replace with PING canonical_json.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|1. PING canonical_hash_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|4. PING witness_authority.ts
+C:\Users\nolan\PING\brainos\orchestration\docs\constitutional\SWEEP18-25_CONSOLIDATION_REPORT.md|6. PING canonical_json.ts

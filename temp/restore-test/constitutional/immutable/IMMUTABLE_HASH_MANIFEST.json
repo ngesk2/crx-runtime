@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-06-23T03:55:53.227908",
+  "immutable_path": "C:\\Users\\nolan\\PING\\vault\\constitutional\\immutable",
+  "documents": {
+    "CONSTITUTION.md": {
+      "hash": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+      "size": 9279,
+      "modified": "2026-06-14T18:44:26.789673"
+    },
+    "IDENTITY_LAW.md": {
+      "hash": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b",
+      "size": 8231,
+      "modified": "2026-06-14T19:11:28.056133"
+    },
+    "REPLAY_LAW.md": {
+      "hash": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+      "size": 7696,
+      "modified": "2026-06-14T19:12:28.251106"
+    },
+    "WITNESS_LAW.md": {
+      "hash": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+      "size": 6694,
+      "modified": "2026-06-09T12:29:18"
+    }
+  },
+  "combined_hash": "80a5a2ce31e87679d4413dc0d6fbd0016ac2b8f3c8237b1d88814d2decc37de4"
+}

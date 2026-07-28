@@ -1,0 +1,189 @@
+# Capability Registry
+# Maps every capability to its owning intent and authority.
+
+capabilities:
+  ReplayTranscript:
+    intent: replay
+    authority: ReplayAuthority
+    status: implemented
+    owner: runtime/kernel/replay/replay-transcript.ts
+
+  ReplayVerifier:
+    intent: replay
+    authority: ReplayAuthority
+    status: implemented
+    owner: runtime/kernel/replay/replay_verification.ts
+
+  ReplayWitness:
+    intent: replay
+    authority: ReplayAuthority
+    status: implemented
+    owner: runtime/kernel/replay/witness_authority.ts
+
+  ReplayExecution:
+    intent: replay
+    authority: ReplayAuthority
+    status: implemented
+    owner: runtime/kernel/replay/deterministic_replay_engine.ts
+
+  CanonicalSHA256:
+    intent: hashing
+    authority: CanonicalHashAuthority
+    status: implemented
+    owner: runtime/kernel/witness/certificate_authority.ts
+
+  CanonicalJSON:
+    intent: hashing
+    authority: CanonicalHashAuthority
+    status: implemented
+    owner: runtime/kernel/replay/canonical_json.ts
+
+  DomainSeparatedHashing:
+    intent: hashing
+    authority: CanonicalHashAuthority
+    status: implemented
+    owner: runtime/kernel/replay/merkle_tree.ts
+
+  HashRouting:
+    intent: hashing
+    authority: CanonicalHashAuthority
+    status: missing_package
+    owner: runtime/kernel/hash/ (not yet created)
+
+  ConstitutionalRuleEnforcement:
+    intent: governance
+    authority: GovernanceAuthority
+    status: missing_implementation
+    owner: (not yet implemented)
+
+  PolicyEvaluation:
+    intent: governance
+    authority: GovernanceAuthority
+    status: missing_implementation
+    owner: (not yet implemented)
+
+  OwnershipResolution:
+    intent: ownership
+    authority: OwnershipAuthority
+    status: implemented
+    owner: constitutional-compiler/engines/ownership-engine.ts
+
+  CapabilityResolution:
+    intent: capability
+    authority: CapabilityAuthority
+    status: missing_implementation
+    owner: (not yet implemented)
+
+  WitnessGeneration:
+    intent: witness
+    authority: WitnessAuthority
+    status: fragmented
+    owner: runtime/kernel/replay/witness_authority.ts (canonical)
+
+  WitnessVerification:
+    intent: witness
+    authority: WitnessAuthority
+    status: fragmented
+    owner: runtime/kernel/replay/witness_authority.ts (canonical)
+
+  EvidenceStorage:
+    intent: evidence
+    authority: EvidenceAuthority
+    status: implemented
+    owner: constitutional-compiler/evidence/evidence-store.ts
+
+  EvidenceVerification:
+    intent: evidence
+    authority: EvidenceAuthority
+    status: implemented
+    owner: constitutional-compiler/evidence/evidence-store.ts
+
+  CounterEvidence:
+    intent: evidence
+    authority: EvidenceAuthority
+    status: implemented
+    owner: constitutional-compiler/engines/counter-evidence-engine.ts
+
+  IdentityGeneration:
+    intent: identity
+    authority: CanonicalIdentityService
+    status: fragmented
+    owner: runtime/kernel/identity/canonical-identity-service.ts (canonical)
+
+  ContextConstruction:
+    intent: execution
+    authority: ExecutionContextBuilder
+    status: implemented
+    owner: runtime/kernel/execution/ExecutionContextBuilder.ts
+
+  EventPersistence:
+    intent: repository
+    authority: RepositoryAuthority
+    status: missing_implementation
+    owner: (not yet implemented)
+
+  WorkScheduling:
+    intent: scheduler
+    authority: SchedulerAuthority
+    status: missing_implementation
+    owner: (not yet implemented)
+
+  RuleExecution:
+    intent: rule-engine
+    authority: RuleAuthority
+    status: implemented
+    owner: constitutional-compiler/rules/rule-executor.ts
+
+  RuleProvenance:
+    intent: rule-engine
+    authority: RuleAuthority
+    status: implemented
+    owner: constitutional-compiler/engines/rule-provenance-engine.ts
+
+  RuleCoverage:
+    intent: rule-engine
+    authority: RuleAuthority
+    status: implemented
+    owner: constitutional-compiler/coverage/rule-coverage.ts
+
+  ProofConstruction:
+    intent: proof
+    authority: ProofAuthority
+    status: implemented
+    owner: constitutional-compiler/proof/constitutional-proof-objects.ts
+
+  DiagnosticGeneration:
+    intent: diagnostics
+    authority: DiagnosticAuthority
+    status: implemented
+    owner: constitutional-compiler/diagnostics/constitutional-diagnostics.ts
+
+  ViolationReporting:
+    intent: diagnostics
+    authority: DiagnosticAuthority
+    status: implemented
+    owner: constitutional-compiler/diagnostics/constitutional-diagnostics.ts
+
+  RepairPlanning:
+    intent: repair
+    authority: RepairAuthority
+    status: implemented
+    owner: constitutional-compiler/repair/automatic-repair-engine.ts
+
+  EditGeneration:
+    intent: repair
+    authority: RepairAuthority
+    status: planned
+    owner: (ts-morph — Phase S.17)
+
+  ConstitutionalQuery:
+    intent: query
+    authority: QueryAuthority
+    status: implemented
+    owner: constitutional-compiler/query/constitutional-query-language.ts
+
+  TypeDefinition:
+    intent: constitutional-ir
+    authority: ConstitutionalIRAuthority
+    status: ratified
+    owner: runtime/kernel/replay/ + runtime/kernel/identity/

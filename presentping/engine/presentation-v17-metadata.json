@@ -1,0 +1,6348 @@
+{
+  "slides": [
+    {
+      "number": 1,
+      "title": "Gateway + Witness",
+      "subtitle": "Observation and Truth",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness"
+        ]
+      },
+      "notes": "Gateway receives external events. Witness validates them as ground truth. Only evidence-bearing packets flow between districts. Witness is the largest structure - a constitutional observatory.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_0"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_1"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_2"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_3"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_4"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_5"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ingress_arch"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ingress_arch_label"
+        },
+        {
+          "type": "trapezoid",
+          "name": "gateway_intake_funnel"
+        },
+        {
+          "type": "text",
+          "name": "gateway_intake_funnel_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_emission_nozzle"
+        },
+        {
+          "type": "text",
+          "name": "gateway_emission_nozzle_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ownership_badge"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ownership_badge_text"
+        },
+        {
+          "type": "text",
+          "name": "gateway_name"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_evidence_core"
+        },
+        {
+          "type": "text",
+          "name": "witness_evidence_core_label"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_confidence_lattice"
+        },
+        {
+          "type": "rect",
+          "name": "witness_causal_observatory"
+        },
+        {
+          "type": "text",
+          "name": "witness_causal_observatory_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_0"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_1"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "witness_rejection_chute"
+        },
+        {
+          "type": "text",
+          "name": "witness_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_ownership"
+        },
+        {
+          "type": "text",
+          "name": "witness_ownership_text"
+        },
+        {
+          "type": "text",
+          "name": "witness_name"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Witness Internal Systems",
+      "subtitle": "Evidence and Validation",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness"
+        ]
+      },
+      "notes": "Witness contains State Correlation, Evidence Generation, Confidence Assessment, Diff Analysis, Causal Tracing, and Validation. It outputs Verified State or Rejected State. The Rejection Chute is mandatory. Witness is a constitutional monument.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_evidence_core"
+        },
+        {
+          "type": "text",
+          "name": "witness_evidence_core_label"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_confidence_lattice"
+        },
+        {
+          "type": "rect",
+          "name": "witness_causal_observatory"
+        },
+        {
+          "type": "text",
+          "name": "witness_causal_observatory_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_0"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_1"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "witness_rejection_chute"
+        },
+        {
+          "type": "text",
+          "name": "witness_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_ownership"
+        },
+        {
+          "type": "text",
+          "name": "witness_ownership_text"
+        },
+        {
+          "type": "text",
+          "name": "witness_name"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Bedrock",
+      "subtitle": "Canonical Reality",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "bedrock"
+        ]
+      },
+      "notes": "Bedrock is the canonical reality. It contains Raw Events, Snapshots, Temporal Queries, and Audit Trails. If it is not here, it did not happen. Bedrock appears as a foundational layer beneath the system with foundation plates, archive strata, memory vault layers, historical lattice, and audit columns.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_3"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_4"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_0"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_1"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_3"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.6"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.8999999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.2"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.8"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.1"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.4"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.6999999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.9999999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.2999999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.599999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.899999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.199999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.499999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.799999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.099999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.699999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.999999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.299999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.599999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.899999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.1999999999999975"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.799999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.099999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.7"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.600000000000001"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.900000000000002"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.65"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.9499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.2499999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.5499999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.849999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.1499999999999995"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.449999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.749999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.049999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.349999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.649999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.949999999999998"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_label"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_message"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Replay",
+      "subtitle": "Historical Reconstruction",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "replay"
+        ]
+      },
+      "notes": "Replay is owned by Agent-RX. It performs Deterministic Reconstruction, Historical Recovery, Fork Analysis, Event Replay, and Evidence Reconstruction. Replay visually shows time with timeline fragments, fork branches, reconstruction streams, and ghost paths. Replay is NOT evolution, AGI training, future simulation, or self-improvement.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "line",
+          "name": "replay_timeline_rails"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_7"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_0"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_1"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_0"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_1"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_3"
+        },
+        {
+          "type": "rect",
+          "name": "replay_archive_projections"
+        },
+        {
+          "type": "text",
+          "name": "replay_archive_projections_label"
+        },
+        {
+          "type": "text",
+          "name": "replay_name"
+        },
+        {
+          "type": "rect",
+          "name": "replay_ownership"
+        },
+        {
+          "type": "text",
+          "name": "replay_ownership_text"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Builder + Governance",
+      "subtitle": "Execution and Constraint Enforcement",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "builder",
+          "governance"
+        ]
+      },
+      "notes": "Builder is owned by Agent-BX and performs Task Creation, Agent Execution, Tool Invocation, Artifact Production, and Deployment. Builder looks operational with artifact foundries, tool lanes, execution corridors, deployment tracks, build queues, and artifact capsules. Governance is owned by Constitution and enforces constraints through Proposal Intake, Constraint Evaluation, Approval Gate, Rejection Gate, and Rollback Trigger. Governance feels authoritative with constitutional gates, approval corridors, rejection corridors, rollback locks, and constraint walls.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_0"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_1"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_3"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_4"
+        },
+        {
+          "type": "text",
+          "name": "builder_name"
+        },
+        {
+          "type": "rect",
+          "name": "builder_ownership"
+        },
+        {
+          "type": "text",
+          "name": "builder_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_0"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "governance_approval_corridor"
+        },
+        {
+          "type": "text",
+          "name": "governance_approval_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rejection_barrier"
+        },
+        {
+          "type": "text",
+          "name": "governance_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "governance_rollback_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_name"
+        },
+        {
+          "type": "rect",
+          "name": "governance_ownership"
+        },
+        {
+          "type": "text",
+          "name": "governance_ownership_text"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Failure Handling",
+      "subtitle": "Rejection, Rollback, Ownership Conflict",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness",
+          "governance"
+        ]
+      },
+      "notes": "The system visibly demonstrates failure handling. Rejected states flow to Rejection Sink. Rollbacks are triggered by Governance. Verification failures and constraint violations are logged. Ownership conflicts are routed to Failure Channel. All failure routes use red dashed lines and occupy permanent map space with dedicated destinations: Rejection Sink, Rollback Vault, Violation Log, Failure Channel, Ownership Conflict Zone.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_evidence_core"
+        },
+        {
+          "type": "text",
+          "name": "witness_evidence_core_label"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_confidence_lattice"
+        },
+        {
+          "type": "rect",
+          "name": "witness_causal_observatory"
+        },
+        {
+          "type": "text",
+          "name": "witness_causal_observatory_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_0"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_1"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "witness_rejection_chute"
+        },
+        {
+          "type": "text",
+          "name": "witness_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_ownership"
+        },
+        {
+          "type": "text",
+          "name": "witness_ownership_text"
+        },
+        {
+          "type": "text",
+          "name": "witness_name"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_0"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "governance_approval_corridor"
+        },
+        {
+          "type": "text",
+          "name": "governance_approval_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rejection_barrier"
+        },
+        {
+          "type": "text",
+          "name": "governance_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "governance_rollback_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_name"
+        },
+        {
+          "type": "rect",
+          "name": "governance_ownership"
+        },
+        {
+          "type": "text",
+          "name": "governance_ownership_text"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Full System Topology",
+      "subtitle": "All Districts, All Evidence Packets, All Paths",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness",
+          "bedrock",
+          "replay",
+          "builder",
+          "governance"
+        ]
+      },
+      "notes": "Complete view of the constitutional substrate. Success topology: Gateway → Witness → Bedrock → Replay → Builder → Governance → Gateway. Failure routes are visible. Every connection carries an evidence packet with owner, claim, evidence, confidence, status, and timestamp. Packets are infrastructure, not metadata. Witness dominates the skyline. Bedrock is the foundational layer. The world is memorable and architecturally distinct.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_7"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_8"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_9"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_10"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_11"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_12"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_13"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_14"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_15"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_16"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_17"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_18"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_19"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_20"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_21"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_22"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_23"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_24"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_25"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_26"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_27"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_28"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_29"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_30"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_31"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_32"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_33"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_34"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_35"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_36"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_37"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_38"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_39"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_40"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_41"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_42"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_43"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_44"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_45"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_46"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_47"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_48"
+        },
+        {
+          "type": "ellipse",
+          "name": "star_49"
+        },
+        {
+          "type": "rect",
+          "name": "atmospheric_haze"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_7.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_8.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9"
+        },
+        {
+          "type": "line",
+          "name": "grid_v_9.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_0.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_1.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_2.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_3.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_4.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_5.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_6.5"
+        },
+        {
+          "type": "line",
+          "name": "grid_h_7"
+        },
+        {
+          "type": "line",
+          "name": "constitutional_horizon"
+        },
+        {
+          "type": "rect",
+          "name": "depth_fog"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_0"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_1"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_2"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_3"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_4"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_5"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ingress_arch"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ingress_arch_label"
+        },
+        {
+          "type": "trapezoid",
+          "name": "gateway_intake_funnel"
+        },
+        {
+          "type": "text",
+          "name": "gateway_intake_funnel_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_emission_nozzle"
+        },
+        {
+          "type": "text",
+          "name": "gateway_emission_nozzle_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ownership_badge"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ownership_badge_text"
+        },
+        {
+          "type": "text",
+          "name": "gateway_name"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_evidence_core"
+        },
+        {
+          "type": "text",
+          "name": "witness_evidence_core_label"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_confidence_lattice"
+        },
+        {
+          "type": "rect",
+          "name": "witness_causal_observatory"
+        },
+        {
+          "type": "text",
+          "name": "witness_causal_observatory_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_0"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_1"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "witness_rejection_chute"
+        },
+        {
+          "type": "text",
+          "name": "witness_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_ownership"
+        },
+        {
+          "type": "text",
+          "name": "witness_ownership_text"
+        },
+        {
+          "type": "text",
+          "name": "witness_name"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_3"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_4"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_0"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_1"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_3"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.6"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.8999999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.2"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.8"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.1"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.4"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.6999999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.9999999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.2999999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.599999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.899999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.199999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.499999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.799999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.099999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.699999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.999999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.299999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.599999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.899999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.1999999999999975"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.799999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.099999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.7"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.600000000000001"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.900000000000002"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.65"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.9499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.2499999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.5499999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.849999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.1499999999999995"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.449999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.749999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.049999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.349999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.649999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.949999999999998"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_label"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_message"
+        },
+        {
+          "type": "line",
+          "name": "replay_timeline_rails"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_7"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_0"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_1"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_0"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_1"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_3"
+        },
+        {
+          "type": "rect",
+          "name": "replay_archive_projections"
+        },
+        {
+          "type": "text",
+          "name": "replay_archive_projections_label"
+        },
+        {
+          "type": "text",
+          "name": "replay_name"
+        },
+        {
+          "type": "rect",
+          "name": "replay_ownership"
+        },
+        {
+          "type": "text",
+          "name": "replay_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_0"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_1"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_3"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_4"
+        },
+        {
+          "type": "text",
+          "name": "builder_name"
+        },
+        {
+          "type": "rect",
+          "name": "builder_ownership"
+        },
+        {
+          "type": "text",
+          "name": "builder_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_0"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "governance_approval_corridor"
+        },
+        {
+          "type": "text",
+          "name": "governance_approval_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rejection_barrier"
+        },
+        {
+          "type": "text",
+          "name": "governance_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "governance_rollback_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_name"
+        },
+        {
+          "type": "rect",
+          "name": "governance_ownership"
+        },
+        {
+          "type": "text",
+          "name": "governance_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_3"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_plate_4"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_stratum_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_0"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_1"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_vault_3"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_vault_label_3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.6"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_0.8999999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.2"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.5"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_1.8"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.1"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.4"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.6999999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_2.9999999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.2999999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.599999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_3.899999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.199999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.499999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_4.799999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.099999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.699999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_5.999999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.299999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.599999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_6.899999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.1999999999999975"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_7.799999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.099999999999998"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.399999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_8.7"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.3"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.600000000000001"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_v_9.900000000000002"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.65"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_2.9499999999999997"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.2499999999999996"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.5499999999999994"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_3.849999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.1499999999999995"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.449999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_4.749999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.049999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.349999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.649999999999999"
+        },
+        {
+          "type": "line",
+          "name": "bedrock_lattice_h_5.949999999999998"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_0"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_1"
+        },
+        {
+          "type": "rect",
+          "name": "bedrock_column_2"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_label"
+        },
+        {
+          "type": "text",
+          "name": "bedrock_message"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_0"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_1"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_2"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_3"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_4"
+        },
+        {
+          "type": "line",
+          "name": "gateway_hex_5"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ingress_arch"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ingress_arch_label"
+        },
+        {
+          "type": "trapezoid",
+          "name": "gateway_intake_funnel"
+        },
+        {
+          "type": "text",
+          "name": "gateway_intake_funnel_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_emission_nozzle"
+        },
+        {
+          "type": "text",
+          "name": "gateway_emission_nozzle_label"
+        },
+        {
+          "type": "rect",
+          "name": "gateway_ownership_badge"
+        },
+        {
+          "type": "text",
+          "name": "gateway_ownership_badge_text"
+        },
+        {
+          "type": "text",
+          "name": "gateway_name"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_evidence_core"
+        },
+        {
+          "type": "text",
+          "name": "witness_evidence_core_label"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_validation_ring_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "witness_confidence_lattice"
+        },
+        {
+          "type": "rect",
+          "name": "witness_causal_observatory"
+        },
+        {
+          "type": "text",
+          "name": "witness_causal_observatory_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_0"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "witness_reproduction_chamber_1"
+        },
+        {
+          "type": "text",
+          "name": "witness_reproduction_chamber_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "witness_rejection_chute"
+        },
+        {
+          "type": "text",
+          "name": "witness_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "witness_ownership"
+        },
+        {
+          "type": "text",
+          "name": "witness_ownership_text"
+        },
+        {
+          "type": "text",
+          "name": "witness_name"
+        },
+        {
+          "type": "line",
+          "name": "replay_timeline_rails"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_4"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_5"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_6"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fragment_7"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_0"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_stream_1"
+        },
+        {
+          "type": "text",
+          "name": "replay_stream_label_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_0"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_1"
+        },
+        {
+          "type": "line",
+          "name": "replay_fork_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "replay_fork_indicator_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_0"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_1"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_2"
+        },
+        {
+          "type": "rect",
+          "name": "replay_historical_overlay_3"
+        },
+        {
+          "type": "rect",
+          "name": "replay_archive_projections"
+        },
+        {
+          "type": "text",
+          "name": "replay_archive_projections_label"
+        },
+        {
+          "type": "text",
+          "name": "replay_name"
+        },
+        {
+          "type": "rect",
+          "name": "replay_ownership"
+        },
+        {
+          "type": "text",
+          "name": "replay_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_deployment_lane_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_artifact_foundry_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_artifact_foundry_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_0"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_execution_track_1"
+        },
+        {
+          "type": "triangle",
+          "name": "builder_execution_track_arrow_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_2"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_2"
+        },
+        {
+          "type": "rect",
+          "name": "builder_tool_dock_3"
+        },
+        {
+          "type": "text",
+          "name": "builder_tool_dock_label_3"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_0"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "builder_construction_pipeline_1"
+        },
+        {
+          "type": "text",
+          "name": "builder_construction_pipeline_label_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_0"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_1"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_2"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_3"
+        },
+        {
+          "type": "ellipse",
+          "name": "builder_artifact_capsule_4"
+        },
+        {
+          "type": "text",
+          "name": "builder_name"
+        },
+        {
+          "type": "rect",
+          "name": "builder_ownership"
+        },
+        {
+          "type": "text",
+          "name": "builder_ownership_text"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_0"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constitutional_gate_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_constitutional_gate_label_1"
+        },
+        {
+          "type": "rect",
+          "name": "governance_approval_corridor"
+        },
+        {
+          "type": "text",
+          "name": "governance_approval_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rejection_barrier"
+        },
+        {
+          "type": "text",
+          "name": "governance_rejection_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "governance_rollback_label"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_0"
+        },
+        {
+          "type": "rect",
+          "name": "governance_constraint_wall_1"
+        },
+        {
+          "type": "text",
+          "name": "governance_name"
+        },
+        {
+          "type": "rect",
+          "name": "governance_ownership"
+        },
+        {
+          "type": "text",
+          "name": "governance_ownership_text"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_capsule"
+        },
+        {
+          "type": "text",
+          "name": "packet_summary"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_1"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_2"
+        },
+        {
+          "type": "text",
+          "name": "failure_route_label"
+        },
+        {
+          "type": "triangle",
+          "name": "failure_route_arrow"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rejection_sink"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rejection_sink"
+        },
+        {
+          "type": "ellipse",
+          "name": "failure_rejection_sink_basin"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_1"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_2"
+        },
+        {
+          "type": "text",
+          "name": "failure_route_label"
+        },
+        {
+          "type": "triangle",
+          "name": "failure_route_arrow"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_rollback_vault"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_rollback_vault"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_door"
+        },
+        {
+          "type": "rect",
+          "name": "failure_rollback_vault_lock"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_1"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_2"
+        },
+        {
+          "type": "text",
+          "name": "failure_route_label"
+        },
+        {
+          "type": "triangle",
+          "name": "failure_route_arrow"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_violation_log"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_violation_log"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_1"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_2"
+        },
+        {
+          "type": "text",
+          "name": "failure_route_label"
+        },
+        {
+          "type": "triangle",
+          "name": "failure_route_arrow"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_failure_channel"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_failure_channel"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_1"
+        },
+        {
+          "type": "line",
+          "name": "failure_route_2"
+        },
+        {
+          "type": "text",
+          "name": "failure_route_label"
+        },
+        {
+          "type": "triangle",
+          "name": "failure_route_arrow"
+        },
+        {
+          "type": "rect",
+          "name": "failure_dest_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "failure_dest_label_ownership_conflict_zone"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "V17",
+    "title": "PING Constitutional City",
+    "description": "Spatial map of the constitutional substrate",
+    "timestamp": "2026-06-19T22:03:22.333Z"
+  }
+}

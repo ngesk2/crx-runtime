@@ -1,0 +1,977 @@
+{
+  "slides": [
+    {
+      "number": 1,
+      "title": "Gateway + Witness",
+      "subtitle": "Observation and Truth",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness"
+        ]
+      },
+      "notes": "Gateway receives external events. Witness validates them as ground truth. Only evidence-bearing packets flow between districts.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_gateway",
+          "semanticType": "gateway"
+        },
+        {
+          "type": "text",
+          "name": "district_name_gateway"
+        },
+        {
+          "type": "rect",
+          "name": "district_witness",
+          "semanticType": "witness"
+        },
+        {
+          "type": "text",
+          "name": "district_name_witness"
+        },
+        {
+          "type": "rect",
+          "name": "district_feature_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_feature_text_witness_0"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Witness Internal Systems",
+      "subtitle": "Evidence and Validation",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness"
+        ]
+      },
+      "notes": "Witness contains State Correlation, Evidence Generation, Confidence Assessment, Diff Analysis, Causal Tracing, and Validation. It outputs Verified State or Rejected State. The Rejection Chute is mandatory.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_witness",
+          "semanticType": "witness"
+        },
+        {
+          "type": "text",
+          "name": "district_name_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_owner_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_purpose_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_1"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_2"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_3"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_4"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_5"
+        },
+        {
+          "type": "rect",
+          "name": "district_feature_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_feature_text_witness_0"
+        },
+        {
+          "type": "rect",
+          "name": "ownership_badge_witness"
+        },
+        {
+          "type": "text",
+          "name": "ownership_text_witness"
+        },
+        {
+          "type": "rect",
+          "name": "packet_frame"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "rect",
+          "name": "packet_frame"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Bedrock",
+      "subtitle": "Canonical Reality",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "bedrock"
+        ]
+      },
+      "notes": "Bedrock is the canonical reality. It contains Raw Events, Snapshots, Temporal Queries, and Audit Trails. If it is not here, it did not happen. Bedrock appears as a foundational layer beneath the system.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_bedrock",
+          "semanticType": "bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_name_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_owner_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_purpose_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_system_bedrock_0"
+        },
+        {
+          "type": "text",
+          "name": "district_system_bedrock_1"
+        },
+        {
+          "type": "text",
+          "name": "district_system_bedrock_2"
+        },
+        {
+          "type": "text",
+          "name": "district_system_bedrock_3"
+        },
+        {
+          "type": "text",
+          "name": "district_visual_message_bedrock"
+        },
+        {
+          "type": "rect",
+          "name": "ownership_badge_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "ownership_text_bedrock"
+        },
+        {
+          "type": "rect",
+          "name": "packet_frame"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Replay",
+      "subtitle": "Historical Reconstruction",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "replay"
+        ]
+      },
+      "notes": "Replay is owned by Agent-RX. It performs Deterministic Reconstruction, Historical Recovery, Fork Analysis, Event Replay, and Evidence Reconstruction. Replay is NOT evolution, AGI training, future simulation, or self-improvement.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_replay",
+          "semanticType": "replay"
+        },
+        {
+          "type": "text",
+          "name": "district_name_replay"
+        },
+        {
+          "type": "text",
+          "name": "district_owner_replay"
+        },
+        {
+          "type": "text",
+          "name": "district_purpose_replay"
+        },
+        {
+          "type": "text",
+          "name": "district_system_replay_0"
+        },
+        {
+          "type": "text",
+          "name": "district_system_replay_1"
+        },
+        {
+          "type": "text",
+          "name": "district_system_replay_2"
+        },
+        {
+          "type": "text",
+          "name": "district_system_replay_3"
+        },
+        {
+          "type": "text",
+          "name": "district_system_replay_4"
+        },
+        {
+          "type": "rect",
+          "name": "ownership_badge_replay"
+        },
+        {
+          "type": "text",
+          "name": "ownership_text_replay"
+        },
+        {
+          "type": "rect",
+          "name": "packet_frame"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_OWNER"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CLAIM"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_EVIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_CONFIDENCE"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_STATUS"
+        },
+        {
+          "type": "text",
+          "name": "packet_label_TIMESTAMP"
+        },
+        {
+          "type": "text",
+          "name": "packet_value_TIMESTAMP"
+        },
+        {
+          "type": "ellipse",
+          "name": "packet_status_indicator"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Builder + Governance",
+      "subtitle": "Execution and Constraint Enforcement",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "builder",
+          "governance"
+        ]
+      },
+      "notes": "Builder is owned by Agent-BX and performs Task Creation, Agent Execution, Tool Invocation, Artifact Production, and Deployment. Governance is owned by Constitution and enforces constraints through Proposal Intake, Constraint Evaluation, Approval Gate, Rejection Gate, and Rollback Trigger.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_builder",
+          "semanticType": "builder"
+        },
+        {
+          "type": "text",
+          "name": "district_name_builder"
+        },
+        {
+          "type": "rect",
+          "name": "district_governance",
+          "semanticType": "governance"
+        },
+        {
+          "type": "text",
+          "name": "district_name_governance"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Failure Handling",
+      "subtitle": "Rejection, Rollback, Ownership Conflict",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness",
+          "governance"
+        ]
+      },
+      "notes": "The system visibly demonstrates failure handling. Rejected states flow to Rejection Sink. Rollbacks are triggered by Governance. Verification failures and constraint violations are logged. Ownership conflicts are routed to Failure Channel. All failure routes use red dashed lines.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_witness",
+          "semanticType": "witness"
+        },
+        {
+          "type": "text",
+          "name": "district_name_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_owner_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_purpose_witness"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_1"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_2"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_3"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_4"
+        },
+        {
+          "type": "text",
+          "name": "district_system_witness_5"
+        },
+        {
+          "type": "rect",
+          "name": "district_feature_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_feature_text_witness_0"
+        },
+        {
+          "type": "rect",
+          "name": "ownership_badge_witness"
+        },
+        {
+          "type": "text",
+          "name": "ownership_text_witness"
+        },
+        {
+          "type": "rect",
+          "name": "district_governance",
+          "semanticType": "governance"
+        },
+        {
+          "type": "text",
+          "name": "district_name_governance"
+        },
+        {
+          "type": "text",
+          "name": "district_owner_governance"
+        },
+        {
+          "type": "text",
+          "name": "district_purpose_governance"
+        },
+        {
+          "type": "text",
+          "name": "district_system_governance_0"
+        },
+        {
+          "type": "text",
+          "name": "district_system_governance_1"
+        },
+        {
+          "type": "text",
+          "name": "district_system_governance_2"
+        },
+        {
+          "type": "text",
+          "name": "district_system_governance_3"
+        },
+        {
+          "type": "text",
+          "name": "district_system_governance_4"
+        },
+        {
+          "type": "rect",
+          "name": "ownership_badge_governance"
+        },
+        {
+          "type": "text",
+          "name": "ownership_text_governance"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Full System Topology",
+      "subtitle": "All Districts, All Evidence Packets, All Paths",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness",
+          "bedrock",
+          "replay",
+          "builder",
+          "governance"
+        ]
+      },
+      "notes": "Complete view of the constitutional substrate. Success topology: Gateway → Witness → Bedrock → Replay → Builder → Governance → Gateway. Failure routes are visible. Every connection carries an evidence packet with owner, claim, evidence, confidence, status, and timestamp.",
+      "objects": [
+        {
+          "type": "rect",
+          "name": "background"
+        },
+        {
+          "type": "text",
+          "name": "slide_title"
+        },
+        {
+          "type": "text",
+          "name": "slide_subtitle"
+        },
+        {
+          "type": "rect",
+          "name": "district_gateway",
+          "semanticType": "gateway"
+        },
+        {
+          "type": "text",
+          "name": "district_name_gateway"
+        },
+        {
+          "type": "rect",
+          "name": "district_witness",
+          "semanticType": "witness"
+        },
+        {
+          "type": "text",
+          "name": "district_name_witness"
+        },
+        {
+          "type": "rect",
+          "name": "district_feature_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_feature_text_witness_0"
+        },
+        {
+          "type": "rect",
+          "name": "district_bedrock",
+          "semanticType": "bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_name_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_visual_message_bedrock"
+        },
+        {
+          "type": "rect",
+          "name": "district_replay",
+          "semanticType": "replay"
+        },
+        {
+          "type": "text",
+          "name": "district_name_replay"
+        },
+        {
+          "type": "rect",
+          "name": "district_builder",
+          "semanticType": "builder"
+        },
+        {
+          "type": "text",
+          "name": "district_name_builder"
+        },
+        {
+          "type": "rect",
+          "name": "district_governance",
+          "semanticType": "governance"
+        },
+        {
+          "type": "text",
+          "name": "district_name_governance"
+        },
+        {
+          "type": "rect",
+          "name": "district_gateway",
+          "semanticType": "gateway"
+        },
+        {
+          "type": "text",
+          "name": "district_name_gateway"
+        },
+        {
+          "type": "rect",
+          "name": "district_witness",
+          "semanticType": "witness"
+        },
+        {
+          "type": "text",
+          "name": "district_name_witness"
+        },
+        {
+          "type": "rect",
+          "name": "district_feature_witness_0"
+        },
+        {
+          "type": "text",
+          "name": "district_feature_text_witness_0"
+        },
+        {
+          "type": "rect",
+          "name": "district_bedrock",
+          "semanticType": "bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_name_bedrock"
+        },
+        {
+          "type": "text",
+          "name": "district_visual_message_bedrock"
+        },
+        {
+          "type": "rect",
+          "name": "district_replay",
+          "semanticType": "replay"
+        },
+        {
+          "type": "text",
+          "name": "district_name_replay"
+        },
+        {
+          "type": "rect",
+          "name": "district_builder",
+          "semanticType": "builder"
+        },
+        {
+          "type": "text",
+          "name": "district_name_builder"
+        },
+        {
+          "type": "rect",
+          "name": "district_governance",
+          "semanticType": "governance"
+        },
+        {
+          "type": "text",
+          "name": "district_name_governance"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "line",
+          "name": "success_route"
+        },
+        {
+          "type": "triangle",
+          "name": "success_route_arrow"
+        },
+        {
+          "type": "text",
+          "name": "slide_notes"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "V16",
+    "title": "PING Constitutional Baseline",
+    "description": "Spatial map of the system",
+    "timestamp": "2026-06-19T21:03:47.785Z"
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "original": "constitution\\CONSTITUTION.md",
+    "duplicate": "constitutional\\immutable\\CONSTITUTION.md",
+    "hash": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa"
+  },
+  {
+    "original": "constitutional\\immutable\\IDENTITY_LAW.md",
+    "duplicate": "laws\\IDENTITY_LAW.md",
+    "hash": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b"
+  },
+  {
+    "original": "constitutional\\immutable\\REPLAY_LAW.md",
+    "duplicate": "laws\\REPLAY_LAW.md",
+    "hash": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b"
+  },
+  {
+    "original": "constitutional\\immutable\\WITNESS_LAW.md",
+    "duplicate": "laws\\WITNESS_LAW.md",
+    "hash": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f"
+  }
+]

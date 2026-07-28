@@ -1,0 +1,75 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-19T22:03:22.330Z",
+  "districts": {
+    "gateway": {
+      "id": "gateway",
+      "scale": 1.7,
+      "visualIdentity": {
+        "shape": "hexagonal",
+        "silhouette": "port",
+        "color": "#00E5FF",
+        "accent": "#008B8B"
+      },
+      "isFoundational": false
+    },
+    "witness": {
+      "id": "witness",
+      "scale": 2.8,
+      "visualIdentity": {
+        "shape": "complex_observatory",
+        "silhouette": "landmark",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "highest"
+      },
+      "isFoundational": false
+    },
+    "bedrock": {
+      "id": "bedrock",
+      "scale": 2.3,
+      "visualIdentity": {
+        "shape": "layered_strata",
+        "silhouette": "foundation",
+        "color": "#404040",
+        "accent": "#606060",
+        "dominance": "foundational"
+      },
+      "isFoundational": true
+    },
+    "replay": {
+      "id": "replay",
+      "scale": 1.9,
+      "visualIdentity": {
+        "shape": "temporal_lattice",
+        "silhouette": "timeline",
+        "color": "#C0C0C0",
+        "accent": "#808080"
+      },
+      "isFoundational": false
+    },
+    "builder": {
+      "id": "builder",
+      "scale": 1.9,
+      "visualIdentity": {
+        "shape": "industrial_foundry",
+        "silhouette": "kinetic",
+        "color": "#00FF00",
+        "accent": "#008000"
+      },
+      "isFoundational": false
+    },
+    "governance": {
+      "id": "governance",
+      "scale": 2,
+      "visualIdentity": {
+        "shape": "fortified_gate",
+        "silhouette": "barrier",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "authoritative"
+      },
+      "isFoundational": false
+    }
+  }
+}

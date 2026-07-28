@@ -1,0 +1,412 @@
+# Constitutional Authority Registry
+# Phase S.16 — Constitutional Stabilization
+# Every responsibility must have exactly one owner.
+# This file is the constitution. Nothing else may claim ownership.
+
+metadata:
+  version: "1.0.0"
+  phase: "S.16"
+  established: "2026-06-27"
+  rule: "Every responsibility has exactly one canonical implementation. All other code calls it."
+
+# ─── Identity ───────────────────────────────────────────────────────────────
+
+CanonicalIdentityService:
+  owner: runtime/kernel
+  specification: specs/identity-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/identity/canonical-identity-service.ts
+  evidence: PROVEN
+  duplicates:
+    - file: runtime/security/capabilities.py
+      classification: DuplicateAlgorithm
+      evidence: "Defines separate Python Identity class. Does not call CanonicalIdentityService."
+  action: "Route all Python identity generation through CanonicalIdentityService"  
+  action_severity: HIGH
+
+# ─── Hashing ────────────────────────────────────────────────────────────────
+
+CanonicalHashAuthority:
+  owner: runtime/kernel/hash
+  specification: specs/hash-authority
+  status: missing_package  # kernel/hash/ does not exist yet
+  implementation:
+    - runtime/kernel/witness/certificate_authority.ts  # Sole canonical SHA-256
+    - runtime/kernel/witness/canonical_hash_authority.ts  # Bridge/wrapper
+  evidence: PROVEN
+  call_sites:
+    - runtime/kernel/replay/merkle_tree.ts          # PROVEN — delegates to CertificateAuthority
+    - runtime/kernel/commit-service/src/api/commit_controller.ts  # PROVEN — delegates
+  duplicates:
+    - file: runtime/kernel/witness/cryptographic-authorities.ts
+      classification: DuplicateAlgorithm
+      evidence: "Provides computeSHA256() that is NOT real SHA-256 (bit-shift string hash). Sits alongside canonical CertificateAuthority in same directory."
+      action_severity: CRITICAL
+  action: "Create kernel/hash/ package. Route every hash computation through it. Delete cryptographic-authorities.ts fake hashes."
+
+# ─── Replay ─────────────────────────────────────────────────────────────────
+
+ReplayTranscriptAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/replay/replay-transcript.ts
+  evidence: PROVEN
+  call_sites:
+    - runtime/kernel/replay/deterministic_replay_engine.ts  # PROVEN — constructs ReplayTranscript
+  duplicates:
+    - file: runtime/kernel/witness/witness-engine.ts
+      classification: DuplicateAlgorithm
+      evidence: "WitnessEngine builds separate replay transcripts in witness/ subsystem."
+  action_severity: CRITICAL
+
+ReplayVerificationAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/replay/replay_verification.ts
+  evidence: PROVEN
+  call_sites:
+    - runtime/adapters/express_commit_adapter.ts  # PROVEN — delegates entirely
+  duplicates:
+    - file: runtime/kernel/witness/replay-verifier.ts
+      classification: DuplicateAlgorithm
+      evidence: "ReplayVerifier with verifyTranscript(). Independent structural validation. Does not call canonical ReplayVerification."
+    - file: runtime/kernel/replay/witness_authority.ts  (verifyWitnessRoot)
+      classification: DuplicateAlgorithm
+      evidence: "verifyWitnessRoot() at line 233 implements independent witness root comparison."
+    - file: replay_worker.py  (root)
+      classification: DuplicateAlgorithm
+      evidence: "Python ReplayWorker.execute_replay() with independent SHA256 fingerprint + event sequence check."
+    - file: repository_event_layer.py  (verify_replay)
+      classification: DuplicateAlgorithm
+      evidence: "Filesystem-based SHA256 comparison. Different domain (filesystem vs event replay)."
+    - file: tests/certification/replay-determinism-1000x.test.ts
+      classification: TestDuplicate
+      evidence: "Inline witness root comparison. Does not call ReplayVerification."
+    - file: tests/certification/replay-witness-regeneration.test.ts
+      classification: TestDuplicate
+      evidence: "Inline 3-field witness comparison. Does not call ReplayVerification."
+    - file: tests/certification/replay-mutation.test.ts
+      classification: TestDuplicate
+      evidence: "Inline witness root string comparison."
+    - file: tests/certification/replay-ordering-fuzz.test.ts
+      classification: TestDuplicate
+      evidence: "Inline witness root comparison across 100 replays."
+    - file: tests/certification/replay-unicode.test.ts
+      classification: TestDuplicate
+      evidence: "Inline witness root comparison across unicode payloads."
+    - file: workers/replay_worker.py
+      classification: Stub
+      evidence: "Placeholder — claims it will call DeterministicReplayEngine but does not yet."
+  action: "Delete runtime duplicates. Make certification tests call canonical ReplayVerification."
+  action_severity: CRITICAL
+
+ReplayExecutionAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/replay/deterministic_replay_engine.ts
+  evidence: PROVEN
+  call_sites: []
+  duplicates: []
+  action: "No action — single implementation."
+
+# ─── Witness ─────────────────────────────────────────────────────────────────
+
+WitnessAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: fragmented
+  implementation:
+    - runtime/kernel/replay/witness_authority.ts  # Sole canonical
+  evidence: PROVEN
+  duplicates:
+    - file: runtime/kernel/witness/witness-engine.ts
+      classification: DuplicateAlgorithm
+      evidence: "Complete parallel witness generation in witness/ subsystem."
+    - file: runtime/kernel/witness/cryptographic-authorities.ts
+      classification: DuplicateAlgorithm
+      evidence: "MerkleAuthority and WitnessBuilder classes duplicate witness/merkle functionality."
+  action_severity: CRITICAL
+
+# ─── Certificate ─────────────────────────────────────────────────────────────
+
+CertificateAuthority:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: duplicate
+  implementation:
+    - runtime/kernel/witness/certificate_authority.ts  # Sole canonical
+  evidence: PROVEN
+  duplicates:
+    - file: runtime/kernel/witness/cryptographic-authorities.ts
+      classification: DuplicateAlgorithm
+      evidence: "CertificateAuthority class (line 65) with different implementation."
+  action_severity: HIGH
+
+# ─── Merkle Tree ────────────────────────────────────────────────────────────
+
+MerkleTree:
+  owner: runtime/kernel
+  specification: specs/replay-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/replay/merkle_tree.ts
+  evidence: PROVEN
+  call_sites: []
+  duplicates:
+    - file: runtime/kernel/witness/cryptographic-authorities.ts
+      classification: DuplicateAlgorithm
+      evidence: "MerkleAuthority class provides separate Merkle tree implementation."
+  action_severity: HIGH
+
+# ─── Canonical JSON ─────────────────────────────────────────────────────────
+
+CanonicalJson:
+  owner: runtime/kernel
+  specification: specs/canonical-json-authority
+  status: implemented
+  implementation:
+    - runtime/kernel/replay/canonical_json.ts
+  evidence: PROVEN
+  call_sites: []
+  duplicates:
+    - file: brainos/orchestration/src/canonical_json.py
+      classification: DuplicateAlgorithm
+      evidence: "Python reimplementation of RFC-8785 canonical JSON."
+  action_severity: HIGH
+
+# ─── Governance ─────────────────────────────────────────────────────────────
+
+GovernanceAuthority:
+  owner: runtime/kernel
+  specification: specs/governance-engine
+  status: missing_implementation
+  implementation:
+    - runtime/kernel/governance/IGovernanceAuthority.ts  # Interface only
+  evidence: PROVEN
+  duplicates:
+    - file: runtime/security/policy_engine.py
+      classification: DuplicateAlgorithm
+      evidence: "Python policy engine operates as de facto governance with no constitutional routing."
+  action: "Implement concrete GovernanceAuthority in kernel."
+  action_severity: CRITICAL
+
+# ─── Capability ──────────────────────────────────────────────────────────────
+
+CapabilityAuthority:
+  owner: runtime/kernel
+  specification: specs/capability-engine
+  status: missing_implementation
+  implementation:
+    - runtime/kernel/capability/ICapabilityAuthority.ts  # Interface only
+  evidence: PROVEN
+  duplicates:
+    - description: "6 competing capability systems across Python+TS codebase"
+      classification: HighlyFragmented
+  action: "Implement concrete CapabilityAuthority in kernel."
+  action_severity: CRITICAL
+
+# ─── Scheduler ──────────────────────────────────────────────────────────────
+
+SchedulerAuthority:
+  owner: runtime/kernel
+  specification: specs/scheduler-authority
+  status: missing_implementation
+  implementation:
+    - runtime/kernel/scheduler/ISchedulerAuthority.ts  # Interface only
+  duplicates:
+    - file: constitutional-compiler/execution/distributed-graph-scheduler.ts
+      classification: DuplicateAlgorithm
+      evidence: "Compiler has DistributedGraphScheduler. No kernel implementation exists."
+  action: "Implement concrete SchedulerAuthority in kernel or declare compiler as sole owner."
+  action_severity: HIGH
+
+# ─── Execution Context ──────────────────────────────────────────────────────
+
+ExecutionContextBuilder:
+  owner: runtime/kernel
+  specification: specs/execution-context
+  status: mostly_intact
+  implementation:
+    - runtime/kernel/execution/ExecutionContextBuilder.ts
+  duplicates:
+    - file: runtime/constitutional/constitutional_event_loop.py
+      classification: DuplicateAlgorithm
+      evidence: "Python event loop with separate context management."
+  action_severity: MEDIUM
+
+# ─── Repository Access ──────────────────────────────────────────────────────
+
+RepositoryAuthority:
+  owner: runtime/kernel
+  specification: specs/repository-authority
+  status: missing_implementation
+  implementation:
+    - runtime/kernel/repository/IRepositoryAuthority.ts  # Interface only
+  duplicates:
+    - file: runtime/adapters/postgres_event_store.ts
+      classification: AdHoc
+    - description: "3+ Python store implementations"
+      classification: AdHoc
+  action: "Implement concrete RepositoryAuthority in kernel."
+  action_severity: CRITICAL
+
+# ─── Constitutional IR ──────────────────────────────────────────────────────
+
+ConstitutionalIR:
+  owner: runtime/kernel
+  specification: specs/constitutional-ir
+  status: fragmented
+  implementation:
+    - runtime/kernel/replay/  # CanonicalEventEnvelope, ReplayCertificate, MerkleTree
+    - runtime/kernel/identity/  # CanonicalObject
+  evidence: PROVEN
+  duplicates:
+    - constitutional-compiler/ir/  # Compiler IR — different domain (syntax analysis vs runtime)
+      classification: DifferentDomain
+      evidence: "Compiler IR is static analysis types. Constitutional IR is runtime execution types. Zero cross-imports."
+
+# ─── Semantic Lowering ──────────────────────────────────────────────────────
+
+SemanticLowerer:
+  owner: constitutional-compiler
+  specification: specs/constitutional-ir
+  status: implemented
+  implementation:
+    - constitutional-compiler/lowering/semantic-lowerer.ts
+  evidence: PROVEN
+
+# ─── Ownership Engine ──────────────────────────────────────────────────────
+
+OwnershipEngine:
+  owner: constitutional-compiler
+  specification: specs/ownership-engine
+  status: implemented
+  implementation:
+    - constitutional-compiler/engines/ownership-engine.ts
+  evidence: PROVEN
+
+# ─── Diagnostics ────────────────────────────────────────────────────────────
+
+ConstitutionalDiagnostics:
+  owner: constitutional-compiler
+  specification: specs/diagnostics
+  status: implemented
+  implementation:
+    - constitutional-compiler/diagnostics/constitutional-diagnostics.ts
+  evidence: PROVEN
+
+# ─── Rule Engine ────────────────────────────────────────────────────────────
+
+RuleExecutor:
+  owner: constitutional-compiler
+  specification: specs/rule-engine
+  status: implemented
+  implementation:
+    - constitutional-compiler/rules/rule-executor.ts
+  evidence: PROVEN
+
+RuleProvenanceEngine:
+  owner: constitutional-compiler
+  specification: specs/rule-engine
+  status: implemented
+  implementation:
+    - constitutional-compiler/engines/rule-provenance-engine.ts
+  evidence: PROVEN
+
+# ─── Proof ──────────────────────────────────────────────────────────────────
+
+ConstitutionalProof:
+  owner: constitutional-compiler
+  specification: specs/proof-objects
+  status: implemented
+  implementation:
+    - constitutional-compiler/proof/constitutional-proof-objects.ts
+    - constitutional-compiler/pipeline/build-proof-pipeline.ts
+  evidence: PROVEN
+
+# ─── Evidence ───────────────────────────────────────────────────────────────
+
+EvidenceStore:
+  owner: constitutional-compiler
+  specification: specs/evidence-graph
+  status: implemented
+  implementation:
+    - constitutional-compiler/evidence/evidence-store.ts
+  evidence: PROVEN
+
+CounterEvidenceEngine:
+  owner: constitutional-compiler
+  specification: specs/evidence-graph
+  status: implemented
+  implementation:
+    - constitutional-compiler/engines/counter-evidence-engine.ts
+  evidence: PROVEN
+
+# ─── Repair Planner ─────────────────────────────────────────────────────────
+
+RepairPlanner:
+  owner: constitutional-compiler
+  specification: specs/repair-planner
+  status: implemented
+  implementation:
+    - constitutional-compiler/repair/automatic-repair-engine.ts
+  evidence: PROVEN
+
+# ─── Query ──────────────────────────────────────────────────────────────────
+
+ConstitutionalQuery:
+  owner: constitutional-compiler
+  specification: specs/constitutional-query
+  status: implemented
+  implementation:
+    - constitutional-compiler/query/constitutional-query-language.ts
+  evidence: PROVEN
+
+# ─── Constitutional Kill List ──────────────────────────────────────────────
+# Items that MUST be eliminated before Phase S.17 (Commodity Replacement)
+
+kill_list:
+  - item: Multiple replay verification implementations
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 1
+    evidence: "1 canonical + 4 runtime duplicates + 1 stub"
+  - item: Multiple hash authorities (47+ independent computation sites)
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 2
+    evidence: "~67 hash computation sites, only 3 route through canonical"
+  - item: Adapter semantic leakage (7 adapter files)
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 3
+    evidence: "7 adapters compute hashes, assign IDs, resolve authority"
+  - item: Broken import paths (6 adapter→kernel, 3 kernel-internal)
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 4
+    evidence: "All point to empty runtime/replay/ instead of runtime/kernel/replay/"
+  - item: Witness subsystem duplicates replay kernel
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 5
+    evidence: "Complete parallel replay ecosystem in runtime/kernel/witness/"
+  - item: Fake cryptographic authorities in kernel
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 2
+    evidence: "cryptographic-authorities.ts provides non-SHA-256 labeled computeSHA256()"
+  - item: Governance/Capability/Scheduler/Repository have no kernel implementation
+    status: 🔴 Must eliminate
+    sprint: S.16 Sprint 1
+    evidence: "Interfaces only — no concrete implementations"
+  - item: Commodity parser ownership (TypeScript Compiler API)
+    status: 🟡 Replace after stabilization
+    sprint: S.17
+  - item: Commodity graph algorithms
+    status: 🟡 Replace after stabilization
+    sprint: S.17
+  - item: Commodity LSP implementation
+    status: 🟡 Replace after stabilization
+    sprint: S.17

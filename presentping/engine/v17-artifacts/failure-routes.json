@@ -1,0 +1,170 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-19T22:03:22.332Z",
+  "failureRoutes": [
+    {
+      "from": "witness",
+      "to": "Rejection Sink",
+      "type": "rejected",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 4.5,
+          "y": 7
+        },
+        "bounds": {
+          "w": 1,
+          "h": 0.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF0000",
+          "accent": "#800000"
+        },
+        "components": {
+          "path": {
+            "type": "path",
+            "position": "center"
+          },
+          "indicators": {
+            "type": "indicator",
+            "count": 3,
+            "position": "distributed"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "governance",
+      "to": "Rollback",
+      "type": "rollback",
+      "destination": {
+        "id": "rollback_vault",
+        "position": {
+          "x": 0.5,
+          "y": 6
+        },
+        "bounds": {
+          "w": 1.2,
+          "h": 0.8
+        },
+        "visualIdentity": {
+          "shape": "vault",
+          "color": "#FF0000",
+          "accent": "#800000"
+        },
+        "components": {
+          "door": {
+            "type": "door",
+            "position": "front"
+          },
+          "lock": {
+            "type": "lock",
+            "position": "center"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "governance",
+      "to": "Bedrock Violation Log",
+      "type": "constraint_violation",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 4.5,
+          "y": 7
+        },
+        "bounds": {
+          "w": 1,
+          "h": 0.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF0000",
+          "accent": "#800000"
+        },
+        "components": {
+          "path": {
+            "type": "path",
+            "position": "center"
+          },
+          "indicators": {
+            "type": "indicator",
+            "count": 3,
+            "position": "distributed"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "witness",
+      "to": "Failure Channel",
+      "type": "ownership_conflict",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 4.5,
+          "y": 7
+        },
+        "bounds": {
+          "w": 1,
+          "h": 0.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF0000",
+          "accent": "#800000"
+        },
+        "components": {
+          "path": {
+            "type": "path",
+            "position": "center"
+          },
+          "indicators": {
+            "type": "indicator",
+            "count": 3,
+            "position": "distributed"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    },
+    {
+      "from": "builder",
+      "to": "Verification Failure",
+      "type": "verification_failure",
+      "destination": {
+        "id": "failure_channel",
+        "position": {
+          "x": 4.5,
+          "y": 7
+        },
+        "bounds": {
+          "w": 1,
+          "h": 0.5
+        },
+        "visualIdentity": {
+          "shape": "channel",
+          "color": "#FF0000",
+          "accent": "#800000"
+        },
+        "components": {
+          "path": {
+            "type": "path",
+            "position": "center"
+          },
+          "indicators": {
+            "type": "indicator",
+            "count": 3,
+            "position": "distributed"
+          }
+        },
+        "visibleAtAllZoomLevels": true
+      }
+    }
+  ]
+}

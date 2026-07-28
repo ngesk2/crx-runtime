@@ -1,0 +1,6 @@
+"Path","GitOrigin","Branch","SizeMB","FileCount","DirCount","LastCommit","IsSubmodule"
+"C:\Users\nolan\PING"," https://github.com/ngesk2/crx-runtime.git","audit-hardening","263.64","8592","2611","2026-06-24 10:45:51 -0600|Constitutional security hardening - 3/4 priorities complete","no"
+"C:\Users\nolan\PING\knowledge","no remote","master","1.59","262","115","2026-06-05 21:19:04 -0600|chore: add .gitignore","YES"
+"C:\Users\nolan\PING\runtime"," https://github.com/ngesk2/crx-runtime.git","audit-hardening","39.38","1931","433","2026-06-09 22:16:44 -0600|Constitutional remediation: Resolve OPEN-001, OPEN-002, OPEN-003","YES"
+"C:\Users\nolan\PING\vos","no remote","main","0.23","222","134","2026-06-05 21:18:56 -0600|chore: add .gitignore","YES"
+"C:\Users\nolan\CascadeProjects\CRX_REMOTE"," https://github.com/ngesk2/crx-runtime.git","main","42.37","1819","418","2026-06-07 21:33:39 -0600|Complete Phase 14: JS/TS Constitutional Boundary Sweep - 4 audit reports","no"

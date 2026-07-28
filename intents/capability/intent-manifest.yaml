@@ -1,0 +1,24 @@
+intent: capability
+mission: "Resolve and verify capability chains across the codebase."
+authority: CapabilityAuthority
+capabilities:
+  - CapabilityResolution
+  - CapabilityVerification
+  - CapabilityRegistry
+owns:
+  - runtime/kernel/capability/ICapabilityAuthority.ts
+consumes:
+  - IdentityAuthority
+  - ConstitutionalIR
+produces:
+  - CapabilityChain
+  - CapabilityMap
+specifications:
+  - specs/capability-engine
+adr: []
+tests: []
+evidence:
+  - "PROVEN — interface only, no concrete implementation"
+  - "6 competing capability systems across Python+TS"
+status: missing_implementation
+action: "Implement concrete CapabilityAuthority in kernel."

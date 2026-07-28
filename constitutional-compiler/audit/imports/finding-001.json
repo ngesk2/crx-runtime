@@ -1,0 +1,9 @@
+{
+  "id": "IMPORT-001",
+  "classification": "Supported",
+  "authority": "ConstitutionalIRAuthority",
+  "owner": "runtime/kernel",
+  "file": "constitutional-authorities.yaml",
+  "duplicate": null,
+  "recommendation": "defer"
+}

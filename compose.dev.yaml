@@ -1,0 +1,43 @@
+# Development Profile Overrides
+# Usage: docker compose --profile dev up
+
+services:
+  # Enable all workers in development
+  digestion-worker:
+    profiles:
+      - dev
+
+  newsletter-worker:
+    profiles:
+      - dev
+
+  projection-worker:
+    profiles:
+      - dev
+
+  witness-worker:
+    profiles:
+      - dev
+
+  replay-worker:
+    profiles:
+      - dev
+
+  # Development logging overrides
+  mission-control:
+    environment:
+      - LOG_LEVEL=debug
+      - DEBUG=true
+
+  gateway:
+    environment:
+      - LOG_LEVEL=debug
+      - DEBUG=true
+
+  # Hot reload for development (if applicable)
+  ui:
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./CascadeProjects/infra/ui-next:/app
+      - /app/node_modules

@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY brainos/orchestration/requirements-mission-control.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements-mission-control.txt
+
+# Copy application
+COPY brainos/orchestration/src ./src
+
+# Copy runtime modules needed by app.py (sys.path references)
+COPY runtime/constitutional ./runtime/constitutional
+COPY runtime/adapters ./runtime/adapters
+COPY runtime/security ./runtime/security
+COPY runtime/cognitive ./runtime/cognitive
+COPY runtime/tools ./runtime/tools
+COPY runtime/data ./runtime/data
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "src.mission_control.app:app", "--host", "0.0.0.0", "--port", "8000"]

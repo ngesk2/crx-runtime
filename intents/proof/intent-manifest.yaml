@@ -1,0 +1,24 @@
+intent: proof
+mission: "Construct constitutional proof objects from evidence and rules."
+authority: ProofAuthority
+capabilities:
+  - ProofConstruction
+  - EvidenceAggregation
+  - ProofVerification
+owns:
+  - constitutional-compiler/proof/constitutional-proof-objects.ts
+  - constitutional-compiler/pipeline/build-proof-pipeline.ts
+consumes:
+  - EvidenceStore
+  - RuleEngine
+  - Diagnostics
+produces:
+  - ConstitutionalProof
+  - ProofObject
+specifications:
+  - specs/proof-objects
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+status: implemented

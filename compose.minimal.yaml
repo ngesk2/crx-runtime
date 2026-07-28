@@ -1,0 +1,48 @@
+# Minimal Profile Overrides
+# Usage: docker compose --profile minimal up -d
+
+services:
+  # Only infrastructure services
+  postgres:
+    profiles:
+      - minimal
+
+  qdrant:
+    profiles:
+      - minimal
+
+  vault:
+    profiles:
+      - minimal
+
+  ollama:
+    profiles:
+      - minimal
+
+  # Disable all other services
+  mission-control:
+    profiles: []
+
+  repo-runtime:
+    profiles: []
+
+  gateway:
+    profiles: []
+
+  digestion-worker:
+    profiles: []
+
+  newsletter-worker:
+    profiles: []
+
+  projection-worker:
+    profiles: []
+
+  witness-worker:
+    profiles: []
+
+  replay-worker:
+    profiles: []
+
+  ui:
+    profiles: []

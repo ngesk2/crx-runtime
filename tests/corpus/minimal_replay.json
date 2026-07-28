@@ -1,0 +1,31 @@
+{
+  "name": "minimal_replay",
+  "description": "Single event replay with minimal payload",
+  "event_stream": [
+    {
+      "event_id": "evt-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-001",
+        "artifact_content": "test"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "expected_vectors": {
+    "canonical_bytes": "W3siYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDEiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6InRlc3QiLCJhcnRpZmFjdF9pZCI6ImFydGlmYWN0LTAwMSJ9LCJwb2xpY3lfdmVyc2lvbiI6IjEuMCIsInJlcGxheV92ZXJzaW9uIjoiMS4wIiwic2NoZW1hX3ZlcnNpb24iOiIxLjAiLCJ0aW1lc3RhbXAiOiIyMDI2LTA2LTA3VDAwOjAwOjAwWiJ9XQ",
+    "fingerprint": "sha256:ab75672ba9beeade43d56f048389cd0e35c5e61df932ec02bb1e304280ffeaa6",
+    "witness_root": "3cdd550c203ec031bb8144850ae116e18554d762bcf10e246e6d1729d1185eb1",
+    "leaf_count": 14,
+    "tree_height": 4,
+    "state_version": "1.0",
+    "artifact_count": 1
+  }
+}

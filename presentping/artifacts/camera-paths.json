@@ -1,0 +1,119 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-20T21:10:44.404Z",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "Gateway + Witness",
+      "subtitle": "Observation and Truth",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness"
+        ]
+      }
+    },
+    {
+      "slideNumber": 2,
+      "title": "Witness Internal Systems",
+      "subtitle": "Evidence and Validation",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness"
+        ]
+      }
+    },
+    {
+      "slideNumber": 3,
+      "title": "Bedrock",
+      "subtitle": "Canonical Reality",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "bedrock"
+        ]
+      }
+    },
+    {
+      "slideNumber": 4,
+      "title": "Replay",
+      "subtitle": "Historical Reconstruction",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "replay"
+        ]
+      }
+    },
+    {
+      "slideNumber": 5,
+      "title": "Builder + Governance",
+      "subtitle": "Execution and Constraint Enforcement",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "builder",
+          "governance"
+        ]
+      }
+    },
+    {
+      "slideNumber": 6,
+      "title": "Failure Handling",
+      "subtitle": "Rejection, Rollback, Ownership Conflict",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "in",
+        "focus": [
+          "witness",
+          "governance"
+        ]
+      }
+    },
+    {
+      "slideNumber": 7,
+      "title": "Full System Topology",
+      "subtitle": "All Districts, All Evidence Packets, All Paths",
+      "camera": {
+        "position": {
+          "x": 5,
+          "y": 3.75
+        },
+        "zoom": "out",
+        "focus": [
+          "gateway",
+          "witness",
+          "bedrock",
+          "replay",
+          "builder",
+          "governance"
+        ]
+      }
+    }
+  ]
+}

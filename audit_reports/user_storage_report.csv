@@ -1,0 +1,7 @@
+"Directory","Path","SizeGB","FileCount","DirCount","LastModified","LargestFile","LargestSizeGB","ZIP_Archives","ISO_Files","LargeInstallers","Flagged"
+"Videos","C:\Users\nolan\Videos","27.57","27187","94","6/24/2026 6:03:58 PM","C:\Users\nolan\Videos\2026-06-24 10-56-35.mp4","2.92","0","0","0","YES"
+"AppData_Roaming","C:\Users\nolan\AppData\Roaming","0.88","11525","2124","6/24/2026 6:18:13 PM","C:\Users\nolan\AppData\Roaming\Cursor\User\globalStorage\state.vscdb","0.07","10","0","0","no"
+"Documents","C:\Users\nolan\Documents","0.37","11045","1136","6/20/2026 7:17:04 PM","C:\Users\nolan\Documents\Codex\2026-06-20\files-mentioned-by-the-user-build\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node","0.13","0","0","0","no"
+"Downloads","C:\Users\nolan\Downloads","3.63","9","0","6/24/2026 12:53:08 PM","C:\Users\nolan\Downloads\DaVinci_Resolve_21.0.1_Windows.zip","3.32","1","0","2","YES"
+"AppData_Local","C:\Users\nolan\AppData\Local","126.84","300109","33279","6/24/2026 6:19:21 PM","C:\Users\nolan\AppData\Local\Docker\wsl\disk\docker_data.vhdx","77.61","928","0","57","YES"
+"Desktop","C:\Users\nolan\Desktop","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","NOT_FOUND"

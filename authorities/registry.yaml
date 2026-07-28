@@ -1,0 +1,122 @@
+# Constitutional Authority Registry
+# Maps every authority to its intent, owner, and status.
+
+authorities:
+  ReplayAuthority:
+    intent: replay
+    owner: runtime/kernel
+    status: implemented
+    capabilities: [ReplayTranscript, ReplayVerifier, ReplayWitness, ReplayExecution]
+    specifications: [specs/replay-authority]
+
+  CanonicalHashAuthority:
+    intent: hashing
+    owner: runtime/kernel
+    status: missing_package
+    capabilities: [CanonicalSHA256, CanonicalJSON, DomainSeparatedHashing, HashRouting]
+    specifications: [specs/hash-authority]
+
+  GovernanceAuthority:
+    intent: governance
+    owner: runtime/kernel
+    status: missing_implementation
+    capabilities: [ConstitutionalRuleEnforcement, PolicyEvaluation, AuthorityRouting]
+    specifications: [specs/governance-engine]
+
+  OwnershipAuthority:
+    intent: ownership
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [OwnershipResolution, OwnershipVerification, DependencyAnalysis]
+    specifications: [specs/ownership-engine]
+
+  CapabilityAuthority:
+    intent: capability
+    owner: runtime/kernel
+    status: missing_implementation
+    capabilities: [CapabilityResolution, CapabilityVerification, CapabilityRegistry]
+    specifications: [specs/capability-engine]
+
+  WitnessAuthority:
+    intent: witness
+    owner: runtime/kernel
+    status: fragmented
+    capabilities: [WitnessGeneration, WitnessVerification, CertificateVerification]
+    specifications: [specs/replay-authority]
+
+  EvidenceAuthority:
+    intent: evidence
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [EvidenceStorage, EvidenceVerification, CounterEvidence, EvidenceQuery]
+    specifications: [specs/evidence-graph]
+
+  CanonicalIdentityService:
+    intent: identity
+    owner: runtime/kernel
+    status: fragmented
+    capabilities: [IdentityGeneration, IdentityVerification, IdentityRegistry]
+    specifications: [specs/identity-authority]
+
+  ExecutionContextBuilder:
+    intent: execution
+    owner: runtime/kernel
+    status: mostly_intact
+    capabilities: [ContextConstruction, DeterministicTime, ExecutionScope]
+    specifications: [specs/execution-context]
+
+  RepositoryAuthority:
+    intent: repository
+    owner: runtime/kernel
+    status: missing_implementation
+    capabilities: [EventPersistence, EventRetrieval, StreamManagement]
+    specifications: [specs/repository-authority]
+
+  SchedulerAuthority:
+    intent: scheduler
+    owner: runtime/kernel
+    status: missing_implementation
+    capabilities: [WorkScheduling, DispatchRouting, ExecutionCoordination]
+    specifications: [specs/scheduler-authority]
+
+  RuleAuthority:
+    intent: rule-engine
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [RuleExecution, RuleProvenance, RuleCoverage]
+    specifications: [specs/rule-engine]
+
+  ProofAuthority:
+    intent: proof
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [ProofConstruction, EvidenceAggregation, ProofVerification]
+    specifications: [specs/proof-objects]
+
+  DiagnosticAuthority:
+    intent: diagnostics
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [DiagnosticGeneration, ViolationReporting, SeverityClassification]
+    specifications: [specs/diagnostics]
+
+  RepairAuthority:
+    intent: repair
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [ViolationDetection, RepairPlanning, EditGeneration]
+    specifications: [specs/repair-planner]
+
+  QueryAuthority:
+    intent: query
+    owner: constitutional-compiler
+    status: implemented
+    capabilities: [ConstitutionalQuery, RelationshipQuery, StateQuery]
+    specifications: [specs/constitutional-query]
+
+  ConstitutionalIRAuthority:
+    intent: constitutional-ir
+    owner: runtime/kernel
+    status: ratified
+    capabilities: [TypeDefinition, Serialization, Validation]
+    specifications: [specs/constitutional-ir]

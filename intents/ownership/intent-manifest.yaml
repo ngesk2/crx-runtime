@@ -1,0 +1,22 @@
+intent: ownership
+mission: "Determine which component owns every responsibility in the codebase."
+authority: OwnershipAuthority
+capabilities:
+  - OwnershipResolution
+  - OwnershipVerification
+  - DependencyAnalysis
+owns:
+  - constitutional-compiler/engines/ownership-engine.ts
+consumes:
+  - ConstitutionalIR
+  - SemanticIR
+produces:
+  - OwnershipMap
+  - DependencyGraph
+specifications:
+  - specs/ownership-engine
+adr: []
+tests: []
+evidence:
+  - "PROVEN — single implementation in compiler"
+status: implemented

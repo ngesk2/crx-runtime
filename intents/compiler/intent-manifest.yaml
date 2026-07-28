@@ -1,0 +1,23 @@
+intent: compiler
+mission: "Orchestrate constitutional analysis: parse, lower, analyze, and verify."
+authority: CompilerAuthority
+capabilities:
+  - PipelineOrchestration
+  - IRManagement
+  - AnalysisCoordination
+owns:
+  - constitutional-compiler/pipeline/build-proof-pipeline.ts
+  - constitutional-compiler/git/git-infrastructure.ts (commodity)
+consumes:
+  - All intent outputs
+produces:
+  - ConstitutionalProof
+  - ArchitectureDiff
+specifications:
+  - specs/constitutional-ir
+adr: []
+tests: []
+evidence:
+  - "PROVEN — pipeline structure exists"
+  - "3/10 stages implemented, 6 stubs, 4 empty dirs"
+status: partial

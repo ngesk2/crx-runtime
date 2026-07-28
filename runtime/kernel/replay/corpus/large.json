@@ -1,0 +1,15 @@
+{
+  "id": "large-test",
+  "items": [
+    {"id": 1, "name": "Item 1", "value": 100},
+    {"id": 2, "name": "Item 2", "value": 200},
+    {"id": 3, "name": "Item 3", "value": 300},
+    {"id": 4, "name": "Item 4", "value": 400},
+    {"id": 5, "name": "Item 5", "value": 500}
+  ],
+  "metadata": {
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-01-02T00:00:00Z",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+intent: replay
+mission: "Deterministic replay of constitutional execution."
+authority: ReplayAuthority
+capabilities:
+  - ReplayTranscript
+  - ReplayVerifier
+  - ReplayWitness
+  - ReplayExecution
+owns:
+  - runtime/kernel/replay/**
+consumes:
+  - SchedulerAuthority
+  - CanonicalHash
+  - CanonicalJson
+produces:
+  - ReplayCertificate
+  - WitnessRoot
+  - ReplayResult
+specifications:
+  - specs/replay-authority
+adr:
+  - TBD
+tests:
+  - tests/certification/replay-*
+evidence:
+  - "PROVEN — 1 canonical implementation + 4 runtime duplicates (being eliminated)"
+  - "Pre-audit claimed 9 implementations. Corrected: 1 canonical + 4 duplicates + 5 test duplicates."
+status: implemented
+duplicate_owners: runtime/kernel/witness/replay-verifier.ts, witness_authority.ts verifyWitnessRoot
+action: "Consolidate all verification through ReplayVerification. Make tests import canonical API."

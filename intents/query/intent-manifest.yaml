@@ -1,0 +1,22 @@
+intent: query
+mission: "Query constitutional state, evidence, and relationships."
+authority: QueryAuthority
+capabilities:
+  - ConstitutionalQuery
+  - RelationshipQuery
+  - StateQuery
+owns:
+  - constitutional-compiler/query/constitutional-query-language.ts
+consumes:
+  - EvidenceStore
+  - ConstitutionalIR
+  - OwnershipEngine
+produces:
+  - QueryResult
+specifications:
+  - specs/constitutional-query
+adr: []
+tests: []
+evidence:
+  - "PROVEN — implemented in compiler"
+status: implemented

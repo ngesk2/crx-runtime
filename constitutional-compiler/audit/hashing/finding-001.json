@@ -1,0 +1,9 @@
+{
+  "id": "HASH-001",
+  "classification": "Supported",
+  "authority": "CanonicalHashAuthority",
+  "owner": "runtime/kernel",
+  "file": "constitutional-authorities.yaml",
+  "duplicate": null,
+  "recommendation": "defer"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "AUTH-001",
+  "classification": "Supported",
+  "authority": "ReplayAuthority",
+  "owner": "runtime/kernel",
+  "file": "constitutional-authorities.yaml",
+  "duplicate": null,
+  "recommendation": "defer"
+}

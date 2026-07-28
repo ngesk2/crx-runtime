@@ -1,0 +1,37 @@
+{
+  "name": "violation_replay",
+  "description": "Event that triggers invariant violation",
+  "event_stream": [
+    {
+      "event_id": "evt-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-001",
+        "artifact_content": ""
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "expected_vectors": {
+    "canonical_bytes": "W3siYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDEiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6IiIsImFydGlmYWN0X2lkIjoiYXJ0aWZhY3QtMDAxIn0sInBvbGljeV92ZXJzaW9uIjoiMS4wIiwicmVwbGF5X3ZlcnNpb24iOiIxLjAiLCJzY2hlbWFfdmVyc2lvbiI6IjEuMCIsInRpbWVzdGFtcCI6IjIwMjYtMDYtMDdUMDA6MDA6MDBaIn1d",
+    "fingerprint": "sha256:572f565b75fc606b66da101e85351199f7101e1eb2e7c1ddcfcc726a71683b94",
+    "witness_root": "4cafa6e3530685110b61171699cc2397a7a96088310b9a291acebd1d8234f6fc",
+    "leaf_count": 14,
+    "tree_height": 4,
+    "state_version": "1.0",
+    "artifact_count": 1
+  },
+  "expected_violations": [
+    {
+      "invariant_id": "ARTIFACT_HASH_VALID",
+      "violation_type": "empty_hash"
+    }
+  ]
+}

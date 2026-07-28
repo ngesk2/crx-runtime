@@ -1,0 +1,71 @@
+name: Replay Integrity
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  replay-integrity:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      working-directory: ./runtime/kernel/commit-service
+      run: npm ci
+    
+    - name: Run dependency validator
+      run: npx ts-node tools/dependency-guard/dependency-validator.ts runtime/replay
+    
+    - name: Run replay tests
+      working-directory: ./runtime/kernel/commit-service
+      run: npm run replay:test
+    
+    - name: Check for forbidden imports in replay kernel
+      run: |
+        if grep -r "import.*from.*['\"]express['\"]" runtime/replay/; then
+          echo "ERROR: Forbidden import 'express' found in replay kernel"
+          exit 1
+        fi
+        if grep -r "import.*from.*['\"]pg['\"]" runtime/replay/; then
+          echo "ERROR: Forbidden import 'pg' found in replay kernel"
+          exit 1
+        fi
+        if grep -r "import.*from.*['\"]redis['\"]" runtime/replay/; then
+          echo "ERROR: Forbidden import 'redis' found in replay kernel"
+          exit 1
+        fi
+        if grep -r "import.*from.*['\"]axios['\"]" runtime/replay/; then
+          echo "ERROR: Forbidden import 'axios' found in replay kernel"
+          exit 1
+        fi
+        if grep -r "import.*from.*['\"]fs['\"]" runtime/replay/; then
+          echo "ERROR: Forbidden import 'fs' found in replay kernel"
+          exit 1
+        fi
+        if grep -r "process\.env" runtime/replay/; then
+          echo "ERROR: process.env access found in replay kernel"
+          exit 1
+        fi
+        if grep -r "Date\.now" runtime/replay/; then
+          echo "ERROR: Date.now found in replay kernel"
+          exit 1
+        fi
+        if grep -r "Math\.random" runtime/replay/; then
+          echo "ERROR: Math.random found in replay kernel"
+          exit 1
+        fi
+        if grep -r "import(" runtime/replay/; then
+          echo "ERROR: Dynamic import found in replay kernel"
+          exit 1
+        fi
+        echo "SUCCESS: No forbidden imports found in replay kernel"

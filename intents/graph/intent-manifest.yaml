@@ -1,0 +1,22 @@
+intent: graph
+mission: "Provide graph infrastructure for dependency and relationship analysis."
+authority: (commodity — delegated)
+capabilities:
+  - GraphStorage
+  - GraphAlgorithms
+  - GraphQuery
+owns:
+  - constitutional-compiler/graph/graph-algorithms.ts (commodity)
+  - constitutional-compiler/graph/graph-engine.ts (commodity)
+consumes:
+  - ConstitutionalIR
+produces:
+  - GraphAnalysis
+specifications:
+  - specs/overlay-graph
+adr: []
+tests: []
+evidence:
+  - "PROVEN — commodity implementation, to be replaced by Joern/CPG in Phase S.18"
+status: commodity
+action: "Phase S.18: Replace with Code Property Graph (Joern)."

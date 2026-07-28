@@ -1,0 +1,44 @@
+# Specification: Hash Authority
+# Phase S.16 — Constitutional Stabilization
+
+spec:
+  id: hash-authority
+  version: "1.0.0"
+  status: draft  # kernel/hash/ package does not exist yet
+  owner: runtime/kernel/hash/
+
+scope:
+  owns:
+    - CanonicalSHA256: "NIST FIPS 180-4 SHA-256 via CertificateAuthority.sha256()"
+    - CanonicalJSON: "RFC-8785 canonical JSON serialization via CanonicalJson"
+    - DomainSeparation: "Domain-separated hashing for Merkle trees, certificates, witnesses"
+    - HashRouting: "All hash computations must route through this authority"
+  does_not_own:
+    - Platform-specific file hashing (node_self_check_adapter)
+    - Audit manifest generation (generate_*.py scripts — utility, not constitutional)
+
+boundary:
+  allowed_dependents:
+    - runtime/kernel/replay/*
+    - runtime/kernel/identity/*
+    - runtime/adapters/*
+    - constitutional-compiler/*
+  forbidden_dependents:
+    - (none — all code should route through this authority)
+
+rules:
+  - Every SHA-256 computation must go through runtime/kernel/hash/
+  - No direct crypto.createHash('sha256') outside kernel/hash/
+  - No direct hashlib.sha256 in Python code — all Python hashing routes through bridge
+  - JSON.stringify is NOT canonical JSON (use CanonicalJson.canonicalize())
+  - No ad hoc digests (base64, string hash, bit-shift hash)
+
+verification:
+  - Grep for: crypto.createHash, hashlib.sha256, JSON.stringify.*hash outside kernel/hash/
+  - Count: number of hash computation sites routing through canonical vs. bypassing
+
+evidence:
+  pre_audit: "~27 alternative paths claimed"
+  corrected: "~67 distinct hash computation sites across ~45 files"
+  canonical_call_sites: "3 (merkle_tree.ts x2, commit_controller.ts)"
+  target: "100% of hash computations route through kernel/hash/"

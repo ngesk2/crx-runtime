@@ -1,0 +1,94 @@
+{
+  "sweep": 3,
+  "date": "2026-06-23",
+  "summary": {
+    "functions_classes_total": 570,
+    "functions": 505,
+    "classes": 65,
+    "python": 498,
+    "typescript": 72,
+    "import_statements": 449,
+    "api_routes": 60,
+    "sql_tables": 44,
+    "config_files": 134,
+    "local_dependencies": 96
+  },
+  "functions_top": [
+    {"name": "query_documents", "file": "/runtime/constitutional/retrieval.py", "lang": "python"},
+    {"name": "retrieve", "file": "/runtime/constitutional/retrieval.py", "lang": "python"},
+    {"name": "ingest_document", "file": "/runtime/constitutional/ingestion.py", "lang": "python"},
+    {"name": "run_projection", "file": "/runtime/projection_worker/projection_worker.py", "lang": "python"},
+    {"name": "ensure_qdrant_collection", "file": "/runtime/projection_worker/projection_worker.py", "lang": "python"},
+    {"name": "get_db_connection", "file": "/runtime/projection_worker/projection_worker.py", "lang": "python"},
+    {"name": "emit", "file": "/runtime/constitutional/event_chain.py", "lang": "python"},
+    {"name": "replay", "file": "/runtime/replay/src/replay.ts", "lang": "typescript"},
+    {"name": "commit", "file": "/runtime/kernel/commit-service/src/server.ts", "lang": "typescript"},
+    {"name": "extract", "file": "/runtime/kernel/commit-service/src/extraction/extractor.ts", "lang": "typescript"}
+  ],
+  "classes": [
+    {"name": "CryptographicEvent", "file": "/runtime/constitutional/event_chain.py"},
+    {"name": "MissionControlApp", "file": "/app_container.py"},
+    {"name": "NewsletterBuilder", "file": "/brainos/newsletter/newsletter_builder.py"},
+    {"name": "RSSParser", "file": "/brainos/rss/rss_parser.py"},
+    {"name": "GoogleDriveAdapter", "file": "/runtime/adapters/google_drive/adapter.py"},
+    {"name": "OllamaInferenceAdapter", "file": "/runtime/adapters/inference_adapter.py"},
+    {"name": "SecretAdapter", "file": "/runtime/adapters/secret_adapter.py"},
+    {"name": "QdrantProjectionWorker", "file": "/runtime/projection_worker/projection_worker.py"},
+    {"name": "ConstitutionalRetriever", "file": "/runtime/constitutional/retrieval.py"},
+    {"name": "EventChainManager", "file": "/runtime/constitutional/event_chain.py"}
+  ],
+  "api_routes": {
+    "total": 60,
+    "by_method": {"GET": 49, "POST": 11},
+    "grouped": {
+      "constitutional": ["/constitutional/ingest", "/constitutional/retrieve", "/constitutional/documents", "/constitutional/query", "/constitution/search", "/constitution/doc/{doc_id}", "/constitution/authority"],
+      "memory": ["/memory/stats", "/memory/search"],
+      "events": ["/events/recent", "/events/summary"],
+      "infrastructure": ["/health", "/infrastructure/status", "/qdrant/health"],
+      "models": ["/inference/models", "/models/capabilities", "/models/validate"],
+      "google_drive": ["/google-drive/status", "/google-drive/ingest"],
+      "web_retrieval": ["/web-retrieval/status", "/web-retrieval/search", "/web-retrieval/pipeline"],
+      "backup": ["/backup/status", "/backup/manual", "/backup/verify", "/backup/restore-verify"],
+      "kernel": ["/kernel/commit", "/kernel/audit", "/kernel/audit/system"],
+      "other": ["/replay/status", "/lineage/graph", "/credentials/inventory", "/ollama/harness/validate", "/ollama/harness/test", "/continuity/status"]
+    }
+  },
+  "sql_schemas": {
+    "primary_tables": [
+      {"name": "objects", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"},
+      {"name": "events", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"},
+      {"name": "lineage", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"},
+      {"name": "projections", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"},
+      {"name": "system_metadata", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"},
+      {"name": "audit_log", "file": "/brainos/orchestration/constitutional/canonical_state/schema.sql"}
+    ]
+  },
+  "core_dependencies": {
+    "projection_worker": ["qdrant_client", "psycopg2", "dotenv", "database"],
+    "mission_control": ["fastapi", "psycopg2", "qdrant_client", "dotenv"],
+    "constitutional": ["qdrant_client", "psycopg2", "database", "secret_adapter", "inference_adapter"],
+    "newsletter": ["flask", "psycopg2", "email", "smtplib"],
+    "rss": ["flask", "psycopg2", "feedparser", "requests"],
+    "adapters": ["google_auth_oauthlib", "googleapiclient", "requests", "cryptography"],
+    "gateway": ["express", "cors", "fetch"],
+    "kernel-commit": ["express", "pg", "uuid"]
+  },
+  "event_types": [
+    {"name": "CryptographicEvent", "file": "/runtime/constitutional/event_chain.py", "fields": ["event_id", "event_type", "object_id", "data", "timestamp", "hash", "previous_hash"]}
+  ],
+  "config_sources": {
+    "key_configs": [
+      {"file": "/config.yaml", "type": "yaml", "scope": "project_root"},
+      {"file": "/package.json", "type": "json", "scope": "project_root"},
+      {"file": "/pnpm-workspace.yaml", "type": "yaml", "scope": "monorepo"},
+      {"file": "/brainos/orchestration/infrastructure/docker/compose/docker-compose-mission-control.yml", "type": "compose", "scope": "mission_control"},
+      {"file": "/brainos/orchestration/config/model_capabilities.json", "type": "json", "scope": "model_config"},
+      {"file": "/runtime/kernel/commit-service/package.json", "type": "json", "scope": "kernel"},
+      {"file": "/gateway/package.json", "type": "json", "scope": "gateway"},
+      {"file": "/presentping/package.json", "type": "json", "scope": "presentping"},
+      {"file": "/workers/ollama-worker.yaml", "type": "yaml", "scope": "workers"},
+      {"file": "/brainos/rss/sources.yaml", "type": "yaml", "scope": "rss_feeds"}
+    ]
+  },
+  "note": "Structural extraction only. No embeddings generated. This is Sweep 3 of 5."
+}

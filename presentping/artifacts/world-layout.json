@@ -1,0 +1,226 @@
+{
+  "version": "V17",
+  "timestamp": "2026-06-20T21:10:44.401Z",
+  "districts": [
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "owner": "External",
+      "scale": 3,
+      "visualIdentity": {
+        "shape": "massive_port_complex",
+        "silhouette": "civilization_interface",
+        "color": "#00E5FF",
+        "accent": "#008B8B",
+        "scale": "monumental"
+      },
+      "position": {
+        "x": 2,
+        "y": -1,
+        "w": 6,
+        "h": 4.5
+      }
+    },
+    {
+      "id": "witness",
+      "name": "Witness",
+      "owner": "Kernel",
+      "scale": 8,
+      "visualIdentity": {
+        "shape": "mission_control_observatory",
+        "silhouette": "iconic_landmark",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "dominance": "highest",
+        "scale": "monumental"
+      },
+      "position": {
+        "x": -0.835,
+        "y": -3.5,
+        "w": 16,
+        "h": 12
+      }
+    },
+    {
+      "id": "bedrock",
+      "name": "Bedrock",
+      "owner": "Kernel",
+      "scale": 6,
+      "visualIdentity": {
+        "shape": "environmental_substrate",
+        "silhouette": "reality_foundation",
+        "color": "#404040",
+        "accent": "#505050",
+        "dominance": "environmental",
+        "scale": "substrate"
+      },
+      "position": {
+        "x": 1.165,
+        "y": 0.5,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": "replay",
+      "name": "Replay",
+      "owner": "Agent-RX",
+      "scale": 3.5,
+      "visualIdentity": {
+        "shape": "temporal_highway_complex",
+        "silhouette": "historical_reconstruction",
+        "color": "#C0C0C0",
+        "accent": "#808080",
+        "drama": "high"
+      },
+      "position": {
+        "x": 1.5,
+        "y": 3.625,
+        "w": 7,
+        "h": 5.25
+      }
+    },
+    {
+      "id": "builder",
+      "name": "Builder",
+      "owner": "Agent-BX",
+      "scale": 3.2,
+      "visualIdentity": {
+        "shape": "industrial_production_complex",
+        "silhouette": "productive_facility",
+        "color": "#00FF00",
+        "accent": "#008000",
+        "activity": "high"
+      },
+      "position": {
+        "x": -0.3650000000000002,
+        "y": 2.5999999999999996,
+        "w": 6.4,
+        "h": 4.800000000000001
+      }
+    },
+    {
+      "id": "governance",
+      "name": "Governance",
+      "owner": "Constitution",
+      "scale": 3.5,
+      "visualIdentity": {
+        "shape": "dangerous_authority_complex",
+        "silhouette": "intimidating_gates",
+        "color": "#FFC400",
+        "accent": "#FF8C00",
+        "danger": "high"
+      },
+      "position": {
+        "x": -0.665,
+        "y": -0.125,
+        "w": 7,
+        "h": 5.25
+      }
+    }
+  ],
+  "failureDestinations": [
+    {
+      "id": "rejection_sink",
+      "position": {
+        "x": 8.5,
+        "y": 6
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "sink",
+        "color": "#FF0000",
+        "accent": "#800000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "rollback_vault",
+      "position": {
+        "x": 0.5,
+        "y": 6
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "vault",
+        "color": "#FF8C00",
+        "accent": "#FF4500"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "violation_log",
+      "position": {
+        "x": 4.5,
+        "y": 7.5
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "log",
+        "color": "#FF4500",
+        "accent": "#8B0000"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "failure_channel",
+      "position": {
+        "x": 2.5,
+        "y": 7.5
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "channel",
+        "color": "#FF6347",
+        "accent": "#B22222"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "ownership_conflict_chamber",
+      "position": {
+        "x": 6.5,
+        "y": 7.5
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "chamber",
+        "color": "#FFD700",
+        "accent": "#FF8C00"
+      },
+      "visibleAtAllZoomLevels": true
+    },
+    {
+      "id": "verification_failure_pit",
+      "position": {
+        "x": 8.5,
+        "y": 7.5
+      },
+      "bounds": {
+        "w": 2,
+        "h": 1.5
+      },
+      "visualIdentity": {
+        "shape": "pit",
+        "color": "#DC143C",
+        "accent": "#8B0000"
+      },
+      "visibleAtAllZoomLevels": true
+    }
+  ]
+}

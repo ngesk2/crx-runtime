@@ -1,0 +1,170 @@
+[
+  {
+    "path": "AUTHORITY_MAP.md",
+    "sha256": "8dacb4e4126d74fbc72bb518770fa9047edfd9a9df6dc3f64fdf5a4985929f5e",
+    "size": 4259,
+    "mtime": 1782184371.3050568,
+    "ctime": 1782184371.3045528
+  },
+  {
+    "path": "HASH_MANIFEST.json",
+    "sha256": "43f2a2e04d05d2e95206f64f9bd53e922de664cc0e007968355f723872640e67",
+    "size": 3785,
+    "mtime": 1782184374.066033,
+    "ctime": 1782184374.066033
+  },
+  {
+    "path": "projection_manifest.json",
+    "sha256": "dfa614aee49b6f9ce5f7848fb1619d82c021efe3567bdac2d819d900d4945959",
+    "size": 503,
+    "mtime": 1782186933.1807427,
+    "ctime": 1782186933.1807427
+  },
+  {
+    "path": "VAULT_INDEX.md",
+    "sha256": "3c2ad9b70ee0bbc0150cf392bb967a3245cc4d6aa86d30ff5848d5aa814a0f3b",
+    "size": 3030,
+    "mtime": 1782184363.5774772,
+    "ctime": 1782184363.5769672
+  },
+  {
+    "path": "audits\\CREDENTIAL_AUTHORITY_CENSUS.md",
+    "sha256": "01e9e894479b2554d487ba6fed83808955d8a57ae0417035172f82c6dfbb29d4",
+    "size": 12877,
+    "mtime": 1782179449.6546662,
+    "ctime": 1782180383.5836957
+  },
+  {
+    "path": "audits\\EXECUTION_SUMMARY.md",
+    "sha256": "a64902506074330ee3a6971d696971afde947f942ff77f166f07f4bb8b9e9763",
+    "size": 11366,
+    "mtime": 1782179684.9965627,
+    "ctime": 1782180384.7140882
+  },
+  {
+    "path": "audits\\HUMAN_OBSERVABILITY_CERTIFICATION.md",
+    "sha256": "109e3a414125ca6fe66e83c13aabece04ff594ff6ff37b65dad8493eae00ee99",
+    "size": 12621,
+    "mtime": 1782180077.105816,
+    "ctime": 1782180384.4686587
+  },
+  {
+    "path": "audits\\QDRANT_OPERATIONAL_PROOF.md",
+    "sha256": "c898c809f1e194163d30d1fbbedaa3776acc0f7ce5d7645d37b106e2300a9b5a",
+    "size": 6026,
+    "mtime": 1782179383.4454765,
+    "ctime": 1782180383.0078063
+  },
+  {
+    "path": "audits\\REALITY_CHECK.md",
+    "sha256": "7c4b46c28f464933bcbca0762b538d17719a3d213c80162fc9b11a96ca796109",
+    "size": 12387,
+    "mtime": 1782179316.2762573,
+    "ctime": 1782180382.6887245
+  },
+  {
+    "path": "capabilities\\CREDENTIAL_SURVIVABILITY_MATRIX.md",
+    "sha256": "d44ea1f24a6a0371248e364218c05e479a0df36dafdde28d9a3f3d91108b9303",
+    "size": 8900,
+    "mtime": 1782180038.473362,
+    "ctime": 1782180385.3271503
+  },
+  {
+    "path": "capabilities\\MISSION_CONTROL_CAPABILITY_MATRIX.md",
+    "sha256": "4a876ee395d082c87fff6a2b7277b51a9119902a8f88f5e404e3436b71ad8387",
+    "size": 5120,
+    "mtime": 1782179980.8698866,
+    "ctime": 1782180385.1130915
+  },
+  {
+    "path": "capabilities\\OBSERVABILITY_MATRIX.md",
+    "sha256": "12e93cb152ae7af0652ab20fa08798417cad272921b08ba6c0e7ca26015386d7",
+    "size": 5859,
+    "mtime": 1782179963.4259682,
+    "ctime": 1782180384.932724
+  },
+  {
+    "path": "capabilities\\OPENWEBUI_MISSION_CONTROL_INTEGRATION.md",
+    "sha256": "e33bd5a8ce6da04cae4b83586ea6bac77d5196b6a6b748012a74fc31f5aab30f",
+    "size": 10314,
+    "mtime": 1782179651.6219068,
+    "ctime": 1782180385.8250346
+  },
+  {
+    "path": "constitution\\CONSTITUTION.md",
+    "sha256": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+    "size": 9279,
+    "mtime": 1781484266.7896729,
+    "ctime": 1782180397.95883
+  },
+  {
+    "path": "constitutional\\immutable\\CONSTITUTION.md",
+    "sha256": "f0712cb735c4550b5b93db86629bd11aabd641762a605d75af6dfecf4244dfaa",
+    "size": 9279,
+    "mtime": 1781484266.7896729,
+    "ctime": 1782186940.844972
+  },
+  {
+    "path": "constitutional\\immutable\\IDENTITY_LAW.md",
+    "sha256": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b",
+    "size": 8231,
+    "mtime": 1781485888.056133,
+    "ctime": 1782186941.1064186
+  },
+  {
+    "path": "constitutional\\immutable\\IMMUTABLE_HASH_MANIFEST.json",
+    "sha256": "915e6247cf949abf070cb80f70b428dfe3d87a55ab026a87b65bcacca5fe3483",
+    "size": 978,
+    "mtime": 1782186953.229444,
+    "ctime": 1782186953.2289224
+  },
+  {
+    "path": "constitutional\\immutable\\REPLAY_LAW.md",
+    "sha256": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+    "size": 7696,
+    "mtime": 1781485948.2511058,
+    "ctime": 1782186941.3099763
+  },
+  {
+    "path": "constitutional\\immutable\\WITNESS_LAW.md",
+    "sha256": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+    "size": 6694,
+    "mtime": 1781029758.0,
+    "ctime": 1782186941.530623
+  },
+  {
+    "path": "identity\\PING_IDENTITY.md",
+    "sha256": "d5ff46a8e6fdb2e16f981572c44d878bf0006700747aa686322b048852969c67",
+    "size": 4617,
+    "mtime": 1782186962.8245857,
+    "ctime": 1782186962.8245857
+  },
+  {
+    "path": "laws\\IDENTITY_LAW.md",
+    "sha256": "bd8c0885704e8cbcafd704ba1f5dd34f22a16eded894373b51681a8b69113d2b",
+    "size": 8231,
+    "mtime": 1781485888.056133,
+    "ctime": 1782180398.40903
+  },
+  {
+    "path": "laws\\REPLAY_LAW.md",
+    "sha256": "48e610b710f7a161b118b660264c502f87bf7e1c5f569d012bedf3194c4a960b",
+    "size": 7696,
+    "mtime": 1781485948.2511058,
+    "ctime": 1782181644.371006
+  },
+  {
+    "path": "laws\\WITNESS_LAW.md",
+    "sha256": "1693e1a559794a69aedb2e574b261b39da6a1f1c440b360c22a91851546bd48f",
+    "size": 6694,
+    "mtime": 1781029758.0,
+    "ctime": 1782180398.675049
+  },
+  {
+    "path": "runbooks\\OPERATOR_RUNBOOKS.md",
+    "sha256": "9578ba3f6b2520dfd312ad40b15cbb903df1bc46a99121d4bb0ee5b4096c927c",
+    "size": 11839,
+    "mtime": 1782180057.4099443,
+    "ctime": 1782180385.519729
+  }
+]

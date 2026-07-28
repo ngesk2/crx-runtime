@@ -1,0 +1,63 @@
+{
+  "name": "multi_event_replay",
+  "description": "Multiple events in sequence",
+  "event_stream": [
+    {
+      "event_id": "evt-001",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:00:00Z",
+      "payload": {
+        "artifact_id": "artifact-001",
+        "artifact_content": "first"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    },
+    {
+      "event_id": "evt-002",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:01:00Z",
+      "payload": {
+        "artifact_id": "artifact-002",
+        "artifact_content": "second"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    },
+    {
+      "event_id": "evt-003",
+      "event_type": "artifact_commit",
+      "actor_id": "actor-001",
+      "timestamp": "2026-06-07T00:02:00Z",
+      "payload": {
+        "artifact_id": "artifact-003",
+        "artifact_content": "third"
+      },
+      "lineage": {
+        "parent_event_ids": []
+      },
+      "schema_version": "1.0",
+      "replay_version": "1.0",
+      "policy_version": "1.0"
+    }
+  ],
+  "expected_vectors": {
+    "canonical_bytes": "W3siYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDEiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6ImZpcnN0IiwiYXJ0aWZhY3RfaWQiOiJhcnRpZmFjdC0wMDEifSwicG9saWN5X3ZlcnNpb24iOiIxLjAiLCJyZXBsYXlfdmVyc2lvbiI6IjEuMCIsInNjaGVtYV92ZXJzaW9uIjoiMS4wIiwidGltZXN0YW1wIjoiMjAyNi0wNi0wN1QwMDowMDowMFoifSx7ImFjdG9yX2lkIjoiYWN0b3ItMDAxIiwiZXZlbnRfaWQiOiJldnQtMDAyIiwiZXZlbnRfdHlwZSI6ImFydGlmYWN0X2NvbW1pdCIsImxpbmVhZ2UiOnsicGFyZW50X2V2ZW50X2lkcyI6W119LCJwYXlsb2FkIjp7ImFydGlmYWN0X2NvbnRlbnQiOiJzZWNvbmQiLCJhcnRpZmFjdF9pZCI6ImFydGlmYWN0LTAwMiJ9LCJwb2xpY3lfdmVyc2lvbiI6IjEuMCIsInJlcGxheV92ZXJzaW9uIjoiMS4wIiwic2NoZW1hX3ZlcnNpb24iOiIxLjAiLCJ0aW1lc3RhbXAiOiIyMDI2LTA2LTA3VDAwOjAxOjAwWiJ9LHsiYWN0b3JfaWQiOiJhY3Rvci0wMDEiLCJldmVudF9pZCI6ImV2dC0wMDMiLCJldmVudF90eXBlIjoiYXJ0aWZhY3RfY29tbWl0IiwibGluZWFnZSI6eyJwYXJlbnRfZXZlbnRfaWRzIjpbXX0sInBheWxvYWQiOnsiYXJ0aWZhY3RfY29udGVudCI6InRoaXJkIiwiYXJ0aWZhY3RfaWQiOiJhcnRpZmFjdC0wMDMifSwicG9saWN5X3ZlcnNpb24iOiIxLjAiLCJyZXBsYXlfdmVyc2lvbiI6IjEuMCIsInNjaGVtYV92ZXJzaW9uIjoiMS4wIiwidGltZXN0YW1wIjoiMjAyNi0wNi0wN1QwMDowMjowMFoifV0",
+    "fingerprint": "sha256:94688f23c3bae1d45ab50307c8b0838aad9286c558e59e8e2377816a52099b64",
+    "witness_root": "233f39e4a04d8b0f03533c39ebc2e85574749dc78c1910f4c43c5394f81faf2d",
+    "leaf_count": 14,
+    "tree_height": 4,
+    "state_version": "1.0",
+    "artifact_count": 3
+  }
+}
