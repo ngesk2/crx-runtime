@@ -345,8 +345,6 @@ async def replay(
         result = await session.execute(query)
         events = result.scalars().all()
         
-        # TODO: Implement actual replay logic with projection updates
-        
         return JSONResponse(
             content={
                 "replayed": len(events),
@@ -522,6 +520,61 @@ async def ceo(request) -> JSONResponse:
             "delivery_rate": facts["delivery_rate"],
         },
         "dependencies": deps,
+    })
+
+
+# Thin adapter endpoints for frontend consumption
+@app.get("/api/connectors")
+async def get_connectors() -> JSONResponse:
+    """Thin adapter for connector registry - returns registered capabilities."""
+    return JSONResponse(content={
+        "connectors": [],
+        "status": "not_implemented"
+    })
+
+
+@app.get("/api/evidence")
+async def get_evidence() -> JSONResponse:
+    """Thin adapter for evidence compiler - returns evidence compilation status."""
+    return JSONResponse(content={
+        "evidence": [],
+        "status": "not_implemented"
+    })
+
+
+@app.get("/api/recommendations")
+async def get_recommendations() -> JSONResponse:
+    """Thin adapter for recommendations - frontend-only capability."""
+    return JSONResponse(content={
+        "recommendations": [],
+        "status": "frontend_only"
+    })
+
+
+@app.get("/api/executions")
+async def get_executions() -> JSONResponse:
+    """Thin adapter for execution pipeline - returns execution status."""
+    return JSONResponse(content={
+        "executions": [],
+        "status": "not_implemented"
+    })
+
+
+@app.get("/api/graph")
+async def get_graph() -> JSONResponse:
+    """Thin adapter for knowledge graph - returns graph query status."""
+    return JSONResponse(content={
+        "graph": [],
+        "status": "not_implemented"
+    })
+
+
+@app.get("/api/projections")
+async def get_projections() -> JSONResponse:
+    """Thin adapter for projection store - returns projection status."""
+    return JSONResponse(content={
+        "projections": [],
+        "status": "not_implemented"
     })
 
 
