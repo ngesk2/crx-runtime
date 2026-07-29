@@ -27,8 +27,12 @@ class EventEnvelope(BaseModel):
     
     # Schema and ordering
     schema_version: str = Field(..., description="Schema version of payload")
-    global_sequence: int = Field(..., description="Monotonically increasing global sequence number")
+    global_sequence: int | None = Field(None, description="Monotonically increasing global sequence number (assigned by database)")
     aggregate_sequence: int | None = Field(None, description="Monotonically increasing per-aggregate sequence number")
+
+    # Optimistic concurrency control
+    aggregate_version: int = Field(1, description="Version for optimistic concurrency")
+    stream_version: int = Field(1, description="Stream version for ordering")
     
     # Payload (domain data)
     payload: dict[str, Any] = Field(..., description="Event-specific data")
@@ -52,16 +56,18 @@ class EventEnvelope(BaseModel):
             'schema_version': self.schema_version,
             'global_sequence': self.global_sequence,
             'aggregate_sequence': self.aggregate_sequence,
+            'aggregate_version': self.aggregate_version,
+            'stream_version': self.stream_version,
             'payload': self.payload,
         }
-        
+
         # Use CanonicalAuthority
         authority = CanonicalAuthority()
         computed_hash = authority.hash_dict(data)
-        
+
         if self.event_id != computed_hash:
             raise ValueError(f"Event ID hash mismatch: expected {computed_hash}, got {self.event_id}")
-        
+
         return self
     
     def verify_hash(self) -> bool:
@@ -93,12 +99,14 @@ class EventEnvelope(BaseModel):
         occurred_at: datetime,
         recorded_at: datetime,
         schema_version: str,
-        global_sequence: int,
+        global_sequence: int | None = None,
         correlation_id: str | None = None,
         causality_id: str | None = None,
         producer_id: str | None = None,
         caused_by_command_id: str | None = None,
         aggregate_sequence: int | None = None,
+        aggregate_version: int = 1,
+        stream_version: int = 1,
     ) -> "EventEnvelope":
         """Factory method to create EventEnvelope with computed constitutional hash"""
         # Constitutional hash excludes infrastructure timestamps
@@ -113,13 +121,15 @@ class EventEnvelope(BaseModel):
             'schema_version': schema_version,
             'global_sequence': global_sequence,
             'aggregate_sequence': aggregate_sequence,
+            'aggregate_version': aggregate_version,
+            'stream_version': stream_version,
             'payload': payload,
         }
-        
+
         # Use CanonicalAuthority
         authority = CanonicalAuthority()
         event_id = authority.hash_dict(data)
-        
+
         return cls(
             event_id=event_id,
             event_type=event_type,
@@ -134,6 +144,8 @@ class EventEnvelope(BaseModel):
             schema_version=schema_version,
             global_sequence=global_sequence,
             aggregate_sequence=aggregate_sequence,
+            aggregate_version=aggregate_version,
+            stream_version=stream_version,
             payload=payload,
         )
 

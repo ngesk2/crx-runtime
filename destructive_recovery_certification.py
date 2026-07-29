@@ -5,13 +5,13 @@ Date: 2026-06-22
 """
 
 import psycopg2
-import hashlib
 import json
 import uuid
 from datetime import datetime
 import os
 import subprocess
 import time
+from constitution.authority import CanonicalAuthority
 
 # Configuration
 POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
@@ -43,16 +43,17 @@ def compute_witness_root(conn):
         LIMIT 1
     """)
     latest_event = cursor.fetchone()
-    
+
     if not latest_event:
         return None
-    
+
     event_data = {
         "event_id": str(latest_event[0]),
         "event_data": latest_event[1]
     }
-    event_json = json.dumps(event_data, sort_keys=True, default=str)
-    return hashlib.sha256(event_json.encode()).hexdigest()
+    authority = CanonicalAuthority()
+    canonical_bytes = authority.serialize_to_canonical_bytes(event_data)
+    return authority.hash_canonical_bytes(canonical_bytes)
 
 def compute_lineage_root(conn):
     """Compute lineage root (latest lineage entry hash)."""
@@ -84,8 +85,9 @@ def compute_lineage_root(conn):
         "root_object_id": str(latest_lineage[1]),
         "created_at": latest_lineage[2].isoformat() if latest_lineage[2] else None
     }
-    lineage_json = json.dumps(lineage_data, sort_keys=True, default=str)
-    return hashlib.sha256(lineage_json.encode()).hexdigest()
+    authority = CanonicalAuthority()
+    canonical_bytes = authority.serialize_to_canonical_bytes(lineage_data)
+    return authority.hash_canonical_bytes(canonical_bytes)
 
 def compute_memory_graph_hash(conn):
     """Compute memory graph hash (events table hash)."""
@@ -107,9 +109,10 @@ def compute_memory_graph_hash(conn):
             'event_data': row[5]
         }
         events.append(event)
-    
-    events_json = json.dumps(events, sort_keys=True, default=str)
-    return hashlib.sha256(events_json.encode()).hexdigest()
+
+    authority = CanonicalAuthority()
+    canonical_bytes = authority.serialize_to_canonical_bytes({"events": events})
+    return authority.hash_canonical_bytes(canonical_bytes)
 
 def compute_search_corpus_hash():
     """Compute search corpus hash (Qdrant collections)."""
@@ -118,8 +121,9 @@ def compute_search_corpus_hash():
         client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
         collections = client.get_collections()
         collection_names = sorted([c.name for c in collections.collections])
-        collections_json = json.dumps(collection_names)
-        return hashlib.sha256(collections_json.encode()).hexdigest()
+        authority = CanonicalAuthority()
+        canonical_bytes = authority.serialize_to_canonical_bytes({"collections": collection_names})
+        return authority.hash_canonical_bytes(canonical_bytes)
     except:
         return None
 

@@ -51,24 +51,27 @@ class BuildWitness:
         reducer_hash: str,
         capability_registry_hash: str,
         kernel_constitution_hash: str,
+        configuration_witness_hash: str,
         constitutional_version: str,
         build_timestamp: datetime,
     ):
-        self.build_id = build_id
-        self.git_commit = git_commit
-        self.tool_registry_hash = tool_registry_hash
-        self.workflow_registry_hash = workflow_registry_hash
-        self.prompt_registry_hash = prompt_registry_hash
-        self.agent_registry_hash = agent_registry_hash
-        self.type_registry_hash = type_registry_hash
-        self.serializer_hash = serializer_hash
-        self.reducer_hash = reducer_hash
-        self.capability_registry_hash = capability_registry_hash
-        self.kernel_constitution_hash = kernel_constitution_hash
-        self.constitutional_version = constitutional_version
-        self.build_timestamp = build_timestamp
+        # Private implementation detail - leaves of Merkle tree
+        self._build_id = build_id
+        self._git_commit = git_commit
+        self._tool_registry_hash = tool_registry_hash
+        self._workflow_registry_hash = workflow_registry_hash
+        self._prompt_registry_hash = prompt_registry_hash
+        self._agent_registry_hash = agent_registry_hash
+        self._type_registry_hash = type_registry_hash
+        self._serializer_hash = serializer_hash
+        self._reducer_hash = reducer_hash
+        self._capability_registry_hash = capability_registry_hash
+        self._kernel_constitution_hash = kernel_constitution_hash
+        self._configuration_witness_hash = configuration_witness_hash
+        self._constitutional_version = constitutional_version
+        self._build_timestamp = build_timestamp
         
-        # Compute Merkle root
+        # Public constitutional identity - only the Merkle root
         self.root_hash = compute_build_witness_root(
             tool_registry_hash=tool_registry_hash,
             workflow_registry_hash=workflow_registry_hash,
@@ -79,7 +82,18 @@ class BuildWitness:
             serializer_hash=serializer_hash,
             capability_registry_hash=capability_registry_hash,
             kernel_constitution_hash=kernel_constitution_hash,
+            configuration_witness_hash=configuration_witness_hash,
         )
+    
+    @property
+    def build_id(self) -> str:
+        """Build ID (for database lookup)"""
+        return self._build_id
+    
+    @property
+    def build_timestamp(self) -> datetime:
+        """Build timestamp (for database ordering)"""
+        return self._build_timestamp
     
     @classmethod
     async def load_current(cls, session: AsyncSession) -> Optional["BuildWitness"]:
@@ -109,6 +123,9 @@ class BuildWitness:
             type_registry_hash=witness_model.type_registry_hash,
             serializer_hash=witness_model.serializer_hash,
             reducer_hash=witness_model.reducer_hash,
+            capability_registry_hash=witness_model.capability_registry_hash,
+            kernel_constitution_hash=witness_model.kernel_constitution_hash,
+            configuration_witness_hash=witness_model.configuration_witness_hash,
             constitutional_version=witness_model.constitutional_version,
             build_timestamp=witness_model.build_timestamp,
         )
@@ -125,6 +142,9 @@ class BuildWitness:
         type_registry_hash: str,
         serializer_hash: str,
         reducer_hash: str,
+        capability_registry_hash: str,
+        kernel_constitution_hash: str,
+        configuration_witness_hash: str,
         constitutional_version: str = "1.0.0",
     ) -> "BuildWitness":
         """
@@ -132,6 +152,8 @@ class BuildWitness:
         
         This should be called during runtime initialization or
         when the constitutional configuration changes.
+        
+        Now includes configuration_witness_hash to ensure same build + different env = different replay.
         """
         from constitution.authority import CanonicalAuthority
         import uuid
@@ -147,8 +169,10 @@ class BuildWitness:
             "type_registry_hash": type_registry_hash,
             "serializer_hash": serializer_hash,
             "reducer_hash": reducer_hash,
+            "capability_registry_hash": capability_registry_hash,
+            "kernel_constitution_hash": kernel_constitution_hash,
+            "configuration_witness_hash": configuration_witness_hash,
             "constitutional_version": constitutional_version,
-            "timestamp": datetime.utcnow().isoformat(),
         })
         
         witness_model = BuildWitnessModel(
@@ -161,6 +185,9 @@ class BuildWitness:
             type_registry_hash=type_registry_hash,
             serializer_hash=serializer_hash,
             reducer_hash=reducer_hash,
+            capability_registry_hash=capability_registry_hash,
+            kernel_constitution_hash=kernel_constitution_hash,
+            configuration_witness_hash=configuration_witness_hash,
             constitutional_version=constitutional_version,
             build_timestamp=datetime.utcnow(),
         )
@@ -178,8 +205,9 @@ class BuildWitness:
             type_registry_hash=type_registry_hash,
             serializer_hash=serializer_hash,
             reducer_hash=reducer_hash,
-            capability_registry_hash=witness_model.capability_registry_hash,
-            kernel_constitution_hash=witness_model.kernel_constitution_hash,
+            capability_registry_hash=capability_registry_hash,
+            kernel_constitution_hash=kernel_constitution_hash,
+            configuration_witness_hash=configuration_witness_hash,
             constitutional_version=constitutional_version,
             build_timestamp=witness_model.build_timestamp,
         )

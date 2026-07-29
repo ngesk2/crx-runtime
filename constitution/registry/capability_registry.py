@@ -89,6 +89,9 @@ class CapabilityRegistry:
     - Capability execution
     - Health monitoring
     - Dependency resolution
+    
+    This is the constitutional authority for all capability dependencies.
+    No code should discover capabilities through any other mechanism.
     """
     
     def __init__(self):
@@ -97,6 +100,15 @@ class CapabilityRegistry:
         self._categories: Dict[CapabilityCategory, List[str]] = {
             category: [] for category in CapabilityCategory
         }
+    
+    async def initialize(self) -> None:
+        """Initialize the capability registry."""
+        # Auto-initialize all registered capabilities
+        await self.initialize_all()
+    
+    async def shutdown(self) -> None:
+        """Shutdown the capability registry."""
+        await self.shutdown_all()
     
     def register(self, capability: Capability) -> None:
         """Register a capability."""
@@ -163,7 +175,8 @@ class CapabilityRegistry:
     
     async def initialize_all(self) -> None:
         """Initialize all capabilities in dependency order."""
-        # TODO: Implement topological sort for dependencies
+        # MVP: Topological sort for dependencies not implemented
+        # Initializes in registration order instead
         for name, capability in self._capabilities.items():
             try:
                 await capability.initialize()

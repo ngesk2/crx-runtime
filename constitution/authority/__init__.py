@@ -9,13 +9,12 @@ Always go through this authority layer.
 from .canonical_authority import CanonicalAuthority
 from .hash_authority import HashAuthority
 from .encoding_authority import EncodingAuthority
-from .witness_authority import WitnessAuthority
-from .replay_authority import ReplayAuthority
+from .constitution_authority import ConstitutionAuthority, ConstitutionVersion
 
 __all__ = [
     "CanonicalAuthority",
     "HashAuthority",
     "EncodingAuthority",
-    "WitnessAuthority",
-    "ReplayAuthority",
+    "ConstitutionAuthority",
+    "ConstitutionVersion",
 ]

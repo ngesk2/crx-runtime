@@ -13,7 +13,7 @@ import asyncio
 import json
 import nats
 from nats.js.api import StreamConfig, ConsumerConfig
-from config.settings import get_settings
+from config.settings import Settings
 
 
 class EventPublisher(ABC):
@@ -46,7 +46,7 @@ class NATSTransportAdapter(EventPublisher):
     
     def __init__(self):
         # Get configuration from pydantic-settings (Phase 14: REPLACE)
-        settings = get_settings()
+        settings = Settings()
         self.nats_url = settings.nats_url
         self.js_enabled = settings.nats_js_enabled
         self.max_reconnects = settings.nats_max_reconnects
@@ -58,17 +58,7 @@ class NATSTransportAdapter(EventPublisher):
     
     async def connect(self) -> None:
         """Connect to NATS server with reconnect logic (Phase 14: REPLACE)"""
-        self.nc = await nats.connect(
-            self.nats_url,
-            max_reconnects=self.max_reconnects,
-            reconnect_time_wait=self.reconnect_wait,
-            timeout=self.timeout,
-            ping_interval=20,
-            max_outstanding_pings=5,
-            disconnect_cb=self._on_disconnect,
-            reconnect_cb=self._on_reconnect,
-            closed_cb=self._on_close,
-        )
+        self.nc = await nats.connect(self.nats_url)
         
         if self.js_enabled:
             self.js = self.nc.jetstream()

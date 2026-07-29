@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     
     # Database
     database_url: str = Field(
-        default="postgresql+asyncpg://constitutional:constitutional@localhost:5432/constitutional",
+        default="postgresql+asyncpg://postgres:postgres@localhost:5433/ping_runtime",
         description="PostgreSQL database URL"
     )
     database_pool_size: int = Field(

@@ -6,11 +6,13 @@ Owns the failure proof invariant:
 - Failure proof enables replay failure diagnosis
 """
 
-from typing import Any
-from constitution.models.event import EventEnvelope
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from constitution.models.event import EventEnvelope
 
 
-def compute_failure_proof(events: list[EventEnvelope]) -> dict[str, Any]:
+def compute_failure_proof(events: list) -> dict[str, Any]:
     """
     Compute failure proof from events.
     

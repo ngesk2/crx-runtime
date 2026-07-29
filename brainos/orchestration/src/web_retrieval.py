@@ -110,7 +110,7 @@ class WebRetrieval:
         logger.info(f"Searching for: {query}")
         
         # Mock search results for now
-        # TODO: Integrate with real search API
+        # MVP: Real search API integration not implemented
         mock_results = [
             {
                 "url": f"https://example.com/result/{i}",

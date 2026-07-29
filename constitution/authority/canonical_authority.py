@@ -7,12 +7,18 @@ Always go through this authority layer.
 
 Single sovereign authority - no sub-authorities.
 All operations are owned and implemented internally via separate modules.
+
+Now uses CanonicalSerializer as the root serialization authority.
 """
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from dataclasses import dataclass
-from constitution.models.event import EventEnvelope
 from constitution.value_objects import CanonicalBytes, Hash
+from .canonical_serializer import CanonicalSerializer
+from .hash_authority import HashAuthority
+
+if TYPE_CHECKING:
+    from constitution.models.event import EventEnvelope
 
 # Internal implementation modules
 from .internal.unicode import normalize_string, UnicodeNormalizationError
@@ -69,12 +75,17 @@ class CanonicalAuthority:
     
     Single sovereign authority - no sub-authorities.
     All operations are owned and implemented internally via separate modules.
+    
+    Now uses CanonicalSerializer as the root serialization authority.
     """
     
     def __init__(self, canonical_version: str = "1.0.0", encoding_version: str = "1.0.0", authority_version: str = "1.0.0"):
         self.canonical_version = canonical_version
         self.encoding_version = encoding_version
         self.authority_version = authority_version
+        self.serializer = CanonicalSerializer(version=canonical_version)
+        from constitution.authority.hash_authority import HashAlgorithm
+        self.hash_authority = HashAuthority(algorithm=HashAlgorithm.SHA256_V1)
     
     def canonicalize(self, data: dict[str, Any]) -> CanonicalBytes:
         """
@@ -100,7 +111,7 @@ class CanonicalAuthority:
         """
         return decode(data)
     
-    def compute_event_id(self, event: EventEnvelope) -> str:
+    def compute_event_id(self, event) -> str:
         """
         Compute event ID.
         
@@ -109,7 +120,7 @@ class CanonicalAuthority:
         data = self._extract_constitutional_data(event)
         return hash_dict(data)
     
-    def compute_witness(self, state: dict[str, Any], events: list[EventEnvelope]) -> ReplayWitness:
+    def compute_witness(self, state: dict[str, Any], events: list) -> ReplayWitness:
         """
         Compute witness from state and events.
         
@@ -155,28 +166,29 @@ class CanonicalAuthority:
         """
         Hash a dictionary using canonical hashing.
         
-        Delegates to internal canonical_hash module.
+        CanonicalSerializer → HashAuthority → CanonicalHash
         """
-        return hash_dict(data)
+        canonical_bytes = self.serializer.serialize(data)
+        return self.hash_authority.hash_bytes(canonical_bytes.value).value
     
     def hash_string(self, data: str) -> str:
         """
         Hash a string using SHA256.
         
-        Delegates to internal canonical_hash module.
+        HashAuthority → CanonicalHash
         """
-        return hash_string(data)
+        return self.hash_authority.hash_string(data).value
     
     def hash_bytes(self, data: bytes) -> str:
         """
         Hash bytes using SHA256.
         
-        Delegates to internal canonical_hash module.
+        HashAuthority → CanonicalHash
         """
-        return hash_bytes(data)
+        return self.hash_authority.hash_bytes(data).value
     
     # Internal helper for event data extraction
-    def _extract_constitutional_data(self, event: EventEnvelope) -> dict[str, Any]:
+    def _extract_constitutional_data(self, event) -> dict[str, Any]:
         """Extract constitutional data from event."""
         return {
             'event_type': event.event_type,

@@ -10,11 +10,11 @@ import os
 import sys
 import json
 import uuid
-import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
+from constitution.authority import CanonicalAuthority
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("filesystem_worker")
@@ -33,15 +33,12 @@ def make_aggregate_id(file_path: str) -> str:
 
 
 def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
+    """Hash file using constitutional hashing"""
+    authority = CanonicalAuthority()
     try:
         with open(path, "rb") as f:
-            while True:
-                chunk = f.read(65536)
-                if not chunk:
-                    break
-                h.update(chunk)
-        return h.hexdigest()
+            file_bytes = f.read()
+        return authority.hash_canonical_bytes(file_bytes)
     except (OSError, PermissionError) as e:
         logger.warning("Cannot hash %s: %s", path, e)
         return ""
@@ -93,7 +90,10 @@ def gen_insert_sql(event_type, aggregate_id, aggregate_type, event_data, correla
     event_id = str(uuid.uuid4())
     ts = datetime.now(timezone.utc).isoformat()
     payload_json = json.dumps(event_data, sort_keys=True)
-    payload_hash = hashlib.sha256(payload_json.encode()).hexdigest()
+    # Use constitutional hashing
+    authority = CanonicalAuthority()
+    canonical_bytes = authority.serialize_to_canonical_bytes(event_data)
+    payload_hash = authority.hash_canonical_bytes(canonical_bytes)
     return (
         f"INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, "
         f"event_data, causation_id, correlation_id, metadata, payload_hash, projected_to_qdrant) "

@@ -22,12 +22,43 @@ class EventStore:
         if existing.scalar_one_or_none():
             raise ValueError(f"Event {event.event_id} already exists")
         
-        # Create event record
+        # Compute event hash using constitutional authority
+        authority = CanonicalAuthority()
+        
+        # Serialize payload to canonical bytes
+        canonical_payload_bytes = authority.serialize_to_canonical_bytes(event.payload)
+        canonical_payload_hash = authority.hash_canonical_bytes(canonical_payload_bytes)
+        
+        # Serialize event to canonical bytes for event hash
+        event_data = {
+            'event_id': event.event_id,
+            'event_type': event.event_type,
+            'event_category': event.event_category,
+            'occurred_at': event.occurred_at.isoformat(),
+            'recorded_at': event.recorded_at.isoformat(),
+            'processed_at': event.processed_at.isoformat() if event.processed_at else None,
+            'correlation_id': event.correlation_id,
+            'causality_id': event.causality_id,
+            'producer_id': event.producer_id,
+            'caused_by_command_id': event.caused_by_command_id,
+            'schema_version': event.schema_version,
+            'aggregate_sequence': event.aggregate_sequence,
+            'aggregate_version': event.aggregate_version,
+            'stream_version': event.stream_version,
+            'payload': event.payload,
+        }
+        
+        canonical_event_bytes = authority.serialize_to_canonical_bytes(event_data)
+        event_hash = authority.hash_canonical_bytes(canonical_event_bytes)
+        
+        # Create event record with constitutional storage
         event_record = EventModel(
             event_id=event.event_id,
             event_type=event.event_type,
             event_category=event.event_category,
-            payload=event.payload,
+            decoded_payload_cache=event.payload,  # Optional cache for queries
+            canonical_payload_bytes=canonical_payload_bytes,  # Constitutional storage
+            canonical_payload_hash=canonical_payload_hash,  # Constitutional hash
             occurred_at=event.occurred_at,
             recorded_at=event.recorded_at,
             processed_at=event.processed_at,
@@ -38,15 +69,23 @@ class EventStore:
             schema_version=event.schema_version,
             global_sequence=event.global_sequence,
             aggregate_sequence=event.aggregate_sequence,
-            event_hash=event.event_id,  # For now, same as event_id
+            aggregate_version=event.aggregate_version,
+            stream_version=event.stream_version,
+            event_hash=event_hash,  # Constitutional hash, not placeholder
         )
         
         self.session.add(event_record)
         
-        # Add to outbox for NATS publication (transactional outbox pattern)
+        # Add to outbox for NATS publication (transactional outbox pattern) with constitutional hashing
+        outbox_payload = event.model_dump(mode='json')
+        canonical_outbox_bytes = authority.serialize_to_canonical_bytes(outbox_payload)
+        canonical_outbox_hash = authority.hash_canonical_bytes(canonical_outbox_bytes)
+        
         outbox_record = OutboxMessageModel(
             topic=f"constitutional.events.{event.event_type}",
-            payload=event.model_dump(mode='json'),
+            decoded_payload_cache=outbox_payload,  # Optional cache for queries
+            canonical_payload_bytes=canonical_outbox_bytes,  # Constitutional storage
+            canonical_payload_hash=canonical_outbox_hash,  # Constitutional hash
             correlation_id=event.correlation_id,
         )
         self.session.add(outbox_record)

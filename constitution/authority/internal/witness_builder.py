@@ -6,8 +6,7 @@ Owns the witness assembly invariant:
 - Witness builder orchestrates assembly of witness components
 """
 
-from typing import Any
-from constitution.models.event import EventEnvelope
+from typing import Any, TYPE_CHECKING
 from constitution.value_objects import Hash
 from .canonical_hash import hash_dict
 from .merkle import compute_merkle_root
@@ -15,10 +14,13 @@ from .lineage import compute_lineage_proof, compute_aggregate_roots
 from .verification_stamp import compute_verification_stamp
 from .failure_proof import compute_failure_proof
 
+if TYPE_CHECKING:
+    from constitution.models.event import EventEnvelope
+
 
 def build_witness(
     state: dict[str, Any],
-    events: list[EventEnvelope],
+    events: list,
     canonical_version: str,
     encoding_version: str,
     authority_version: str,

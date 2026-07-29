@@ -3,16 +3,15 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool, QueuePool
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from config.settings import get_settings
+from config.settings import Settings
 
 # Get configuration
-settings = get_settings()
+settings = Settings()
 
 # Create engine with connection pooling (Phase 14: REPLACE)
 engine = create_async_engine(
     settings.database_url,
     echo=False,  # Disable SQL echo in production
-    poolclass=QueuePool,
     pool_size=settings.database_pool_size,
     max_overflow=settings.database_max_overflow,
     pool_timeout=settings.database_pool_timeout,

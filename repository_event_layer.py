@@ -17,7 +17,6 @@ Event Types:
 """
 
 import os
-import hashlib
 import json
 import uuid
 from datetime import datetime
@@ -25,6 +24,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 import subprocess
 import psycopg2
+from constitution.authority import CanonicalAuthority
 
 
 class RepositoryEventLayer:
@@ -44,13 +44,12 @@ class RepositoryEventLayer:
         self.repository_aggregate_id = str(uuid.uuid4())
         
     def calculate_sha256(self, file_path: Path) -> str:
-        """Calculate SHA256 hash of a file"""
-        sha256_hash = hashlib.sha256()
+        """Calculate SHA256 hash of a file using constitutional hashing"""
+        authority = CanonicalAuthority()
         try:
             with open(file_path, "rb") as f:
-                for chunk in iter(lambda: f.read(4096), b""):
-                    sha256_hash.update(chunk)
-            return sha256_hash.hexdigest()
+                file_bytes = f.read()
+            return authority.hash_canonical_bytes(file_bytes)
         except (IOError, PermissionError):
             return None
     
@@ -155,11 +154,13 @@ class RepositoryEventLayer:
     def create_snapshot(self) -> Dict[str, Any]:
         """Create repository snapshot"""
         print("Creating repository snapshot...")
-        
-        # Calculate snapshot hash from all file hashes
+
+        # Calculate snapshot hash from all file hashes using constitutional hashing
+        authority = CanonicalAuthority()
         file_hashes = sorted([f["sha256"] for f in self.files_discovered.values() if f["sha256"]])
         combined_hashes = "".join(file_hashes)
-        snapshot_hash = hashlib.sha256(combined_hashes.encode()).hexdigest()
+        canonical_bytes = authority.serialize_to_canonical_bytes({"file_hashes": file_hashes})
+        snapshot_hash = authority.hash_canonical_bytes(canonical_bytes)
         
         snapshot = {
             "snapshot_id": str(uuid.uuid4()),
@@ -183,18 +184,19 @@ class RepositoryEventLayer:
     def generate_witness(self, snapshot: Dict[str, Any]) -> Dict[str, Any]:
         """Generate repository witness"""
         print("Generating repository witness...")
-        
-        # Calculate event hash
-        event_data = json.dumps(self.events, sort_keys=True, default=str)
-        event_hash = hashlib.sha256(event_data.encode()).hexdigest()
-        
-        # Calculate lineage hash from snapshot
-        lineage_data = json.dumps(snapshot, sort_keys=True, default=str)
-        lineage_hash = hashlib.sha256(lineage_data.encode()).hexdigest()
-        
-        # Generate witness root
+
+        # Calculate event hash using constitutional hashing
+        authority = CanonicalAuthority()
+        event_bytes = authority.serialize_to_canonical_bytes({"events": self.events})
+        event_hash = authority.hash_canonical_bytes(event_bytes)
+
+        # Calculate lineage hash from snapshot using constitutional hashing
+        lineage_bytes = authority.serialize_to_canonical_bytes(snapshot)
+        lineage_hash = authority.hash_canonical_bytes(lineage_bytes)
+
+        # Generate witness root using constitutional hashing
         witness_data = f"{snapshot['snapshot_hash']}:{event_hash}:{lineage_hash}"
-        witness_root = hashlib.sha256(witness_data.encode()).hexdigest()
+        witness_root = authority.hash_canonical_bytes(witness_data.encode())
         
         witness = {
             "witness_root": witness_root,

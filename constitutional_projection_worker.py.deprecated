@@ -31,13 +31,13 @@ class ConstitutionalProjectionWorker:
     
     def project_to_qdrant(self, document_id: str, lineage_chain: list) -> bool:
         """Project document to Qdrant (simplified - stores metadata only)"""
-        # For now, this is a placeholder for Qdrant projection
-        # In a full implementation, this would:
+        # MVP: Qdrant projection not implemented - stores metadata only
+        # Full implementation would:
         # 1. Connect to Qdrant
         # 2. Generate embeddings
         # 3. Upsert points to constitutional_memory collection
         
-        print(f"Projecting document {document_id} to Qdrant (placeholder)")
+        print(f"Projecting document {document_id} to Qdrant (MVP: metadata only)")
         return True
     
     def store_projection(self, aggregate_id: str, event_id: str, projection_data: Dict[str, Any]):

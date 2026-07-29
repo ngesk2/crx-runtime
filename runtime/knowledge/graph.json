@@ -1,0 +1,191 @@
+{
+  "nodes": [
+    {
+      "node_id": "storage_abstract",
+      "node_type": "capability",
+      "ontology_level": "abstract",
+      "name": "Storage",
+      "description": "Abstract storage capability",
+      "properties": {
+        "type": "storage"
+      },
+      "capabilities_provided": [
+        "read",
+        "write",
+        "delete"
+      ],
+      "resources_required": [],
+      "parents": [],
+      "children": [],
+      "metadata": {}
+    },
+    {
+      "node_id": "versioned_storage_abstract",
+      "node_type": "capability",
+      "ontology_level": "abstract",
+      "name": "Versioned Storage",
+      "description": "Abstract versioned storage capability",
+      "properties": {
+        "type": "storage",
+        "versioned": true
+      },
+      "capabilities_provided": [
+        "read",
+        "write",
+        "delete",
+        "version",
+        "history"
+      ],
+      "resources_required": [
+        "storage_abstract"
+      ],
+      "parents": [
+        "storage_abstract"
+      ],
+      "children": [
+        "git_implementation",
+        "svn_implementation"
+      ],
+      "metadata": {}
+    },
+    {
+      "node_id": "git_implementation",
+      "node_type": "implementation",
+      "ontology_level": "concrete",
+      "name": "Git",
+      "description": "Git version control system",
+      "properties": {
+        "offline": true,
+        "distributed": true,
+        "language": "C"
+      },
+      "capabilities_provided": [
+        "read",
+        "write",
+        "delete",
+        "version",
+        "history",
+        "branch",
+        "merge"
+      ],
+      "resources_required": [
+        "filesystem",
+        "network"
+      ],
+      "parents": [
+        "versioned_storage_abstract",
+        "versioned_storage_abstract"
+      ],
+      "children": [],
+      "metadata": {
+        "command": "git"
+      }
+    },
+    {
+      "node_id": "svn_implementation",
+      "node_type": "implementation",
+      "ontology_level": "concrete",
+      "name": "SVN",
+      "description": "Subversion version control system",
+      "properties": {
+        "offline": false,
+        "centralized": true,
+        "language": "C"
+      },
+      "capabilities_provided": [
+        "read",
+        "write",
+        "delete",
+        "version",
+        "history"
+      ],
+      "resources_required": [
+        "filesystem",
+        "network"
+      ],
+      "parents": [
+        "versioned_storage_abstract",
+        "versioned_storage_abstract"
+      ],
+      "children": [],
+      "metadata": {
+        "command": "svn"
+      }
+    },
+    {
+      "node_id": "network_abstract",
+      "node_type": "capability",
+      "ontology_level": "abstract",
+      "name": "Network",
+      "description": "Abstract network capability",
+      "properties": {
+        "type": "network"
+      },
+      "capabilities_provided": [
+        "connect",
+        "send",
+        "receive"
+      ],
+      "resources_required": [],
+      "parents": [],
+      "children": [
+        "http_implementation"
+      ],
+      "metadata": {}
+    },
+    {
+      "node_id": "http_implementation",
+      "node_type": "implementation",
+      "ontology_level": "concrete",
+      "name": "HTTP",
+      "description": "HTTP protocol implementation",
+      "properties": {
+        "protocol": "http",
+        "stateless": true
+      },
+      "capabilities_provided": [
+        "connect",
+        "send",
+        "receive"
+      ],
+      "resources_required": [
+        "network_abstract"
+      ],
+      "parents": [
+        "network_abstract",
+        "network_abstract"
+      ],
+      "children": [],
+      "metadata": {
+        "protocol": "HTTP/1.1"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "edge_git_implements",
+      "source_id": "versioned_storage_abstract",
+      "target_id": "git_implementation",
+      "edge_type": "implements",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "edge_id": "edge_svn_implements",
+      "source_id": "versioned_storage_abstract",
+      "target_id": "svn_implementation",
+      "edge_type": "implements",
+      "weight": 0.8,
+      "properties": {}
+    },
+    {
+      "edge_id": "edge_http_implements",
+      "source_id": "network_abstract",
+      "target_id": "http_implementation",
+      "edge_type": "implements",
+      "weight": 1.0,
+      "properties": {}
+    }
+  ],
+  "updated_at": "2026-07-28T22:55:44.765053+00:00"
+}

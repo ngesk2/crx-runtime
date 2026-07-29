@@ -10,12 +10,12 @@ import sys
 import psycopg2
 import json
 import uuid
-import hashlib
 from datetime import datetime
 from typing import Dict, Any
 from pathlib import Path
 
 from runtime.configuration import get_postgres_config
+from constitution.authority import CanonicalAuthority
 
 
 class ReplayWorker:
@@ -52,10 +52,12 @@ class ReplayWorker:
         
         cursor.close()
         conn.close()
-        
-        # Compute replay fingerprint
+
+        # Compute replay fingerprint using constitutional hashing
+        authority = CanonicalAuthority()
         event_data = json.dumps(events, sort_keys=True, default=str)
-        replay_fingerprint = hashlib.sha256(event_data.encode()).hexdigest()
+        canonical_bytes = authority.serialize_to_canonical_bytes({"events": events})
+        replay_fingerprint = authority.hash_canonical_bytes(canonical_bytes)
         
         # Simple replay verification: check event sequence integrity
         verified = True

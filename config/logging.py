@@ -8,12 +8,12 @@ This is infrastructure only - no constitutional code changes.
 
 import structlog
 from typing import Any
-from config.settings import get_settings
+from config.settings import Settings
 
 
 def configure_logging() -> None:
     """Configure structlog for structured logging (Phase 14: REPLACE)"""
-    settings = get_settings()
+    settings = Settings()
     
     # Configure structlog
     structlog.configure(

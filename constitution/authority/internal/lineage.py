@@ -6,11 +6,13 @@ Owns the lineage proof invariant:
 - Causality graphs enable event ancestry verification
 """
 
-from typing import Any
-from constitution.models.event import EventEnvelope
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from constitution.models.event import EventEnvelope
 
 
-def compute_lineage_proof(events: list[EventEnvelope]) -> dict[str, Any]:
+def compute_lineage_proof(events: list) -> dict[str, Any]:
     """
     Compute lineage proof from events.
     
@@ -25,7 +27,7 @@ def compute_lineage_proof(events: list[EventEnvelope]) -> dict[str, Any]:
     return lineage
 
 
-def compute_aggregate_roots(events: list[EventEnvelope]) -> list[str]:
+def compute_aggregate_roots(events: list) -> list[str]:
     """
     Compute aggregate roots from events.
     

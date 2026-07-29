@@ -10,7 +10,6 @@ import os
 import uuid
 import json
 import random
-import hashlib
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'runtime'))
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct
+from constitution.authority import CanonicalAuthority
 
 
 def canonical_json(obj):
@@ -70,15 +70,19 @@ for event in events:
     
     # Generate random embedding (768 dimensions for nomic-embed-text)
     embedding = [random.random() for _ in range(768)]
-    
-    # Compute canonical hash (SHA256 of event data using canonical JSON)
-    canonical_hash = hashlib.sha256(canonical_json(event_data).encode()).hexdigest()
-    
-    # Compute embedding hash (SHA256 of embedding)
-    embedding_hash = hashlib.sha256(str(embedding).encode()).hexdigest()
-    
-    # Generate projection signature (placeholder - would use Ed25519 in production)
-    projection_signature = hashlib.sha256((canonical_hash + embedding_hash).encode()).hexdigest()
+
+    # Compute canonical hash using constitutional hashing
+    authority = CanonicalAuthority()
+    canonical_bytes = authority.serialize_to_canonical_bytes(event_data)
+    canonical_hash = authority.hash_canonical_bytes(canonical_bytes)
+
+    # Compute embedding hash using constitutional hashing
+    embedding_bytes = str(embedding).encode()
+    embedding_hash = authority.hash_canonical_bytes(embedding_bytes)
+
+    # Generate projection signature using constitutional hashing
+    signature_bytes = (canonical_hash + embedding_hash).encode()
+    projection_signature = authority.hash_canonical_bytes(signature_bytes)
     
     # Create point for Qdrant
     point = PointStruct(

@@ -1,29 +1,34 @@
 from datetime import datetime
 from typing import Any
+import os
 from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
+from sqlalchemy import text
 
-from constitution.models.event import EventEnvelope, DomainEvent, InfrastructureEvent
-from constitution.models.command import Command
-from storage.postgres.database import get_session
-from storage.postgres.models import Event as EventModel
-from storage.repositories import PostgresEventRepository
-from transport.nats.transport import get_nats_transport, close_nats_transport
 from config.settings import Settings
 from config.logging import configure_logging, get_logger
 from runtime.observability import Observability
-from analytics.business_projections import compute_business_facts, compute_business_signals, compute_health_models, prioritize_health
-from api.dto import (
-    HealthResponseDTO,
-    ReadyResponseDTO,
-    EventRequestDTO,
-    EventResponseDTO,
-    CommandRequestDTO,
-    CommandResponseDTO,
-    EventListResponseDTO,
-)
+from runtime.di_container import RuntimeContainer
+
+# Import modular API routers
+from api.events import router as events_router, set_event_service
+from api.commands import router as commands_router, set_command_service
+from api.oracle import router as oracle_router, set_oracle_service
+from api.business import router as business_router, set_business_service
+from api.product import router as product_router, set_product_service
+from api.health import router as health_router, set_health_service
+from api.replay import router as replay_router, set_replay_service
+
+# Import application services
+from application.event_service import EventApplicationService
+from application.command_service import CommandApplicationService
+from application.oracle_service import OracleApplicationService
+from application.business_service import BusinessApplicationService
+from application.product_service import ProductApplicationService
+from application.health_service import HealthApplicationService
+from application.replay_service import ReplayApplicationService
 
 # Phase 15 Item 1: Remove Global Singletons
 # Create explicit app factory instead of global app
@@ -41,18 +46,50 @@ def create_app(settings: Settings) -> FastAPI:
     async def lifespan(app: FastAPI):
         """Lifespan handler for startup/shutdown (Phase 14: REPLACE)"""
         # Startup
-        logger.info("Starting Constitutional Runtime API", version="0.1.0")
-        
-        # Initialize NATS transport
-        await get_nats_transport()
-        logger.info("NATS transport initialized")
-        
+        app.state.logger.info("Starting Constitutional Runtime API", version="0.1.0")
+
+        # NATS transport disabled for MVP (not in minimal stack)
+        app.state.logger.info("NATS transport disabled for MVP")
+
+        # Initialize DI container (composition root)
+        container = await RuntimeContainer.create()
+        app.state.container = container
+
+        # Inject application services into routers
+        event_service = EventApplicationService(container)
+        command_service = CommandApplicationService(container)
+        oracle_service = OracleApplicationService(container)
+        business_service = BusinessApplicationService(container)
+        product_service = ProductApplicationService(container)
+        health_service = HealthApplicationService(container)
+        replay_service = ReplayApplicationService(container)
+
+        set_event_service(event_service)
+        set_command_service(command_service)
+        set_oracle_service(oracle_service)
+        set_business_service(business_service)
+        set_product_service(product_service)
+        set_health_service(health_service)
+        set_replay_service(replay_service)
+
+        # Bootstrap runtime dependencies (legacy - will be replaced by DI container)
+        from runtime.bootstrap import bootstrap_runtime
+        dependencies = await bootstrap_runtime()
+        app.state.dependencies = dependencies
+
+        app.state.logger.info(f"Runtime bootstrapped with {len(dependencies.capability_registry.list())} capabilities")
+
         yield
-        
+
         # Shutdown
-        logger.info("Shutting down Constitutional Runtime API")
-        await close_nats_transport()
-        logger.info("NATS transport closed")
+        app.state.logger.info("Shutting down Constitutional Runtime API")
+
+        # Shutdown DI container
+        await container.shutdown()
+
+        # Shutdown runtime (legacy)
+        from runtime.bootstrap import shutdown_runtime
+        await shutdown_runtime()
     
     # Initialize FastAPI with lifespan handler
     app = FastAPI(
@@ -66,6 +103,58 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.settings = settings
     app.state.observability = observability
     app.state.logger = logger
+    
+    # Register modular API routers
+    app.include_router(health_router)
+    app.include_router(events_router)
+    app.include_router(commands_router)
+    app.include_router(oracle_router)
+    app.include_router(business_router)
+    app.include_router(product_router)
+    app.include_router(replay_router)
+    
+    # Thin adapter endpoints for frontend consumption (remain in main.py for now)
+    @app.get("/api/connectors")
+    async def get_connectors() -> JSONResponse:
+        """Thin adapter for connector registry - returns registered capabilities."""
+        registry = container.capability_registry
+        capabilities = registry.list()
+        metadata = {}
+        for name in capabilities:
+            meta = registry.get_metadata(name)
+            if meta:
+                metadata[name] = {
+                    "name": meta.name,
+                    "version": meta.version,
+                    "category": meta.category.value if meta.category else None,
+                    "description": meta.description,
+                    "author": meta.author,
+                    "state": meta.state.value if meta.state else None,
+                    "registered_at": meta.registered_at.isoformat() if meta.registered_at else None,
+                }
+        return JSONResponse(content={
+            "connectors": capabilities,
+            "metadata": metadata,
+            "count": len(capabilities)
+        })
+
+    @app.get("/api/evidence")
+    async def get_evidence() -> JSONResponse:
+        """Thin adapter for evidence compiler - returns evidence compilation status."""
+        compiler = container.evidence_compiler
+        return JSONResponse(content={
+            "compiler_id": compiler.compiler_id,
+            "status": "available",
+            "description": "Evidence compiler available for mission-based evidence plan generation"
+        })
+
+    @app.get("/api/recommendations")
+    async def get_recommendations() -> JSONResponse:
+        """Thin adapter for recommendations - frontend-only capability."""
+        return JSONResponse(content={
+            "status": "available",
+            "description": "Recommendations engine available for frontend consumption"
+        })
     
     return app
 
@@ -85,499 +174,3 @@ app = create_app(default_settings)
 # Global sequence must always come from the database.
 # Never maintain replay-visible ordering in memory.
 # Ordering authority is only INSERT ... RETURNING global_sequence or database sequence.
-
-
-# Endpoints
-@app.get("/health", response_model=HealthResponseDTO)
-async def health(request) -> HealthResponseDTO:
-    """Live health check - delegates to runtime dependency state (not static)."""
-    deps: dict[str, bool] = {}
-    try:
-        async with get_session() as session:
-            await session.execute("SELECT 1")
-        deps["postgres"] = True
-    except Exception:
-        deps["postgres"] = False
-    try:
-        nats_transport = await get_nats_transport()
-        deps["nats"] = await nats_transport.health_check()
-    except Exception:
-        deps["nats"] = False
-    status = "healthy" if all(deps.values()) else "degraded"
-    return HealthResponseDTO(
-        status=status,
-        timestamp=datetime.utcnow(),
-        dependencies=deps,
-    )
-
-
-@app.get("/ready", response_model=ReadyResponseDTO)
-async def ready(request) -> ReadyResponseDTO:
-    """Readiness check endpoint"""
-    # Check PostgreSQL connection
-    postgres_ready = False
-    try:
-        async with get_session() as session:
-            await session.execute("SELECT 1")
-            postgres_ready = True
-    except Exception:
-        postgres_ready = False
-    
-    # Check NATS connection
-    nats_ready = False
-    try:
-        nats_transport = await get_nats_transport()
-        nats_ready = await nats_transport.health_check()
-    except Exception:
-        nats_ready = False
-    
-    dependencies = {
-        "postgres": postgres_ready,
-        "nats": nats_ready,
-    }
-    
-    all_ready = all(dependencies.values())
-    
-    return ReadyResponseDTO(
-        status="ready" if all_ready else "not_ready",
-        timestamp=datetime.utcnow(),
-        dependencies=dependencies,
-    )
-
-
-@app.post("/events", response_model=EventResponseDTO, status_code=status.HTTP_201_CREATED)
-async def create_event(request: EventRequestDTO) -> EventResponseDTO:
-    """Create and persist an event"""
-    # Blocking Defect 2: Database-generated global sequence
-    # Global sequence must come from database INSERT ... RETURNING global_sequence
-    # For now, pass None and let database assign it (temporary, will be fixed with proper INSERT ... RETURNING)
-    
-    # Create event envelope (global_sequence will be assigned by database)
-    event = EventEnvelope.create(
-        event_type=request.event_type,
-        event_category=request.event_category,  # type: ignore
-        payload=request.payload,
-        occurred_at=request.occurred_at,
-        recorded_at=datetime.utcnow(),
-        schema_version="1.0.0",
-        global_sequence=0,  # Database will assign actual sequence via INSERT ... RETURNING
-        correlation_id=request.correlation_id,
-        causality_id=request.causality_id,
-        producer_id=request.producer_id,
-        caused_by_command_id=request.caused_by_command_id,
-        aggregate_sequence=request.aggregate_sequence,
-    )
-    
-    # Persist to PostgreSQL
-    async with get_session() as session:
-        from sqlalchemy import select
-        
-        # Check if event already exists
-        existing = await session.execute(
-            select(EventModel).where(EventModel.event_id == event.event_id)
-        )
-        if existing.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Event {event.event_id} already exists"
-            )
-        
-        # Create event record
-        event_record = EventModel(
-            event_id=event.event_id,
-            event_type=event.event_type,
-            event_category=event.event_category,
-            payload=event.payload,
-            occurred_at=event.occurred_at,
-            recorded_at=event.recorded_at,
-            processed_at=event.processed_at,
-            correlation_id=event.correlation_id,
-            causality_id=event.causality_id,
-            producer_id=event.producer_id,
-            caused_by_command_id=event.caused_by_command_id,
-            schema_version=event.schema_version,
-            global_sequence=event.global_sequence,
-            aggregate_sequence=event.aggregate_sequence,
-            event_hash=event.event_id,  # For now, same as event_id
-        )
-        
-        session.add(event_record)
-        await session.commit()
-    
-    # Publish to NATS (Phase 13: REPLACE IMMEDIATELY)
-    try:
-        nats_transport = await get_nats_transport()
-        await nats_transport.publish(
-            f"constitutional.events.{event.event_type}",
-            event.model_dump(mode='json'),
-        )
-    except Exception as e:
-        # Log error but don't fail the request (event is already persisted)
-        logger.error("Failed to publish event to NATS", event_id=event.event_id, error=str(e))
-
-    # PostHog mirror (Week 4): PING guarantees delivery of business events.
-    # PostHog is a projection, never the source of truth (BI Boundary).
-    try:
-        from integrations.posthog import PostHogMirror
-        mirror = PostHogMirror()
-        await mirror.deliver({
-            "event_id": event.event_id,
-            "event_type": event.event_type,
-            "payload": event.payload,
-            "occurred_at": event.occurred_at.isoformat() if event.occurred_at else None,
-            "recorded_at": event.recorded_at.isoformat() if event.recorded_at else None,
-        })
-    except Exception as e:
-        logger.warning("PostHog mirror skipped", event_id=event.event_id, error=str(e))
-
-    return EventResponseDTO(
-        event_id=event.event_id,
-        event_type=event.event_type,
-        event_category=event.event_category,
-        payload=event.payload,
-        occurred_at=event.occurred_at,
-        recorded_at=event.recorded_at,
-        global_sequence=event.global_sequence,
-    )
-
-
-@app.post("/commands", status_code=status.HTTP_201_CREATED)
-async def create_command(request: CommandRequestDTO) -> JSONResponse:
-    """Create and persist a command"""
-    # Create command
-    command = Command.create(
-        command_type=request.command_type,
-        parameters=request.parameters,
-        created_at=datetime.utcnow(),
-        aggregate_id=request.aggregate_id,
-        aggregate_version=request.aggregate_version,
-    )
-    
-    # Persist to PostgreSQL
-    async with get_session() as session:
-        from storage.postgres.models import Command as CommandModel
-        
-        # Create command record
-        command_record = CommandModel(
-            command_id=command.command_id,
-            command_type=command.command_type,
-            parameters=command.parameters,
-            aggregate_id=command.aggregate_id,
-            created_at=command.created_at,
-            status="created",
-        )
-        
-        session.add(command_record)
-        await session.commit()
-    
-    # Publish to NATS (Phase 13: REPLACE IMMEDIATELY)
-    try:
-        nats_transport = await get_nats_transport()
-        await nats_transport.publish(
-            "constitutional.commands",
-            command.model_dump(mode='json'),
-        )
-    except Exception as e:
-        # Log error but don't fail the request (command is already persisted)
-        logger.error("Failed to publish command to NATS", command_id=command.command_id, error=str(e))
-    
-    return JSONResponse(
-        content={"command_id": command.command_id, "status": "created"},
-        status_code=status.HTTP_201_CREATED,
-    )
-
-
-@app.get("/events")
-async def get_events(
-    limit: int = 100,
-    offset: int = 0,
-    event_type: str | None = None,
-) -> JSONResponse:
-    """Get events from the event log"""
-    async with get_session() as session:
-        from sqlalchemy import select
-        
-        query = select(EventModel)
-        
-        if event_type:
-            query = query.where(EventModel.event_type == event_type)
-        
-        query = query.order_by(EventModel.global_sequence).limit(limit).offset(offset)
-        
-        result = await session.execute(query)
-        events = result.scalars().all()
-        
-        return JSONResponse(
-            content={
-                "events": [
-                    {
-                        "event_id": e.event_id,
-                        "event_type": e.event_type,
-                        "event_category": e.event_category,
-                        "payload": e.payload,
-                        "occurred_at": e.occurred_at.isoformat(),
-                        "recorded_at": e.recorded_at.isoformat(),
-                        "global_sequence": e.global_sequence,
-                    }
-                    for e in events
-                ],
-                "count": len(events),
-            }
-        )
-
-
-@app.get("/replay")
-async def replay(
-    from_sequence: int = 0,
-    to_sequence: int | None = None,
-) -> JSONResponse:
-    """Replay events from the event log"""
-    async with get_session() as session:
-        from sqlalchemy import select
-        
-        query = select(EventModel).where(EventModel.global_sequence >= from_sequence)
-        
-        if to_sequence:
-            query = query.where(EventModel.global_sequence <= to_sequence)
-        
-        query = query.order_by(EventModel.global_sequence)
-        
-        result = await session.execute(query)
-        events = result.scalars().all()
-        
-        return JSONResponse(
-            content={
-                "replayed": len(events),
-                "from_sequence": from_sequence,
-                "to_sequence": to_sequence or events[-1].global_sequence if events else from_sequence,
-                "events": [
-                    {
-                        "event_id": e.event_id,
-                        "event_type": e.event_type,
-                        "global_sequence": e.global_sequence,
-                    }
-                    for e in events
-                ],
-            }
-        )
-
-
-@app.get("/metrics")
-async def metrics(request) -> JSONResponse:
-    """Get runtime metrics (Phase 14: REPLACE - integrate with prometheus-client)"""
-    from fastapi.responses import Response
-    observability = request.app.state.observability
-    metrics_data = observability.get_metrics()
-    return Response(content=metrics_data, media_type="text/plain")
-
-
-@app.get("/ops")
-async def ops(request) -> JSONResponse:
-    """Live operational state - exposes existing runtime telemetry (no new architecture)."""
-    deps: dict[str, bool] = {}
-    try:
-        async with get_session() as session:
-            await session.execute("SELECT 1")
-        deps["postgres"] = True
-    except Exception:
-        deps["postgres"] = False
-    try:
-        nats_transport = await get_nats_transport()
-        deps["nats"] = await nats_transport.health_check()
-    except Exception:
-        deps["nats"] = False
-
-    event_count = 0
-    last_seq = 0
-    try:
-        async with get_session() as session:
-            from sqlalchemy import select, func
-            result = await session.execute(select(func.count()).select_from(EventModel))
-            event_count = result.scalar() or 0
-            result2 = await session.execute(select(func.max(EventModel.global_sequence)))
-            last_seq = result2.scalar() or 0
-    except Exception:
-        pass
-
-    observability = request.app.state.observability
-    metrics = observability.get_metrics()
-    status = "operational" if all(deps.values()) else "degraded"
-    return JSONResponse(content={
-        "status": status,
-        "timestamp": datetime.utcnow().isoformat(),
-        "event_count": event_count,
-        "last_global_sequence": last_seq,
-        "replay_available": True,
-        "dependencies": deps,
-        "metrics_sample": (metrics[:500] if metrics else ""),
-    })
-
-
-@app.get("/business")
-async def business(request) -> JSONResponse:
-    """Business health models projected from canonical events (Operational Intelligence).
-
-    Exposes DECISIONS (health status), not raw metric classes.
-    """
-    events: list[dict] = []
-    try:
-        async with get_session() as session:
-            from sqlalchemy import select
-            result = await session.execute(
-                select(EventModel).order_by(EventModel.global_sequence).limit(2000)
-            )
-            rows = result.scalars().all()
-            events = [
-                {
-                    "event_type": e.event_type,
-                    "payload": e.payload,
-                    "global_sequence": e.global_sequence,
-                    "occurred_at": e.occurred_at.isoformat() if e.occurred_at else None,
-                }
-                for e in rows
-            ]
-    except Exception as ex:
-        logger.error("Failed to load events for business projection", error=str(ex))
-
-    facts = compute_business_facts(events)
-    signals = compute_business_signals(events)
-    deps: dict[str, bool] = {}
-    try:
-        async with get_session() as session:
-            await session.execute("SELECT 1")
-        deps["postgres"] = True
-    except Exception:
-        deps["postgres"] = False
-    try:
-        nats_transport = await get_nats_transport()
-        deps["nats"] = await nats_transport.health_check()
-    except Exception:
-        deps["nats"] = False
-    health_models = compute_health_models(facts, signals)
-    return JSONResponse(content={
-        "timestamp": datetime.utcnow().isoformat(),
-        "event_window": len(events),
-        "signals": {
-            k: {
-                "direction": v.direction,
-                "magnitude": v.magnitude,
-                "current_rate": v.current_rate,
-                "prior_rate": v.prior_rate,
-            }
-            for k, v in signals.items()
-        },
-        "health_models": [m.to_dict() for m in health_models],
-    })
-
-
-@app.get("/ceo")
-async def ceo(request) -> JSONResponse:
-    """Executive dashboard - one view of business + operational health.
-
-    Fed by health models (decisions), not raw metrics. Small by design.
-    """
-    events: list[dict] = []
-    try:
-        async with get_session() as session:
-            from sqlalchemy import select
-            result = await session.execute(
-                select(EventModel).order_by(EventModel.global_sequence).limit(2000)
-            )
-            rows = result.scalars().all()
-            events = [
-                {"event_type": e.event_type, "payload": e.payload,
-                 "global_sequence": e.global_sequence,
-                 "occurred_at": e.occurred_at.isoformat() if e.occurred_at else None}
-                for e in rows
-            ]
-    except Exception as ex:
-        logger.error("Failed to load events for CEO dashboard", error=str(ex))
-
-    facts = compute_business_facts(events)
-    signals = compute_business_signals(events)
-    deps: dict[str, bool] = {}
-    try:
-        async with get_session() as session:
-            await session.execute("SELECT 1")
-        deps["postgres"] = True
-    except Exception:
-        deps["postgres"] = False
-    try:
-        nats_transport = await get_nats_transport()
-        deps["nats"] = await nats_transport.health_check()
-    except Exception:
-        deps["nats"] = False
-    health_models = compute_health_models(facts, signals)
-    problems = prioritize_health(health_models)
-    return JSONResponse(content={
-        "timestamp": datetime.utcnow().isoformat(),
-        "health": [m.to_dict() for m in health_models],
-        "priority": problems,
-        "facts": {
-            "leads": facts["lead_count"],
-            "pipeline_value": facts["total_pipeline_value"],
-            "avg_rating": facts["avg_rating"],
-            "delivery_rate": facts["delivery_rate"],
-        },
-        "dependencies": deps,
-    })
-
-
-# Thin adapter endpoints for frontend consumption
-@app.get("/api/connectors")
-async def get_connectors() -> JSONResponse:
-    """Thin adapter for connector registry - returns registered capabilities."""
-    return JSONResponse(content={
-        "connectors": [],
-        "status": "not_implemented"
-    })
-
-
-@app.get("/api/evidence")
-async def get_evidence() -> JSONResponse:
-    """Thin adapter for evidence compiler - returns evidence compilation status."""
-    return JSONResponse(content={
-        "evidence": [],
-        "status": "not_implemented"
-    })
-
-
-@app.get("/api/recommendations")
-async def get_recommendations() -> JSONResponse:
-    """Thin adapter for recommendations - frontend-only capability."""
-    return JSONResponse(content={
-        "recommendations": [],
-        "status": "frontend_only"
-    })
-
-
-@app.get("/api/executions")
-async def get_executions() -> JSONResponse:
-    """Thin adapter for execution pipeline - returns execution status."""
-    return JSONResponse(content={
-        "executions": [],
-        "status": "not_implemented"
-    })
-
-
-@app.get("/api/graph")
-async def get_graph() -> JSONResponse:
-    """Thin adapter for knowledge graph - returns graph query status."""
-    return JSONResponse(content={
-        "graph": [],
-        "status": "not_implemented"
-    })
-
-
-@app.get("/api/projections")
-async def get_projections() -> JSONResponse:
-    """Thin adapter for projection store - returns projection status."""
-    return JSONResponse(content={
-        "projections": [],
-        "status": "not_implemented"
-    })
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host=settings.api_host, port=settings.api_port)

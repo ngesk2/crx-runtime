@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 from pydantic import BaseModel, Field
-from constitution.hashing import CanonicalHasher
+from constitution.authority import CanonicalAuthority
 
 
 class Command(BaseModel):
@@ -36,8 +36,9 @@ class Command(BaseModel):
             'created_at': created_at.isoformat(),
         }
         
-        # Use CanonicalHasher
-        command_id = CanonicalHasher.hash_dict(data)
+        # Use CanonicalAuthority
+        authority = CanonicalAuthority()
+        command_id = authority.hash_dict(data)
         
         return cls(
             command_id=command_id,

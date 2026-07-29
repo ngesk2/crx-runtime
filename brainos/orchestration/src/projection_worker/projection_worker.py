@@ -255,7 +255,7 @@ def watch_postgres_events():
                 print(f"Processing event: {uuid} ({event_type})")
                 
                 # Project to Qdrant
-                # TODO: Implement event projection logic
+                # MVP: Event projection logic not implemented
                 
                 last_id = event_id
             

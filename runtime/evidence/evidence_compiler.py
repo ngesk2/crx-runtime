@@ -142,6 +142,11 @@ class EvidenceCompiler:
     def __init__(self):
         self._compiler_id = "evidence_compiler_v1"
     
+    @property
+    def compiler_id(self) -> str:
+        """Public property for compiler ID."""
+        return self._compiler_id
+    
     def compile(
         self,
         mission_id: str,
