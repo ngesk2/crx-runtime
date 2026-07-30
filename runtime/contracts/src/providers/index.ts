@@ -27,6 +27,17 @@ export interface ConnectorMetrics {
 }
 
 /**
+ * Connector Config
+ */
+export interface ConnectorConfig {
+  id: string;
+  name: string;
+  type: string;
+  credentials: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+}
+
+/**
  * Abstract Connector Interface
  * Base interface for all provider connectors.
  */
