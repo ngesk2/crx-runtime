@@ -1,290 +1,488 @@
 # Constitutional Authority Map
 
-## Executive Summary
+**Status:** FROZEN - Constitutional authority definitions established
 
-This document maps constitutional authorities across the CRX/PING repository, identifying singular authorities, delegated implementations, and authority violations.
+---
+
+## Authority Categories
+
+### Constitutional Authority
+- Owns canonical semantics
+- Defines constitutional behavior
+- Single source of truth
+- Examples: ExecutionEventBus, KnowledgeAuthority, DeterministicReplayEngine
+
+### Constitutional Runtime Gateway
+- Orchestrates constitutional execution
+- Enforces constitutional boundaries
+- Single constitutional ingress
+- Does not own execution semantics (providers + replay own semantics)
+- Examples: ExecutionEngine
+
+### Runtime Authority
+- Executes constitutional decisions
+- Orchestrates runtime lifecycle
+- Does not define canonical semantics
+- Examples: RuntimeContainer
+
+### Projection
+- Derived views only
+- Never creates constitutional state
+- Consumes Witness or Evidence
+- Examples: GitProjection, Graph projections, UI projections
+
+### Infrastructure
+- Adapters, storage, HTTP, databases
+- Never defines constitutional state
+- Supports constitutional operations
+- Examples: PostgreSQL, Qdrant, HTTP adapters
 
 ---
 
 ## Constitutional Authorities
 
-### 1. Canonicalization Authority
+### Execution
 
-**Singular Authority:** `runtime/replay/canonical_json.ts`
+**Owner:** ExecutionEngine
+**Location:** `runtime/kernel/execution/execution-engine.ts`
+**Responsibilities:**
+- Single constitutional execution ingress
+- Provider execution orchestration
+- Identity resolution
+- Policy check
+- Evidence storage
+- Knowledge graph indexing
+- Replay transcript generation
+- Projection
+- Event publishing
 
-**Implementation:**
-- RFC-8785 JSON Canonicalization Scheme (JCS)
-- Lexicographic property ordering
-- Deterministic numeric rendering
-- UTF-8 normalization
-- Circular reference protection
-- BigInt/Symbol/Function rejection
-- NaN normalization
-
-**Delegations:**
-- `runtime/kernel/commit-service/src/engines/canonical_engine.ts` ✅ (delegates to @crx/replay CanonicalJson)
-
-**Status:** ✅ SINGULAR AUTHORITY ESTABLISHED
-
----
-
-### 2. Hash Authority
-
-**Singular Authority:** `runtime/replay/canonical_hash_authority.ts`
-
-**Implementation:**
-- Delegates canonicalization to CanonicalJson
-- Uses CertificateAuthority for SHA-256
-- Byte-stable hashing
-- Runtime-neutral (no Buffer, no Node crypto)
-
-**Violations:**
-- `runtime/kernel/commit-service/src/engines/identity_engine.ts` ❌
-  - Uses Node crypto directly
-  - Does not delegate to constitutional hash authority
-  - Creates parallel hash implementation
-
-**Status:** ❌ AUTHORITY FRAGMENTATION
+**Constitutional Rule:** All provider execution must route through ExecutionEngine.execute()
 
 ---
 
-### 3. Replay Authority
+### Events
 
-**Singular Authority:** `runtime/replay/`
-
-**Implementation:**
-- `replay_state_machine.ts` - Deterministic state transitions
-- `replay_event_stream.ts` - Event stream handling
-- `deterministic_replay_engine.ts` - Replay execution
-- `replay_verification.ts` - Determinism verification
-- `witness_authority.ts` - Witness root generation
-
-**Status:** ✅ SINGULAR AUTHORITY ESTABLISHED
-
----
-
-### 4. Validation Authority
-
-**Singular Authority:** `runtime/replay/graph_validator.ts`
-
-**Implementation:**
-- Transitive cycle detection (DFS)
-- Orphan detection
-- Depth enforcement
-- Deterministic traversal ordering
-- Constitutional depth guards
-
-**Violations:**
-- `runtime/kernel/commit-service/src/validation/dag_validator.ts` ❌
-  - Only checks direct self-loops
-  - Only checks duplicate parents
-  - Missing transitive cycle detection
-  - Missing orphan detection
-  - Missing depth enforcement
-
-**Status:** ❌ AUTHORITY FRAGMENTATION
-
----
-
-### 5. Event Authority
-
-**Singular Authority:** `runtime/replay/replay_event_stream.ts`
-
-**Implementation:**
-- Canonical event envelopes
+**Owner:** ExecutionEventBus
+**Location:** `runtime/kernel/execution/execution-event-bus.ts`
+**Responsibilities:**
+- Single constitutional event minting authority
+- Event envelope creation
+- Event publishing
 - Event stream management
-- Deterministic event ordering
 
-**Violations:**
-- `runtime/kernel/commit-service/src/events/event_log.ts` ❌
-  - Direct database persistence
-  - Does not delegate to replay authority
-  - Mixed ownership (persistence + event handling)
+**Constitutional Rule:** Only ExecutionEventBus may mint constitutional events
 
-**Status:** ❌ AUTHORITY FRAGMENTATION
+**Other Components (NOT authorities):**
+- EventStore: Storage only (does not mint events)
+- ProjectionStore: Projection only (does not mint events)
+- EventReader: Read-only (does not mint events)
 
 ---
 
-### 6. Lineage Authority
+### Replay
 
-**Singular Authority:** `runtime/replay/replay_state_machine.ts`
+**Owner:** DeterministicReplayEngine
+**Location:** `runtime/kernel/replay/deterministic_replay_engine.ts`
+**Responsibilities:**
+- Single constitutional replay authority
+- Deterministic replay execution
+- Replay state machine
+- Replay verification
 
-**Implementation:**
-- Lineage graph construction
-- Lineage validation
-- Lineage depth calculation
-- Event ID to artifact ID mapping
+**Constitutional Rule:** Only DeterministicReplayEngine owns canonical replay semantics
 
-**Violations:**
-- `runtime/kernel/commit-service/src/persistence/lineage_store.ts` ❌
-  - Direct database persistence
-  - No validation delegation
-  - Mixed ownership (persistence + lineage logic)
+**Auxiliary Authority (NOT canonical):**
+- Python ReplayKernel: Verification, migration, research implementation
+  - May verify
+  - May compare
+  - May migrate
+  - May never commit
+  - May never publish
+  - May never mutate
+  - May never evolve runtime state
 
-**Status:** ❌ AUTHORITY FRAGMENTATION
-
----
-
-## Implementation Layers
-
-### Transport Layer
-
-**Files:**
-- `runtime/kernel/commit-service/src/api/commit_controller.ts`
-- `runtime/kernel/commit-service/src/api/audit_controller.ts`
-- `runtime/kernel/commit-service/src/server.ts`
-
-**Violations:**
-- `commit_controller.ts` calls `computeCanonicalHash` directly (should delegate to hash authority)
-- `audit_controller.ts` directly queries database pool (should delegate to persistence authority)
-
-**Status:** ❌ CONTROLLER VIOLATIONS
+**Supporting Modules (NOT authorities):**
+- ReplayStateMachine: State machine logic
+- ReplayTranscriptBuilder: Transcript generation
+- ReplayLimits: Configuration limits
+- ReplayInvariants: Invariant definitions
+- StateSerializer: State serialization
 
 ---
 
-### Persistence Layer
+### Knowledge
 
-**Files:**
-- `runtime/kernel/commit-service/src/persistence/artifact_store.ts`
-- `runtime/kernel/commit-service/src/persistence/lineage_store.ts`
-- `runtime/kernel/commit-service/src/persistence/db.ts`
-- `runtime/kernel/commit-service/src/persistence/ledger_schema.sql`
+**Owner:** KnowledgeAuthority
+**Location:** `runtime/kernel/knowledge/knowledge-authority.ts`
+**Responsibilities:**
+- Single constitutional graph mutation authority
+- Graph node creation
+- Graph edge creation
+- Graph queries
 
-**Violations:**
-- `db.ts` exports global pool (violates dependency injection)
-- Persistence stores hash, validate, establish truth (should be write-only/read-only)
+**Constitutional Rule:** Only KnowledgeAuthority may mutate graph state
 
-**Status:** ❌ PERSISTENCE VIOLATIONS
-
----
-
-### Security Layer
-
-**Files:**
-- None (to be implemented)
-
-**Required:**
-- Windows credential provider
-
-**Status:** ⚠️ NOT IMPLEMENTED
-
----
-
-## Repository Hygiene
-
-### .gitignore
-
-**Status:** ❌ ROOT .GITIGNORE MISSING
-
-**Existing:**
-- `runtime/.gitignore` ✅ (covers node_modules, dist, coverage, .turbo, .next, *.log)
-
-**Required:**
-- Root-level .gitignore to cover entire repository
+**Constitutional Flow:**
+```
+Execution
+    ↓
+Evidence
+    ↓
+Knowledge Indexer
+    ↓
+Knowledge Authority
+    ↓
+Graph Mutation
+```
 
 ---
 
-### node_modules
+### Identity
 
-**Status:** ❌ COMMITTED TO GIT
+**Owner:** CanonicalIdentityService
+**Location:** `runtime/kernel/identity/canonical-identity-service.ts`
+**Responsibilities:**
+- Canonical identity generation
+- Identity resolution
+- Identity validation
+
+**Constitutional Rule:** Only CanonicalIdentityService owns canonical identity
+
+---
+
+### Witness
+
+**Owner:** WitnessAuthority
+**Location:** `runtime/kernel/replay/witness_authority.ts`
+**Responsibilities:**
+- Witness generation
+- Witness validation
+- Witness persistence
+
+**Constitutional Rule:** Only WitnessAuthority owns canonical witness semantics
+
+---
+
+### Canonical Hash
+
+**Owner:** CanonicalHashAuthority
+**Location:** `runtime/kernel/replay/canonical_hash_authority.ts`
+**Responsibilities:**
+- Canonical hash generation
+- Hash validation
+
+**Constitutional Rule:** Only CanonicalHashAuthority owns canonical hash semantics
+
+---
+
+### Providers
+
+**Lifetime Owner:** RuntimeContainer
+**Location:** `runtime/di_container.py`
+**Responsibilities:**
+- Provider lifetime management
+- Singleton identity
+- Dependency graph
+- Destruction
+
+**Resolution Owner:** ProviderRegistry
+**Location:** `runtime/kernel/providers/provider-registry.ts`
+**Responsibilities:**
+- Provider discovery
+- Capability resolution
+- Provider selection
+- Provider policy
+
+**Constitutional Law:**
+- RuntimeContainer owns object lifetime
+- ProviderRegistry owns provider selection
+- A ProviderRegistry never constructs providers
+
+**Constitutional Flow:**
+```
+RuntimeBootstrap
+    ↓
+RuntimeContainer (owns lifetime)
+    ↓
+ProviderRegistry (owns selection)
+    ↓
+Provider (executes work)
+```
+
+**Constitutional Flow:**
+```
+RuntimeBootstrap
+    ↓
+RuntimeContainer (owns lifetime)
+    ↓
+ProviderRegistry (owns resolution)
+    ↓
+Provider (executes work)
+```
+
+**Provider Responsibilities:**
+- Execute work
+- Never self-register
+- Never self-construct
+
+---
+
+### Bootstrap
+
+**Owner:** RuntimeBootstrap
+**Location:** `runtime/bootstrap.py`
+**Responsibilities:**
+- Single constitutional bootstrap path
+- Composition root
+- Dependency wiring
+
+**Constitutional Rule:** Only RuntimeBootstrap may initialize production runtime
+
+**Criterion:** Independent production runtime initialization (not test/CLI/dev tools)
+
+---
+
+### Git
+
+**Owner:** ProjectionPipeline
+**Location:** `runtime/kernel/projection/projection-pipeline.ts` (to be created)
+**Responsibilities:**
+- Projection orchestration
+- Evidence-to-projection transformation
+- Projection sink management
+
+**Projection Sink:** GitProjection
+**Location:** `constitutional-compiler/git/git-infrastructure.ts` (to be repurposed)
+**Responsibilities:**
+- Git projection sink
+- Evidence archive
+- Provenance record
+- Witness persistence
+
+**Constitutional Law:** Git is never constitutional state. Git is merely one projection sink.
+
+**Constitutional Flow:**
+```
+Execution
+    ↓
+Evidence
+    ↓
+Replay
+    ↓
+Witness
+    ↓
+ProjectionPipeline
+    ↓
+GitProjection (one sink among many)
+```
+
+**Future-Proof:** ProjectionPipeline may emit to Git, OCI, Witness archive, Ledger from same evidence.
+
+**Forbidden Flow:**
+```
+Execution
+    ↓
+Git
+    ↓
+Execution continues
+```
+
+**Constitutional Violation:** Git as execution dependency (constitutional leakage)
+
+---
+
+### Infrastructure
+
+**Owner:** GatewayAuthority
+**Location:** `src/lib/gateway.ts` (crx-ui-next)
+**Responsibilities:**
+- Single gateway resolution authority
+- Gateway URL resolution
+- Gateway configuration
+
+**Constitutional Rule:** Only GatewayAuthority may resolve gateway URLs
+
+**Criterion:** Production infrastructure only (not test/CLI/dev tools)
+
+---
+
+## Supporting Modules (Not Authorities)
+
+**Definition:** Supporting modules participate in authority operations but do not own canonical semantics
+
+**Examples:**
+- ReplayStateMachine: State machine logic
+- ReplayTranscriptBuilder: Transcript generation
+- ReplayLimits: Configuration limits
+- ReplayInvariants: Invariant definitions
+- StateSerializer: State serialization
+- CanonicalJson: Canonical JSON serialization
+
+**Constitutional Rule:** Authorities own decisions, helpers execute decisions
+
+---
+
+## Business Service Classification
+
+**Every business service must be classified as either:**
+
+### Facade (Acceptable)
+- Coordinates other components
+- Delegates to authorities
+- Does not own canonical semantics
+
+### Authority (Violation if not canonical)
+- Owns canonical semantics
+- Defines constitutional behavior
+- Single source of truth
+
+**Constitutional Rule:** Only constitutional authorities may own canonical semantics
+
+**Question:** Does the service decide or delegate?
+- Decide: Authority (violation if not constitutional)
+- Delegate: Façade (acceptable)
+
+---
+
+## Event Authority Definition
+
+**Constitutional Question:** Who may mint constitutional events?
+
+**Event Creation (Authority):**
+- Component creates new constitutional events
+- Component is event authority
+- **Constitutional violation if not canonical**
+
+**Event Storage (Not Authority):**
+- Component stores events
+- Component does not mint events
+- **Not constitutional violation unless synthesizing events**
+
+**Event Consumption (Not Authority):**
+- Component reads events
+- Component does not mint events
+- **Not constitutional violation**
+
+**Constitutional Rule:** Only ExecutionEventBus may mint constitutional events
+
+---
+
+## Implementation Gate
+
+**Every finding must satisfy before harvest:**
+
+1. **Observed:** Directly observed in inspected source
+2. **Owner Known:** Maps to single constitutional owner in this map
+3. **Replacement Known:** Clear path to constitutional owner
+4. **Acceptance Test Exists:** Test to verify constitutional convergence
+5. **Harvest:** Remove code that violates ownership map
+
+**If any one is missing:**
+- Classification: "Requires Constitutional Definition"
+- NOT "Remaining" or "Recommendation"
+
+---
+
+## Constitutional Ownership Hierarchy
+
+```
+RuntimeBootstrap (builds the system)
+    ↓
+RuntimeContainer (owns lifetime, singleton identity, dependency graph, destruction)
+    ↓
+ProviderRegistry (owns provider discovery, capability resolution, provider selection, provider policy)
+    ↓
+Provider (executes work, never self-register, never self-construct)
+```
+
+---
+
+## Constitutional Flow
+
+```
+Execution
+    ↓
+Evidence
+    ↓
+Replay
+    ↓
+Witness
+    ↓
+Git Projection
+```
+
+**Forbidden:** Execution → Git → Execution continues (constitutional leakage)
+
+---
+
+## Constitutional Invariants
+
+**Execution:**
+- Execution may mutate nothing except Evidence
+- Execution is pure except Evidence append
 
 **Evidence:**
-- `git ls-files` shows thousands of node_modules files tracked
-- Critical repository hygiene violation
+- Evidence is append-only
+- Evidence is immutable
+- Evidence is the source of truth
 
-**Required:**
-- Remove node_modules from git tracking
-- Add to .gitignore
-- Ensure package-lock.json is present
+**Replay:**
+- Replay is pure
+- Replay is deterministic
+- Replay never mutates runtime state
 
----
+**Witness:**
+- Witness is deterministic
+- Witness is derived from Evidence
+- Witness is immutable
 
-## Authority Violation Summary
+**Knowledge:**
+- Knowledge consumes Evidence only
+- Knowledge never creates Evidence
+- Knowledge mutations are authoritative
 
-| Authority | Singular Authority | Violations | Status |
-|-----------|-------------------|------------|--------|
-| Canonicalization | `runtime/replay/canonical_json.ts` | None | ✅ |
-| Hash | `runtime/replay/canonical_hash_authority.ts` | `identity_engine.ts` | ❌ |
-| Replay | `runtime/replay/` | None | ✅ |
-| Validation | `runtime/replay/graph_validator.ts` | `dag_validator.ts` | ❌ |
-| Event | `runtime/replay/replay_event_stream.ts` | `event_log.ts` | ❌ |
-| Lineage | `runtime/replay/replay_state_machine.ts` | `lineage_store.ts` | ❌ |
+**Projection:**
+- Projection consumes Witness only
+- Projection never creates Witness
+- Projection is derived
 
----
+**Infrastructure:**
+- Infrastructure never defines constitutional state
+- Infrastructure supports operations only
+- Infrastructure is replaceable
 
-## Controller Violations Summary
+**Providers:**
+- Providers execute but never decide
+- Providers never self-register
+- Providers never self-construct
 
-| Controller | Violation | Severity |
-|------------|-----------|----------|
-| `commit_controller.ts` | Calls computeCanonicalHash directly | P0 |
-| `audit_controller.ts` | Directly queries database pool | P0 |
-
----
-
-## Persistence Violations Summary
-
-| File | Violation | Severity |
-|------|-----------|----------|
-| `db.ts` | Global pool export | P0 |
-| `artifact_store.ts` | Hashes in persistence layer | P1 |
-| `lineage_store.ts` | Validates in persistence layer | P1 |
-| `event_log.ts` | Establishes truth in persistence layer | P1 |
+**Git:**
+- Git records state but never creates state
+- Git is a projection sink only
+- Git is never execution dependency
 
 ---
 
-## Recommended Actions
+## Authority Map Summary
 
-### P0 (Critical)
-
-1. Remove `identity_engine.ts` - delegate to `canonical_hash_authority.ts`
-2. Remove `dag_validator.ts` - delegate to `graph_validator.ts`
-3. Refactor `commit_controller.ts` to delegate to hash authority
-4. Refactor `audit_controller.ts` to delegate to persistence authority
-5. Remove global pool export from `db.ts` - use dependency injection
-6. Create root .gitignore
-7. Remove node_modules from git tracking
-
-### P1 (Recommended)
-
-1. Refactor `event_log.ts` to delegate to replay event authority
-2. Refactor `lineage_store.ts` to separate persistence from validation
-3. Ensure persistence stores are write-only/read-only
-4. Remove hashing/validation from persistence layer
-
-### P2 (Optional)
-
-1. Consolidate audit reports
-2. Archive duplicate documentation
-3. Standardize naming conventions
+| Authority | Owner | Location | Category | Status |
+|-----------|-------|----------|----------|--------|
+| Execution | ExecutionEngine | runtime/kernel/execution/execution-engine.ts | Constitutional Runtime Gateway | ✅ Frozen |
+| Events | ExecutionEventBus | runtime/kernel/execution/execution-event-bus.ts | Constitutional | ✅ Frozen |
+| Replay | DeterministicReplayEngine | runtime/kernel/replay/deterministic_replay_engine.ts | Constitutional | ✅ Frozen |
+| Knowledge | KnowledgeAuthority | runtime/kernel/knowledge/knowledge-authority.ts | Constitutional | ✅ Frozen |
+| Identity | CanonicalIdentityService | runtime/kernel/identity/canonical-identity-service.ts | Constitutional | ✅ Frozen |
+| Witness | WitnessAuthority | runtime/kernel/replay/witness_authority.ts | Constitutional | ✅ Frozen |
+| Canonical Hash | CanonicalHashAuthority | runtime/kernel/replay/canonical_hash_authority.ts | Constitutional | ✅ Frozen |
+| Provider Lifetime | RuntimeContainer | runtime/di_container.py | Runtime | ✅ Frozen |
+| Provider Resolution | ProviderRegistry | runtime/kernel/providers/provider-registry.ts | Constitutional | ✅ Frozen |
+| Bootstrap | RuntimeBootstrap | runtime/bootstrap.py | Runtime | ✅ Frozen |
+| Projection Pipeline | ProjectionPipeline | runtime/kernel/projection/projection-pipeline.ts | Runtime | ✅ Frozen |
+| Git Projection | GitProjection | constitutional-compiler/git/git-infrastructure.ts | Projection | ✅ Frozen |
+| Infrastructure | GatewayAuthority | src/lib/gateway.ts (crx-ui-next) | Infrastructure | ✅ Frozen |
 
 ---
 
-## Constitutional Reduction Analysis
-
-### Question 1: Does this introduce authority?
-
-**Answer:** No - all changes delegate to existing authorities.
-
-### Question 2: Can replay reconstruct it?
-
-**Answer:** Yes - all state derives from event stream.
-
-### Question 3: Can hash reconstruct it?
-
-**Answer:** Yes - identity derives from canonical hash.
-
-### Question 4: Can delegation replace it?
-
-**Answer:** Yes - all violations can be replaced with delegation.
-
----
-
-## End State
-
-**Target:** One authority per constitutional concern.
-
-**Current:** 4/6 authorities singular (67%)
-
-**Goal:** 6/6 authorities singular (100%)
-
-**Path:** Delegate all violations to constitutional authorities.
+**Frozen Date:** 2026-07-29
+**Status:** Constitutional authority definitions established
+**Next Step:** Phase 0 - Startup Integrity (P0 only)

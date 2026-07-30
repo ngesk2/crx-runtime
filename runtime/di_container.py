@@ -9,7 +9,7 @@ service-locator style dependencies.
 from typing import Optional
 from dataclasses import dataclass
 
-from constitution.authority.canonical import CanonicalAuthority
+from constitution.authority import CanonicalAuthority
 from storage.event_store import EventStore
 from storage.postgres.database import get_session
 from constitution.registry.capability_registry import CapabilityRegistry
@@ -18,6 +18,7 @@ from runtime.evidence.evidence_compiler import EvidenceCompiler
 from runtime.event_sourcing.projections import ProjectionStore
 from storage.repositories.postgres_event_reader import PostgresEventReader
 from storage.repositories.event_reader import EventReader
+from runtime.replay.replay_verifier import ReplayVerifier
 
 
 @dataclass
@@ -29,11 +30,7 @@ class RuntimeContainer:
     Everything downstream receives interfaces from this container.
     """
     
-    # Constitutional authorities
-    canonical_authority: CanonicalAuthority
-    
     # Storage
-    event_store_factory: callable  # Factory to create EventStore with session
     event_reader: EventReader  # Event reader interface
     
     # Registry
@@ -48,17 +45,17 @@ class RuntimeContainer:
     # Projections
     projection_store: ProjectionStore
     
+    # Projection pipeline
+    projection_pipeline: Optional[object] = None  # Will be set if TypeScript pipeline is used
+    
+    # Replay
+    replay_verifier: ReplayVerifier
+    
     @classmethod
     async def create(cls) -> "RuntimeContainer":
         """Create and initialize the runtime container."""
         # Construct constitutional authorities
         canonical_authority = CanonicalAuthority()
-        
-        # Create event store factory (requires session per request)
-        def event_store_factory():
-            from storage.event_store import EventStore
-            # This will be called with a session when needed
-            return lambda session: EventStore(session)
         
         # Initialize capability registry
         capability_registry = CapabilityRegistry()
@@ -76,14 +73,16 @@ class RuntimeContainer:
         # Initialize event reader
         event_reader = PostgresEventReader()
         
+        # Initialize replay verifier with event reader
+        replay_verifier = ReplayVerifier(canonical_authority, event_reader)
+        
         return cls(
-            canonical_authority=canonical_authority,
-            event_store_factory=event_store_factory,
             event_reader=event_reader,
             capability_registry=capability_registry,
             oracle=oracle,
             evidence_compiler=evidence_compiler,
             projection_store=projection_store,
+            replay_verifier=replay_verifier,
         )
     
     async def shutdown(self) -> None:

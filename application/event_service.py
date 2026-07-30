@@ -7,7 +7,6 @@ Owns canonical serialization, hashing, and duplicate detection.
 
 from typing import Optional
 from datetime import datetime
-from uuid import UUID, uuid4
 from sqlalchemy import select
 
 from constitution.models.event import EventEnvelope
@@ -34,13 +33,16 @@ class EventApplicationService:
         - Duplicate detection
         - Persistence coordination
         """
-        # Create event envelope
-        event = EventEnvelope(
-            event_id=str(uuid4()),
+        # Create event envelope with constitutional hash-derived event_id.
+        # Deterministic: NO uuid4 / random — replay must regenerate identical IDs.
+        # Reuses the canonical /events path (EventEnvelope.create -> persist -> publish).
+        event = EventEnvelope.create(
             event_type=request.event_type,
             event_category=request.event_category,
             payload=request.payload,
             occurred_at=request.occurred_at,
+            recorded_at=datetime.utcnow(),
+            schema_version="1.0.0",
             correlation_id=request.correlation_id,
             causality_id=request.causality_id,
             producer_id=request.producer_id,

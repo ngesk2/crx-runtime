@@ -5,9 +5,27 @@ Provides abstraction for reading events without exposing SQLAlchemy.
 Application services depend on this interface, not ORM models.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from abc import ABC, abstractmethod
 from datetime import datetime
+from dataclasses import dataclass
+
+
+@dataclass
+class CanonicalEvent:
+    """Constitutional event representation - persistence-agnostic."""
+    event_id: str
+    event_type: str
+    event_category: str
+    schema_version: str
+    aggregate_sequence: int
+    aggregate_version: int
+    stream_version: int
+    payload: dict
+    event_hash: str
+    occurred_at: Optional[datetime] = None
+    recorded_at: Optional[datetime] = None
+    global_sequence: Optional[int] = None
 
 
 class EventReader(ABC):
@@ -20,33 +38,26 @@ class EventReader(ABC):
         event_category: Optional[str] = None,
         limit: int = 1000,
         offset: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[CanonicalEvent]:
         """
         Get events with optional filtering.
         
-        Returns list of event dictionaries with keys:
-        - event_id
-        - event_type
-        - event_category
-        - payload
-        - occurred_at
-        - recorded_at
-        - global_sequence
+        Returns list of CanonicalEvent objects.
         """
         pass
     
     @abstractmethod
-    async def get_event_by_id(self, event_id: str) -> Optional[Dict[str, Any]]:
+    async def get_event_by_id(self, event_id: str) -> Optional[CanonicalEvent]:
         """Get a single event by ID."""
         pass
     
     @abstractmethod
-    async def get_events_by_type(self, event_type: str, limit: int = 1000) -> List[Dict[str, Any]]:
+    async def get_events_by_type(self, event_type: str, limit: int = 1000) -> List[CanonicalEvent]:
         """Get all events of a specific type."""
         pass
     
     @abstractmethod
-    async def get_events_by_category(self, event_category: str, limit: int = 1000) -> List[Dict[str, Any]]:
+    async def get_events_by_category(self, event_category: str, limit: int = 1000) -> List[CanonicalEvent]:
         """Get all events of a specific category."""
         pass
     
@@ -56,11 +67,16 @@ class EventReader(ABC):
         start_time: datetime,
         end_time: datetime,
         limit: int = 1000,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[CanonicalEvent]:
         """Get events within a time range."""
         pass
     
     @abstractmethod
     async def count_events(self, event_type: Optional[str] = None) -> int:
         """Count events with optional filtering."""
+        pass
+    
+    @abstractmethod
+    async def load_all(self) -> List[CanonicalEvent]:
+        """Load all events in global sequence order."""
         pass

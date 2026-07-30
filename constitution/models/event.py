@@ -54,7 +54,6 @@ class EventEnvelope(BaseModel):
             'producer_id': self.producer_id,
             'caused_by_command_id': self.caused_by_command_id,
             'schema_version': self.schema_version,
-            'global_sequence': self.global_sequence,
             'aggregate_sequence': self.aggregate_sequence,
             'aggregate_version': self.aggregate_version,
             'stream_version': self.stream_version,
@@ -81,7 +80,6 @@ class EventEnvelope(BaseModel):
             'producer_id': self.producer_id,
             'caused_by_command_id': self.caused_by_command_id,
             'schema_version': self.schema_version,
-            'global_sequence': self.global_sequence,
             'aggregate_sequence': self.aggregate_sequence,
             'payload': self.payload,
         }
@@ -119,7 +117,6 @@ class EventEnvelope(BaseModel):
             'producer_id': producer_id,
             'caused_by_command_id': caused_by_command_id,
             'schema_version': schema_version,
-            'global_sequence': global_sequence,
             'aggregate_sequence': aggregate_sequence,
             'aggregate_version': aggregate_version,
             'stream_version': stream_version,

@@ -30,6 +30,7 @@ export enum ProviderType {
   Python = 'python',
   Filesystem = 'filesystem',
   Git = 'git',
+  GitHub = 'github',
   AST = 'ast',
   Hasher = 'hasher',
   Parser = 'parser',
@@ -43,9 +44,16 @@ export enum ProviderTrait {
   SQL = 'sql',
   Regex = 'regex',
   Git = 'git',
+  GitHub = 'github',
   AST = 'ast',
   Hashing = 'hashing',
   Parsing = 'parsing',
+  Webhook = 'webhook',
+  Repository = 'repository',
+  Issue = 'issue',
+  PullRequest = 'pullrequest',
+  Check = 'check',
+  Status = 'status',
 }
 
 export interface ExecutionRequest {
