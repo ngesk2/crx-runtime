@@ -8,8 +8,22 @@
 
 const fs = require('fs');
 const path = require('path');
-const { dockerodeAdapter } = require('./dockerode_adapter');
-const { simpleGitAdapter } = require('./simple_git_adapter');
+let dockerodeAdapter;
+try {
+  dockerodeAdapter = require('./dockerode_adapter');
+} catch (e) {
+  // dockerode is optional - gateway can run without Docker monitoring
+  console.log('[SystemAuthority] Docker monitoring disabled (dockerode not available)');
+  dockerodeAdapter = null;
+}
+let simpleGitAdapter;
+try {
+  simpleGitAdapter = require('./simple_git_adapter');
+} catch (e) {
+  // simple-git is optional - gateway can run without git monitoring
+  console.log('[SystemAuthority] Git monitoring disabled (simple-git not available)');
+  simpleGitAdapter = null;
+}
 const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
 
 function tryReadJSON(filePath, fallback = null) {
@@ -36,6 +50,10 @@ class SystemAuthority {
   }
 
   async collectContainers() {
+    if (!dockerodeAdapter) {
+      return { status: 'unavailable', containers: [] };
+    }
+    
     try {
       const net = require('net');
       if (fs.existsSync('/var/run/docker.sock')) {
@@ -70,6 +88,15 @@ class SystemAuthority {
   }
 
   async collectGit() {
+    if (!simpleGitAdapter) {
+      return {
+        status: 'unavailable',
+        branch: 'unknown',
+        pending_changes: 0,
+        recent_commits: [],
+      };
+    }
+    
     const branch = await simpleGitAdapter.getCurrentBranch();
     const recentCommits = await simpleGitAdapter.getRecentCommits(10);
     const status = await simpleGitAdapter.getStatus();
