@@ -1,0 +1,1485 @@
+{
+  "schema_version": "1.0.0",
+  "generator": "StateMachineGenerator",
+  "generator_version": "1.0.0",
+  "generated_at": "2026-07-28T01:36:33.009Z",
+  "count": 21,
+  "hash": "ff12858097840fc67a8dce2aae591b86732cd03e66d53733647e8a50bbd59f29",
+  "state_machines": [
+    {
+      "machine_id": "02e3242c1fc71dd9",
+      "name": "ConstitutionalIRAuthorityLifecycle",
+      "authority": "ConstitutionalIRAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "constitutional-ir",
+        "owner": "runtime/kernel",
+        "status": "ratified",
+        "capabilities": [
+          "TypeDefinition",
+          "Serialization",
+          "Validation"
+        ],
+        "specifications": [
+          "specs/constitutional-ir"
+        ]
+      }
+    },
+    {
+      "machine_id": "18ffe2bbb262535a",
+      "name": "WitnessAuthorityLifecycle",
+      "authority": "WitnessAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "witness",
+        "owner": "runtime/kernel",
+        "status": "fragmented",
+        "capabilities": [
+          "WitnessGeneration",
+          "WitnessVerification",
+          "CertificateVerification"
+        ],
+        "specifications": [
+          "specs/replay-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "1b6ca696d0a84f31",
+      "name": "EvidenceAuthorityLifecycle",
+      "authority": "EvidenceAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "evidence",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "EvidenceStorage",
+          "EvidenceVerification",
+          "CounterEvidence",
+          "EvidenceQuery"
+        ],
+        "specifications": [
+          "specs/evidence-graph"
+        ]
+      }
+    },
+    {
+      "machine_id": "339638af5fa64b1d",
+      "name": "ExecutionContextBuilderLifecycle",
+      "authority": "ExecutionContextBuilder",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "execution",
+        "owner": "runtime/kernel",
+        "status": "mostly_intact",
+        "capabilities": [
+          "ContextConstruction",
+          "DeterministicTime",
+          "ExecutionScope"
+        ],
+        "specifications": [
+          "specs/execution-context"
+        ]
+      }
+    },
+    {
+      "machine_id": "4cd46e4752d85798",
+      "name": "DiagnosticAuthorityLifecycle",
+      "authority": "DiagnosticAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "diagnostics",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "DiagnosticGeneration",
+          "ViolationReporting",
+          "SeverityClassification"
+        ],
+        "specifications": [
+          "specs/diagnostics"
+        ]
+      }
+    },
+    {
+      "machine_id": "703299a308045cc1",
+      "name": "GovernanceAuthorityLifecycle",
+      "authority": "GovernanceAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "governance",
+        "owner": "runtime/kernel",
+        "status": "missing_implementation",
+        "capabilities": [
+          "ConstitutionalRuleEnforcement",
+          "PolicyEvaluation",
+          "AuthorityRouting"
+        ],
+        "specifications": [
+          "specs/governance-engine"
+        ]
+      }
+    },
+    {
+      "machine_id": "748ab3f6e5758a27",
+      "name": "WorkerLifecycle",
+      "authority": "SchedulerAuthority",
+      "version": "1.0.0",
+      "states": [
+        "idle",
+        "assigned",
+        "running",
+        "waiting",
+        "consensus",
+        "completed",
+        "failed",
+        "archived"
+      ],
+      "initial_state": "idle",
+      "terminal_states": [
+        "archived"
+      ],
+      "transitions": [
+        {
+          "from": "idle",
+          "to": "assigned",
+          "event": "assign",
+          "guard": "worker_available"
+        },
+        {
+          "from": "assigned",
+          "to": "running",
+          "event": "start_execution",
+          "guard": "worker_ready"
+        },
+        {
+          "from": "running",
+          "to": "waiting",
+          "event": "await_consensus",
+          "guard": "output_produced"
+        },
+        {
+          "from": "waiting",
+          "to": "consensus",
+          "event": "consensus_started",
+          "guard": "multi_worker"
+        },
+        {
+          "from": "consensus",
+          "to": "completed",
+          "event": "consensus_reached",
+          "guard": "threshold_met"
+        },
+        {
+          "from": "consensus",
+          "to": "failed",
+          "event": "consensus_failed",
+          "guard": "threshold_not_met"
+        },
+        {
+          "from": "running",
+          "to": "completed",
+          "event": "single_completion",
+          "guard": "single_worker"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "execution_error",
+          "guard": "none"
+        },
+        {
+          "from": "completed",
+          "to": "idle",
+          "event": "reset",
+          "guard": "none"
+        },
+        {
+          "from": "completed",
+          "to": "assigned",
+          "event": "reassign",
+          "guard": "worker_available"
+        },
+        {
+          "from": "completed",
+          "to": "archived",
+          "event": "archive",
+          "guard": "none"
+        },
+        {
+          "from": "failed",
+          "to": "idle",
+          "event": "reset",
+          "guard": "none"
+        },
+        {
+          "from": "failed",
+          "to": "assigned",
+          "event": "reassign",
+          "guard": "retry_count < max_retries"
+        },
+        {
+          "from": "failed",
+          "to": "archived",
+          "event": "archive",
+          "guard": "none"
+        },
+        {
+          "from": "archived",
+          "to": "idle",
+          "event": "unarchive",
+          "guard": "none"
+        },
+        {
+          "from": "assigned",
+          "to": "idle",
+          "event": "cancel",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "assign",
+        "start_execution",
+        "await_consensus",
+        "consensus_started",
+        "consensus_reached",
+        "consensus_failed",
+        "single_completion",
+        "execution_error",
+        "reset",
+        "reassign",
+        "archive",
+        "unarchive",
+        "cancel"
+      ],
+      "guards": [
+        "worker_available",
+        "worker_ready",
+        "output_produced",
+        "multi_worker",
+        "threshold_met",
+        "threshold_not_met",
+        "single_worker",
+        "retry_count < max_retries"
+      ]
+    },
+    {
+      "machine_id": "798c42a1e66161c9",
+      "name": "CanonicalHashAuthorityLifecycle",
+      "authority": "CanonicalHashAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "hashing",
+        "owner": "runtime/kernel",
+        "status": "missing_package",
+        "capabilities": [
+          "CanonicalSHA256",
+          "CanonicalJSON",
+          "DomainSeparatedHashing",
+          "HashRouting"
+        ],
+        "specifications": [
+          "specs/hash-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "7c4cd41ee7fc4810",
+      "name": "ReplayAuthorityLifecycle",
+      "authority": "ReplayAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "replay",
+        "owner": "runtime/kernel",
+        "status": "implemented",
+        "capabilities": [
+          "ReplayTranscript",
+          "ReplayVerifier",
+          "ReplayWitness",
+          "ReplayExecution"
+        ],
+        "specifications": [
+          "specs/replay-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "8333af57629ad530",
+      "name": "CapabilityAuthorityLifecycle",
+      "authority": "CapabilityAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "capability",
+        "owner": "runtime/kernel",
+        "status": "missing_implementation",
+        "capabilities": [
+          "CapabilityResolution",
+          "CapabilityVerification",
+          "CapabilityRegistry"
+        ],
+        "specifications": [
+          "specs/capability-engine"
+        ]
+      }
+    },
+    {
+      "machine_id": "88a2af1e60de4373",
+      "name": "DeploymentLifecycle",
+      "authority": "DeploymentRegistry",
+      "version": "1.0.0",
+      "states": [
+        "pending",
+        "deploying",
+        "active",
+        "rolled_back",
+        "failed"
+      ],
+      "initial_state": "pending",
+      "terminal_states": [
+        "active",
+        "rolled_back",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "pending",
+          "to": "deploying",
+          "event": "deploy",
+          "guard": "version_valid"
+        },
+        {
+          "from": "deploying",
+          "to": "active",
+          "event": "health_check_pass",
+          "guard": "all_healthy"
+        },
+        {
+          "from": "deploying",
+          "to": "failed",
+          "event": "health_check_fail",
+          "guard": "any_unhealthy"
+        },
+        {
+          "from": "active",
+          "to": "rolled_back",
+          "event": "rollback",
+          "guard": "rollback_target_exists"
+        },
+        {
+          "from": "failed",
+          "to": "pending",
+          "event": "retry",
+          "guard": "retry_count < max"
+        }
+      ],
+      "events": [
+        "deploy",
+        "health_check_pass",
+        "health_check_fail",
+        "rollback",
+        "retry"
+      ],
+      "guards": [
+        "version_valid",
+        "all_healthy",
+        "any_unhealthy",
+        "rollback_target_exists",
+        "retry_count < max"
+      ]
+    },
+    {
+      "machine_id": "9148a718ad75e04e",
+      "name": "RepositoryAuthorityLifecycle",
+      "authority": "RepositoryAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "repository",
+        "owner": "runtime/kernel",
+        "status": "missing_implementation",
+        "capabilities": [
+          "EventPersistence",
+          "EventRetrieval",
+          "StreamManagement"
+        ],
+        "specifications": [
+          "specs/repository-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "9de4feb925d4cda6",
+      "name": "CanonicalIdentityServiceLifecycle",
+      "authority": "CanonicalIdentityService",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "identity",
+        "owner": "runtime/kernel",
+        "status": "fragmented",
+        "capabilities": [
+          "IdentityGeneration",
+          "IdentityVerification",
+          "IdentityRegistry"
+        ],
+        "specifications": [
+          "specs/identity-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "af968893fe3a200e",
+      "name": "AuthorityLifecycle",
+      "authority": "any",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        },
+        {
+          "from": "failed",
+          "to": "registered",
+          "event": "retry",
+          "guard": "retry_count < max_retries"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error",
+        "retry"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized",
+        "retry_count < max_retries"
+      ]
+    },
+    {
+      "machine_id": "b46a5ab92c9e9b5f",
+      "name": "RuleAuthorityLifecycle",
+      "authority": "RuleAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "rule-engine",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "RuleExecution",
+          "RuleProvenance",
+          "RuleCoverage"
+        ],
+        "specifications": [
+          "specs/rule-engine"
+        ]
+      }
+    },
+    {
+      "machine_id": "b818e6cb0efbb3e2",
+      "name": "SchedulerAuthorityLifecycle",
+      "authority": "SchedulerAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "scheduler",
+        "owner": "runtime/kernel",
+        "status": "missing_implementation",
+        "capabilities": [
+          "WorkScheduling",
+          "DispatchRouting",
+          "ExecutionCoordination"
+        ],
+        "specifications": [
+          "specs/scheduler-authority"
+        ]
+      }
+    },
+    {
+      "machine_id": "d2a20555000e2988",
+      "name": "ProofAuthorityLifecycle",
+      "authority": "ProofAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "proof",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "ProofConstruction",
+          "EvidenceAggregation",
+          "ProofVerification"
+        ],
+        "specifications": [
+          "specs/proof-objects"
+        ]
+      }
+    },
+    {
+      "machine_id": "e50e49cdc2225eeb",
+      "name": "RepairAuthorityLifecycle",
+      "authority": "RepairAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "repair",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "ViolationDetection",
+          "RepairPlanning",
+          "EditGeneration"
+        ],
+        "specifications": [
+          "specs/repair-planner"
+        ]
+      }
+    },
+    {
+      "machine_id": "e6cfca136a0c4619",
+      "name": "OwnershipAuthorityLifecycle",
+      "authority": "OwnershipAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "ownership",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "OwnershipResolution",
+          "OwnershipVerification",
+          "DependencyAnalysis"
+        ],
+        "specifications": [
+          "specs/ownership-engine"
+        ]
+      }
+    },
+    {
+      "machine_id": "e88c8c791f654782",
+      "name": "QueryAuthorityLifecycle",
+      "authority": "QueryAuthority",
+      "version": "1.0.0",
+      "states": [
+        "registered",
+        "initialized",
+        "running",
+        "stopped",
+        "failed"
+      ],
+      "initial_state": "registered",
+      "terminal_states": [
+        "stopped",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "registered",
+          "to": "initialized",
+          "event": "initialize",
+          "guard": "dependencies_ready"
+        },
+        {
+          "from": "initialized",
+          "to": "running",
+          "event": "start",
+          "guard": "all_deps_initialized"
+        },
+        {
+          "from": "running",
+          "to": "stopped",
+          "event": "stop",
+          "guard": "none"
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "event": "error",
+          "guard": "none"
+        }
+      ],
+      "events": [
+        "initialize",
+        "start",
+        "stop",
+        "error"
+      ],
+      "guards": [
+        "dependencies_ready",
+        "all_deps_initialized"
+      ],
+      "source": {
+        "intent": "query",
+        "owner": "constitutional-compiler",
+        "status": "implemented",
+        "capabilities": [
+          "ConstitutionalQuery",
+          "RelationshipQuery",
+          "StateQuery"
+        ],
+        "specifications": [
+          "specs/constitutional-query"
+        ]
+      }
+    },
+    {
+      "machine_id": "f315bccc20b8aea5",
+      "name": "EventProcessing",
+      "authority": "CanonicalEventEnvelope",
+      "version": "1.0.0",
+      "states": [
+        "emitted",
+        "persisted",
+        "processing",
+        "processed",
+        "failed"
+      ],
+      "initial_state": "emitted",
+      "terminal_states": [
+        "processed",
+        "failed"
+      ],
+      "transitions": [
+        {
+          "from": "emitted",
+          "to": "persisted",
+          "event": "persist",
+          "guard": "storage_available"
+        },
+        {
+          "from": "persisted",
+          "to": "processing",
+          "event": "dispatch",
+          "guard": "handler_registered"
+        },
+        {
+          "from": "processing",
+          "to": "processed",
+          "event": "complete",
+          "guard": "handler_success"
+        },
+        {
+          "from": "processing",
+          "to": "failed",
+          "event": "handler_error",
+          "guard": "none"
+        },
+        {
+          "from": "failed",
+          "to": "persisted",
+          "event": "retry",
+          "guard": "retries_remaining"
+        }
+      ],
+      "events": [
+        "persist",
+        "dispatch",
+        "complete",
+        "handler_error",
+        "retry"
+      ],
+      "guards": [
+        "storage_available",
+        "handler_registered",
+        "handler_success",
+        "retries_remaining"
+      ]
+    }
+  ]
+}

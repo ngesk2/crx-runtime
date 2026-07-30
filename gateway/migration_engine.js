@@ -212,11 +212,23 @@ class MigrationEngine {
         event_id TEXT PRIMARY KEY,
         object_id TEXT NOT NULL,
         event_type TEXT NOT NULL,
+        aggregate_type TEXT NOT NULL DEFAULT 'unknown',
         sequence INTEGER NOT NULL,
         payload JSONB NOT NULL DEFAULT '{}',
         witness JSONB,
         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        RuntimeID TEXT
+        authority TEXT NOT NULL DEFAULT 'system',
+        authority_version TEXT NOT NULL DEFAULT '1.0.0',
+        causation_id TEXT,
+        correlation_id TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        RuntimeID TEXT NOT NULL DEFAULT 'unknown',
+        PreviousEventHash TEXT,
+        CanonicalEventHash TEXT,
+        ReducerHash TEXT,
+        WitnessHash TEXT,
+        ReplayHash TEXT,
+        chain_root TEXT
       )
     `);
 
@@ -226,6 +238,9 @@ class MigrationEngine {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_timestamp ON repository_events(timestamp)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_runtime ON repository_events(RuntimeID)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_chain ON repository_events(object_id, sequence, CanonicalEventHash)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_aggregate ON repository_events(aggregate_type)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_causation ON repository_events(causation_id)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_correlation ON repository_events(correlation_id)`);
   }
 
   /**

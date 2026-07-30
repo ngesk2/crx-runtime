@@ -9,23 +9,49 @@ const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
 
-function createEventRoutes(eventReadAuthority, executeEvent) {
+function createEventRoutes(eventReadAuthority, executeEvent, pool) {
   router.get('/', asyncHandler('/events', async (req) => {
     const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
-    const events = await eventReadAuthority.getAllEvents(limit, offset);
+    let events = await eventReadAuthority.getAllEvents(limit, offset);
+    if ((!events || events.length === 0) && pool) {
+      const result = await pool.query('SELECT * FROM ping_events ORDER BY timestamp DESC LIMIT $1 OFFSET $2', [limit, offset]);
+      events = result.rows;
+    }
     return { events, count: events.length, limit, offset };
   }));
 
   router.get('/recent', asyncHandler('/events/recent', async (req) => {
     const minutes = parseInt(req.query.minutes) || 60;
     const limit = parseInt(req.query.limit) || 100;
-    const events = await eventReadAuthority.getRecentEvents(minutes, limit);
+    let events = [];
+    try {
+      events = await eventReadAuthority.getRecentEvents(minutes, limit);
+    } catch (e) {}
+    if ((!events || events.length === 0) && pool) {
+      const since = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+      const result = await pool.query('SELECT * FROM ping_events WHERE timestamp >= $1 ORDER BY timestamp DESC LIMIT $2', [since, limit]);
+      events = result.rows;
+    }
     return { events, count: events.length, minutes, limit };
   }));
 
   router.get('/stats', asyncHandler('/events/stats', async (req) => {
-    const stats = await eventReadAuthority.getEventStats();
+    let stats;
+    try {
+      stats = await eventReadAuthority.getEventStats();
+    } catch (e) {}
+    if ((!stats || !stats.total_events || stats.total_events === '0') && pool) {
+      const result = await pool.query(`SELECT COUNT(*) as total_events, COUNT(DISTINCT event_type) as event_types, MIN(timestamp) as oldest_event, MAX(timestamp) as newest_event FROM ping_events`);
+      const row = result.rows[0];
+      stats = {
+        total_events: row.total_events,
+        streams: row.total_events,
+        event_types: row.event_types,
+        oldest_event: row.oldest_event,
+        newest_event: row.newest_event
+      };
+    }
     return { stats };
   }));
 
@@ -33,7 +59,11 @@ function createEventRoutes(eventReadAuthority, executeEvent) {
     const stream = req.params.stream;
     const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
-    const events = await eventReadAuthority.getEventsByStream(stream, limit, offset);
+    let events = await eventReadAuthority.getEventsByStream(stream, limit, offset);
+    if ((!events || events.length === 0) && pool) {
+      const result = await pool.query('SELECT * FROM ping_events WHERE event_type = $1 ORDER BY timestamp DESC LIMIT $2 OFFSET $3', [stream, limit, offset]);
+      events = result.rows;
+    }
     return { events, stream, count: events.length, limit, offset };
   }));
 

@@ -1,51 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { EventValidator } = require('../../gateway/runtime/event_validator');
+const { EventGovernance } = require('../../gateway/runtime/event_governance');
 
 const QUEUE_DIR = path.join(__dirname, '..', 'event_queue');
-
-const VALID_EVENT_TYPES = [
-  'git_diff',
-  'knowledge_compiled',
-  'mission_created',
-  'worker_assigned',
-  'worker_started',
-  'worker_heartbeat',
-  'worker_progress',
-  'worker_completed',
-  'worker_failed',
-  'consensus_started',
-  'consensus_completed',
-  'consensus_reached',
-  'consensus_failed',
-  'artifact_produced',
-  'artifact_stored',
-  'merge_gate_started',
-  'merge_gate_passed',
-  'merge_gate_failed',
-  'merge_decision_created',
-  'mission_accepted',
-  'mission_rejected',
-  'mission_archived',
-  'replay_generated',
-  'witness_generated',
-  'system_heartbeat',
-  'context_built',
-  'prompt_generated',
-  'worker_registered',
-  'worker_state_changed',
-  'worker_execution_started',
-  'worker_execution_completed'
-];
 
 const SCHEMA_VERSION = '3.0.0';
 
 class EventQueue {
-  constructor() {
+  constructor(options = {}) {
     this._events = [];
     this._subscriptions = new Map();
     this._emittedIds = new Set();
     this._globalSequence = 0;
+    this._governance = options.governance || null;
+    this._validator = new EventValidator(require('path').join(__dirname, '..', '..'));
+    this._validator.load();
+    if (!this._governance) {
+      this._governance = new EventGovernance(require('path').join(__dirname, '..', '..'));
+      this._governance.load();
+    }
     if (!fs.existsSync(QUEUE_DIR)) {
       fs.mkdirSync(QUEUE_DIR, { recursive: true });
     }
@@ -66,8 +41,14 @@ class EventQueue {
   }
 
   emit(eventType, data = {}, causation = {}) {
-    if (!VALID_EVENT_TYPES.includes(eventType)) {
+    if (!this._validator.isRegistered(eventType)) {
       console.warn(`[EventQueue] Unknown event type: ${eventType}`);
+    }
+
+    const govResult = this._governance.validateEvent({ event_type: eventType, authority_owner: data.authority_owner });
+    if (!govResult.valid) {
+      console.error(`[EventQueue] REJECTED: ${govResult.errors[0]}`);
+      return null;
     }
 
     const sortedData = this._sortKeys(data);
@@ -168,6 +149,10 @@ class EventQueue {
     return this._events.filter(e => e.global_sequence > sequence);
   }
 
+  getGovernance() {
+    return this._governance;
+  }
+
   getStats() {
     const byType = {};
     for (const event of this._events) {
@@ -217,4 +202,4 @@ class EventQueue {
   }
 }
 
-module.exports = { EventQueue, VALID_EVENT_TYPES };
+module.exports = { EventQueue };

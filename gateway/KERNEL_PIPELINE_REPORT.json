@@ -1,0 +1,2269 @@
+{
+  "generated_at": "2026-07-28T02:11:55.965Z",
+  "totalEvidence": 130,
+  "entries": [
+    {
+      "stage": "business_event_emission",
+      "eventType": "LEAD_CREATED",
+      "eventId": "e6f1b664c73365b1f60b9ba83ed10bb1ca519a0f8c1cb4e5715e136caa0208a6",
+      "source": "google-connector",
+      "timestamp": "2026-07-28T02:11:55.884Z"
+    },
+    {
+      "stage": "business_event_emission",
+      "eventType": "REVIEW_RECEIVED",
+      "eventId": "4b227ad075b2eee4d092cef3339ebfa7a92da00bee57bdced97c6648584a4717",
+      "source": "google-connector",
+      "timestamp": "2026-07-28T02:11:55.884Z"
+    },
+    {
+      "stage": "business_event_emission",
+      "eventType": "ESTIMATE_SENT",
+      "eventId": "68ee6dc7a1c262a87f42f968f6386a34e0c3fb4e882c95a1ad559250ff39c65f",
+      "source": "project-authority",
+      "timestamp": "2026-07-28T02:11:55.884Z"
+    },
+    {
+      "stage": "business_event_emission",
+      "eventType": "INVOICE_SENT",
+      "eventId": "121a87bd9f01d29582183278de340dd95df26d51e65906b1eecbe46f14b19a65",
+      "source": "project-authority",
+      "timestamp": "2026-07-28T02:11:55.884Z"
+    },
+    {
+      "stage": "business_event_emission",
+      "eventType": "EMAIL_RECEIVED",
+      "eventId": "0664f98c7f73327ff4b6e4db867be548b17b9f877e0148b8f17825425652504a",
+      "source": "email-connector",
+      "timestamp": "2026-07-28T02:11:55.885Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "dab7e01668ef4aba",
+      "missionType": "LEAD_FOLLOWUP",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "5774ab40eecdf118",
+      "missionType": "REVIEW_RESPONSE",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "31f35d59b162180b",
+      "missionType": "ESTIMATE_FOLLOWUP",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "ff294238c3c10bb0",
+      "missionType": "INVOICE_FOLLOWUP",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "f40b7f463d7d2f8f",
+      "missionType": "EMAIL_PROCESS",
+      "priority": 2,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "mission_created",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "priority": 3,
+      "timestamp": "2026-07-28T02:11:55.951Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "dab7e01668ef4aba",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "5294f9fbc498c265b0c9bf51dd7240e09e4d8dc25ba975da569e66740f662eb7",
+        "77c5ae726d62d6db2bb7b2c493759b3eda1fa182d27804e3f12b06b61af54523",
+        "8de407c48ee74a6630c6268773fef715333401339d12b442cc1639522e182ca8",
+        "8a9d9d1aa431a58aae826ca2e7cb5c5cb24384d9643a6e62bed9ffe5cbd5131c",
+        "3f38f2d8a9cf574e89286000b1d2f8c4783c560450816032f57bf0eb192a0b80",
+        "0ef4926033c60f500ffb6e3525ee698872b2ccb9161dfdc4eebbc468a06140f2"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.952Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "5774ab40eecdf118",
+      "missionType": "REVIEW_RESPONSE",
+      "inputEvent": "REVIEW_RECEIVED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "3f3257920d24930b986ac235e4c70531aa38a07acb20b1eedfd1ef98d9e10dee",
+        "d62707e70b12f5cfad5dd9de6601b5629cf8cedc3ee3208e1111a88759a00b20",
+        "832d8214dd40e9878a1fdde4ceb145790e418d01c62778b11bc4f0789f8161c3",
+        "86b7a00c6e59a59b4df5d8e61654efe1e92f32b413aec5081f33428c86c78702",
+        "2e9906a40572fc0392a69103a0fd7c6980206aa8e0b40bd82dcf91aff49a25fc",
+        "cd9c2550756536585206e6bb947c755c80654d533141abbe37ec2538f628184b"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.953Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "31f35d59b162180b",
+      "missionType": "ESTIMATE_FOLLOWUP",
+      "inputEvent": "ESTIMATE_SENT",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "c4e6bbd52a8f8d7188bf8c27d2b08a07d056a84bf2ef26a5e32ed91c29411744",
+        "a459c24ad6adae8d8c0aebff7b739d877901ba7afefe257088dc6cf7a9d7d38d",
+        "5564448f20f8f2b5ca83a7f0744080ae0511b3704b75f8309a86a12bd1f13fc7",
+        "c82802188467ae6f43da096f8f4144ec1030eb93a8f72a86489b784eb70737bf",
+        "3327047ca61dd41b851cfbe40e8cc9c68e77557299abe4e7e827435d1ddb0754",
+        "a63a6c5e182dd75cb495c5eb299e75d0d8467b314eb4065e1ea91a5a60443ae9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.953Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "ff294238c3c10bb0",
+      "missionType": "INVOICE_FOLLOWUP",
+      "inputEvent": "INVOICE_SENT",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "5e7e06cf0d2777efbd8c2245b8aa460d99b0bd236c59fde6a3456afa01472185",
+        "611761751bd751b7ac54f03753142345c9db754002a24611f7dd78ebb08d86db",
+        "674262101c056c6b44daf235d20d724d7564864af646e3935a1213239e417526",
+        "0384a9d01584f991a7aeab5af60cb0c6cc1fb1c3171ee8bba46c8d256a628dbb",
+        "d0637a4f0dc31a17b2b380a3dc562de39a65c92c6ecc0789e733b06f9d2d736c",
+        "bdeb8be5e2f426880228df437984ce3b2eca657ca2d5b42e76a050064d8d4c21"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.953Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "f40b7f463d7d2f8f",
+      "missionType": "EMAIL_PROCESS",
+      "inputEvent": "EMAIL_RECEIVED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "f7f0506b9b358d85ba150ad7858da70b851f6b8df450d6c6aaaa467905c9c006",
+        "69c07d7e2bd12c72b2fbe83fbaffea4fdba105bc39c7062e98027961299bc7df",
+        "0eb8dd0d8609599976c8bd4d7a760f7dfd1c0afef5d94a3fe42eae00a8361619",
+        "206acb8291ae15a72814e0c95b514bb47f7e05185e2c9caa7f78a40db486a2d9",
+        "7aeb8d10166b5bffd9fe45f315a3a5da734ec7fbb895f99e6c400cde65a0b191",
+        "2f3fa344adc56cbbf0e97dca2f41c02a5ba5797109c48abec3a54a13a0b2976c"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.953Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "d36be40e5c5870c908bb745a3e0d2872835df9ee2062ec52a4a7fa8947c9f49a",
+        "32c3f211052246a67905c7812bcadadc05b13c56f7de71339d4430e0dae59371",
+        "fa87ebeb88c6034069abd2621716a47a9a915a21caa6eb84290b763478950afe",
+        "7bc77255128c8577d855b186990b2112b716be2b1a9e01f81f85cb660831a696",
+        "91404302b123c9ebe77137d24ca94d1b57549216944e790fd0626f234e5ce587",
+        "b30118d95239011fca58d1beb5f97935832cb6bcd7149b111604e7a15b54270a"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.953Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "d36be40e5c5870c908bb745a3e0d2872835df9ee2062ec52a4a7fa8947c9f49a",
+        "32c3f211052246a67905c7812bcadadc05b13c56f7de71339d4430e0dae59371",
+        "200f01e198f9d48e9191b66a5e7f033083883112618367e4c445f4448bd61227",
+        "7c4bb38454d3202d98cfee4ff26789581c3c40529c3b5c2178cf9504231f3055",
+        "44ec610081088d8118e87e737ad63c8a53e4e9f71822d397104c652780fd5161",
+        "5d8156c559b276caa6877c77f7e668a76774e437e8722742454e799dda8f1c92"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.954Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "923a814993b8f8124c7ccf10d6bf5b301841f2da345ca519650a796a8737c7a5",
+        "3bbb2666f410ac8bcf3a20748fc20b84e225de87b6244b4c23e45529d808e7d4",
+        "200f01e198f9d48e9191b66a5e7f033083883112618367e4c445f4448bd61227",
+        "7c4bb38454d3202d98cfee4ff26789581c3c40529c3b5c2178cf9504231f3055",
+        "44ec610081088d8118e87e737ad63c8a53e4e9f71822d397104c652780fd5161",
+        "5d8156c559b276caa6877c77f7e668a76774e437e8722742454e799dda8f1c92"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.954Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "beceaa954d1794f3",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "bbdbacf9cd1000a9daf604275a8f7e11585961b33f1a33e7a19cf9cb8864bf9f",
+        "6ebde8f8d2fb81ba5fe7c90a28d28ab3351734743fbbee4aeb6b9f7429dc6255"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "2e9b44bf7d586b35",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "25855388ddeb1c604d2f73d88a4cdede34b74ee4a406c91fdb952376c4123eb0",
+        "31da0cb9f66d92569536ec0029420c77b8e9ec1e2140fea051acf8bdf8840495"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "3e0a37b1b5811f40",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "144cf30da1c66ee07eb37ce092218914afba1c8e4010d7ae30a26a5052c86577"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "708a7dbdda061d5c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "e1af8fecf2097cecc4e32c2a6d0a9ccfd8857147fbbe551e51ed47ba57186808",
+        "056732ef92b8ac65edb5dad2357c76b5d76a7bdd2bfebf7e5ba8f2e11667a9f1"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "ce12730b5bb016bf",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "25855388ddeb1c604d2f73d88a4cdede34b74ee4a406c91fdb952376c4123eb0",
+        "31da0cb9f66d92569536ec0029420c77b8e9ec1e2140fea051acf8bdf8840495"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "6251f40cd8e8be7a",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "dafc2cd59fa779bfdb1b51fa1f8e76273f18401c616022f9e45b216cc35c9c1f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "cf404ea30a4f8101",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "ee76f67fdfc3f533523559afb8a3fc2e9e5a3110ed9dd332bbecd813128b92ee",
+        "bc81ec469992d9cfd0a1bdae1efe55b0d4cb6e35e6e258388a0592553fcf7d3a"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "458b22bb99550b59",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "25855388ddeb1c604d2f73d88a4cdede34b74ee4a406c91fdb952376c4123eb0",
+        "31da0cb9f66d92569536ec0029420c77b8e9ec1e2140fea051acf8bdf8840495"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "e2e4c5d1208b5d46",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "608501161b1c8d9a8d3ca26ded988f2634cdce7479d9f3fd6d2d87ec54c5368e"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "fbbf347607956e53",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "cd8512d10aea3eed0efd15f87b8b0a2cd2641dce77c90a5fa5299fd4c8770457",
+        "001032779658238a97954eeb0b7826a2c4c3cf2f20f8d852967a788b9d43b6a0"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "a94423e5778e72ba",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "25855388ddeb1c604d2f73d88a4cdede34b74ee4a406c91fdb952376c4123eb0",
+        "31da0cb9f66d92569536ec0029420c77b8e9ec1e2140fea051acf8bdf8840495"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.955Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "2dc0071a22dc93a2",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "32f11e26407ee15febb1d3e6c3a506f3b6abe9a38ba1eecad90068415ad7afd0"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "072bab4dd5f25289",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "5fbfb95fab19b5154c47ea105d9a96ce6d4cfe5a6cc9491f9537793e2b14efa5",
+        "eef0d521cef64a1f151a0d78430ac014b7649770a08beaaccd1685aea11f187d"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "f8205df22ed3e59e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "b42340c6827d3a2bc6ebd44e7869581507ded7ebc884db308e9bf58eecdf0c67",
+        "3541e8078b2d9debab6e0edcff85d1228310fa44d7e9d894cbb6424b5cc63217"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "e77657ecff97811e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "0b01246bdf7eeb626bcaaac21e37b5773b0064fcbd4e7fe8bd26ba11e70035e2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "ddac191fb07e196c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "54c11ee62f2e38a63f51efa68e1b25201cfa61a43f69bab9b0f6cb986ee5ae55",
+        "ed7689501b6df19be63384413a8bc77e5b705e06233b3a1105f78a5f9adc6d32"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "39567c00df64ab96",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "b42340c6827d3a2bc6ebd44e7869581507ded7ebc884db308e9bf58eecdf0c67",
+        "3541e8078b2d9debab6e0edcff85d1228310fa44d7e9d894cbb6424b5cc63217"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "ee89deeb13460e1f",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "24b1be13c4b18bbf3515bfa10496e6c0cfba40b2193297fda34e33bcd08f4440"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "ddac191fb07e196c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "54c11ee62f2e38a63f51efa68e1b25201cfa61a43f69bab9b0f6cb986ee5ae55",
+        "ed7689501b6df19be63384413a8bc77e5b705e06233b3a1105f78a5f9adc6d32"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "abc2b596aaf6dd0e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "b42340c6827d3a2bc6ebd44e7869581507ded7ebc884db308e9bf58eecdf0c67",
+        "3541e8078b2d9debab6e0edcff85d1228310fa44d7e9d894cbb6424b5cc63217"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "27e1e91bc1b2ed2c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "df852b066dec02cc4f09a416aa306f7eff1dc61ef30dc9ff2cdb70fb36b5fb79"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "dcae2477fc1492a5591406b3490b833d7bde4bb29722f1723bdd5665cba3a1a4",
+        "71c5b7a04326e1521819b4e859c21cf1e757c8f382ad7c8fab37bb21adca0600",
+        "d220caac0e6fa688171213f02bc191f0990a20f954c2e711d9b3982761b92d47",
+        "54d155c0aa204d92f0e42e344d08901ac70c946a78878561a56feee85807a181",
+        "ee0f0666160a91f65848949c2fdd9eb9a48f825836727508123af3eff3072fc3",
+        "eafb1a97c44e130353a40c34ffa9455a3855ee3241fb2e5bb45862940fe5aef3"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.956Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "ddac191fb07e196c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "f8558e040358bf87fca9728e6e0e298b59f98b428b6ad1d14d6b72cdf909859e",
+        "726cbdc599655f1f14fb514706953d055db5e850662e65b9f501be2aa11210e4"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "3514ff65ae704fbe",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "06276a61e5d3ccc01e9c9ea857849e80224429c7cd67dc1972def5fb94ef7dde",
+        "1cdc954b90811b0c04a2251136fc6bc65a89fcb0b1d44cd6a004242df6ba19ad"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "abc2b596aaf6dd0e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "d77f4912ddc556170ae90d6d51ad012009eebd7ea29293ffbe78b6b380ae6b5a",
+        "cea3d8ec53f95805ac79982589543c18ba9ca567f65862ae7391e1925f10c906"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "27e1e91bc1b2ed2c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "5558d4df1ae9c4c86f550842ea491546650fa515062924ac74bdbbaf26af1bcb"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "a4f4983c807e3441",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "192954edfbdadab3bae456d008cd7427db9053251f20028fd5c206713d7b4544",
+        "9633052f4ded655502956908802aa023ca65cf24e63b9c5e1cea486fde08f92f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "735d5cef88ee2afd77b830bf36d0d270429f52a12e9b76dd87e9839a8c3c2860"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.957Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "05f0d085c05d92e6",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "09872ec959582ef7bb5510d9d7cdca27e7f37cb1da7f718a3dc39a4e2f8bd9a5"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "611b452486c2d409",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "09872ec959582ef7bb5510d9d7cdca27e7f37cb1da7f718a3dc39a4e2f8bd9a5"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "13a5350358fd0f0f",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "09872ec959582ef7bb5510d9d7cdca27e7f37cb1da7f718a3dc39a4e2f8bd9a5"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "20d75155430a4de6",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "8ef70d0c64d792af9c633c0fcb29fcbd77c08b3b97f89a3805a9ecf26da0d04a"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "dc4aadfb2d348395",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "8ef70d0c64d792af9c633c0fcb29fcbd77c08b3b97f89a3805a9ecf26da0d04a"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "dc4aadfb2d348395",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "2ef241d423023237d398f640ee787e7addc68b3aac0597053627df300cffbb41",
+        "63ca394b81eecc14fbb0aa1437f55c38398bfea4d45ad8caedfa07af13e5d2e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "8ef70d0c64d792af9c633c0fcb29fcbd77c08b3b97f89a3805a9ecf26da0d04a"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.958Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "b4410da5f974625705511608b2d78a61ae6a1f689e9101e50e9375634a37b54e",
+        "8b442c4f2a41de7f4853e36a364aff3fd83003fb9fa5586e27888ee48083dce1",
+        "76f3ece6b060b8c83b057157b9bfee51fecf7cb6fd46034ca470a3fd7d1001bc",
+        "6e963e4648b0d624df99d2321171918f895dc036cf2b14715aec854dd05d0417",
+        "997e40060ee721112d0cf214d4908cc231ab08007a65508b20909ceb8207ad6e",
+        "5e9c16902bbfc1029eecd811b9c6d82d8491b070e8ef5446562edd1e5d4e34bd"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "ddac191fb07e196c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "f6bb54106de7c66459d20c1e3f753cf64ab85586ea2d2ad3a4ad7ed7087043a4",
+        "3a1165f5aea322f5626fbf66d65e9e0998620230ae056a9087db096f8f5f7c93"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "abc2b596aaf6dd0e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "6cf5aabed1d63fd5fb8f040a524ff2f1b902c83934c3a1429c8178ca5ca1dbb0",
+        "973eb6311fb448360e98cd490b45c7228be659f4eea9ca2210a58b0c7ee88556"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "27e1e91bc1b2ed2c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "1f661c2493796f0567a53ca9339c50b836beb9c22df1e07f9a3cf8c982126d05"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "60834c8f27490400baaf9ca81f8550704bc8eaaf4d363fe46cb8c58a01131c64"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "60834c8f27490400baaf9ca81f8550704bc8eaaf4d363fe46cb8c58a01131c64"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "60834c8f27490400baaf9ca81f8550704bc8eaaf4d363fe46cb8c58a01131c64"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "7d5a4c2024564738262ebe8abb766b63431b97bde5acb0680936536435a21ec2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.959Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "dc4aadfb2d348395",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "b5c77ab87e7806946edc27c2929833f2f725e78da4e8ef9f573f0b3ec46c25bf",
+        "5b6dee1c88424f25755c485f2a206ae0a6db369608dc7dfb4e2fa80c430fb630"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "6c9992f37fa30961996fb0d9ca4ed9f77ca93d899eca6f9ac2bc66dad1e4c6bd"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "51d4f05887d58851",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "4063cf43da64e4510db4358805622ca3f1c7d5735a402b8057f2158cbcb5f9ac",
+        "9a5205ce1b57075c86f991359641be26d551c3d6daf26f5fd60a12cadeb9ed02"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "387ae3cfc9c975bb",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "84b395a37c1738ff3f1a8395954a399ac474d3e3733d3ac27bffd7fe50346c8a",
+        "da37fb900fd95cd04f437caca7bb1897ba758a0d83b3b0d7d1cc9f7d59fb6ae8"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "1ada03206d45e24d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "15969dfe51be03c3f8b844cfe112a2138a59695eb4f93ce34053f5e3aefc12d7"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "e2c7a875cc6e43a7",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "847aabfdac4ccc2f638455c63f57548207672b73a229a590b0b6170a4cfb563e",
+        "755fef5d3d3710d06f9aca74f0e54cc765796164223ebbf4933b847c68b640d2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "389ab08db246b9b5",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "847aabfdac4ccc2f638455c63f57548207672b73a229a590b0b6170a4cfb563e",
+        "755fef5d3d3710d06f9aca74f0e54cc765796164223ebbf4933b847c68b640d2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "2b1bd0e412a6b155",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "759a487187bc45a3fc0d5297b33e7141f490b302b3e98e7659d77b6732bcdef9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "aa6050a25c2f5ce1",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "84b395a37c1738ff3f1a8395954a399ac474d3e3733d3ac27bffd7fe50346c8a",
+        "da37fb900fd95cd04f437caca7bb1897ba758a0d83b3b0d7d1cc9f7d59fb6ae8"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "84b395a37c1738ff3f1a8395954a399ac474d3e3733d3ac27bffd7fe50346c8a",
+        "da37fb900fd95cd04f437caca7bb1897ba758a0d83b3b0d7d1cc9f7d59fb6ae8"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "84b395a37c1738ff3f1a8395954a399ac474d3e3733d3ac27bffd7fe50346c8a",
+        "da37fb900fd95cd04f437caca7bb1897ba758a0d83b3b0d7d1cc9f7d59fb6ae8"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.960Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "1e284ea8014b1a0b596b005e94aeb5e92ce94463e4a9276f5023fd675be06688",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "1e284ea8014b1a0b596b005e94aeb5e92ce94463e4a9276f5023fd675be06688",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "1e284ea8014b1a0b596b005e94aeb5e92ce94463e4a9276f5023fd675be06688",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "1e284ea8014b1a0b596b005e94aeb5e92ce94463e4a9276f5023fd675be06688",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "observation",
+      "missionId": "07125416210273c3",
+      "missionType": "LEAD_FOLLOWUP",
+      "inputEvent": "LEAD_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "OBSERVATION_CREATED",
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED",
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "96d30e6ed1b0afb0efb11e944f56593f9a4221c7611fc9a96bbb2d16a54e8652",
+        "fc63d2887baba0ea0600f317abae902f99afeea6d6bb8800d243667027cac53d",
+        "c69837dafaf32430cf98757feb815e97c47d6a69cada32c5eb96481c0728072e",
+        "9dfc5cf5aa2b66f2efe3b9a25b254c6f6a93308306e3ad3b96dc3332448a85a3",
+        "cd7e424bf55220039075553390c5a08eb7e6f9786b034beb7ba9184126607a4b",
+        "df1aef892b69626fd7c18d95be904aa59b2f287708721f27f07beee0b677c517"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "ddac191fb07e196c",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "f6b50c7ee527da90e81cdc2e6a5f5b9d5ec08fbfa962e1d315196e4f9fd8e8b3",
+        "6abf20e1d49ffbd8416314026a8811c99f2875cee7c1f734ebc0f712006ce8ce"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "abc2b596aaf6dd0e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "1e284ea8014b1a0b596b005e94aeb5e92ce94463e4a9276f5023fd675be06688",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "27e1e91bc1b2ed2c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "18cb6b20a9b7feb392bd311eb3d0d2390f0402353bb17ac3229169ec7dc3ee26"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ddc7d01dbf5f188ee597a2295994939096888c226d870e638b78565d43b7a3c6"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ddc7d01dbf5f188ee597a2295994939096888c226d870e638b78565d43b7a3c6"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "f515f2f575c83b2d",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ddc7d01dbf5f188ee597a2295994939096888c226d870e638b78565d43b7a3c6"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "19cff0cbc048dff2c6f36d18e0c48dc297c0061ad004cccd9129d23f170893c2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "dc4aadfb2d348395",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "6d0b6d19126f8baefc7a9e7c43bae77f9985bd1e1bc366a61548770ce77f7286",
+        "d733c46096ef301154b1b06ef9f341b5828b5b8d145fbb1bf3159ac617c881b1"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "5acbbfbd576fee7e",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "19cff0cbc048dff2c6f36d18e0c48dc297c0061ad004cccd9129d23f170893c2"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.961Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "6af872d1aa447db92d2ee097d864b07a2199091616ef8fc8681dca6dbc96c756",
+        "f06beb2cbef730c949c79e209fe61924f6a1f31518929106861c802be96dc7f4"
+      ],
+      "duration_ms": 1,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "0c3783776b892f4e",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "claim",
+      "missionId": "fa1537fbf0368ccf",
+      "missionType": "CLAIM_GENERATE",
+      "inputEvent": "OBSERVATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLAIM_CREATED"
+      ],
+      "outputEventIds": [
+        "4131f93fa98d8c15d8bbe30c01c8a989eaa8de456f2009f86a1aaab504311f13",
+        "0e74b3d2605b6bdc2c125117045c135db95c98a4f50acf1f9e38932e6092b1d3"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "e49fc04aea792be9",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "b75dd5b0b49be8cf",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "02da2a44f92c66786f1e6d1b9fa4a4b815f983e9333314ef51df5b09a7988588"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "7d23218509f7b7b5",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "9c2877fe7b8f2ca06589e52ab04a07e0ec6556b67d045c468ce4d4b52557c777",
+        "04a79738820e81e9900bdfff1504e2d07372261c80a09dd6e949c3d521983554"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "0d6e4f9d602b7d6c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "688988d56418d4f2edfc6b719418c59d94b40d25517017808d5e85ca1cfdb0ea"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "6838096ac28ea8c4",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "faf236268b05e9c0040d8065eb94466e6521cbcf36a870c4f28c995f98004d79",
+        "7636f4e437a00a8319d3101d1f13a7ade826935fbcfa2c37aa1adcb60940185f"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.962Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "classification",
+      "missionId": "80338a92cac1239c",
+      "missionType": "CLASSIFICATION_CREATE",
+      "inputEvent": "CLAIM_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "CLASSIFICATION_CREATED"
+      ],
+      "outputEventIds": [
+        "9c2877fe7b8f2ca06589e52ab04a07e0ec6556b67d045c468ce4d4b52557c777",
+        "04a79738820e81e9900bdfff1504e2d07372261c80a09dd6e949c3d521983554"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "500aed467d5caf5c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ea58ac283b0d887c97c8abf4b0406ddb4d1e73291ab62660642bacbc0e2c57e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "550c6de545ac11ea",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "65e3ecd6f0b78d062dde9b1542e1ad894c5f16775f45a76d90d0112ba5432e34",
+        "d846507ede4e735e9f4e05dac469a7bdbf15389023d5d504b97f82d9c546d892"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "recommendation",
+      "missionId": "550c6de545ac11ea",
+      "missionType": "RECOMMENDATION_CREATE",
+      "inputEvent": "CLASSIFICATION_CREATED",
+      "outputEvents": [
+        "MISSION_CREATED",
+        "RECOMMENDATION_CREATED"
+      ],
+      "outputEventIds": [
+        "65e3ecd6f0b78d062dde9b1542e1ad894c5f16775f45a76d90d0112ba5432e34",
+        "d846507ede4e735e9f4e05dac469a7bdbf15389023d5d504b97f82d9c546d892"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "500aed467d5caf5c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ea58ac283b0d887c97c8abf4b0406ddb4d1e73291ab62660642bacbc0e2c57e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "500aed467d5caf5c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ea58ac283b0d887c97c8abf4b0406ddb4d1e73291ab62660642bacbc0e2c57e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "500aed467d5caf5c",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "ea58ac283b0d887c97c8abf4b0406ddb4d1e73291ab62660642bacbc0e2c57e9"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "66eebd5b6b7c0c74",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "dab67dc83ea765eb72c2efe829af16fcd92de2d0fb6caa28d900375be65169ee"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "66eebd5b6b7c0c74",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "dab67dc83ea765eb72c2efe829af16fcd92de2d0fb6caa28d900375be65169ee"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "66eebd5b6b7c0c74",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "dab67dc83ea765eb72c2efe829af16fcd92de2d0fb6caa28d900375be65169ee"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "worker_execution",
+      "worker": "projection",
+      "missionId": "66eebd5b6b7c0c74",
+      "missionType": "PROJECTION_CREATE",
+      "inputEvent": "RECOMMENDATION_CREATED",
+      "outputEvents": [
+        "PROJECTION_CREATED"
+      ],
+      "outputEventIds": [
+        "dab67dc83ea765eb72c2efe829af16fcd92de2d0fb6caa28d900375be65169ee"
+      ],
+      "duration_ms": 0,
+      "timestamp": "2026-07-28T02:11:55.963Z"
+    },
+    {
+      "stage": "causation_chain",
+      "totalEvents": 534,
+      "validLinks": 125,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "observation",
+      "processed": 11,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "claim",
+      "processed": 13,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "classification",
+      "processed": 13,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "recommendation",
+      "processed": 27,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "projection",
+      "processed": 39,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "replay",
+      "processed": 0,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "witness",
+      "processed": 0,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "lineage",
+      "processed": 0,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "worker_stats",
+      "worker": "intelligence",
+      "processed": 11,
+      "failed": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "event_integrity",
+      "totalEvents": 534,
+      "uniqueIds": 312,
+      "duplicates": 222,
+      "eventTypes": 14,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "mission_trace",
+      "missionId": "dab7e01668ef4aba",
+      "eventCount": 0,
+      "timestamp": "2026-07-28T02:11:55.964Z"
+    },
+    {
+      "stage": "mission_trace",
+      "missionId": "5774ab40eecdf118",
+      "eventCount": 0,
+      "timestamp": "2026-07-28T02:11:55.965Z"
+    },
+    {
+      "stage": "mission_trace",
+      "missionId": "31f35d59b162180b",
+      "eventCount": 0,
+      "timestamp": "2026-07-28T02:11:55.965Z"
+    },
+    {
+      "stage": "evidence_completeness",
+      "completed": 53,
+      "failed": 0,
+      "withResult": 53,
+      "timestamp": "2026-07-28T02:11:55.965Z"
+    }
+  ],
+  "stages": [
+    "business_event_emission",
+    "mission_created",
+    "worker_execution",
+    "causation_chain",
+    "worker_stats",
+    "event_integrity",
+    "mission_trace",
+    "evidence_completeness"
+  ],
+  "eventIds": [
+    "e6f1b664c73365b1f60b9ba83ed10bb1ca519a0f8c1cb4e5715e136caa0208a6",
+    "4b227ad075b2eee4d092cef3339ebfa7a92da00bee57bdced97c6648584a4717",
+    "68ee6dc7a1c262a87f42f968f6386a34e0c3fb4e882c95a1ad559250ff39c65f",
+    "121a87bd9f01d29582183278de340dd95df26d51e65906b1eecbe46f14b19a65",
+    "0664f98c7f73327ff4b6e4db867be548b17b9f877e0148b8f17825425652504a"
+  ],
+  "missionIds": [
+    "dab7e01668ef4aba",
+    "5774ab40eecdf118",
+    "31f35d59b162180b",
+    "ff294238c3c10bb0",
+    "f40b7f463d7d2f8f",
+    "07125416210273c3",
+    "07125416210273c3",
+    "dab7e01668ef4aba",
+    "5774ab40eecdf118",
+    "31f35d59b162180b",
+    "ff294238c3c10bb0",
+    "f40b7f463d7d2f8f",
+    "07125416210273c3",
+    "07125416210273c3",
+    "07125416210273c3",
+    "beceaa954d1794f3",
+    "2e9b44bf7d586b35",
+    "3e0a37b1b5811f40",
+    "708a7dbdda061d5c",
+    "ce12730b5bb016bf",
+    "6251f40cd8e8be7a",
+    "cf404ea30a4f8101",
+    "458b22bb99550b59",
+    "e2e4c5d1208b5d46",
+    "fbbf347607956e53",
+    "a94423e5778e72ba",
+    "2dc0071a22dc93a2",
+    "072bab4dd5f25289",
+    "f8205df22ed3e59e",
+    "e77657ecff97811e",
+    "ddac191fb07e196c",
+    "39567c00df64ab96",
+    "ee89deeb13460e1f",
+    "ddac191fb07e196c",
+    "abc2b596aaf6dd0e",
+    "27e1e91bc1b2ed2c",
+    "07125416210273c3",
+    "ddac191fb07e196c",
+    "3514ff65ae704fbe",
+    "abc2b596aaf6dd0e",
+    "27e1e91bc1b2ed2c",
+    "a4f4983c807e3441",
+    "f515f2f575c83b2d",
+    "05f0d085c05d92e6",
+    "f515f2f575c83b2d",
+    "611b452486c2d409",
+    "f515f2f575c83b2d",
+    "13a5350358fd0f0f",
+    "f515f2f575c83b2d",
+    "20d75155430a4de6",
+    "5acbbfbd576fee7e",
+    "dc4aadfb2d348395",
+    "5acbbfbd576fee7e",
+    "dc4aadfb2d348395",
+    "5acbbfbd576fee7e",
+    "07125416210273c3",
+    "ddac191fb07e196c",
+    "abc2b596aaf6dd0e",
+    "27e1e91bc1b2ed2c",
+    "f515f2f575c83b2d",
+    "f515f2f575c83b2d",
+    "f515f2f575c83b2d",
+    "5acbbfbd576fee7e",
+    "dc4aadfb2d348395",
+    "5acbbfbd576fee7e",
+    "51d4f05887d58851",
+    "387ae3cfc9c975bb",
+    "1ada03206d45e24d",
+    "e2c7a875cc6e43a7",
+    "389ab08db246b9b5",
+    "2b1bd0e412a6b155",
+    "aa6050a25c2f5ce1",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "07125416210273c3",
+    "ddac191fb07e196c",
+    "abc2b596aaf6dd0e",
+    "27e1e91bc1b2ed2c",
+    "f515f2f575c83b2d",
+    "f515f2f575c83b2d",
+    "f515f2f575c83b2d",
+    "5acbbfbd576fee7e",
+    "dc4aadfb2d348395",
+    "5acbbfbd576fee7e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "0c3783776b892f4e",
+    "fa1537fbf0368ccf",
+    "e49fc04aea792be9",
+    "b75dd5b0b49be8cf",
+    "7d23218509f7b7b5",
+    "0d6e4f9d602b7d6c",
+    "6838096ac28ea8c4",
+    "80338a92cac1239c",
+    "500aed467d5caf5c",
+    "550c6de545ac11ea",
+    "550c6de545ac11ea",
+    "500aed467d5caf5c",
+    "500aed467d5caf5c",
+    "500aed467d5caf5c",
+    "66eebd5b6b7c0c74",
+    "66eebd5b6b7c0c74",
+    "66eebd5b6b7c0c74",
+    "66eebd5b6b7c0c74",
+    "dab7e01668ef4aba",
+    "5774ab40eecdf118",
+    "31f35d59b162180b"
+  ],
+  "workerStats": {
+    "workers": {
+      "observation": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 11,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715961,
+        "eventTypes": [
+          "LEAD_CREATED",
+          "LEAD_CONVERTED",
+          "ESTIMATE_CREATED",
+          "ESTIMATE_SENT",
+          "ESTIMATE_ACCEPTED",
+          "CUSTOMER_CREATED",
+          "CUSTOMER_UPDATED",
+          "PROJECT_CREATED",
+          "PROJECT_UPDATED",
+          "PROJECT_COMPLETED",
+          "REVIEW_RECEIVED",
+          "REVIEW_RESPONDED",
+          "INVOICE_CREATED",
+          "INVOICE_SENT",
+          "INVOICE_PAID",
+          "EMAIL_SENT",
+          "EMAIL_RECEIVED",
+          "SMS_SENT",
+          "GITHUB_COMMIT_SYNCED",
+          "GOOGLE_REVIEW_RECEIVED",
+          "DOCUMENT_IMPORT"
+        ],
+        "capabilities": [
+          "observation"
+        ]
+      },
+      "claim": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 13,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715962,
+        "eventTypes": [
+          "OBSERVATION_CREATED",
+          "CLAIM_GENERATE"
+        ],
+        "capabilities": [
+          "claim"
+        ]
+      },
+      "classification": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 13,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715962,
+        "eventTypes": [
+          "CLAIM_CREATED",
+          "CLASSIFICATION_CREATE"
+        ],
+        "capabilities": [
+          "classification"
+        ]
+      },
+      "recommendation": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 27,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715963,
+        "eventTypes": [
+          "CLASSIFICATION_CREATED",
+          "RECOMMENDATION_CREATE"
+        ],
+        "capabilities": [
+          "recommendation"
+        ]
+      },
+      "projection": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 39,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715963,
+        "eventTypes": [
+          "KNOWLEDGE_INDEX",
+          "PROJECTION_CREATE",
+          "RECOMMENDATION_CREATED"
+        ],
+        "capabilities": [
+          "projection"
+        ]
+      },
+      "replay": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 0,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715881,
+        "eventTypes": [
+          "REPLAY_VERIFY"
+        ],
+        "capabilities": [
+          "replay"
+        ]
+      },
+      "witness": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 0,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715881,
+        "eventTypes": [
+          "WITNESS_CREATE"
+        ],
+        "capabilities": [
+          "witness"
+        ]
+      },
+      "lineage": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 0,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715881,
+        "eventTypes": [
+          "LINEAGE_CREATE"
+        ],
+        "capabilities": [
+          "lineage"
+        ]
+      },
+      "intelligence": {
+        "status": "idle",
+        "running": 0,
+        "maxConcurrent": 2,
+        "totalProcessed": 11,
+        "totalFailed": 0,
+        "lastHeartbeat": 1785204715961,
+        "eventTypes": [
+          "LEAD_CREATED",
+          "LEAD_CONVERTED",
+          "ESTIMATE_CREATED",
+          "ESTIMATE_SENT",
+          "ESTIMATE_ACCEPTED",
+          "CUSTOMER_CREATED",
+          "CUSTOMER_UPDATED",
+          "PROJECT_CREATED",
+          "PROJECT_UPDATED",
+          "PROJECT_COMPLETED",
+          "REVIEW_RECEIVED",
+          "REVIEW_RESPONDED",
+          "INVOICE_CREATED",
+          "INVOICE_SENT",
+          "INVOICE_PAID",
+          "EMAIL_SENT",
+          "EMAIL_RECEIVED",
+          "SMS_SENT",
+          "GITHUB_COMMIT_SYNCED",
+          "GOOGLE_REVIEW_RECEIVED",
+          "DOCUMENT_IMPORT"
+        ],
+        "capabilities": [
+          "intelligence"
+        ]
+      }
+    },
+    "stats": {
+      "dispatched": 0,
+      "completed": 114,
+      "failed": 0
+    },
+    "running": true
+  },
+  "completedMissions": 53,
+  "failedMissions": 0,
+  "totalDispatched": 103
+}

@@ -20,7 +20,7 @@ const ProviderType = {
 
 // Configuration
 const INFERENCE_PROVIDER = process.env.INFERENCE_PROVIDER || 'ollama';
-const INFERENCE_BASE_URL = process.env.INFERENCE_BASE_URL || 'http://brain-ollama:11434';
+const INFERENCE_BASE_URL = process.env.INFERENCE_BASE_URL || 'http://ping-ollama:11434';
 const DEFAULT_EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'nomic-embed-text';
 const DEFAULT_CHAT_MODEL = process.env.CHAT_MODEL || 'llama3';
 

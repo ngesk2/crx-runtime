@@ -1,7 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 
-const VALID_STATES = ['idle', 'assigned', 'running', 'waiting', 'consensus', 'completed', 'failed', 'archived'];
+// Generated from state_machine_registry.json — single source of truth
+const _generatedMachine = (() => {
+  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'state_machine_registry.json'));
+  const worker = registry.state_machines.find(m => m.name === 'WorkerLifecycle');
+  if (!worker) throw new Error('[WorkerStateMachine] WorkerLifecycle not found in state_machine_registry.json');
+  const transMap = {};
+  for (const t of worker.transitions) {
+    if (!transMap[t.from]) transMap[t.from] = [];
+    transMap[t.from].push(t.to);
+  }
+  return { states: worker.states, transitions: transMap };
+})();
+
+const VALID_STATES = _generatedMachine.states;
 const MEMORY_DIR = path.join(__dirname, '..', 'worker_memory');
 
 class WorkerStateMachine {
@@ -167,16 +180,9 @@ class WorkerStateMachine {
 
   _isValidTransition(from, to) {
     if (from === to) return true;
-    const valid = {
-      'idle': ['assigned', 'running'],
-      'assigned': ['running', 'failed', 'idle'],
-      'running': ['waiting', 'completed', 'failed', 'running'],
-      'waiting': ['running', 'completed', 'consensus', 'failed', 'waiting'],
-      'consensus': ['completed', 'failed', 'consensus'],
-      'completed': ['idle', 'running', 'archived'],
-      'failed': ['idle', 'running', 'archived']
-    };
-    return (valid[from] || []).includes(to);
+    const allowed = _generatedMachine.transitions[from];
+    if (allowed) return allowed.includes(to);
+    return false;
   }
 
   _loadWorkerMemory(workerId) {

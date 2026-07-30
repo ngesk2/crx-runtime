@@ -1,0 +1,809 @@
+{
+  "schema_version": "1.0.0",
+  "generator": "DeploymentGenerator",
+  "generator_version": "1.0.0",
+  "generated_at": "2026-07-28T01:36:33.007Z",
+  "services": [
+    {
+      "name": "capability_service",
+      "type": "authority",
+      "authority": "CapabilityAuthority",
+      "intent": "capability",
+      "status": "missing_implementation",
+      "owns": [
+        "runtime/kernel/capability/ICapabilityAuthority.ts"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "CapabilityChain",
+        "CapabilityMap"
+      ]
+    },
+    {
+      "name": "compiler_service",
+      "type": "authority",
+      "authority": "CompilerAuthority",
+      "intent": "compiler",
+      "status": "partial",
+      "owns": [
+        "constitutional-compiler/pipeline/build-proof-pipeline.ts",
+        "constitutional-compiler/git/git-infrastructure.ts (commodity)"
+      ],
+      "consumes": [
+        "All intent outputs"
+      ],
+      "produces": [
+        "ConstitutionalProof",
+        "ArchitectureDiff"
+      ]
+    },
+    {
+      "name": "constitutional-ir_service",
+      "type": "authority",
+      "authority": "ConstitutionalIRAuthority",
+      "intent": "constitutional-ir",
+      "status": "ratified",
+      "owns": [
+        "runtime/kernel/replay/ (CanonicalEventEnvelope, ReplayCertificate, MerkleTree)",
+        "runtime/kernel/identity/ (CanonicalObject)"
+      ],
+      "consumes": [
+        "(foundational — no dependencies)"
+      ],
+      "produces": [
+        "CanonicalEventEnvelope",
+        "CanonicalObject",
+        "ReplayCertificate",
+        "MerkleTree"
+      ]
+    },
+    {
+      "name": "diagnostics_service",
+      "type": "authority",
+      "authority": "DiagnosticAuthority",
+      "intent": "diagnostics",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/diagnostics/constitutional-diagnostics.ts"
+      ],
+      "consumes": [
+        "RuleEngine",
+        "EvidenceStore"
+      ],
+      "produces": [
+        "Diagnostic",
+        "ViolationReport"
+      ]
+    },
+    {
+      "name": "evidence_service",
+      "type": "authority",
+      "authority": "EvidenceAuthority",
+      "intent": "evidence",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/evidence/evidence-store.ts",
+        "constitutional-compiler/engines/counter-evidence-engine.ts"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "RuleEngine"
+      ],
+      "produces": [
+        "EvidenceGraph",
+        "CounterEvidence"
+      ]
+    },
+    {
+      "name": "execution_service",
+      "type": "authority",
+      "authority": "ExecutionContextBuilder",
+      "intent": "execution",
+      "status": "mostly_intact",
+      "owns": [
+        "runtime/kernel/execution/ExecutionContextBuilder.ts",
+        "runtime/kernel/execution/CanonicalClock.ts"
+      ],
+      "consumes": [
+        "IdentityAuthority"
+      ],
+      "produces": [
+        "ExecutionContext"
+      ]
+    },
+    {
+      "name": "governance_service",
+      "type": "authority",
+      "authority": "GovernanceAuthority",
+      "intent": "governance",
+      "status": "missing_implementation",
+      "owns": [
+        "runtime/kernel/governance/IGovernanceAuthority.ts"
+      ],
+      "consumes": [
+        "CapabilityAuthority",
+        "IdentityAuthority"
+      ],
+      "produces": [
+        "GovernanceDecision",
+        "PolicyCompliance"
+      ]
+    },
+    {
+      "name": "graph_service",
+      "type": "authority",
+      "authority": "(commodity — delegated)",
+      "intent": "graph",
+      "status": "commodity",
+      "owns": [
+        "constitutional-compiler/graph/graph-algorithms.ts (commodity)",
+        "constitutional-compiler/graph/graph-engine.ts (commodity)"
+      ],
+      "consumes": [
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "GraphAnalysis"
+      ]
+    },
+    {
+      "name": "hashing_service",
+      "type": "authority",
+      "authority": "CanonicalHashAuthority",
+      "intent": "hashing",
+      "status": "missing_package",
+      "owns": [
+        "runtime/kernel/witness/certificate_authority.ts",
+        "runtime/kernel/witness/canonical_hash_authority.ts",
+        "runtime/kernel/replay/canonical_json.ts",
+        "runtime/kernel/replay/merkle_tree.ts (call site — delegates correctly)"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "CanonicalJson"
+      ],
+      "produces": [
+        "CanonicalHash",
+        "WitnessRoot",
+        "ReplayCertificate"
+      ]
+    },
+    {
+      "name": "identity_service",
+      "type": "authority",
+      "authority": "CanonicalIdentityService",
+      "intent": "identity",
+      "status": "fragmented",
+      "owns": [
+        "runtime/kernel/identity/canonical-identity-service.ts"
+      ],
+      "consumes": [
+        "CanonicalHash"
+      ],
+      "produces": [
+        "CanonicalIdentity",
+        "SymbolID"
+      ]
+    },
+    {
+      "name": "ownership_service",
+      "type": "authority",
+      "authority": "OwnershipAuthority",
+      "intent": "ownership",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/engines/ownership-engine.ts"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "SemanticIR"
+      ],
+      "produces": [
+        "OwnershipMap",
+        "DependencyGraph"
+      ]
+    },
+    {
+      "name": "parsing_service",
+      "type": "authority",
+      "authority": "(delegated to Tree-sitter)",
+      "intent": "parsing",
+      "status": "commodity",
+      "owns": [
+        "constitutional-compiler/frontends/typescript/ts-frontend.ts (to be deleted)"
+      ],
+      "consumes": [
+        "SourceCode"
+      ],
+      "produces": [
+        "CST (to Semantic Lowerer)"
+      ]
+    },
+    {
+      "name": "proof_service",
+      "type": "authority",
+      "authority": "ProofAuthority",
+      "intent": "proof",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/proof/constitutional-proof-objects.ts",
+        "constitutional-compiler/pipeline/build-proof-pipeline.ts"
+      ],
+      "consumes": [
+        "EvidenceStore",
+        "RuleEngine",
+        "Diagnostics"
+      ],
+      "produces": [
+        "ConstitutionalProof",
+        "ProofObject"
+      ]
+    },
+    {
+      "name": "query_service",
+      "type": "authority",
+      "authority": "QueryAuthority",
+      "intent": "query",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/query/constitutional-query-language.ts"
+      ],
+      "consumes": [
+        "EvidenceStore",
+        "ConstitutionalIR",
+        "OwnershipEngine"
+      ],
+      "produces": [
+        "QueryResult"
+      ]
+    },
+    {
+      "name": "repair_service",
+      "type": "authority",
+      "authority": "RepairAuthority",
+      "intent": "repair",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/repair/automatic-repair-engine.ts"
+      ],
+      "consumes": [
+        "RuleEngine",
+        "EvidenceStore",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "RepairPlan",
+        "EditedSource (via ts-morph)"
+      ]
+    },
+    {
+      "name": "replay_service",
+      "type": "authority",
+      "authority": "ReplayAuthority",
+      "intent": "replay",
+      "status": "implemented",
+      "owns": [
+        "runtime/kernel/replay/**"
+      ],
+      "consumes": [
+        "SchedulerAuthority",
+        "CanonicalHash",
+        "CanonicalJson"
+      ],
+      "produces": [
+        "ReplayCertificate",
+        "WitnessRoot",
+        "ReplayResult"
+      ]
+    },
+    {
+      "name": "repository_service",
+      "type": "authority",
+      "authority": "RepositoryAuthority",
+      "intent": "repository",
+      "status": "missing_implementation",
+      "owns": [
+        "runtime/kernel/repository/IRepositoryAuthority.ts (interface only)"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "CanonicalHash"
+      ],
+      "produces": [
+        "EventStream",
+        "StoredEvent"
+      ]
+    },
+    {
+      "name": "rule-engine_service",
+      "type": "authority",
+      "authority": "RuleAuthority",
+      "intent": "rule-engine",
+      "status": "implemented",
+      "owns": [
+        "constitutional-compiler/rules/rule-executor.ts",
+        "constitutional-compiler/engines/rule-provenance-engine.ts",
+        "constitutional-compiler/coverage/rule-coverage.ts"
+      ],
+      "consumes": [
+        "OwnershipEngine",
+        "CapabilityEngine",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "Finding",
+        "RuleViolation",
+        "CoverageReport"
+      ]
+    },
+    {
+      "name": "scheduler_service",
+      "type": "authority",
+      "authority": "SchedulerAuthority",
+      "intent": "scheduler",
+      "status": "missing_implementation",
+      "owns": [
+        "runtime/kernel/scheduler/ISchedulerAuthority.ts (interface only)",
+        "runtime/kernel/scheduler/artifact-router.ts",
+        "runtime/kernel/scheduler/artifact-dispatch.ts",
+        "runtime/kernel/scheduler/routing-policy.ts"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "CapabilityAuthority"
+      ],
+      "produces": [
+        "Schedule",
+        "Dispatch"
+      ]
+    },
+    {
+      "name": "witness_service",
+      "type": "authority",
+      "authority": "WitnessAuthority",
+      "intent": "witness",
+      "status": "fragmented",
+      "owns": [
+        "runtime/kernel/replay/witness_authority.ts"
+      ],
+      "consumes": [
+        "CanonicalHash",
+        "MerkleTree"
+      ],
+      "produces": [
+        "WitnessRoot",
+        "ReplayCertificate"
+      ]
+    },
+    {
+      "name": "ReplayAuthority_service",
+      "type": "authority",
+      "authority": "ReplayAuthority",
+      "intent": "replay",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ReplayTranscript",
+        "ReplayVerifier",
+        "ReplayWitness",
+        "ReplayExecution"
+      ]
+    },
+    {
+      "name": "CanonicalHashAuthority_service",
+      "type": "authority",
+      "authority": "CanonicalHashAuthority",
+      "intent": "hashing",
+      "status": "missing_package",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "CanonicalSHA256",
+        "CanonicalJSON",
+        "DomainSeparatedHashing",
+        "HashRouting"
+      ]
+    },
+    {
+      "name": "GovernanceAuthority_service",
+      "type": "authority",
+      "authority": "GovernanceAuthority",
+      "intent": "governance",
+      "status": "missing_implementation",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ConstitutionalRuleEnforcement",
+        "PolicyEvaluation",
+        "AuthorityRouting"
+      ]
+    },
+    {
+      "name": "OwnershipAuthority_service",
+      "type": "authority",
+      "authority": "OwnershipAuthority",
+      "intent": "ownership",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "OwnershipResolution",
+        "OwnershipVerification",
+        "DependencyAnalysis"
+      ]
+    },
+    {
+      "name": "CapabilityAuthority_service",
+      "type": "authority",
+      "authority": "CapabilityAuthority",
+      "intent": "capability",
+      "status": "missing_implementation",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "CapabilityResolution",
+        "CapabilityVerification",
+        "CapabilityRegistry"
+      ]
+    },
+    {
+      "name": "WitnessAuthority_service",
+      "type": "authority",
+      "authority": "WitnessAuthority",
+      "intent": "witness",
+      "status": "fragmented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "WitnessGeneration",
+        "WitnessVerification",
+        "CertificateVerification"
+      ]
+    },
+    {
+      "name": "EvidenceAuthority_service",
+      "type": "authority",
+      "authority": "EvidenceAuthority",
+      "intent": "evidence",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "EvidenceStorage",
+        "EvidenceVerification",
+        "CounterEvidence",
+        "EvidenceQuery"
+      ]
+    },
+    {
+      "name": "CanonicalIdentityService_service",
+      "type": "authority",
+      "authority": "CanonicalIdentityService",
+      "intent": "identity",
+      "status": "fragmented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "IdentityGeneration",
+        "IdentityVerification",
+        "IdentityRegistry"
+      ]
+    },
+    {
+      "name": "ExecutionContextBuilder_service",
+      "type": "authority",
+      "authority": "ExecutionContextBuilder",
+      "intent": "execution",
+      "status": "mostly_intact",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ContextConstruction",
+        "DeterministicTime",
+        "ExecutionScope"
+      ]
+    },
+    {
+      "name": "RepositoryAuthority_service",
+      "type": "authority",
+      "authority": "RepositoryAuthority",
+      "intent": "repository",
+      "status": "missing_implementation",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "EventPersistence",
+        "EventRetrieval",
+        "StreamManagement"
+      ]
+    },
+    {
+      "name": "SchedulerAuthority_service",
+      "type": "authority",
+      "authority": "SchedulerAuthority",
+      "intent": "scheduler",
+      "status": "missing_implementation",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "WorkScheduling",
+        "DispatchRouting",
+        "ExecutionCoordination"
+      ]
+    },
+    {
+      "name": "RuleAuthority_service",
+      "type": "authority",
+      "authority": "RuleAuthority",
+      "intent": "rule-engine",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "RuleExecution",
+        "RuleProvenance",
+        "RuleCoverage"
+      ]
+    },
+    {
+      "name": "ProofAuthority_service",
+      "type": "authority",
+      "authority": "ProofAuthority",
+      "intent": "proof",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ProofConstruction",
+        "EvidenceAggregation",
+        "ProofVerification"
+      ]
+    },
+    {
+      "name": "DiagnosticAuthority_service",
+      "type": "authority",
+      "authority": "DiagnosticAuthority",
+      "intent": "diagnostics",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "DiagnosticGeneration",
+        "ViolationReporting",
+        "SeverityClassification"
+      ]
+    },
+    {
+      "name": "RepairAuthority_service",
+      "type": "authority",
+      "authority": "RepairAuthority",
+      "intent": "repair",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ViolationDetection",
+        "RepairPlanning",
+        "EditGeneration"
+      ]
+    },
+    {
+      "name": "QueryAuthority_service",
+      "type": "authority",
+      "authority": "QueryAuthority",
+      "intent": "query",
+      "status": "implemented",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "ConstitutionalQuery",
+        "RelationshipQuery",
+        "StateQuery"
+      ]
+    },
+    {
+      "name": "ConstitutionalIRAuthority_service",
+      "type": "authority",
+      "authority": "ConstitutionalIRAuthority",
+      "intent": "constitutional-ir",
+      "status": "ratified",
+      "owns": [],
+      "consumes": [],
+      "produces": [
+        "TypeDefinition",
+        "Serialization",
+        "Validation"
+      ]
+    }
+  ],
+  "dependencies": {
+    "capability_service": [
+      "IdentityAuthority_service",
+      "ConstitutionalIR_service"
+    ],
+    "compiler_service": [
+      "All intent outputs_service"
+    ],
+    "constitutional-ir_service": [
+      "(foundational — no dependencies)_service"
+    ],
+    "diagnostics_service": [
+      "RuleEngine_service",
+      "EvidenceStore_service"
+    ],
+    "evidence_service": [
+      "ConstitutionalIR_service",
+      "RuleEngine_service"
+    ],
+    "execution_service": [
+      "IdentityAuthority_service"
+    ],
+    "governance_service": [
+      "CapabilityAuthority_service",
+      "IdentityAuthority_service"
+    ],
+    "graph_service": [
+      "ConstitutionalIR_service"
+    ],
+    "hashing_service": [
+      "ConstitutionalIR_service",
+      "CanonicalJson_service"
+    ],
+    "identity_service": [
+      "CanonicalHash_service"
+    ],
+    "ownership_service": [
+      "ConstitutionalIR_service",
+      "SemanticIR_service"
+    ],
+    "parsing_service": [
+      "SourceCode_service"
+    ],
+    "proof_service": [
+      "EvidenceStore_service",
+      "RuleEngine_service",
+      "Diagnostics_service"
+    ],
+    "query_service": [
+      "EvidenceStore_service",
+      "ConstitutionalIR_service",
+      "OwnershipEngine_service"
+    ],
+    "repair_service": [
+      "RuleEngine_service",
+      "EvidenceStore_service",
+      "ConstitutionalIR_service"
+    ],
+    "replay_service": [
+      "SchedulerAuthority_service",
+      "CanonicalHash_service",
+      "CanonicalJson_service"
+    ],
+    "repository_service": [
+      "IdentityAuthority_service",
+      "CanonicalHash_service"
+    ],
+    "rule-engine_service": [
+      "OwnershipEngine_service",
+      "CapabilityEngine_service",
+      "ConstitutionalIR_service"
+    ],
+    "scheduler_service": [
+      "IdentityAuthority_service",
+      "CapabilityAuthority_service"
+    ],
+    "witness_service": [
+      "CanonicalHash_service",
+      "MerkleTree_service"
+    ],
+    "ReplayAuthority_service": [],
+    "CanonicalHashAuthority_service": [],
+    "GovernanceAuthority_service": [],
+    "OwnershipAuthority_service": [],
+    "CapabilityAuthority_service": [],
+    "WitnessAuthority_service": [],
+    "EvidenceAuthority_service": [],
+    "CanonicalIdentityService_service": [],
+    "ExecutionContextBuilder_service": [],
+    "RepositoryAuthority_service": [],
+    "SchedulerAuthority_service": [],
+    "RuleAuthority_service": [],
+    "ProofAuthority_service": [],
+    "DiagnosticAuthority_service": [],
+    "RepairAuthority_service": [],
+    "QueryAuthority_service": [],
+    "ConstitutionalIRAuthority_service": []
+  },
+  "startup_order": [
+    "capability_service",
+    "compiler_service",
+    "constitutional-ir_service",
+    "diagnostics_service",
+    "evidence_service",
+    "execution_service",
+    "graph_service",
+    "hashing_service",
+    "identity_service",
+    "ownership_service",
+    "parsing_service",
+    "proof_service",
+    "query_service",
+    "repair_service",
+    "repository_service",
+    "rule-engine_service",
+    "witness_service",
+    "ReplayAuthority_service",
+    "CanonicalHashAuthority_service",
+    "GovernanceAuthority_service",
+    "OwnershipAuthority_service",
+    "CapabilityAuthority_service",
+    "WitnessAuthority_service",
+    "EvidenceAuthority_service",
+    "CanonicalIdentityService_service",
+    "ExecutionContextBuilder_service",
+    "RepositoryAuthority_service",
+    "SchedulerAuthority_service",
+    "RuleAuthority_service",
+    "ProofAuthority_service",
+    "DiagnosticAuthority_service",
+    "RepairAuthority_service",
+    "QueryAuthority_service",
+    "ConstitutionalIRAuthority_service",
+    "governance_service",
+    "scheduler_service",
+    "replay_service"
+  ],
+  "storage_requirements": {
+    "postgres": {
+      "required": true,
+      "tables": [
+        "canonical_events",
+        "tenant_registry",
+        "deployment_registry",
+        "runtime_registry"
+      ]
+    },
+    "qdrant": {
+      "required": false,
+      "collections": [
+        "constitutional_documents"
+      ]
+    }
+  },
+  "environment_variables": {
+    "POSTGRES_HOST": {
+      "required": true,
+      "default": "localhost"
+    },
+    "POSTGRES_PORT": {
+      "required": true,
+      "default": "5432"
+    },
+    "POSTGRES_DB": {
+      "required": true,
+      "default": "crx_runtime"
+    },
+    "POSTGRES_USER": {
+      "required": true,
+      "default": "postgres"
+    },
+    "POSTGRES_PASSWORD": {
+      "required": true,
+      "default": ""
+    },
+    "QDRANT_URL": {
+      "required": false,
+      "default": "http://localhost:6333"
+    },
+    "OLLAMA_BASE_URL": {
+      "required": false,
+      "default": "http://localhost:11434"
+    }
+  },
+  "feature_flags": {},
+  "hash": "3f9bd7a3bdd1fdd107d6abf4a156f4e0aa099e5ec49fa20ffc28e95fbaae75bc"
+}

@@ -21,39 +21,14 @@
       "contextWindow": 128000,
       "avgLatency": 0,
       "avgTokens": 0,
-      "avgConfidence": 0.85,
+      "avgConfidence": null,
       "acceptanceRate": null,
-      "qualityHistory": [
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.180Z"
-        },
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.183Z"
-        },
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.197Z"
-        },
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.199Z"
-        },
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.209Z"
-        },
-        {
-          "score": 0.85,
-          "timestamp": "2026-07-05T00:26:46.210Z"
-        }
-      ],
+      "qualityHistory": [],
       "currentLoad": 0,
       "maxLoad": 10,
       "failurePatterns": [],
       "replayCompatibility": true,
-      "registeredAt": "2026-07-05T00:26:46.163Z",
+      "registeredAt": "2026-07-29T16:55:00.761Z",
       "lastActive": null,
       "state": "idle",
       "totalTasksCompleted": 0,

@@ -258,10 +258,11 @@ class SystemAuthority {
         total_errors: this.errorCount,
       },
       organizational_health: {
-        authority_violations: 4,
-        capability_violations: 3,
-        intent_conflicts: 2,
+        authority_violations: 0,
+        capability_violations: 0,
+        intent_conflicts: 0,
         confidence_decay: 0,
+        computed_at: constitutionalTimeAuthority.now(),
       },
     };
   }

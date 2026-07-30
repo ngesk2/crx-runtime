@@ -1,16 +1,37 @@
 const crypto = require('crypto');
+const path = require('path');
 
-const WORKER_STATES = ['idle', 'assigned', 'running', 'waiting', 'consensus', 'completed', 'failed', 'archived'];
-const VALID_TRANSITIONS = {
-  idle: ['assigned'],
-  assigned: ['running', 'idle'],
-  running: ['waiting', 'failed', 'idle'],
-  waiting: ['consensus', 'completed', 'failed', 'running'],
-  consensus: ['completed', 'failed'],
-  completed: ['idle', 'assigned'],
-  failed: ['idle'],
-  archived: ['idle']
-};
+// Generated from state_machine_registry.json — single source of truth
+const _generatedMachine = (() => {
+  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'state_machine_registry.json'));
+  const worker = registry.state_machines.find(m => m.name === 'WorkerLifecycle');
+  if (!worker) throw new Error('[WorkerPort] WorkerLifecycle not found in state_machine_registry.json');
+  const transMap = {};
+  for (const t of worker.transitions) {
+    if (!transMap[t.from]) transMap[t.from] = [];
+    transMap[t.from].push(t.to);
+  }
+  return { states: worker.states, transitions: transMap };
+})();
+
+// Generated from capability_registry.json — single source of truth
+const _generatedCapabilities = (() => {
+  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'capability_registry.json'));
+  const byOwner = {};
+  for (const cap of registry.capabilities) {
+    if (cap.owner === 'WorkerPort') {
+      if (!byOwner[cap.name]) byOwner[cap.name] = cap;
+    }
+  }
+  return byOwner;
+})();
+
+function getCapabilitiesByNames(names) {
+  return names.filter(n => _generatedCapabilities[n]).sort();
+}
+
+const WORKER_STATES = _generatedMachine.states;
+const VALID_TRANSITIONS = _generatedMachine.transitions;
 
 class WorkerPort {
   constructor(config = {}) {
@@ -164,20 +185,12 @@ class OpenCodeWorkerPort extends WorkerPort {
     super({
       workerId: config.workerId || 'opencode:local',
       model: config.model || 'opencode:big-pickle',
-      capabilities: config.capabilities || [
-        'orchestration.plan',
-        'orchestration.review',
-        'orchestration.merge',
-        'authority.audit',
-        'authority.audit.time',
-        'authority.audit.identity',
-        'authority.audit.hash',
-        'authority.audit.serialization',
-        'authority.audit.subprocess',
-        'replay.verify',
-        'code.generate',
-        'code.refactor'
-      ],
+      capabilities: config.capabilities || getCapabilitiesByNames([
+        'orchestration.plan', 'orchestration.review', 'orchestration.merge',
+        'authority.audit', 'authority.audit.time', 'authority.audit.identity',
+        'authority.audit.hash', 'authority.audit.serialization', 'authority.audit.subprocess',
+        'replay.verify', 'code.generate', 'code.refactor'
+      ]),
       specialization: config.specialization || 'orchestration',
       contextWindow: config.contextWindow || 128000,
       replayCompatibility: config.replayCompatibility !== false,
@@ -199,12 +212,9 @@ class OllamaWorkerPort extends WorkerPort {
     super({
       workerId: config.workerId || `ollama:${model.replace(/[.:]/g, '-')}`,
       model,
-      capabilities: config.capabilities || [
-        'code.generate',
-        'code.refactor',
-        'authority.audit',
-        'replay.verify'
-      ],
+      capabilities: config.capabilities || getCapabilitiesByNames([
+        'code.generate', 'code.refactor', 'authority.audit', 'replay.verify'
+      ]),
       specialization,
       contextWindow: config.contextWindow || 32000,
       replayCompatibility: false,
@@ -221,12 +231,9 @@ class DevinWorkerPort extends WorkerPort {
     super({
       workerId: config.workerId || 'devin:default',
       model: config.model || 'devin:default',
-      capabilities: config.capabilities || [
-        'code.generate',
-        'code.refactor',
-        'code.test',
-        'documentation.write'
-      ],
+      capabilities: config.capabilities || getCapabilitiesByNames([
+        'code.generate', 'code.refactor', 'code.test', 'documentation.write'
+      ]),
       specialization: 'general_purpose',
       contextWindow: config.contextWindow || 64000,
       replayCompatibility: false,
@@ -340,5 +347,5 @@ class WorkerPortRegistry {
 module.exports = {
   WorkerPort, OpenCodeWorkerPort, OllamaWorkerPort,
   DevinWorkerPort, WorkerPortRegistry,
-  WORKER_STATES, VALID_TRANSITIONS
+  WORKER_STATES, VALID_TRANSITIONS, getCapabilitiesByNames
 };

@@ -1,0 +1,180 @@
+/**
+ * Knowledge Graph — PING Core v1
+ * 
+ * Postgres-backed knowledge store. Every project, customer, review, artifact
+ * generates knowledge. Queries flow through here, not raw SQL.
+ * 
+ * This replaces 5+ dead knowledge implementations with one production store.
+ */
+
+class KnowledgeGraph {
+  /**
+   * @param {object} options
+   * @param {object} options.pool — pg.Pool
+   */
+  constructor(options = {}) {
+    this._pool = options.pool || null;
+  }
+
+  /**
+   * Initialize knowledge tables.
+   */
+  async initialize() {
+    if (!this._pool) return;
+    await this._pool.query(`
+      CREATE TABLE IF NOT EXISTS knowledge_nodes (
+        node_id VARCHAR(255) PRIMARY KEY,
+        node_type VARCHAR(100) NOT NULL,
+        entity_type VARCHAR(100),
+        entity_id VARCHAR(255),
+        label TEXT NOT NULL,
+        data JSONB NOT NULL DEFAULT '{}',
+        source_event_id VARCHAR(64),
+        confidence REAL DEFAULT 1.0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_kn_type ON knowledge_nodes(node_type);
+      CREATE INDEX IF NOT EXISTS idx_kn_entity ON knowledge_nodes(entity_type, entity_id);
+
+      CREATE TABLE IF NOT EXISTS knowledge_edges (
+        edge_id VARCHAR(255) PRIMARY KEY,
+        source_id VARCHAR(255) NOT NULL REFERENCES knowledge_nodes(node_id) ON DELETE CASCADE,
+        target_id VARCHAR(255) NOT NULL REFERENCES knowledge_nodes(node_id) ON DELETE CASCADE,
+        edge_type VARCHAR(100) NOT NULL,
+        weight REAL DEFAULT 1.0,
+        data JSONB NOT NULL DEFAULT '{}',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_ke_source ON knowledge_edges(source_id);
+      CREATE INDEX IF NOT EXISTS idx_ke_target ON knowledge_edges(target_id);
+      CREATE INDEX IF NOT EXISTS idx_ke_type ON knowledge_edges(edge_type);
+    `);
+  }
+
+  /**
+   * Add a node to the knowledge graph.
+   */
+  async addNode(nodeType, label, data = {}, options = {}) {
+    const crypto = require('crypto');
+    const nodeId = options.nodeId || crypto.createHash('sha256')
+      .update(`${nodeType}:${label}:${JSON.stringify(data)}`)
+      .digest('hex').slice(0, 16);
+
+    await this._pool.query(
+      `INSERT INTO knowledge_nodes (node_id, node_type, entity_type, entity_id, label, data, source_event_id, confidence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (node_id) DO UPDATE SET data = $6, updated_at = NOW()`,
+      [nodeId, nodeType, options.entityType || null, options.entityId || null,
+       label, JSON.stringify(data), options.sourceEventId || null, options.confidence || 1.0]
+    );
+    return nodeId;
+  }
+
+  /**
+   * Add an edge between two nodes.
+   */
+  async addEdge(sourceId, targetId, edgeType, data = {}, weight = 1.0) {
+    const crypto = require('crypto');
+    const edgeId = crypto.createHash('sha256')
+      .update(`${sourceId}:${targetId}:${edgeType}`)
+      .digest('hex').slice(0, 16);
+
+    await this._pool.query(
+      `INSERT INTO knowledge_edges (edge_id, source_id, target_id, edge_type, weight, data)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (edge_id) DO NOTHING`,
+      [edgeId, sourceId, targetId, edgeType, weight, JSON.stringify(data)]
+    );
+    return edgeId;
+  }
+
+  /**
+   * Query nodes by type or entity.
+   */
+  async queryNodes(options = {}) {
+    let sql = 'SELECT * FROM knowledge_nodes WHERE 1=1';
+    const params = [];
+    let idx = 1;
+
+    if (options.nodeType) {
+      sql += ` AND node_type = $${idx++}`;
+      params.push(options.nodeType);
+    }
+    if (options.entityType) {
+      sql += ` AND entity_type = $${idx++}`;
+      params.push(options.entityType);
+    }
+    if (options.entityId) {
+      sql += ` AND entity_id = $${idx++}`;
+      params.push(options.entityId);
+    }
+    if (options.search) {
+      sql += ` AND (label ILIKE $${idx} OR data::text ILIKE $${idx})`;
+      params.push(`%${options.search}%`);
+      idx++;
+    }
+
+    sql += ' ORDER BY created_at DESC';
+    if (options.limit) {
+      sql += ` LIMIT $${idx++}`;
+      params.push(options.limit);
+    }
+
+    const result = await this._pool.query(sql, params);
+    return result.rows;
+  }
+
+  /**
+   * Get neighborhood — nodes connected to a given node.
+   */
+  async getNeighborhood(nodeId, depth = 1) {
+    const visited = new Set();
+    const nodes = new Map();
+    const edges = [];
+
+    const queue = [{ id: nodeId, depth: 0 }];
+    while (queue.length > 0) {
+      const { id, depth: d } = queue.shift();
+      if (visited.has(id) || d > depth) continue;
+      visited.add(id);
+
+      // Get node
+      const nodeResult = await this._pool.query('SELECT * FROM knowledge_nodes WHERE node_id = $1', [id]);
+      if (nodeResult.rows.length > 0) {
+        nodes.set(id, nodeResult.rows[0]);
+      }
+
+      // Get edges (outgoing + incoming)
+      const edgeResult = await this._pool.query(
+        `SELECT * FROM knowledge_edges WHERE source_id = $1 OR target_id = $1`,
+        [id]
+      );
+      for (const edge of edgeResult.rows) {
+        edges.push(edge);
+        const nextId = edge.source_id === id ? edge.target_id : edge.source_id;
+        if (!visited.has(nextId)) {
+          queue.push({ id: nextId, depth: d + 1 });
+        }
+      }
+    }
+
+    return { nodes: Array.from(nodes.values()), edges };
+  }
+
+  /**
+   * Get stats.
+   */
+  async getStats() {
+    const nodes = await this._pool.query('SELECT COUNT(*) as count FROM knowledge_nodes');
+    const edges = await this._pool.query('SELECT COUNT(*) as count FROM knowledge_edges');
+    const types = await this._pool.query('SELECT node_type, COUNT(*) as count FROM knowledge_nodes GROUP BY node_type');
+    return {
+      nodes: parseInt(nodes.rows[0].count),
+      edges: parseInt(edges.rows[0].count),
+      nodeTypes: types.rows,
+    };
+  }
+}
+
+module.exports = { KnowledgeGraph };

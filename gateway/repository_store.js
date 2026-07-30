@@ -36,6 +36,7 @@ const { constitutionalVerificationAuthority } = require('./constitutional_verifi
 
 class RepositoryStore extends RepositoryInterface {
   constructor(pool) {
+    super();
     this.pool = pool;
     this._migrationEngine = new MigrationEngine(pool);
   }

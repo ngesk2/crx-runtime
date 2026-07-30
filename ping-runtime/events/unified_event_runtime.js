@@ -1,0 +1,212 @@
+/**
+ * Unified Event Runtime — PING Core v1
+ * 
+ * Single canonical event pipeline. Every event flows through here.
+ * Replaces: Gateway CQRS, Gateway Canonical, Orchestration in-memory, BrainOS Python.
+ * 
+ * Flow: Emitter → EventRuntime → Persistence + Handlers + Integrations
+ * 
+ * Every event carries:
+ * - event_id (SHA-256 deterministic)
+ * - event_type (validated against event_registry.json)
+ * - timestamp (ConstitutionalTimeAuthority)
+ * - source (which connector/worker emitted it)
+ * - payload (the data)
+ * - metadata (schema_version, causation_id, correlation_id)
+ */
+
+const crypto = require('crypto');
+
+class UnifiedEventRuntime {
+  /**
+   * @param {object} options
+   * @param {object} options.pool — pg.Pool for persistence
+   * @param {object} options.eventValidator — EventValidator instance
+   * @param {object} options.eventGovernance — EventGovernance instance
+   * @param {object} options.integrationManager — IntegrationManager instance
+   */
+  constructor(options = {}) {
+    this._pool = options.pool || null;
+    this._eventValidator = options.eventValidator || null;
+    this._eventGovernance = options.eventGovernance || null;
+    this._integrationManager = options.integrationManager || null;
+    this._handlers = new Map();
+    this._stats = { emitted: 0, persisted: 0, dispatched: 0, failed: 0 };
+  }
+
+  /**
+   * Initialize the events table if it doesn't exist.
+   */
+  async initialize() {
+    if (!this._pool) return;
+    await this._pool.query(`
+      CREATE TABLE IF NOT EXISTS ping_events (
+        event_id VARCHAR(64) PRIMARY KEY,
+        event_type VARCHAR(255) NOT NULL,
+        source VARCHAR(255) NOT NULL,
+        timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        payload JSONB NOT NULL DEFAULT '{}',
+        metadata JSONB NOT NULL DEFAULT '{}',
+        processed BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_ping_events_type ON ping_events(event_type);
+      CREATE INDEX IF NOT EXISTS idx_ping_events_source ON ping_events(source);
+      CREATE INDEX IF NOT EXISTS idx_ping_events_processed ON ping_events(processed);
+      CREATE INDEX IF NOT EXISTS idx_ping_events_timestamp ON ping_events(timestamp);
+    `);
+  }
+
+  /**
+   * Emit an event. Validates, persists, dispatches to handlers, and routes to integrations.
+   * @param {string} eventType — e.g., 'REVIEW_RECEIVED', 'CUSTOMER_CREATED'
+   * @param {string} source — which connector/worker emitted it
+   * @param {object} payload — the event data
+   * @param {object} options — { causation_id, correlation_id, metadata }
+   */
+  async emit(eventType, source, payload, options = {}) {
+    // 1. Generate deterministic event_id (content-based, no Date.now())
+    const eventData = JSON.stringify({ eventType, source, payload });
+    const eventId = crypto.createHash('sha256').update(eventData).digest('hex');
+
+    // 2. Validate event type
+    if (this._eventValidator) {
+      if (typeof this._eventValidator.validateEventType === 'function') {
+        const validation = this._eventValidator.validateEventType(eventType);
+        if (!validation.valid) {
+          this._stats.failed++;
+          return { status: 'error', error: validation.error, eventId };
+        }
+      } else if (typeof this._eventValidator.isRegistered === 'function') {
+        if (!this._eventValidator.isRegistered(eventType)) {
+          this._stats.failed++;
+          return { status: 'error', error: `Unknown event_type: ${eventType}`, eventId };
+        }
+      }
+    }
+
+    // 3. Check governance (skip for bridge-sourced events that are already governed)
+    if (this._eventGovernance && !options._skipGovernance) {
+      const governance = this._eventGovernance.validateEvent({
+        event_type: eventType,
+        source,
+        payload,
+      });
+      if (!governance.valid) {
+        this._stats.failed++;
+        return { status: 'error', error: governance.error, eventId };
+      }
+    }
+
+    // 4. Build canonical event
+    const event = {
+      event_id: eventId,
+      event_type: eventType,
+      source,
+      timestamp: new Date().toISOString(),
+      payload,
+      metadata: {
+        schema_version: '1.0.0',
+        causation_id: options.causation_id || null,
+        correlation_id: options.correlation_id || eventId,
+        ...options.metadata,
+      },
+    };
+
+    // 5. Persist
+    if (this._pool) {
+      try {
+        await this._pool.query(
+          `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata)
+           VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (event_id) DO NOTHING`,
+          [event.event_id, event.event_type, event.source, event.timestamp,
+           JSON.stringify(event.payload), JSON.stringify(event.metadata)]
+        );
+        this._stats.persisted++;
+      } catch (err) {
+        this._stats.failed++;
+        return { status: 'error', error: `Persist failed: ${err.message}`, eventId };
+      }
+    }
+
+    // 6. Dispatch to handlers
+    const handlers = this._handlers.get(eventType) || [];
+    for (const handler of handlers) {
+      try {
+        await handler(event);
+        this._stats.dispatched++;
+      } catch (err) {
+        console.error(`[EventRuntime] Handler failed for ${eventType}:`, err.message);
+      }
+    }
+
+    // 7. Route to integrations
+    if (this._integrationManager) {
+      try {
+        await this._integrationManager.emit(event.event_type, event.payload);
+      } catch (err) {
+        console.error(`[EventRuntime] Integration routing failed:`, err.message);
+      }
+    }
+
+    this._stats.emitted++;
+    return { status: 'ok', eventId, event };
+  }
+
+  /**
+   * Subscribe to an event type.
+   * @param {string} eventType — event type to listen for
+   * @param {function} handler — async function(event)
+   */
+  on(eventType, handler) {
+    if (!this._handlers.has(eventType)) {
+      this._handlers.set(eventType, []);
+    }
+    this._handlers.get(eventType).push(handler);
+  }
+
+  /**
+   * Query events.
+   */
+  async query(options = {}) {
+    if (!this._pool) return { status: 'error', error: 'No pool' };
+
+    let sql = 'SELECT * FROM ping_events WHERE 1=1';
+    const params = [];
+    let idx = 1;
+
+    if (options.eventType) {
+      sql += ` AND event_type = $${idx++}`;
+      params.push(options.eventType);
+    }
+    if (options.source) {
+      sql += ` AND source = $${idx++}`;
+      params.push(options.source);
+    }
+    if (options.since) {
+      sql += ` AND timestamp >= $${idx++}`;
+      params.push(options.since);
+    }
+    if (options.unprocessed) {
+      sql += ` AND processed = FALSE`;
+    }
+
+    sql += ` ORDER BY timestamp DESC`;
+    if (options.limit) {
+      sql += ` LIMIT $${idx++}`;
+      params.push(options.limit);
+    }
+
+    const result = await this._pool.query(sql, params);
+    return { status: 'ok', events: result.rows, count: result.rowCount };
+  }
+
+  /**
+   * Get stats.
+   */
+  getStats() {
+    return { ...this._stats, handlers: this._handlers.size };
+  }
+}
+
+module.exports = { UnifiedEventRuntime };

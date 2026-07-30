@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { KnowledgeCompiler } = require('./knowledge_compiler');
 
 const WORKERS = {
@@ -332,7 +333,12 @@ class WorkerRegistry {
 
   getConsensusWorkers() {
     const workerIds = Array.from(this._workers.keys());
-    const shuffled = workerIds.sort(() => Math.random() - 0.5);
+    const seed = crypto.createHash('sha256').update('consensus:' + workerIds.sort().join(',')).digest('hex');
+    const shuffled = workerIds.sort((a, b) => {
+      const ha = crypto.createHash('sha256').update(seed + a).digest('hex');
+      const hb = crypto.createHash('sha256').update(seed + b).digest('hex');
+      return ha.localeCompare(hb);
+    });
     return shuffled.slice(0, 3);
   }
 

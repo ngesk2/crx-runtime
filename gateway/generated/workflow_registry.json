@@ -1,0 +1,767 @@
+{
+  "schema_version": "1.0.0",
+  "generator": "WorkflowGenerator",
+  "generator_version": "1.0.0",
+  "generated_at": "2026-07-28T01:36:32.988Z",
+  "count": 20,
+  "hash": "6db05b20dd711f10f6966c91af1f29b27245070d7126a9cdd29514e57c4a0f3e",
+  "workflows": [
+    {
+      "workflow_id": "01677562bfe82a6e",
+      "workflow_type": "repair",
+      "authority": "RepairAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "repair.ruleengine_received",
+        "repair.evidencestore_received",
+        "repair.constitutionalir_received"
+      ],
+      "event_outputs": [
+        "repair.repairplan_produced",
+        "repair.editedsource (via ts-morph)_produced"
+      ],
+      "state_machine_ref": "repair_state_machine",
+      "capability_requirements": [
+        "ViolationDetection",
+        "RepairPlanning",
+        "EditGeneration (via ts-morph)"
+      ],
+      "consumes": [
+        "RuleEngine",
+        "EvidenceStore",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "RepairPlan",
+        "EditedSource (via ts-morph)"
+      ],
+      "owns": [
+        "constitutional-compiler/repair/automatic-repair-engine.ts"
+      ],
+      "specifications": [
+        "specs/repair-planner"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\repair\\intent-manifest.yaml",
+      "hash": "63ff62e2a08083b33ef0a34f58593cc6e646027a6ba89f78e040a6d5c6bf7631"
+    },
+    {
+      "workflow_id": "07e7ee0c04f5bf81",
+      "workflow_type": "execution",
+      "authority": "ExecutionContextBuilder",
+      "version": "1.0.0",
+      "event_inputs": [
+        "execution.identityauthority_received"
+      ],
+      "event_outputs": [
+        "execution.executioncontext_produced"
+      ],
+      "state_machine_ref": "execution_state_machine",
+      "capability_requirements": [
+        "ContextConstruction",
+        "DeterministicTime",
+        "ExecutionScope"
+      ],
+      "consumes": [
+        "IdentityAuthority"
+      ],
+      "produces": [
+        "ExecutionContext"
+      ],
+      "owns": [
+        "runtime/kernel/execution/ExecutionContextBuilder.ts",
+        "runtime/kernel/execution/CanonicalClock.ts"
+      ],
+      "specifications": [
+        "specs/execution-context"
+      ],
+      "status": "mostly_intact",
+      "source_file": "intents\\execution\\intent-manifest.yaml",
+      "hash": "bb53e2e364b8427e622a4c5736279494df6fc22970d3a01434eb2d21136dded0"
+    },
+    {
+      "workflow_id": "0bf5b04dfea50ff9",
+      "workflow_type": "proof",
+      "authority": "ProofAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "proof.evidencestore_received",
+        "proof.ruleengine_received",
+        "proof.diagnostics_received"
+      ],
+      "event_outputs": [
+        "proof.constitutionalproof_produced",
+        "proof.proofobject_produced"
+      ],
+      "state_machine_ref": "proof_state_machine",
+      "capability_requirements": [
+        "ProofConstruction",
+        "EvidenceAggregation",
+        "ProofVerification"
+      ],
+      "consumes": [
+        "EvidenceStore",
+        "RuleEngine",
+        "Diagnostics"
+      ],
+      "produces": [
+        "ConstitutionalProof",
+        "ProofObject"
+      ],
+      "owns": [
+        "constitutional-compiler/proof/constitutional-proof-objects.ts",
+        "constitutional-compiler/pipeline/build-proof-pipeline.ts"
+      ],
+      "specifications": [
+        "specs/proof-objects"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\proof\\intent-manifest.yaml",
+      "hash": "0e64c5212a300b20a969d09889c7032226c64c6628531ace0569f4160ff2bc68"
+    },
+    {
+      "workflow_id": "1f225aa5b9442b41",
+      "workflow_type": "repository",
+      "authority": "RepositoryAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "repository.identityauthority_received",
+        "repository.canonicalhash_received"
+      ],
+      "event_outputs": [
+        "repository.eventstream_produced",
+        "repository.storedevent_produced"
+      ],
+      "state_machine_ref": "repository_state_machine",
+      "capability_requirements": [
+        "EventPersistence",
+        "EventRetrieval",
+        "StreamManagement"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "CanonicalHash"
+      ],
+      "produces": [
+        "EventStream",
+        "StoredEvent"
+      ],
+      "owns": [
+        "runtime/kernel/repository/IRepositoryAuthority.ts (interface only)"
+      ],
+      "specifications": [
+        "specs/repository-authority"
+      ],
+      "status": "missing_implementation",
+      "source_file": "intents\\repository\\intent-manifest.yaml",
+      "hash": "d594d1470e5a0a25140adb72ecce6ed00ce174ae14641111f0228c1de5d8e1e1"
+    },
+    {
+      "workflow_id": "1fef89980ecbdb78",
+      "workflow_type": "evidence",
+      "authority": "EvidenceAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "evidence.constitutionalir_received",
+        "evidence.ruleengine_received"
+      ],
+      "event_outputs": [
+        "evidence.evidencegraph_produced",
+        "evidence.counterevidence_produced"
+      ],
+      "state_machine_ref": "evidence_state_machine",
+      "capability_requirements": [
+        "EvidenceStorage",
+        "EvidenceVerification",
+        "CounterEvidence",
+        "EvidenceQuery"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "RuleEngine"
+      ],
+      "produces": [
+        "EvidenceGraph",
+        "CounterEvidence"
+      ],
+      "owns": [
+        "constitutional-compiler/evidence/evidence-store.ts",
+        "constitutional-compiler/engines/counter-evidence-engine.ts"
+      ],
+      "specifications": [
+        "specs/evidence-graph"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\evidence\\intent-manifest.yaml",
+      "hash": "d6c06a501ffe185c8b0d629b336f5b398a373fe8b5e5b8642eb3d2427581435e"
+    },
+    {
+      "workflow_id": "2730bf60db86bf74",
+      "workflow_type": "diagnostics",
+      "authority": "DiagnosticAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "diagnostics.ruleengine_received",
+        "diagnostics.evidencestore_received"
+      ],
+      "event_outputs": [
+        "diagnostics.diagnostic_produced",
+        "diagnostics.violationreport_produced"
+      ],
+      "state_machine_ref": "diagnostics_state_machine",
+      "capability_requirements": [
+        "DiagnosticGeneration",
+        "ViolationReporting",
+        "SeverityClassification"
+      ],
+      "consumes": [
+        "RuleEngine",
+        "EvidenceStore"
+      ],
+      "produces": [
+        "Diagnostic",
+        "ViolationReport"
+      ],
+      "owns": [
+        "constitutional-compiler/diagnostics/constitutional-diagnostics.ts"
+      ],
+      "specifications": [
+        "specs/diagnostics"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\diagnostics\\intent-manifest.yaml",
+      "hash": "f097aa27d28f1f6ada678d8e89a69089510bc733c637ed05d6b08764366fca8d"
+    },
+    {
+      "workflow_id": "2b0561f1a1a8e265",
+      "workflow_type": "query",
+      "authority": "QueryAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "query.evidencestore_received",
+        "query.constitutionalir_received",
+        "query.ownershipengine_received"
+      ],
+      "event_outputs": [
+        "query.queryresult_produced"
+      ],
+      "state_machine_ref": "query_state_machine",
+      "capability_requirements": [
+        "ConstitutionalQuery",
+        "RelationshipQuery",
+        "StateQuery"
+      ],
+      "consumes": [
+        "EvidenceStore",
+        "ConstitutionalIR",
+        "OwnershipEngine"
+      ],
+      "produces": [
+        "QueryResult"
+      ],
+      "owns": [
+        "constitutional-compiler/query/constitutional-query-language.ts"
+      ],
+      "specifications": [
+        "specs/constitutional-query"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\query\\intent-manifest.yaml",
+      "hash": "3ce7ba201166a289a51fb32fcee9a169dfefb52fc7b4cb6a087638f776152f10"
+    },
+    {
+      "workflow_id": "2c56eb5e16e62b3d",
+      "workflow_type": "witness",
+      "authority": "WitnessAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "witness.canonicalhash_received",
+        "witness.merkletree_received"
+      ],
+      "event_outputs": [
+        "witness.witnessroot_produced",
+        "witness.replaycertificate_produced"
+      ],
+      "state_machine_ref": "witness_state_machine",
+      "capability_requirements": [
+        "WitnessGeneration",
+        "WitnessVerification",
+        "CertificateVerification"
+      ],
+      "consumes": [
+        "CanonicalHash",
+        "MerkleTree"
+      ],
+      "produces": [
+        "WitnessRoot",
+        "ReplayCertificate"
+      ],
+      "owns": [
+        "runtime/kernel/replay/witness_authority.ts"
+      ],
+      "specifications": [
+        "specs/replay-authority"
+      ],
+      "status": "fragmented",
+      "source_file": "intents\\witness\\intent-manifest.yaml",
+      "hash": "082665b33d848add4d61ccbf81652b63c6a5c8e2048c663bba6ea53da32887fe"
+    },
+    {
+      "workflow_id": "40cd9a75d5941f95",
+      "workflow_type": "scheduler",
+      "authority": "SchedulerAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "scheduler.identityauthority_received",
+        "scheduler.capabilityauthority_received"
+      ],
+      "event_outputs": [
+        "scheduler.schedule_produced",
+        "scheduler.dispatch_produced"
+      ],
+      "state_machine_ref": "scheduler_state_machine",
+      "capability_requirements": [
+        "WorkScheduling",
+        "DispatchRouting",
+        "ExecutionCoordination"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "CapabilityAuthority"
+      ],
+      "produces": [
+        "Schedule",
+        "Dispatch"
+      ],
+      "owns": [
+        "runtime/kernel/scheduler/ISchedulerAuthority.ts (interface only)",
+        "runtime/kernel/scheduler/artifact-router.ts",
+        "runtime/kernel/scheduler/artifact-dispatch.ts",
+        "runtime/kernel/scheduler/routing-policy.ts"
+      ],
+      "specifications": [
+        "specs/scheduler-authority"
+      ],
+      "status": "missing_implementation",
+      "source_file": "intents\\scheduler\\intent-manifest.yaml",
+      "hash": "c19c7568248304bcf460e0f31f0c10e1daee85262f6d45509050e4dd6a54999f"
+    },
+    {
+      "workflow_id": "4d7b5ec281675cb3",
+      "workflow_type": "rule-engine",
+      "authority": "RuleAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "rule-engine.ownershipengine_received",
+        "rule-engine.capabilityengine_received",
+        "rule-engine.constitutionalir_received"
+      ],
+      "event_outputs": [
+        "rule-engine.finding_produced",
+        "rule-engine.ruleviolation_produced",
+        "rule-engine.coveragereport_produced"
+      ],
+      "state_machine_ref": "rule-engine_state_machine",
+      "capability_requirements": [
+        "RuleExecution",
+        "RuleProvenance",
+        "RuleCoverage"
+      ],
+      "consumes": [
+        "OwnershipEngine",
+        "CapabilityEngine",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "Finding",
+        "RuleViolation",
+        "CoverageReport"
+      ],
+      "owns": [
+        "constitutional-compiler/rules/rule-executor.ts",
+        "constitutional-compiler/engines/rule-provenance-engine.ts",
+        "constitutional-compiler/coverage/rule-coverage.ts"
+      ],
+      "specifications": [
+        "specs/rule-engine"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\rule-engine\\intent-manifest.yaml",
+      "hash": "4ce888a563bcb765cb237585c095ad0d00cbe2cc605c11351a62acf2fef85fec"
+    },
+    {
+      "workflow_id": "875a63d9642659ae",
+      "workflow_type": "replay",
+      "authority": "ReplayAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "replay.schedulerauthority_received",
+        "replay.canonicalhash_received",
+        "replay.canonicaljson_received"
+      ],
+      "event_outputs": [
+        "replay.replaycertificate_produced",
+        "replay.witnessroot_produced",
+        "replay.replayresult_produced"
+      ],
+      "state_machine_ref": "replay_state_machine",
+      "capability_requirements": [
+        "ReplayTranscript",
+        "ReplayVerifier",
+        "ReplayWitness",
+        "ReplayExecution"
+      ],
+      "consumes": [
+        "SchedulerAuthority",
+        "CanonicalHash",
+        "CanonicalJson"
+      ],
+      "produces": [
+        "ReplayCertificate",
+        "WitnessRoot",
+        "ReplayResult"
+      ],
+      "owns": [
+        "runtime/kernel/replay/**"
+      ],
+      "specifications": [
+        "specs/replay-authority"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\replay\\intent-manifest.yaml",
+      "hash": "137a12ffda11ca3b44a6322375db0eac40a9418a8bfd2bce253d5ed0a5fe5c83"
+    },
+    {
+      "workflow_id": "8786dc519e17b1c7",
+      "workflow_type": "graph",
+      "authority": "(commodity — delegated)",
+      "version": "1.0.0",
+      "event_inputs": [
+        "graph.constitutionalir_received"
+      ],
+      "event_outputs": [
+        "graph.graphanalysis_produced"
+      ],
+      "state_machine_ref": "graph_state_machine",
+      "capability_requirements": [
+        "GraphStorage",
+        "GraphAlgorithms",
+        "GraphQuery"
+      ],
+      "consumes": [
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "GraphAnalysis"
+      ],
+      "owns": [
+        "constitutional-compiler/graph/graph-algorithms.ts (commodity)",
+        "constitutional-compiler/graph/graph-engine.ts (commodity)"
+      ],
+      "specifications": [
+        "specs/overlay-graph"
+      ],
+      "status": "commodity",
+      "source_file": "intents\\graph\\intent-manifest.yaml",
+      "hash": "b8ac044899a2d647b86fcc28e3335758327f8cf35ad18c90044477aef417b961"
+    },
+    {
+      "workflow_id": "9e65eba1d77a599f",
+      "workflow_type": "compiler",
+      "authority": "CompilerAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "compiler.all intent outputs_received"
+      ],
+      "event_outputs": [
+        "compiler.constitutionalproof_produced",
+        "compiler.architecturediff_produced"
+      ],
+      "state_machine_ref": "compiler_state_machine",
+      "capability_requirements": [
+        "PipelineOrchestration",
+        "IRManagement",
+        "AnalysisCoordination"
+      ],
+      "consumes": [
+        "All intent outputs"
+      ],
+      "produces": [
+        "ConstitutionalProof",
+        "ArchitectureDiff"
+      ],
+      "owns": [
+        "constitutional-compiler/pipeline/build-proof-pipeline.ts",
+        "constitutional-compiler/git/git-infrastructure.ts (commodity)"
+      ],
+      "specifications": [
+        "specs/constitutional-ir"
+      ],
+      "status": "partial",
+      "source_file": "intents\\compiler\\intent-manifest.yaml",
+      "hash": "149f7a3bd26156bfbe20a98e291cf31471bd09bb4b6c082ea5e65a997a0882ed"
+    },
+    {
+      "workflow_id": "cc28eae8e1b6920f",
+      "workflow_type": "constitutional-ir",
+      "authority": "ConstitutionalIRAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "constitutional-ir.(foundational — no dependencies)_received"
+      ],
+      "event_outputs": [
+        "constitutional-ir.canonicaleventenvelope_produced",
+        "constitutional-ir.canonicalobject_produced",
+        "constitutional-ir.replaycertificate_produced",
+        "constitutional-ir.merkletree_produced"
+      ],
+      "state_machine_ref": "constitutional-ir_state_machine",
+      "capability_requirements": [
+        "TypeDefinition",
+        "Serialization",
+        "Validation"
+      ],
+      "consumes": [
+        "(foundational — no dependencies)"
+      ],
+      "produces": [
+        "CanonicalEventEnvelope",
+        "CanonicalObject",
+        "ReplayCertificate",
+        "MerkleTree"
+      ],
+      "owns": [
+        "runtime/kernel/replay/ (CanonicalEventEnvelope, ReplayCertificate, MerkleTree)",
+        "runtime/kernel/identity/ (CanonicalObject)"
+      ],
+      "specifications": [
+        "specs/constitutional-ir"
+      ],
+      "status": "ratified",
+      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml",
+      "hash": "e2680c7cb45545ef1e8c0d2366b9a3ecd32bf02dc73e7e3ec6b341f3ec6db83b"
+    },
+    {
+      "workflow_id": "da6004ebbd90ca51",
+      "workflow_type": "parsing",
+      "authority": "(delegated to Tree-sitter)",
+      "version": "1.0.0",
+      "event_inputs": [
+        "parsing.sourcecode_received"
+      ],
+      "event_outputs": [
+        "parsing.cst (to semantic lowerer)_produced"
+      ],
+      "state_machine_ref": "parsing_state_machine",
+      "capability_requirements": [
+        "SourceParsing",
+        "CSTGeneration",
+        "LanguageDetection"
+      ],
+      "consumes": [
+        "SourceCode"
+      ],
+      "produces": [
+        "CST (to Semantic Lowerer)"
+      ],
+      "owns": [
+        "constitutional-compiler/frontends/typescript/ts-frontend.ts (to be deleted)"
+      ],
+      "specifications": [
+        "specs/parser-boundary"
+      ],
+      "status": "commodity",
+      "source_file": "intents\\parsing\\intent-manifest.yaml",
+      "hash": "57a30f4e17568bfbb0de70e7cca2e25d1eda20da1ac71be08d05799b36b5754e"
+    },
+    {
+      "workflow_id": "dd324c498fac83f0",
+      "workflow_type": "governance",
+      "authority": "GovernanceAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "governance.capabilityauthority_received",
+        "governance.identityauthority_received"
+      ],
+      "event_outputs": [
+        "governance.governancedecision_produced",
+        "governance.policycompliance_produced"
+      ],
+      "state_machine_ref": "governance_state_machine",
+      "capability_requirements": [
+        "ConstitutionalRuleEnforcement",
+        "PolicyEvaluation",
+        "AuthorityRouting"
+      ],
+      "consumes": [
+        "CapabilityAuthority",
+        "IdentityAuthority"
+      ],
+      "produces": [
+        "GovernanceDecision",
+        "PolicyCompliance"
+      ],
+      "owns": [
+        "runtime/kernel/governance/IGovernanceAuthority.ts"
+      ],
+      "specifications": [
+        "specs/governance-engine"
+      ],
+      "status": "missing_implementation",
+      "source_file": "intents\\governance\\intent-manifest.yaml",
+      "hash": "521c1a65eaa6dc0bcc80122ee9f49ac75984bc8d5f03afa490a1e4d7b2dd8d42"
+    },
+    {
+      "workflow_id": "e6c6ba83d8e6d041",
+      "workflow_type": "capability",
+      "authority": "CapabilityAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "capability.identityauthority_received",
+        "capability.constitutionalir_received"
+      ],
+      "event_outputs": [
+        "capability.capabilitychain_produced",
+        "capability.capabilitymap_produced"
+      ],
+      "state_machine_ref": "capability_state_machine",
+      "capability_requirements": [
+        "CapabilityResolution",
+        "CapabilityVerification",
+        "CapabilityRegistry"
+      ],
+      "consumes": [
+        "IdentityAuthority",
+        "ConstitutionalIR"
+      ],
+      "produces": [
+        "CapabilityChain",
+        "CapabilityMap"
+      ],
+      "owns": [
+        "runtime/kernel/capability/ICapabilityAuthority.ts"
+      ],
+      "specifications": [
+        "specs/capability-engine"
+      ],
+      "status": "missing_implementation",
+      "source_file": "intents\\capability\\intent-manifest.yaml",
+      "hash": "d217cb4f872d31d1c8e5d9b91da6590bbaa8b378f3db8a88e59cbaabafb24b95"
+    },
+    {
+      "workflow_id": "eb6136fac62a3b5f",
+      "workflow_type": "hashing",
+      "authority": "CanonicalHashAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "hashing.constitutionalir_received",
+        "hashing.canonicaljson_received"
+      ],
+      "event_outputs": [
+        "hashing.canonicalhash_produced",
+        "hashing.witnessroot_produced",
+        "hashing.replaycertificate_produced"
+      ],
+      "state_machine_ref": "hashing_state_machine",
+      "capability_requirements": [
+        "CanonicalSHA256",
+        "CanonicalJSON",
+        "DomainSeparatedHashing",
+        "HashRouting"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "CanonicalJson"
+      ],
+      "produces": [
+        "CanonicalHash",
+        "WitnessRoot",
+        "ReplayCertificate"
+      ],
+      "owns": [
+        "runtime/kernel/witness/certificate_authority.ts",
+        "runtime/kernel/witness/canonical_hash_authority.ts",
+        "runtime/kernel/replay/canonical_json.ts",
+        "runtime/kernel/replay/merkle_tree.ts (call site — delegates correctly)"
+      ],
+      "specifications": [
+        "specs/hash-authority"
+      ],
+      "status": "missing_package",
+      "source_file": "intents\\hashing\\intent-manifest.yaml",
+      "hash": "cdd3544be12035dd339a95c8a9c6a6709ec3a7b8cae4c26281f803bb4405962d"
+    },
+    {
+      "workflow_id": "f5767c69090b12e5",
+      "workflow_type": "identity",
+      "authority": "CanonicalIdentityService",
+      "version": "1.0.0",
+      "event_inputs": [
+        "identity.canonicalhash_received"
+      ],
+      "event_outputs": [
+        "identity.canonicalidentity_produced",
+        "identity.symbolid_produced"
+      ],
+      "state_machine_ref": "identity_state_machine",
+      "capability_requirements": [
+        "IdentityGeneration",
+        "IdentityVerification",
+        "IdentityRegistry"
+      ],
+      "consumes": [
+        "CanonicalHash"
+      ],
+      "produces": [
+        "CanonicalIdentity",
+        "SymbolID"
+      ],
+      "owns": [
+        "runtime/kernel/identity/canonical-identity-service.ts"
+      ],
+      "specifications": [
+        "specs/identity-authority"
+      ],
+      "status": "fragmented",
+      "source_file": "intents\\identity\\intent-manifest.yaml",
+      "hash": "6563bd8200b9b0f28526f9a873471b3da35c0cfb564211a8de8e17bba5c95fd0"
+    },
+    {
+      "workflow_id": "f5a12b6e50e4b087",
+      "workflow_type": "ownership",
+      "authority": "OwnershipAuthority",
+      "version": "1.0.0",
+      "event_inputs": [
+        "ownership.constitutionalir_received",
+        "ownership.semanticir_received"
+      ],
+      "event_outputs": [
+        "ownership.ownershipmap_produced",
+        "ownership.dependencygraph_produced"
+      ],
+      "state_machine_ref": "ownership_state_machine",
+      "capability_requirements": [
+        "OwnershipResolution",
+        "OwnershipVerification",
+        "DependencyAnalysis"
+      ],
+      "consumes": [
+        "ConstitutionalIR",
+        "SemanticIR"
+      ],
+      "produces": [
+        "OwnershipMap",
+        "DependencyGraph"
+      ],
+      "owns": [
+        "constitutional-compiler/engines/ownership-engine.ts"
+      ],
+      "specifications": [
+        "specs/ownership-engine"
+      ],
+      "status": "implemented",
+      "source_file": "intents\\ownership\\intent-manifest.yaml",
+      "hash": "f0ca655a0bcfb61107d6f3c66c9e26d8b92c81ea5888f79099aafbb505cc1906"
+    }
+  ]
+}

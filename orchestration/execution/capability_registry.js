@@ -4,6 +4,22 @@ const path = require('path');
 
 const REGISTRY_FILE = path.join(__dirname, 'capability_registry.json');
 
+// Generated from capability_registry.json — single source of truth for valid capabilities
+const _generatedCapabilities = (() => {
+  const registryPath = path.join(__dirname, '..', '..', 'gateway', 'generated', 'capability_registry.json');
+  try {
+    const registry = require(registryPath);
+    const names = new Set();
+    for (const cap of registry.capabilities) {
+      names.add(cap.name);
+    }
+    return names;
+  } catch (e) {
+    console.error('[CapabilityRegistry] Failed to load generated capabilities:', e.message);
+    return new Set();
+  }
+})();
+
 class CapabilityRegistry {
   constructor() {
     this._workers = new Map();
@@ -12,6 +28,12 @@ class CapabilityRegistry {
   }
 
   registerWorker(id, metadata) {
+    const capabilities = metadata.capabilities || [];
+    const unknown = capabilities.filter(c => _generatedCapabilities.size > 0 && !_generatedCapabilities.has(c));
+    if (unknown.length > 0) {
+      console.warn(`[CapabilityRegistry] Worker ${id} has capabilities not in generated registry: ${unknown.join(', ')}`);
+    }
+
     const worker = {
       id,
       model: metadata.model || 'unknown',
@@ -199,6 +221,15 @@ class CapabilityRegistry {
     return this._capabilityIndex.has(capability) && this._capabilityIndex.get(capability).length > 0;
   }
 
+  validateCapability(capability) {
+    if (_generatedCapabilities.size === 0) return true;
+    return _generatedCapabilities.has(capability);
+  }
+
+  listGeneratedCapabilities() {
+    return Array.from(_generatedCapabilities).sort();
+  }
+
   listAllCapabilities() {
     const caps = new Set();
     for (const worker of this._workers.values()) {
@@ -278,4 +309,4 @@ class CapabilityRegistry {
   }
 }
 
-module.exports = { CapabilityRegistry };
+module.exports = { CapabilityRegistry, validateCapability: (cap) => _generatedCapabilities.size === 0 || _generatedCapabilities.has(cap) };

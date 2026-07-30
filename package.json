@@ -10,5 +10,8 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "test:constitutional-pipeline": "node test/run_constitutional_pipeline.js"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
   }
 }

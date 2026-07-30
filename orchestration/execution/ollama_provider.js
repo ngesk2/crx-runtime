@@ -1,6 +1,14 @@
 const http = require('http');
+const path = require('path');
 
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+
+// Generated from capability_registry.json — single source of truth
+const _modelMappings = (() => {
+  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'capability_registry.json'));
+  if (!registry.model_mappings) throw new Error('[OllamaProvider] model_mappings not found in capability_registry.json');
+  return registry.model_mappings;
+})();
 
 class OllamaProvider {
   constructor(capabilityRegistry, workerStateMachine) {
@@ -16,10 +24,11 @@ class OllamaProvider {
 
     for (const model of models) {
       const workerId = `ollama:${model.name}`;
-      const capabilities = this._inferCapabilities(model);
-      const contextWindow = this._inferContextWindow(model);
+      const mapping = this._resolveMapping(model);
+      const capabilities = mapping.capabilities;
+      const contextWindow = mapping.context_window;
 
-      const specialization = this._inferSpecialization(model);
+      const specialization = mapping.specialization;
       const worker = {
         id: workerId,
         model: model.name,
@@ -30,8 +39,8 @@ class OllamaProvider {
         avgTokens: 0,
         avgConfidence: null,
         acceptanceRate: null,
-        replayCompatibility: model.name.includes('coder'),
-        maxLoad: model.name.includes('70b') ? 1 : model.name.includes('14b') ? 2 : 4,
+        replayCompatibility: mapping.replay_compatibility,
+        maxLoad: mapping.max_load,
         currentLoad: 0,
         qualityHistory: [],
         failurePatterns: []
@@ -48,30 +57,25 @@ class OllamaProvider {
 
   registerOpenCode() {
     const id = 'opencode:local';
-    const capabilities = [
-      'authority.audit.time', 'authority.audit.identity', 'authority.audit.hash',
-      'graph.audit.dependency', 'dead_code.analyze', 'replay.verify',
-      'documentation.generate', 'test.generate', 'certificate.generate',
-      'orchestration.plan', 'orchestration.review', 'orchestration.merge'
-    ];
+    const caps = _modelMappings.opencode;
 
     this._capabilities.registerWorker(id, {
       model: 'opencode-big-pickle',
-      capabilities,
-      specialization: 'orchestration',
-      contextWindow: 128000,
+      capabilities: caps.capabilities,
+      specialization: caps.specialization,
+      contextWindow: caps.context_window,
       avgLatency: 0,
       avgTokens: 0,
       avgConfidence: null,
       acceptanceRate: null,
-      replayCompatibility: true,
-      maxLoad: 10,
+      replayCompatibility: caps.replay_compatibility,
+      maxLoad: caps.max_load,
       currentLoad: 0,
       qualityHistory: [],
       failurePatterns: []
     });
 
-    this._workers.set(id, { id, model: 'opencode-big-pickle', capabilities });
+    this._workers.set(id, { id, model: 'opencode-big-pickle', capabilities: caps.capabilities });
     this._stateMachine.transition(id, 'idle');
     return id;
   }
@@ -185,43 +189,26 @@ class OllamaProvider {
     }
   }
 
-  _inferCapabilities(model) {
+  _resolveMapping(model) {
     const name = model.name.toLowerCase();
-    const caps = [];
-
-    if (name.includes('coder') || name.includes('codeqwen') || name.includes('deepseek')) {
-      caps.push('authority.audit.time', 'authority.audit.hash', 'authority.audit.identity');
-      caps.push('dead_code.analyze');
-      caps.push('replay.verify');
-      caps.push('test.generate');
+    for (const m of _modelMappings.provider_models) {
+      if (name.includes(m.pattern)) {
+        return {
+          capabilities: [...m.capabilities, ...(_modelMappings.fallback.capabilities || [])],
+          specialization: m.specialization,
+          context_window: m.context_window,
+          replay_compatibility: m.replay_compatibility,
+          max_load: m.max_load
+        };
+      }
     }
-
-    if (name.includes('qwen') || name.includes('deepseek') || name.includes('mixtral')) {
-      caps.push('documentation.generate');
-      caps.push('graph.audit.dependency');
-    }
-
-    caps.push('serialization.audit');
-    caps.push('certificate.generate');
-
-    return caps;
-  }
-
-  _inferSpecialization(model) {
-    const name = model.name.toLowerCase();
-    if (name.includes('coder') || name.includes('codeqwen')) return 'code_audit';
-    if (name.includes('deepseek')) return 'architecture';
-    if (name.includes('qwen')) return 'general_purpose';
-    if (name.includes('mixtral')) return 'analysis';
-    return 'general_purpose';
-  }
-
-  _inferContextWindow(model) {
-    const name = model.name.toLowerCase();
-    if (name.includes('128k') || name.includes('deepseek')) return 128000;
-    if (name.includes('32k') || name.includes('qwen')) return 32768;
-    if (name.includes('8k')) return 8192;
-    return 4096;
+    return {
+      capabilities: [...(_modelMappings.fallback.capabilities || [])],
+      specialization: _modelMappings.fallback.specialization,
+      context_window: _modelMappings.fallback.context_window,
+      replay_compatibility: _modelMappings.fallback.replay_compatibility,
+      max_load: _modelMappings.fallback.max_load
+    };
   }
 
   getWorker(id) {
