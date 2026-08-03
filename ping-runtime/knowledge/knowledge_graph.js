@@ -30,12 +30,18 @@ class KnowledgeGraph {
         label TEXT NOT NULL,
         data JSONB NOT NULL DEFAULT '{}',
         source_event_id VARCHAR(64),
+        namespace VARCHAR(255) NOT NULL DEFAULT 'core::system',
         confidence REAL DEFAULT 1.0,
+        status VARCHAR(50) NOT NULL DEFAULT 'candidate',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      ALTER TABLE knowledge_nodes ADD COLUMN IF NOT EXISTS namespace VARCHAR(255) NOT NULL DEFAULT 'core::system';
+      ALTER TABLE knowledge_nodes ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'candidate';
       CREATE INDEX IF NOT EXISTS idx_kn_type ON knowledge_nodes(node_type);
       CREATE INDEX IF NOT EXISTS idx_kn_entity ON knowledge_nodes(entity_type, entity_id);
+      CREATE INDEX IF NOT EXISTS idx_kn_namespace ON knowledge_nodes(namespace);
+      CREATE INDEX IF NOT EXISTS idx_kn_status ON knowledge_nodes(status);
 
       CREATE TABLE IF NOT EXISTS knowledge_edges (
         edge_id VARCHAR(255) PRIMARY KEY,
@@ -62,11 +68,13 @@ class KnowledgeGraph {
       .digest('hex').slice(0, 16);
 
     await this._pool.query(
-      `INSERT INTO knowledge_nodes (node_id, node_type, entity_type, entity_id, label, data, source_event_id, confidence)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (node_id) DO UPDATE SET data = $6, updated_at = NOW()`,
+      `INSERT INTO knowledge_nodes (node_id, node_type, entity_type, entity_id, label, data, source_event_id, namespace, confidence, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       ON CONFLICT (node_id) DO UPDATE SET data = $6, namespace = $8, status = $10, updated_at = NOW()`,
       [nodeId, nodeType, options.entityType || null, options.entityId || null,
-       label, JSON.stringify(data), options.sourceEventId || null, options.confidence || 1.0]
+       label, JSON.stringify(data), options.sourceEventId || null,
+       options.namespace || 'core::system', options.confidence || 1.0,
+       options.status || 'candidate']
     );
     return nodeId;
   }
@@ -108,6 +116,14 @@ class KnowledgeGraph {
     if (options.entityId) {
       sql += ` AND entity_id = $${idx++}`;
       params.push(options.entityId);
+    }
+    if (options.namespace) {
+      sql += ` AND namespace = $${idx++}`;
+      params.push(options.namespace);
+    }
+    if (options.status) {
+      sql += ` AND status = $${idx++}`;
+      params.push(options.status);
     }
     if (options.search) {
       sql += ` AND (label ILIKE $${idx} OR data::text ILIKE $${idx})`;

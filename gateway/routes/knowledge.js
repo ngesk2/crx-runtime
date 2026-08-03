@@ -23,6 +23,8 @@ function createKnowledgeRoutes(knowledgeGraph) {
         nodeType: req.query.type,
         entityType: req.query.entityType,
         entityId: req.query.entityId,
+        namespace: req.query.namespace,
+        status: req.query.status,
         search: req.query.q,
         limit: parseInt(req.query.limit) || 50,
       });
@@ -35,8 +37,8 @@ function createKnowledgeRoutes(knowledgeGraph) {
   // Add a node
   router.post('/nodes', async (req, res) => {
     try {
-      const { nodeType, label, data, entityType, entityId } = req.body;
-      const nodeId = await knowledgeGraph.addNode(nodeType, label, data, { entityType, entityId });
+      const { nodeType, label, data, entityType, entityId, namespace, status, confidence } = req.body;
+      const nodeId = await knowledgeGraph.addNode(nodeType, label, data, { entityType, entityId, namespace, status, confidence });
       res.json({ status: 'ok', nodeId });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });

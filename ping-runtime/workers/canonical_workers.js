@@ -30,7 +30,14 @@ class BaseWorker {
     if (!this._eventRuntime) {
       throw new Error(`${this._name}: no EventRuntime — cannot emit ${eventType}`);
     }
-    const result = await this._eventRuntime.emit(eventType, this._name, payload, options);
+    // Preserve the namespace from the event that triggered this worker so the
+    // privacy boundary (core::system / core::owner / tenant::<id>) survives the
+    // full worker chain down to projection and knowledge graph.
+    const namespace = options.namespace || this._event?.namespace || 'core::system';
+    const result = await this._eventRuntime.emit(eventType, this._name, payload, {
+      ...options,
+      namespace,
+    });
     if (result.status !== 'ok') {
       throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
     }

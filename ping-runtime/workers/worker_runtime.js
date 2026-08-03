@@ -76,10 +76,15 @@ class WorkerRuntime {
           entry.running++;
           entry.status = 'processing';
           try {
+            // Track the current event on the worker so downstream emissions can
+            // preserve its namespace (privacy boundary) via BaseWorker._emit.
+            entry.worker._event = event;
             await entry.worker.handle(event);
+            entry.worker._event = null;
             entry.totalProcessed++;
             this._stats.completed++;
           } catch (err) {
+            entry.worker._event = null;
             entry.totalFailed++;
             this._stats.failed++;
             console.error(`[WorkerRuntime] Worker '${name}' failed:`, err.message);

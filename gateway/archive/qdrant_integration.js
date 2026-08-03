@@ -1,4 +1,10 @@
 /**
+ * [ARCHIVED 2026-08-03] — Dead TODO stub, never on the live path.
+ * Replacement: ping-runtime/search/qdrant_adapter.js (768-d Cosine,
+ * ensureCollection/upsert/search/health) + ping-runtime/embeddings/
+ * embedding_service.js (EmbeddingService.subscribe -> projectToQdrant).
+ * Kept for reference per Behavior Preservation Gate; do not wire.
+ *
  * Qdrant Integration
  * 
  * Ω.86.A — Constitutional Autonomous Analysis Runtime
