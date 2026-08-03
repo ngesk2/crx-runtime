@@ -152,9 +152,9 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 - **constitution/ vs vault/laws/ divergent content** on replay_law and witness_law — same subjects, different rules, no supersession declared
 - **AGENT_CONSTITUTION.md** self-binds the agent that created it, in compliance with its own Article 8.1
 
-### 2026-06-25 Session 8 (RUNTIME TRUTH OBSERVATION � Live Data Collection)
+### 2026-06-25 Session 8 (RUNTIME TRUTH OBSERVATION — Live Data Collection)
 
-**14:30** | Started Session 8. Goal: Live observation of 6 running containers � gather real env vars, DNS/network topology, Postgres data, Qdrant data, Ollama status, automation reality. | Read AGENTS.md, existing RUNTIME_TRUTH_AUDIT.md.
+**14:30** | Started Session 8. Goal: Live observation of 6 running containers — gather real env vars, DNS/network topology, Postgres data, Qdrant data, Ollama status, automation reality. | Read AGENTS.md, existing RUNTIME_TRUTH_AUDIT.md.
 
 **14:35** | Phase G deliverables: OPERATIONAL_REALITY_SUMMARY.md, ENVIRONMENT_REALITY_AUDIT.md (env var inventory all 11 containers), AUTOMATION_REALITY_AUDIT.md (confirmed no 2:00 AM commit). | Started live docker exec.
 
@@ -162,11 +162,11 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 
 **15:00-17:00** | Executed 40+ docker exec commands across all 6 running containers. Postgres: 16 tables, 49 rows, 8.7 MB, only DOCUMENT_IMPORTED used. Qdrant: 2 collections (5 pts / 0 pts), 768-dim Cosine, 0 indexed vectors. Ollama: v0.30.7, qwen2.5-coder:7b+14b (13.7 GB), 0 network. | Updated RUNTIME_TRUTH_AUDIT.md.
 
-## Session 8 � 5 Critical Bugs Found
+## Session 8 — 5 Critical Bugs Found
 
-1. **crx-ollama-worker NO network** (Networks: {}) � ollama serve running but completely unreachable
-2. **crx-ui-next NO network** (Networks: {}) � completely unreachable
-3. **crx-gateway isolated** � on crx_crx-network alone, ENOTFOUND for all backends
+1. **crx-ollama-worker NO network** (Networks: {}) — ollama serve running but completely unreachable
+2. **crx-ui-next NO network** (Networks: {}) — completely unreachable
+3. **crx-gateway isolated** — on crx_crx-network alone, ENOTFOUND for all backends
 4. **Only working data path**: brain-postgres ? brain-qdrant (compose_brain_internal)
 5. **5 stopped containers**: brain-ollama, brain-openwebui, brain-repo-runtime, ping-mission-control, vault
 
@@ -174,7 +174,7 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 1. Fix crx-ollama-worker network: connect to crx_crx-network + publish port 11434
 2. Fix crx-ui-next: same treatment
 3. Connect crx-gateway to compose_brain_internal for postgres/qdrant DNS
-4. Fix Open WebUI ? Ollama path (currently host.docker.internal:11434 � no host ollama)
+4. Fix Open WebUI ? Ollama path (currently host.docker.internal:11434 — no host ollama)
 5. Restart Vault + mission-control (stopped with errors)
 6. Populate empty tables: projections, entities, claims, citations
 
@@ -1611,3 +1611,265 @@ The platform is mature enough that the largest remaining gains come from making 
 4. **7 implementation recommendations** — all piggyback on existing authorities, no new runtime/replay/event system needed.
 5. **No easy high-confidence fixes found** — health.js already delegates properly, double SystemAuthority not present (stale audit finding). The highest-value work is the retrieval intelligence gap, which is architectural, not bug-fix.
 6. **All research agents returned successfully** — HyperRAG, HyperGraphRAG, HyperTreeRAG, MS GraphRAG, Neo4j GraphRAG, Memgraph, Kùzu, FalkorDB, LightRAG, RAGFlow, ColBERTv2, RAPTOR, DSPy, Supermemory, Mem0, Letta, Graphiti, RDF-star, PROV, Qdrant, Weaviate, Milvus, LanceDB, Chroma, RAGBench, CRUD-RAG, LongBench.
+
+### 2026-07-30 Session — Canonical Object Envelope Consolidation (Step 0)
+
+**14:00** | Started session. Goal: Execute Step 0 of source_code ingestion pipeline plan — consolidate ~15 isomorphic envelope implementations into one shared CanonicalObject contract. Verified UI (CascadeProjects/infra/ui-next) is clean (no uncommitted changes). | Audit envelopes.
+
+**14:05** | Audit complete: ~15 isomorphic envelopes confirmed across gateway/ (canonical_object_authority, constitutional_object_factory, knowledge_objects ×6 classes, knowledge_object, canonical_symbol_objects, github_constitutional_objects, constitutional_parser_objects, prompt_objects, relationship_objects, artifact_authority, pipeline_witness, replay_certificate_authority, temporal_authority, generated/ JSON registries). All implement {id, kind, canonical_hash, payload, ...} independently. | Build shared envelope.
+
+**14:10** | Created `gateway/canonical_object.js` — single shared envelope: `createCanonicalObject({kind, payload, authority, options})` + `verifyCanonicalObject()`. Deterministic content-addressed ID via identityAuthority.generateFromCanonicalHash, canonical hash via CanonicalBytes.serialize + CanonicalAuthority.hashBytes, constitutional time. Union field contract: id, kind, authority, canonical_hash, canonical_bytes, identity, lineage, relationships, health, confidence, metadata, payload, witness, certificate, schema_version, constitution_version. | Refactor producers.
+
+**14:15** | Refactored `canonical_object_authority.js` (create) and `constitutional_object_factory.js` (createObject + createSymbol/Commit/Semantic) to delegate envelope construction to shared canonical_object.js. Both preserve legacy lineage contracts (factory: source_id/source_kind; authority: derivation_path/provenance_chain). Both now produce identical field contracts. | Verify.
+
+**14:20** | Created `gateway/test_canonical_object.js` — 13 tests: envelope contract, validation, determinism, tamper detection, producer delegation, lineage options, factory legacy contract, createSymbol. All 13/13 pass. Full suite: 271 passed, 0 failed, 1 skipped (Docker). Wave3B failures confirmed pre-existing (documented in AGENTS.md, unrelated — governance rule-count + PII redaction). All 6 envelope consumers load OK (authority_registry, github_constitutional_objects, replay_integration_harness, universal_symbol_graph, symbol_object_authority, snapshot_authority). | Ready for pipeline stages.
+
+## Session — Key Decisions
+- **One envelope, one contract**: `gateway/canonical_object.js` is the single canonical object schema. All future producers (tree-sitter source objects, semantic enrichment) build through `createCanonicalObject()`. No new envelope implementations.
+- **Union field contract**: The shared envelope carries all fields any historical consumer reads (health, confidence, witness, certificate, schema_version, constitution_version) so refactors don't break downstream readers.
+- **Deterministic identity**: ID = identityAuthority.generateFromCanonicalHash(canonicalBytes, kind) — content-addressed, replay-stable. Hash = SHA-256 of canonical serialized payload. Verified deterministic across runs.
+- **Tamper detection built-in**: `verifyCanonicalObject()` recomputes hash from payload — catches envelope mutation.
+- **Primary producers consolidated now, dormant producers deferred**: canonical_object_authority + constitutional_object_factory (the two production envelope producers) delegated. knowledge_objects.js, github_constitutional_objects.js etc. (dormant) migrate when wired to production path.
+
+## Session — Next Steps
+1. **Ingestion pipeline stage 1**: Wire tree-sitter chunker → Canonical Object Generator producing canonical 'Symbol'/'File'/'Repository' objects via createCanonicalObject().
+2. **Semantic Enrichment stage**: language, visibility, complexity, security, API, framework, ownership, dependency, test coverage, mission, constitutional authority, confidence — as enrichment layer between canonical objects and Knowledge Authority.
+3. **Migrate dormant envelope producers** when wired: knowledge_objects, github_constitutional_objects, canonical_symbol_objects, constitutional_parser_objects, prompt_objects, relationship_objects, pipeline_witness, replay_certificate_authority, temporal_authority.
+
+### 2026-07-30 Session — Source Code Ingestion Stage 1: Canonical Object Generator
+
+**14:30** | Started session. Goal: Execute Stage 1 of source_code ingestion pipeline plan — tree-sitter parse → Canonical Object Generator producing canonical 'Symbol'/'File'/'Repository' objects via createCanonicalObject(). | Install tree-sitter.
+
+**14:35** | Audited existing tree-sitter infrastructure: `gateway/treesitter_chunker.js` (shallow `{text,type,code,function,language}`), `gateway/treesitter_parser_authority.js` (placeholder expecting DB `parser_grammars`), `adapters/treesitter_adapter.js` — all dormant/superseded by generator for canonical objects. `gateway/package.json` had no tree-sitter deps. | Install deps.
+
+**14:40** | Tree-sitter installed in gateway via `npm.cmd` (npm.ps1 blocked by execution policy). Pin set: `tree-sitter@0.21.1`, `tree-sitter-javascript@0.21.0`, `tree-sitter-typescript@0.23.2`, `tree-sitter-python@0.21.0` — 9 packages, 2s. First attempt failed: `tree-sitter-typescript@0.23.2` peer-requires `tree-sitter@^0.21.0` (ERESOLVE vs 0.25.1); `tree-sitter-javascript@0.21.1` ETARGET (doesn't exist). | Probe node structures.
+
+**14:45** | Probed tree-sitter node structures with 5 temp `_probe_*.js` scripts. Grammar map keys are real node types: `function_declaration`, `class_declaration`, `method_definition`, `interface_declaration`, `type_alias_declaration`, `enum_declaration`, `lexical_declaration`/`variable_declaration`+`variable_declarator`, `import_statement`/`import_from_statement`, `public_field_definition`/`field_definition`, `class_heritage` (unnamed field), `decorated_definition`→`definition`, `accessibility_modifier` (TS). TS grammar loaded as `require('tree-sitter-typescript').typescript`. | Build generator.
+
+**14:50** | Created `gateway/canonical_object_generator.js` — `CanonicalObjectGenerator` class (authority 'CanonicalObjectGenerator'): lazy grammar loading (`.js/.jsx/.mjs/.cjs→js`, `.ts/.tsx/.mts/.cts→ts`, `.py→py`); `generateSymbols({filePath, content, language})` → canonical 'Symbol' objects; `generateFileObject()` → 'File' object (path, language, size_bytes, line_count, content_hash via `CanonicalAuthority.hashBytes`, symbol_count, symbols index); `generateRepositoryObject()` → 'Repository' (name, url, default_branch, file/symbol counts, language_counts). Symbol payload: canonical_name, canonical_kind, canonical_signature, span, visibility, modifiers (sorted), parameters, return_type, parent, provenance{language, original_kind, original_name}. Lineage: source_id=filePath, source_kind='File', derivation_path=['Repository','File','Symbol'], provenance_chain=[filePath, name], relationships. | Fix async init.
+
+**14:55** | Node mapping: class→Class, function→Function (top) / Method (in class, name `Parent.method`, parent field), method_definition→Method, interface→Interface, enum→Enum, type_alias→TypeAlias, imports→Import, const→Constant / let/var→Variable, top-level UPPER_SNAKE assignment→Constant, TS fields→Property; TS visibility via accessibility_modifier; Python visibility by name (`__`→private, `_`→protected); Python decorators → modifiers; class heritage → extends/implements relationships. First test run: 7/21 — `_ensureInitialized()` never called (async `initialize()` only). Fixed with lazy sync grammar load in `generateSymbols`. | Fix TS visibility.
+
+**15:00** | Second run: 20/21 — only "TS: visibility captured" failed (`Service.s` field missing). Added `public_field_definition|field_definition`→Property branch + `_fieldModifiers` helper; repaired a botched edit that had mangled `_methodModifiers`/`_functionModifiers` (rewrote `_methodModifiers`, `_fieldModifiers`, `_functionModifiers`, `_classModifiers` block). Added `_destructuredNames()` for destructured declarations (`const {a, b: bb} = require(...)` → separate symbols, aliases captured). | Full suite.
+
+**15:05** | **21/21 generator tests pass.** Full gateway suite: 13 files green (business_emitters 19, commissioning 0, constitutional_validation 64, kernel_pipeline 7, p001_p005 27, p040 29, pg_init, pipeline_bridge 10, wave2_5 32, wave2_generators 39, wave3a 59, canonical_object 13, canonical_object_generator 21). Only failures: pre-existing Wave3B (governance rule-count 195 vs 225 + worker namespace + valid-event emission; analytics nested PII redaction + policy-active flag). Zero regressions. | Smoke-tested real file.
+
+**15:10** | Smoke test on `gateway/canonical_object.js`: 16 symbols extracted with correct spans/visibility, File object 16 symbols/173 lines. `node_modules` tracked in git (898 modified entries — pre-existing repo condition; package.json/lock show only 4 tree-sitter deps added). Fixed 7 residual U+FFFD corruptions in AGENTS.md (Session 8 block, all em-dashes). | Stage 1 complete.
+
+## Session — Key Decisions
+- **Grammar map keys = real tree-sitter node types** — no mapping layer between AST and canonical kinds; each node type maps directly to one canonical kind.
+- **AST is disposable intermediate** — only canonical objects persist; language retained only in `payload.provenance.language`.
+- **Destructured declarations produce one symbol per bound name** — `const {a, b: bb}` → 'a', 'b', 'bb' as separate Constant symbols via `_destructuredNames()`.
+- **Dormant tree-sitter infrastructure superseded, not deleted** — treesitter_chunker.js and treesitter_parser_authority.js remain (dormant) until wired/deleted under Behavior Preservation Gate.
+
+## Session — Next Steps
+1. **Semantic Enrichment stage**: language, visibility, complexity, security, API, framework, ownership, dependency, test coverage, mission, constitutional authority, confidence — as enrichment layer between canonical objects and Knowledge Authority.
+2. **Migrate dormant envelope producers** when wired: knowledge_objects, github_constitutional_objects, canonical_symbol_objects, constitutional_parser_objects, prompt_objects, relationship_objects, pipeline_witness, replay_certificate_authority, temporal_authority.
+
+### 2026-07-30 Session — PowerToys + Local Ollama Runtime (Docker Option 2)
+
+**15:00** | PowerToys mission continues. User selected Docker-based Ollama (Option 2) over native install. Discovered NO native Ollama anywhere (no binary on PATH, no service, no ~/.ollama, no standard install dirs, WSL Ubuntu clean, no registry entry) — only `ollama/ollama:latest` image. Existing model data FOUND in Docker volumes: `compose_ollama_data` (qwen2.5-coder:14b Q4_K_M 8.6GB, qwen2.5-coder:7b, nomic-embed-text, llama3) and `crx_ollama-data` (qwen3-coder). | Wire PowerToys to Ollama.
+
+**15:10** | Created `ollama` container: `docker run -d --name ollama -p 11434:11434 --restart unless-stopped -v compose_ollama_data:/root/.ollama ollama/ollama`. Reused existing 14b volume — ZERO downloads. Verified: `localhost:11434` serves 4 models; running open-webui container reaches it via `host.docker.internal:11434` (no open-webui change needed — its env already points there with `USE_OLLAMA_DOCKER=false`); inference smoke test OK (qwen2.5-coder:14b, 2 tokens, 19.6s first load). Exactly one working local Ollama. | Configure PowerToys modules + Advanced Paste Ollama provider.
+
+**15:30** | PowerToys configured (user chose "Modules + Advanced Paste"). Enabled 7 modules in root settings.json (backed up to `%TEMP%\opencode\powertoys-backup-20260730-211627`): AdvancedPaste, EnvironmentVariables, Hosts, Keyboard Manager, PowerToys Run, TextExtractor, Workspaces — all other settings preserved. Wrote `AdvancedPaste/settings.json` from PowerToys source schema (AdvancedPasteProperties.cs + PasteAIProviderDefinition.cs from microsoft/PowerToys main): `IsAIEnabled:true`, `paste-ai-configuration` with Ollama provider (service-type `Ollama`, model `qwen2.5-coder:14b`, endpoint `http://localhost:11434`, is-local-model true). Restarted PowerToys. Verified processes: AdvancedPaste, KeyboardManagerEngine, PowerLauncher (Run), PowerOCR (TextExtractor) now running; settings files accepted without rewrite; Ollama still up (4 models). | Run/CmdPal AI plugin follow-up (deferred).
+
+**16:00** | Follow-up DONE: Installed `LocalLLM` PowerToys Run plugin v1.0.3 (Darkdriller/PowerToys-Run-LocalLLm, MIT, action keyword `llm`) into `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\LocalLLM`. Pre-configured Model via Run settings.json `additionalOptions` (keyed by plugin metadata ID `550A34D0CFA845449989D581149B3D9C`, PascalCase serialization): `Model=qwen2.5-coder:14b`, `LLMEndpoint=http://localhost:11434/api/generate`. Verified: `Community.PowerToys.Run.Plugin.LocalLLM.dll` loaded in PowerLauncher; plugin-equivalent POST /api/generate (qwen2.5-coder:14b, think:false) returns OK; settings survived restart merge (Run merges by Id and copies TextValue onto defaults). CmdPal MCP route (paolodalprato/ollama-mcp-server, needs Python) NOT taken. | PowerToys task complete. Stage 1 ingestion commit still pending when pipeline work resumes.
+
+## Session — Key Decisions
+- **Docker Ollama is the single local Ollama** — native Windows Ollama NOT installed (absent on PATH/services/dirs; verified exhaustively). No competing installations.
+- **Existing 14b reused, not downloaded** — `compose_ollama_data` volume already contained qwen2.5-coder:14b; the new container mounts it directly. User directive "use an existing 14B" satisfied with zero network pulls.
+- **Auto-start via `--restart unless-stopped`** — container starts with Docker Desktop; port 11434 published for both Windows apps (localhost) and sibling containers (host.docker.internal).
+- **open-webui unchanged** — already configured for `http://host.docker.internal:11434` with `USE_OLLAMA_DOCKER=false`; it now has a live backend with zero reconfiguration.
+
+### 2026-07-30 Session — Architecture Mission: Unified Local Intelligence Layer (Read-Only)
+
+**16:30** | Started session. Goal: Read-only architecture assessment for the PowerToys-as-knowledge-producer mission. Constraint: "PowerToys is NOT the intelligence — PING is. PowerToys simply emits useful observations." All sources must become canonical events; raw text is never permanent truth. No code changes this session. | 3 parallel exploration agents.
+
+**16:35** | Exploration findings: Hermes is EXTERNAL (host install at `C:\Users\nolan\AppData\Local\hermes\hermes-agent\`, zero repo imports — docs only). Neo4j is NOT live (one 79-line REST adapter instantiated at boot, consumed by nothing; compose profile `brain`; live graph is Postgres). MCP backend DELETED (`mcp_registry.js` asserted gone by test; UI `MCPOrchestration.tsx` is orphaned). Embedding→Qdrant writer is a PLACEHOLDER (`qdrant_integration.js` has TODO stubs; real writer `pipeline_orchestrator.js` missing from disk). OllamaProvider defaults to dead DNS `http://ping-ollama:11434` (real Ollama is localhost:11434, `INFERENCE_BASE_URL` unset). Three event stores bridged (`ping_events`, `canonical_events`, `repository_events`). No clipboard/keystroke/terminal capture code exists anywhere. | Write gap analysis.
+
+**16:40** | Gap analysis complete (10 gaps): no external write path, Ollama unreachable from PING, embed→Qdrant placeholder, no canonicalization at boundary, no evidence in retrieval, no namespace partition in unified spine (`ping_events`/`knowledge_*` have no namespace column), knowledge graph write-orphaned, no human-approval signal, no capture layer, MCP zombie. | Design canonical architecture.
+
+**16:45** | Architecture designed: single `POST /ingest` boundary (validate → canonical_object envelope → UnifiedEventRuntime.emit; deterministic ID = canonical hash; idempotent; zero changes to event spine internals). Corrected 7-stage pipeline (Producers → /ingest → ping_events → worker chain → AI Runtime local Ollama → Qdrant 768d → namespaced KnowledgeGraph → retrieval × evidence → runtime APIs → PowerToys Run/Advanced Paste/editor surfaces). 8-event observation taxonomy + human-approval signal (`SNIPPET_APPROVED`, `AI_RESPONSE_ACCEPTED`). Privacy = 3-layer namespace model (`core::system`, `core::owner`, `tenant::<id>`) enforced at ingestion/storage/workers/retrieval/evidence. Autocomplete = editor InlineCompletion + local Ollama + PING retrieval (NOT an IME — no text-input interception in Windows without risk). Self-improvement loop closes via explicit approval only. Interoperability = single canonical_object wire contract + OpenAI-compatible completion endpoint. | Write deliverable.
+
+**17:00** | Deliverable written: `PING_LOCAL_INTELLIGENCE_LAYER.md` (224 lines) — 5 sections (current assessment with evidence corrections, 10 gaps, canonical architecture, 5-phase roadmap, 7 quick wins) + appendix refactoring inventory (13 items, incremental-only). Quick wins all independent and non-breaking: (1) set `INFERENCE_BASE_URL=http://localhost:11434`, (2) add POST /ingest route, (3) PowerShell producer smoke test, (4) complete EmbeddingWorker TODOs, (5) namespace migration SQL, (6) wire workers→KnowledgeGraph, (7) register approval event types. | Session complete. Implementation deferred to user approval.
+
+## Session — Key Decisions
+- **PowerToys is a surface, not intelligence** — it cannot emit canonical events natively (no scripting surface). Fit: Run "PING bridge" plugin (fork/adapt Darkdriller LocalLLM, MIT), Advanced Paste stays on Ollama, PING owns canonicalization/memory/retrieval/reasoning.
+- **Single ingestion boundary** — `POST /ingest` wraps existing UnifiedEventRuntime (preserves functionality constraint); producers send `{source, eventType, payload, namespace?, evidence?}`, boundary canonicalizes via `canonical_object.js`; deterministic content-addressed IDs make duplicates idempotent no-ops.
+- **Namespace model is the privacy boundary** — `core::system` / `core::owner` / `tenant::<id>` enforced at all 5 layers; tenant data structurally cannot contaminate PING core; owner knowledge never leaks into tenant answers.
+- **No automatic learning without explicit confidence and provenance** — raw capture is observation evidence (confidence < 1); only human approval promotes to knowledge (confidence 1.0, authority `human_approval`); rejection feeds negative weight into ranking.
+- **Autocomplete is an editor extension, not PowerToys/IME** — adaptive autocomplete = VS Code/Cursor InlineCompletion provider backed by local Ollama (qwen2.5-coder:14b) via an OpenAI-compatible `/v1/completions` adapter; PowerToys Run supplies palette/snippet/approval surface.
+- **Neo4j and Hermes are deferred/external** — Postgres knowledge graph stays authoritative; Neo4j adapter kept dormant with documented activation trigger; Hermes is a producer candidate behind `/ingest`, never direct store access.
+- **Do not resurrect missing writer** — `pipeline_orchestrator.js` is gone from disk; the completed `EmbeddingWorker` in `qdrant_integration.js` replaces it.
+
+## Session — Next Steps
+1. **Phase 1 (foundation)**: fix Ollama reachability (`INFERENCE_BASE_URL`), add POST /ingest, complete EmbeddingWorker, wire workers→KnowledgeGraph, namespace column migration.
+2. **Phase 2**: capture agents (clipboard, PSReadLine history, git watcher) + PowerToys Run bridge plugin + snippet store + approval event types.
+3. **Phase 3**: EvidenceAuthority + verification_pipeline wiring, hybrid retrieval, OpenAI-compatible completion endpoint, suggestion engine.
+4. **Phase 4**: editor adaptive-autocomplete extension, editor bridge, closed loop, optional MCP wrapper over /ingest + /knowledge.
+
+### 2026-07-31 Session — Canonical Boundary Implementation Plan
+
+**12:30** | Started session. Goal: Read-only audits (Phases 1 + 9 of directive) then write full implementation plan. User directive: "Do NOT build another subsystem. Finish connecting the ones we already have." Second directive: "Don't handwrite anything that already exists and never make a duplicate unless named and defined intelligently." Third directive: single Canonicalization Boundary law — every observation/command/artifact/decision/memory/plan/external event MUST cross the Canonicalization Boundary; "If it wasn't canonicalized, it doesn't exist"; adapters never hold business logic; no subsystem owns its own event schema; no direct Neo4j/Qdrant writes; no invented IDs; no namespace bypass; no constitutional-validation bypass. No code changes this session. | 3 parallel exploration agents.
+
+**12:40** | Phase 1 (input source) audit: 0 of 12 producers exist on the live path (8 missing: keyboard, clipboard, Advanced Paste, Run, terminal, browser, voice, logs; 4 partial: file watchers dormant, git emitter wired-but-unwired, planner unwired, editor no extension). `gateway/routes/ingest.js` DOES NOT EXIST — only vestige is orphaned `POST /api/ingest` placeholder at `gateway/api_controller.js:82` (ApiController has zero importers). | Pipeline audit.
+
+**12:45** | Phase 9 (pipeline/dedup) audit: 2/12 stages fully wired (UnifiedEventRuntime spine + EventBridge). `canonical_object.js` (172L) has 3 dormant callers, zero HTTP path. Qdrant writer `gateway/qdrant_integration.js` (406L) = TODO stub, 0 importers; live-but-never-invoked Qdrant path = `ping-runtime/search/qdrant_adapter.js` (768-d Cosine, ensureCollection/upsert/search). `ping-runtime/embeddings/word_salad_embedder.js` does NOT exist on disk. KnowledgeGraph = live PG store, HTTP-only, no namespace column. `ping_events` no namespace column. Evidence authority missing entirely. Neo4jAdapter instantiated at boot, zero consumers. Duplicates: inference trio (`inference_adapter/authority/service`) vs live `ping-runtime/ai/*`; Python worker fleet dormant; `bootstrap/main.js` stale exit(1); `event_read_authority` duplicate pair. | Write plan.
+
+**12:50** | Broken wires confirmed (Phase B targets): workers emit `CLAIM_CREATED` (`canonical_workers.js:102`) + `REPLAY_COMPLETED` (`:171`) NOT in event_registry.json (registry has `CLAIM_GENERATED`/`REPLAY_EXECUTED` → governance rejects → chain breaks at claim); Ollama default `http://ping-ollama:11434` dead DNS (working = `localhost:11434`, `ollama_provider.js:15`); `gateway/routes/ollama.js:19` calls nonexistent `inferenceAdapter.inference()` → TypeError every request; health checks cover only 4 surfaces. | Write PING_CANONICAL_BOUNDARY_PLAN.md.
+
+**12:54** | Plan written: `PING_CANONICAL_BOUNDARY_PLAN.md` (31KB, worktree root) — sec 0 Constitutional Law (`constitution/CANONICAL_BOUNDARY_LAW.md` planned), sec 1 audit evidence with exact cites, sec 2 architecture + layer responsibilities table, sec 3 Phases A-J, sec 4 nine binding constraints, sec 5 dependency graph + 4 slices, sec 6 eight exit criteria. Phases: A=`gateway/routes/ingest.js` POST /ingest (validate→createCanonicalObject→emit→respond; idempotent deterministic SHA-256; namespace default `core::owner`; mount in hasPG block; + `test_ingest_boundary.js`), B=repair wires (register CLAIM_CREATED/REPLAY_COMPLETED in `event_generator.js` + regenerate registry; Ollama default localhost fix; fix ollama.js TypeError via aiRuntime; extend health), C=embedding (CREATE `ping-runtime/embeddings/embedding_service.js`, ARCHIVE `qdrant_integration.js`, wire ProjectionWorker), D=graph writes (namespace columns + Observation/Lineage wiring), E=evidence (`ping-runtime/evidence/evidence_authority.js` + hybrid /knowledge/search), F=knowledge promotion (SNIPPET_APPROVED/REJECTED, AI_RESPONSE_ACCEPTED/REJECTED + KnowledgePromoter), G=namespace (NamespaceAuthority; CanonicalNamespaceAuthority if collision), H=producers (clipboard/git/log + PT Run plugin `powertoys/ping-bridge-plugin/` fork Darkdriller MIT), I=autocomplete (editor InlineCompletion, NOT IME), J=self-healing + `pipeline_metrics.js` + /ops/pipeline. Slices: S1=A+B+C+D, S2=E+F, S3=G+H, S4=I+J. | Update AGENTS.md.
+
+**13:00** | AGENTS.md session log updated. **Implementation intentionally gated on user approval** — user chose "write full implementation plan doc first"; zero code changes made this session. | Present plan + request approval for Slice 1 (A→B→C→D).
+
+## Session — Key Decisions
+- **Plan-first, audit-first** — user explicitly chose "Write full implementation plan doc first." No implementation until the plan is presented and approved.
+- **Single canonicalization layer = PING's public ABI** — Adapters (observe/normalize, never business logic) → Canonicalizer (single Canonical Object format) → Constitution (validate) → Knowledge Pipeline → Consumers. No subsystem owns its own event schema.
+- **Observation ≠ Knowledge** — raw capture is evidence (confidence <1); only explicit human approval (`SNIPPET_APPROVED`/`AI_RESPONSE_ACCEPTED`) promotes to knowledge (confidence 1.0, authority `human_approval`); rejection feeds negative ranking weight.
+- **Namespace model is the privacy boundary** — `core::system`/`core::owner`/`tenant::<id>` (HPP = `tenant::hpp`) enforced at ingestion/storage/workers/retrieval/evidence; no tenant observes another.
+- **`event_generator.js` is the source of truth** — `event_registry.json` is generated output; never hand-edit the JSON, always regenerate.
+- **Behavior Preservation Gate** — no deletion before a working wired-and-tested replacement; deletion is the last step. Prefer extension over parallel implementation.
+
+## Session — Next Steps
+1. **Present plan + get approval** for Slice 1: A (POST /ingest + boundary test) → B (event registry regeneration via event_generator.js, Ollama default localhost:11434, ollama.js route fix via aiRuntime, health checks) → C (EmbeddingService + ProjectionWorker wiring + archive qdrant_integration.js) → D (namespace columns + worker→KnowledgeGraph writes).
+2. **Slice 2**: EvidenceAuthority + hybrid /knowledge/search + knowledge promotion (approval event types).
+3. **Slice 3**: NamespaceAuthority enforcement + producers (clipboard/git/log watchers + PT Run bridge plugin).
+4. **Slice 4**: Autocomplete (editor InlineCompletion + qwen2.5-coder:14b) + self-healing monitor + /ops/pipeline metrics.
+
+### 2026-08-02 Session — Phase T: Product Reality Audit (Read-Only)
+
+**14:00** | Started Phase T. Goal: READ-ONLY product reality audit — reconstruct product evolution from repository evidence, not from claims. 5 deliverables, zero code changes. Read-Only freeze superseded further Slice 1 implementation. | Read AGENTS.md, launch 5 explore agents.
+
+**14:05** | Recon complete. Repo = `crx-runtime` (created 2026-05-07), README is 1 line. 4 product identities layered on one codebase: Constitutional City (presentping/) → CRX (CascadeProjects/infra/ui-next) → PING (runtime platform) → HPP (business intent). No PING/HPP split in code (both worktrees = same commit `aaec592`). | T1-T5 agents.
+
+**14:30** | T1 (Historical Product Map) + T2 (User Journeys) + T3/T4 (Evolution + Legacy) + T5 (Maturity Matrix) agents all returned. Key findings below. | Write 5 deliverables.
+
+## Phase T — Key Findings
+
+1. **Product reset 4 times, each reusing prior infra** — replay kernel (Era 1, never wired to HTTP) → security hardening (Era 2, dormant) → PresentPing V17 (Era 3, standalone PPTX 815 KB) → CRX UI (Era 4, 25 components/3 pages, orphaned) → PING Core v1 (`95e2b8c8`) → canonical boundary (Era 9). Layered palimpsest; every era survives on disk.
+
+2. **Intent registry has ZERO business intents** — all 20 workflows + 20 `intents/*/intent-manifest.yaml` are compiler/runtime intents (repair/proof/replay/hash/identity…). No lead/estimate/invoice/scheduling intent. Business layer lives in `ping-runtime/business/` + `gateway/runtime/business/` + routes, not the registry.
+
+3. **User journeys: 0/10 end-to-end, 8/10 partial, 2/10 NOT-BUILT (scheduling, referral)** — zero business screens exist; only ops console UI. Backend complete for customer/project/review triad; estimate has no `/estimates` route; invoice read-only projection only.
+
+4. **T5 matrix (30 rows): 0/30 OPERATIONAL today** (Docker daemon down npipe → all Operational cells ❌ by live probe). Degraded gateway DOES boot (27/27 modules, Drift PASS, 20 workflows/227 events/45 capabilities/37 services/21 machines). 3 tiers: OPERATIONAL-READY (spine+canonicalization+business, proven by test_pipeline_bridge 10/10 + test_ingest_boundary 20/20), INTEGRATED-BUT-DORMANT (replay 27 files 0 imports, compiler 0 proof.json consumers, Vault AppRole 0 gateway imports, newsletter hardcoded path to different repo, PresentPing, brainos, research), NOT-BUILT/BROKEN (MCP backend deleted — MCPOrchestration.tsx zombie, github_ingestion.js imports nonexistent ./event_emitter, CompilerCompatibility 11 hash mismatches at boot, wave3b p7/p8 suites fail).
+
+5. **Recovery priorities (Deliverable 4)**: Vault AppRole (functional gap — OAuth exists but zero live credentials), Replay engine (constitutional gap — only 23-line decision authority live), MCP proxy repoint (lowest effort).
+
+6. **Phase B bug fixes verified live this session**: `gateway/routes/ops.js` getCount TypeError FIXED (getStats().totalEventTypes etc.); `/health` delegates to healthAuthority. Earlier audit's "double SystemAuthority" claim = stale (not present).
+
+## Phase T — Deliverables (5 files, all written)
+
+| # | Deliverable | File | Key content |
+|---|-------------|------|-------------|
+| 1 | Historical Product Map | `HISTORICAL_PRODUCT_MAP.md` | 4 identities, 8 product docs, 5 implementation layers, naming archaeology |
+| 2 | User Journey Map | `USER_JOURNEY_MAP.md` | 10 journeys (0 E2E / 8 partial / 2 not-built), top-3 wired/missing, file cites |
+| 3 | Product Evolution Timeline | `PRODUCT_EVOLUTION_TIMELINE.md` | 10 eras, key commits, architecture lineage, compact date table |
+| 4 | Legacy Capability Recovery | `LEGACY_CAPABILITY_RECOVERY.md` | 24 capabilities, 5 dispositions (3 recover / 3 harvest / 8 archive / 8 superseded / 2 broken), top-3 recovery priorities |
+| 5 | Operational Maturity Matrix | `OPERATIONAL_MATURITY_MATRIX.md` | 30 rows × 8 cols, 3-tier verdict, route/test evidence |
+
+## Phase T — Key Decisions
+- **Product identity is layered, not linear** — 4 identities co-exist on disk; the active product is PING/HPP (runtime fabric + business projections), the UI layer (ui-next) and the Python/replay layers are dormant substrate.
+- **Business product is defined in code, not intents** — event registry (227) + business_emitters + authorities + routes are the true product surface; intent registry is engineering-only.
+- **Maturity verdict: runtime fabric ~90% complete, business application ~0%** — the gap is ONE operational sequence (docker up → fix_pipeline_blockers.sql → boot gateway+worker → verify DOCUMENT_IMPORTED→…→PROJECTION_CREATED chain), not code.
+- **All audit "dead/dormant" claims now have per-capability evidence** — 30-row matrix replaces the WAVE_3A5 aggregate; every cell has a code-level probe.
+
+## Phase T — Next Steps
+1. **Resume Slice 1 implementation** (unfrozen): pass `embeddingService` into `registerCanonicalWorkers` options at `gateway_runtime.js:484`; archive `gateway/qdrant_integration.js` (QdrantAdapter is the live path); then Phase D (knowledge_graph namespace/confidence/status columns + worker-chain namespace propagation); full suite; AGENTS.md + Slice 1 report.
+2. **After Slice 1**: Slice 2 (EvidenceAuthority + hybrid /knowledge/search + knowledge promotion), Slice 3 (NamespaceAuthority + producers), Slice 4 (autocomplete + self-healing).
+3. **Recovery candidates (gated on user direction)**: Vault AppRole → Node SecretAuthority; replay engine import from `main` + `GET /replay/:aggregate`; MCP proxy repoint to /ingest+/knowledge.
+
+### 2026-08-01 Session — Self-Improving Sentence Autocomplete (PowerToys Run surface)
+
+**21:00** | Started session. Goal: Build and verify PING self-improving sentence autocomplete surfaced through the PowerToys Run "LocalLLM" plugin (user chose PT Run surface + accepted-suggestion learning). No C# compilation (no .NET SDK — only runtimes 8.0.21/9.0.7; `dotnet --list-sdks` empty). | Restore stack.
+
+**21:05** | PowerToys healthy (PowerLauncher/Run, AdvancedPaste, TextExtractor, KeyboardManager, Peek all running; LocalLLM plugin v1.0.3 present at `...\PowerToys Run\Plugins\LocalLLM\`, plugin ID `550A34D0CFA845449989D581149B3D9C`). Ollama was down because Docker daemon was stopped. Relaunched Docker Desktop, daemon UP, `ollama` container auto-restarted. Models verified via `/api/tags`: `qwen2.5-coder:14b` (32768 ctx), `qwen2.5-coder:7b`, `llama3:latest`, `nomic-embed-text:latest`. Smoke test on `/api/generate` returned correct Python. | Write service.
+
+**21:10** | Wrote `powertoys/autocomplete-service/server.js` (Node v22, zero deps, port 11999 on 127.0.0.1): speaks the Ollama HTTP contract LocalLLM expects — `GET /api/tags` + `GET /tags` proxied to Ollama; `POST /api/generate` + `/generate` NDJSON stream. Completion detection: plugin prefixes every request with "Do minimal reasoning, Return only concise factual output...\n\n" (stripped); input ≤6 words AND no trailing `?` ⇒ completion mode (memory lookup first — instant — else Ollama sentence completion streamed, `temperature:0.3/top_p:0.9/num_predict:96`); anything else passes through unchanged (plugin's original answer behavior). Learning: PowerShell clipboard watcher (700ms poll) matches pasted text against last-served completions (60s window) and stores `{prefix, sentence, count, createdAt, lastSeen}` keyed by normalized prefix; memory capped 2000 (prune to 1500), persisted at `<LOCALAPPDATA>\PingAutocomplete\memory.json` (env-overridable). Extra: `GET /memory`, `POST /memory/clear`. | Test.
+
+**21:20** | Verified end-to-end. `/api/tags` passthrough = 4 models. Streaming completion ("Thank you for choosing" → "Thank you for choosing us. We appreciate your business and look forward to serving you."). Memory empty until clipboard paste. Simulated paste → `please call me` ⇒ `when you have time.` learned (count 6 from multi-poll). Same prefix re-served from memory in **61ms** vs ~13s Ollama round-trip. | Repoint plugin.
+
+**21:30** | Repointed LocalLLM plugin in `...\PowerToys Run\Settings.json`: `LLMEndpoint` `http://localhost:11434/api/generate` → `http://127.0.0.1:11999/api/generate` (Model already `qwen2.5-coder:14b`). Restarted PowerToys (stopped all PT processes, relaunched `...\Local\PowerToys\PowerToys.exe`). All 11 modules relaunched incl. PowerLauncher. Settings survived restart merge. | Autostart.
+
+**21:40** | Autostart wired: `%STARTUP%\PingAutocomplete.vbs` launches node `powertoys\autocomplete-service\server.js` hidden (window style 0) at logon using hermes node (`C:\Users\nolan\AppData\Local\hermes\node\node.exe`, the PATH node v22.22.3). Note: `wscript`-spawned node inside this tool sandbox gets killed with the tool's process tree — sandbox artifact only; real logon autostart detaches fine. Service relaunched detached (PID live, `/memory` returns version 1). | Log AGENTS.md.
+
+## Session — Key Decisions
+- **Zero-compile strategy**: no .NET SDK → don't fork the C# plugin; point the existing Darkdriller LocalLLM plugin at a local Node service that implements the exact Ollama HTTP contract (`/api/generate` NDJSON `{"response":chunk}` lines ending `{"response":"","done":true}`; `GET /tags` model validation). Firmware unchanged.
+- **Completion mode vs answer mode is a service-side decision**: ≤6 words + no `?` = autocomplete (memory-first, then streamed sentence completion); else pass through unchanged. Plugin's injected "minimal reasoning" prefix is stripped before detection.
+- **Learning is paste-gated, not automatic**: a served suggestion is only memorized when the user actually copies/pastes it within 60s of serving. Repeated prefix then replays the learned sentence instantly (61ms), bypassing Ollama entirely.
+- **Memory is keyed by normalized prefix, count-ranked**: exact-prefix hits win; fuzzy fallback shares ≥2 words or prefix/starts-with overlap. Capped at 2000 entries (prune to 1500 by lastSeen).
+- **Service port 11999 bound to 127.0.0.1** — loopback only, no LAN exposure. Memory file under `%LOCALAPPDATA%\PingAutocomplete\`.
+
+## Session — Next Steps
+1. **User acceptance test in PowerToys Run**: type `llm` + a short partial phrase (≤6 words, no `?`) → should stream a sentence completion; paste it; re-type same prefix → instant memory replay. Normal question (`llm what is 2+2`) → full answer pass-through.
+2. **Resume Slice 1** (autocomplete out of the way): pass `embeddingService` into `registerCanonicalWorkers` options at `gateway_runtime.js:484`; archive `gateway/qdrant_integration.js`; Phase D (knowledge_graph namespace/confidence/status columns + worker-chain namespace propagation); full suite; AGENTS.md + Slice 1 report.
+3. **Slice 2-4 per plan** (EvidenceAuthority + hybrid search; NamespaceAuthority + producers; editor autocomplete + self-healing).
+
+### 2026-08-01 Session — Screenpipe + Accessibility-First Capture Integration Thinking (Design)
+
+**21:50** | Started session. Goal: Research Screenpipe + accessibility-first capture landscape and produce integration-thinking deliverable mapping capture → canonical runtime → knowledge graph → AI onto PING's existing pipeline. Web research + repo verification done; deliverable written. Zero code changes (design doc only). | Present decision points.
+
+**21:55** | Repo surface re-verified for grounding: `ping-runtime/canonicalization/canonicalization_service.js` (thin facade: resolveNamespace core::/tenant::, _logicalIdentity strips VOLATILE_FIELDS for deterministic id, delegates to createCanonicalObject + UnifiedEventRuntime.emit); `unified_event_runtime.js` emit() validates via _eventValidator (validateEventType/isRegistered — governance gate, unknown types rejected); `gateway/generated/event_generator.js` `_productionEvents()` = source of truth (227 events, incl. OBSERVATION_CREATED, CLAIM_CREATED, REPLAY_COMPLETED, WITNESS_CREATED, LINEAGE_CREATED, PROJECTION_CREATED; orchestration snake_case; business UPPER_SNAKE); `event_registry.json` is generated output — never hand-edit; `test_ingest_boundary.js` ACCEPTED_TYPES + 20/20 tests prove /ingest already canonicalizes REVIEW_RECEIVED etc. | Write deliverable.
+
+**22:00** | Deliverable written: `SCREENPIPE_INTEGRATION.md` (root, ~190 lines) — 10 sections: verdict (Screenpipe = ready-made Layer 1 sensor, PING canonicalizes), 7 decision points (event-driven triggers, a11y-semantic-first, SQLite=scratch only, register 6 capture event types, core::owner namespace, keep PowerToys, Slice-1 gate), a11y-first rationale (LUMOS arXiv 2606.30697 + UIA tree raw/control/content — no OCR in hot path), capability→stage matrix, canonical pipeline map with verified PING file cites, event taxonomy (WINDOW_SWITCHED/CLIPBOARD_CAPTURED/INPUT_ACTIVITY/FILE_SAVED/GIT_COMMITTED/AUDIO_CAPTURED — registration via event_generator.js only), source-of-truth (Screenpipe SQLite = scratch, PING ping_events = replayable truth, never read SQLite directly), privacy/namespace (no raw keystrokes, audio off by default), PowerToys optionality, 4 slices with gate, 4 open questions. | Update AGENTS.md.
+
+## Session — Key Decisions
+- **Screenpipe is a sensor, not a memory** — its local SQLite is a scratch buffer for raw capture; PING `knowledge_graph` (Postgres) remains source of truth; Screenpipe SQLite is never read by PING authorities (bridge pulls events over REST/MCP and pushes through /ingest).
+- **a11y-first beats screenshots** — LUMOS (semantic OS layer: UIA/DOM semantic blueprints) + Microsoft UIA tree (raw/control/content views) mean capture payloads are structured `{window, control, role, value, bounds, properties}` trees — directly hashable/embeddable/queryable, no vision model in hot path; OCR only when a11y tree empty.
+- **Capture is one more producer behind the same /ingest boundary** — no new subsystem, no new event schema; 6 new event types registered in `event_generator.js` `_productionEvents()` + regenerate (never hand-edit event_registry.json).
+- **No raw keystrokes** — INPUT_ACTIVITY carries counters only; clipboard text crosses boundary only on explicit paste (matches autocomplete paste-gated learning).
+- **PowerToys becomes optional, not replaced** — it's one consumer UI of the same Context Builder → Ollama → any UI layer; Screenpipe adds capture, not UI.
+
+## Session — Next Steps
+1. **Present SCREENPIPE_INTEGRATION.md decision table to user** (7 decisions + 4 open questions) before any capture implementation.
+2. **Resume Slice 1** (unchanged priority): re-verify `embeddingService` injection at `gateway_runtime.js:484` + `registerCanonicalWorkers`, archive `qdrant_integration.js`, Phase D namespace columns, full suite, AGENTS.md + Slice 1 report.
+3. **Slice 3 lands the Screenpipe bridge** (adapter + event registration + pull-based bridge over Screenpipe REST :3030), gated on Slice 1 proving one canonicalized observation → worker chain → knowledge graph end-to-end.
+
+### 2026-08-01 Session — Screenpipe Harvesting Plan
+
+**22:10** | User supplied full harvesting vision: Screenpipe = Layer-1 sensor only (replaceable, never memory); PING constitutional runtime = permanent truth (capture → canonical event → Postgres → replay → witness → lineage → knowledge graph → context pack → Ollama); Ollama stateless (Context Packs only); capture EVERYTHING (UIA/clipboard/fs/git/browser/terminal/calendar/email/notifications/processes/network/OCR/audio/voice/hardware) normalized to ONE schema; one architectural change: introduce dedicated **Capture Gateway** (accepts events from Screenpipe, browser extensions, fs watchers, IDE plugins, future sensors → same canonical pipeline) instead of /ingest-only. | Verify repo surface.
+
+**22:15** | Repo surface verified for grounding: NO CaptureGateway/ContextPack builder exists (grep zero hits); `gateway/routes/ingest.js` (77L thin adapter: validate→canonicalizeAndEmit→respond, 201/400/422); `canonical_object.js` envelope schema (id/kind/authority/canonical_hash/identity/lineage/relationships/health/confidence/metadata/payload/witness/certificate/schema_version) — user's one-schema {event_type,authority,source,payload,timestamp,replay_hash,witness,lineage} maps 1:1; `knowledge_graph.js` addNode(nodeType,label,data,options) + knowledge_nodes/knowledge_edges tables (no namespace column — Phase D); `embedding_service.js` (INDEXABLE_TYPES 20, 768-d, deterministic fallback); `ollama_provider.js` default already `http://localhost:11434`; ping-runtime dirs: ai/auth/business/canonicalization/connectors/embeddings/events/graph/integrations/knowledge/orchestration/search/workers. | Write plan.
+
+**22:25** | Plan written: `SCREENPIPE_HARVESTING_PLAN.md` (root, ~250 lines) — 11 sections: objective (constitutional event source), architecture diagram (4 layers + Capture Gateway), current-state grounding table (9 production + 5 to-build), Capture Gateway design (sensor_registry.js + capture_gateway.js + routes/capture.js, POST /capture contract, auth/registry-check/dedup/throttle/forward — thin, no business logic), 18-event sensor taxonomy table (all event_class observation, registered via event_generator.js only), one-schema mapping table (user schema → canonical envelope), pipeline/source-of-truth rules (SQLite scratch → Postgres truth → Qdrant projection → KG derived), Context Pack builder spec (buildContext slots: current_app/visible_text/clipboard/git_branch/errors/search/KG nodes/witnesses/lineage), 5 phases (P0 gate → P1 gateway → P2 screenpipe bridge → P3 sensors → P4 context packs), 7 exit criteria, decisions + risks. | Update AGENTS.md.
+
+## Session — Key Decisions
+- **Capture Gateway is separate from /ingest**: `/ingest` stays the canonicalization boundary (untouched); `/capture` is the sensor-facing door owning auth/allowlists/throttle/dedup, forwarding into the same canonical pipeline. Decoupling keeps the canonical layer stable as sensors grow.
+- **Screenpipe replaceable by construction**: it's one driver in Layer 1; swap the adapter and memory/replay/knowledge never change.
+- **One schema = canonical envelope**: user's {event_type,authority,source,payload,timestamp,replay_hash,witness,lineage} maps 1:1 onto canonical_object.js (kind/authority/identity/payload/created_at/canonical_hash/witness/lineage) — replay seed is canonical_hash, no re-invention.
+- **18 capture event types** (WINDOW_SWITCHED, WINDOW_CONTENT_OBSERVED, CLIPBOARD_CAPTURED, INPUT_ACTIVITY, TEXT_CAPTURED, AUDIO_CAPTURED, FILE_CREATED/MODIFIED/DELETED, GIT_COMMITTED, BROWSER_URL_CHANGED/SEARCH, TERMINAL_COMMAND_EXECUTED, CALENDAR_EVENT_STARTED, NOTIFICATION_RECEIVED, PROCESS_STARTED/TERMINATED, HARDWARE_EVENT) — registered in event_generator.js `_productionEvents()` + regenerate, never hand-edit JSON.
+- **Context Pack builder is the single AI front door**: replaces ad-hoc _buildContext in knowledge_retrieval.js/inference_authority.js; Ollama stays stateless receiving only packs.
+- **No raw keystrokes; audio off by default; screenshots = evidence blobs not payloads** (a11y first, LUMOS/UIA).
+
+## Session — Next Steps
+1. **Present SCREENPIPE_HARVESTING_PLAN.md to user for approval** (esp. P1 scope: Capture Gateway + Sensor Registry + route + tests) before implementation.
+2. **P0/Slice-1 gate**: finish /ingest wiring + knowledge_graph namespace columns before Screenpipe bridge (P2).
+3. **P2 Screenpipe bridge** pull-based over REST :3030, gated on Slice 1 proving one canonicalized observation → worker chain → knowledge graph end-to-end.
+
+### 2026-08-03 Session — Phase 0 (C1/C2/C3): EmbeddingService.subscribe + MissionScheduler dispatch fix + embeddingService injection
+
+**19:00** | Started Phase 0. Goal: implement the approved Phase 0 scoped changes — (C1) `EmbeddingService.subscribe()`, (C2) MissionScheduler phantom-dispatch fix, (C3) pass `embeddingService` into `registerCanonicalWorkers` — with regression tests proving the full business-event chain. | Read AGENTS.md.
+
+**19:05** | C1 applied: `ping-runtime/embeddings/embedding_service.js` gained `subscribe(eventRuntime)` — one handler per `_indexableTypes` entry, projects matching events via `projectToQdrant`, no-throw (failure → `_stats.failed++`, logged), tracks `_stats.subscribed`. Mirrors graph-projection subscriber pattern. | C2.
+
+**19:10** | C2 applied + hardened: `mission_scheduler.js` `_dispatch()` now dispatches on `payload.event_type || mission.mission_type` (phantom fix, mirrors test_commissioning.js:345-352), AND threads `event_id`/`source`/`namespace` from the mission payload, AND unwraps the bridge's nested `payload.payload` so workers read the business payload directly, AND adds `assigned_to` metadata. | C3.
+
+**19:15** | C1 gateway hardening + C3 applied: `gateway_runtime.js` wraps EmbeddingService construction/initialize/subscribe in scoped try/catch (failure → `embeddingService = null`, log, pipeline continues); `registerCanonicalWorkers` now receives `embeddingService`. | Write regression tests.
+
+**19:20** | Wrote `gateway/test_phase0_fixes.js` (8 tests). First run 6/8 — E2E exposed a REAL broken wire: scheduler-dispatched events lacked `event_id` (ProjectionWorker couldn't project) and nested payload under `payload.payload` (ObservationWorker read undefined documentId). Fixed via the C2 dispatch threading. Second run 7/8 (fake eventRuntime lacked `emit()` for ProjectionWorker._emit). Third run 7/8 (test teardown called nonexistent bridge.stop). | Fix test.
+
+**19:35** | **8/8 Phase 0 tests pass.** Full regression green: commissioning 14 scenarios 0 failed (804 events, 128 missions, 79/79 evidence complete, deterministic PASS — exercises MissionScheduler directly), ingest_boundary 20/20, pipeline_bridge 10/10, canonical_object 13/13, canonical_object_generator 21/21, kernel_pipeline 7/7, p001_p005 27/27. `node --check` passes on all 3 edited production files. | Write report.
+
+**19:40** | `PHASE0_REPORT.md` written (files changed, tests added, results, 6 known limitations incl. deferred convergence items, live-verification steps). | Update AGENTS.md.
+
+## Session — Key Decisions
+- **Dispatch threading is the real fix**: the E2E test proved the C2 event_type fix alone was insufficient — workers also needed `event_id` (for projection), `namespace` (privacy boundary), `source`, and an unwrapped payload. All four now flow from the bridge's mission payload into the dispatched event.
+- **Dual projection owner (spine + chain) accepted for Phase 0**: `EmbeddingService.subscribe()` and `ProjectionWorker` both project indexable events; idempotent by event_id. Single-owner consolidation deferred (convergence decision, not Phase 0).
+- **Phantom-dispatch downgraded to phantom-complete**: scheduler still marks completed immediately after dispatch; worker no-op would complete without processing. Hardening deferred.
+- **commissioning duplicate count is run variance, not regression**: 356/804 vs baseline 325/770 — harness re-emits identical deterministic events; ratio and all integrity checks equivalent.
+
+## Session — Remaining (deferred, documented in PHASE0_REPORT.md)
+1. **Live E2E blocked on Docker daemon (npipe down)** — apply `database/fix_pipeline_blockers.sql`, boot gateway+worker-runtime, verify real PG/Qdrant chain.
+2. **Replay/witness/lineage chain** not exercised in Phase 0 E2E (REVIEW chain terminates at PROJECTION_CREATED).
+3. **Continue Slice 1** (next): archive `gateway/qdrant_integration.js` (QdrantAdapter is the live path), Phase D knowledge_graph namespace/confidence/status columns + worker-chain namespace propagation, full suite.

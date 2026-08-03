@@ -47,11 +47,14 @@ class UnifiedEventRuntime {
         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         payload JSONB NOT NULL DEFAULT '{}',
         metadata JSONB NOT NULL DEFAULT '{}',
+        namespace VARCHAR(255) NOT NULL DEFAULT 'core::system',
         processed BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      ALTER TABLE ping_events ADD COLUMN IF NOT EXISTS namespace VARCHAR(255) NOT NULL DEFAULT 'core::system';
       CREATE INDEX IF NOT EXISTS idx_ping_events_type ON ping_events(event_type);
       CREATE INDEX IF NOT EXISTS idx_ping_events_source ON ping_events(source);
+      CREATE INDEX IF NOT EXISTS idx_ping_events_namespace ON ping_events(namespace);
       CREATE INDEX IF NOT EXISTS idx_ping_events_processed ON ping_events(processed);
       CREATE INDEX IF NOT EXISTS idx_ping_events_timestamp ON ping_events(timestamp);
     `);
@@ -62,12 +65,19 @@ class UnifiedEventRuntime {
    * @param {string} eventType — e.g., 'REVIEW_RECEIVED', 'CUSTOMER_CREATED'
    * @param {string} source — which connector/worker emitted it
    * @param {object} payload — the event data
-   * @param {object} options — { causation_id, correlation_id, metadata }
+   * @param {object} options — { causation_id, correlation_id, metadata, namespace, logical_id }
    */
   async emit(eventType, source, payload, options = {}) {
-    // 1. Generate deterministic event_id (content-based, no Date.now())
-    const eventData = JSON.stringify({ eventType, source, payload });
-    const eventId = crypto.createHash('sha256').update(eventData).digest('hex');
+    // 1. Generate deterministic event_id (content-based, no Date.now()).
+    //    Identity material = { eventType, source, [namespace], [logical_id|payload] }.
+    //    Namespace + logical_id are only included when provided, so legacy callers
+    //    keep their existing event IDs (idempotent retries preserved).
+    //    logical_id is the timestamp-stripped logical identity — two emissions of the
+    //    same logical event (even with different timestamps in payload) hash identically.
+    const identity = { eventType, source };
+    if (options.namespace) identity.namespace = options.namespace;
+    identity[options.logical_id ? 'logical_id' : 'payload'] = options.logical_id || payload;
+    const eventId = crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex');
 
     // 2. Validate event type
     if (this._eventValidator) {
@@ -99,14 +109,17 @@ class UnifiedEventRuntime {
     }
 
     // 4. Build canonical event
+    const namespace = options.namespace || 'core::system';
     const event = {
       event_id: eventId,
       event_type: eventType,
       source,
+      namespace,
       timestamp: new Date().toISOString(),
       payload,
       metadata: {
         schema_version: '1.0.0',
+        namespace,
         causation_id: options.causation_id || null,
         correlation_id: options.correlation_id || eventId,
         ...options.metadata,
@@ -117,10 +130,10 @@ class UnifiedEventRuntime {
     if (this._pool) {
       try {
         await this._pool.query(
-          `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata)
-           VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (event_id) DO NOTHING`,
+          `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (event_id) DO NOTHING`,
           [event.event_id, event.event_type, event.source, event.timestamp,
-           JSON.stringify(event.payload), JSON.stringify(event.metadata)]
+           JSON.stringify(event.payload), JSON.stringify(event.metadata), event.namespace]
         );
         this._stats.persisted++;
       } catch (err) {

@@ -241,7 +241,11 @@ class EventGenerator {
       { event_type: 'OBSERVATION_CREATED', authority_owner: 'ObservationWorker', event_class: 'observation' },
       { event_type: 'CANDIDATE_CLAIM_CREATED', authority_owner: 'ClaimWorker', event_class: 'inference' },
       { event_type: 'CLAIM_GENERATED', authority_owner: 'ClaimWorker', event_class: 'inference' },
+      // CLAIM_CREATED is the worker-emitted type (canonical_workers.js). CLAIM_GENERATED retained for SQL CHECK compatibility.
+      { event_type: 'CLAIM_CREATED', authority_owner: 'ClaimWorker', event_class: 'inference' },
       { event_type: 'REPLAY_EXECUTED', authority_owner: 'ReplayWorker', event_class: 'system' },
+      // REPLAY_COMPLETED is the worker-emitted type (canonical_workers.js). REPLAY_EXECUTED retained for SQL CHECK compatibility.
+      { event_type: 'REPLAY_COMPLETED', authority_owner: 'ReplayWorker', event_class: 'system' },
       { event_type: 'WITNESS_CREATED', authority_owner: 'WitnessWorker', event_class: 'system' },
       { event_type: 'LINEAGE_CREATED', authority_owner: 'LineageWorker', event_class: 'system' },
       { event_type: 'PROJECTION_CREATED', authority_owner: 'ProjectionWorker', event_class: 'system' },

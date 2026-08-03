@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "generator": "EventGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-07-28T01:36:32.995Z",
-  "count": 225,
-  "hash": "9e7dd66500f9a517c840284152a2d6dea3f0f59f1a64c78c0c5748f2f0cdc6d1",
+  "generated_at": "2026-08-03T21:35:37.577Z",
+  "count": 227,
+  "hash": "30055d7dc94ce6b312c0b9469b751f0f05ea5beb7dae583ade58b84b39786df6",
   "events": [
     {
       "event_type": "artifact_produced",
@@ -319,6 +319,38 @@
       "schema_version": "1.0.0",
       "authority_owner": "RepositoryAuthority",
       "event_class": "system",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "CLAIM_CREATED",
+      "schema_version": "1.0.0",
+      "authority_owner": "ClaimWorker",
+      "event_class": "inference",
       "payload_schema": {
         "type": "object",
         "properties": {
@@ -4981,6 +5013,38 @@
       "compatibility": "backward",
       "source": "authority",
       "source_file": "authorities/registry.yaml"
+    },
+    {
+      "event_type": "REPLAY_COMPLETED",
+      "schema_version": "1.0.0",
+      "authority_owner": "ReplayWorker",
+      "event_class": "system",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
     },
     {
       "event_type": "REPLAY_EXECUTED",

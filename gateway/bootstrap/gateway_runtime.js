@@ -93,6 +93,9 @@ const createMissionRoutes = require('../routes/missions');
 const createAIRoutes = require('../routes/ai');
 const createConnectorRoutes = require('../routes/connectors');
 const createMissionControlRoutes = require('../routes/mission_control');
+const { CanonicalizationService } = require('../../ping-runtime/canonicalization/canonicalization_service');
+const { EmbeddingService } = require('../../ping-runtime/embeddings/embedding_service');
+const createIngestRoutes = require('../routes/ingest');
 
 class GatewayRuntime {
   constructor(pool) {
@@ -352,6 +355,8 @@ class GatewayRuntime {
     let neo4jAdapter = null;
     let qdrantAdapter = null;
     let eventToMissionBridge = null;
+    let canonicalizationService = null;
+    let embeddingService = null;
 
     if (pgAvailable) {
       try {
@@ -415,6 +420,25 @@ class GatewayRuntime {
         await unifiedEventRuntime.initialize();
         console.log('[GatewayRuntime] Unified Event Runtime initialized');
 
+        // ─── Canonicalization Boundary (thin façade) ──────────────
+        // The single public boundary: every observation/command/artifact/event
+        // must canonicalize here before it exists. Namespace is resolved BEFORE
+        // persistence. Business sources default to tenant::hpp; system sources
+        // to core::system.
+        canonicalizationService = new CanonicalizationService({
+          eventRuntime: unifiedEventRuntime,
+          namespaces: {
+            'review-authority': 'tenant::hpp',
+            'customer-authority': 'tenant::hpp',
+            'project-authority': 'tenant::hpp',
+            'email-connector': 'tenant::hpp',
+            'sms-connector': 'tenant::hpp',
+            'google-connector': 'tenant::hpp',
+            'github-connector': 'tenant::hpp',
+          },
+        });
+        console.log('[GatewayRuntime] Canonicalization Service initialized');
+
         // Event Bridge — polls repository_events + canonical_events → UnifiedEventRuntime
         eventBridge = new EventBridge({
           pool: this._pool,
@@ -442,11 +466,33 @@ class GatewayRuntime {
         qdrantAdapter = new QdrantAdapter();
         console.log('[GatewayRuntime] Knowledge Adapters initialized (Neo4j + Qdrant)');
 
+        // ─── Embedding Service (async projection subscriber) ──────
+        // Subscribes to indexable event types; embedding is queued (non-blocking),
+        // falls back to deterministic seeded vectors when Ollama is unreachable.
+        // Init failure here must NOT disable the PG-backed pipeline (workers,
+        // scheduler, bridge, emitters all continue) — it is surfaced and scoped.
+        try {
+          embeddingService = new EmbeddingService({
+            aiRuntime,
+            qdrantAdapter,
+            collection: 'knowledge',
+            vectorSize: 768,
+            embeddingModel: 'nomic-embed-text',
+          });
+          await embeddingService.initialize();
+          embeddingService.subscribe(unifiedEventRuntime);
+          console.log('[GatewayRuntime] Embedding Service initialized (async projection)');
+        } catch (err) {
+          embeddingService = null;
+          console.error(`[GatewayRuntime] Embedding Service init failed — async Qdrant projection disabled (pipeline continues): ${err.message}`);
+        }
+
         // Register 9 canonical workers with WorkerRuntime (including IntelligenceWorker)
         registerCanonicalWorkers(workerRuntime, {
           eventRuntime: unifiedEventRuntime,
           pool: this._pool,
           aiRuntime,
+          embeddingService, // ProjectionWorker consumes options.embeddingService (C3)
         });
 
         // Mission Scheduler — polls MissionRuntime, dispatches to WorkerRuntime
@@ -461,12 +507,15 @@ class GatewayRuntime {
         console.log('[GatewayRuntime] Mission Scheduler started');
 
         // ─── Business Event Emitters ──────────────────────────────
-        reviewEmitter = new ReviewEmitter(unifiedEventRuntime);
-        customerEmitter = new CustomerEmitter(unifiedEventRuntime);
-        projectEmitter = new ProjectEmitter(unifiedEventRuntime);
-        connectorEmitter = new ConnectorEmitter(unifiedEventRuntime);
-        systemEmitter = new SystemEmitter(unifiedEventRuntime);
-        console.log('[GatewayRuntime] Business Event Emitters initialized');
+        // Producers route through the Canonicalization Service (the boundary),
+        // not the event runtime directly. Emitters are unchanged — they call
+        // emit(eventType, source, payload) which the service duck-types.
+        reviewEmitter = new ReviewEmitter(canonicalizationService);
+        customerEmitter = new CustomerEmitter(canonicalizationService);
+        projectEmitter = new ProjectEmitter(canonicalizationService);
+        connectorEmitter = new ConnectorEmitter(canonicalizationService);
+        systemEmitter = new SystemEmitter(canonicalizationService);
+        console.log('[GatewayRuntime] Business Event Emitters initialized (via Canonicalization Service)');
 
         // ─── Event-to-Mission Bridge ──────────────────────────────
         eventToMissionBridge = new EventToMissionBridge({
@@ -475,6 +524,43 @@ class GatewayRuntime {
         });
         eventToMissionBridge.start();
         console.log('[GatewayRuntime] Event-to-Mission Bridge started');
+
+        // ─── Graph Projection (async subscriber) ──────────────────
+        // Knowledge candidates: business + observation events project into the
+        // knowledge graph as status='candidate', confidence 0.5. Only explicit
+        // human approval promotes to knowledge (confidence 1.0). Local PG insert
+        // is ms-fast; this is not on the ingestion path.
+        const GRAPH_PROJECTION_EVENTS = [
+          'REVIEW_RECEIVED', 'REVIEW_RESPONDED',
+          'CUSTOMER_CREATED', 'CUSTOMER_UPDATED',
+          'PROJECT_CREATED', 'PROJECT_UPDATED', 'PROJECT_COMPLETED',
+          'LEAD_CREATED', 'LEAD_CONVERTED',
+          'ESTIMATE_CREATED', 'ESTIMATE_SENT', 'ESTIMATE_ACCEPTED',
+          'INVOICE_CREATED', 'INVOICE_SENT', 'INVOICE_PAID',
+          'OBSERVATION_CREATED', 'CLAIM_CREATED', 'RECOMMENDATION_CREATED',
+        ];
+        for (const type of GRAPH_PROJECTION_EVENTS) {
+          unifiedEventRuntime.on(type, async (event) => {
+            try {
+              const payload = event.payload || {};
+              const entityRef = payload.customer_id || payload.project_id || payload.review_id || payload.lead_id || payload.estimate_id || payload.invoice_id;
+              const label = `${event.event_type} ${entityRef || event.event_id.slice(0, 12)}`;
+              await knowledgeGraph.addNode('event', label, {
+                event_type: event.event_type,
+                source: event.source,
+                payload,
+              }, {
+                namespace: event.namespace || 'core::system',
+                confidence: 0.5,
+                status: 'candidate',
+                sourceEventId: event.event_id,
+              });
+            } catch (err) {
+              console.error(`[GatewayRuntime] Graph projection failed for ${event.event_type}:`, err.message);
+            }
+          });
+        }
+        console.log('[GatewayRuntime] Graph Projection subscribed');
 
         // ─── Seed Initial Business Events ─────────────────────────
         await _seedBusinessEvents(unifiedEventRuntime, {
@@ -509,6 +595,7 @@ class GatewayRuntime {
       eventBridge, missionScheduler, eventToMissionBridge,
       reviewEmitter, customerEmitter, projectEmitter, connectorEmitter, systemEmitter,
       neo4jAdapter, qdrantAdapter,
+      canonicalizationService, embeddingService,
       // Capability + OAuth framework
       capabilityRegistry, oauthManager, tokenStore,
     });
@@ -519,7 +606,7 @@ class GatewayRuntime {
   _mountRoutes(services) {
     const hasPG = !!services.eventReadAuthority;
 
-    this._app.use('/api/v1/ollama', ollamaRoutes);
+    this._app.use('/api/v1/ollama', ollamaRoutes(services.aiRuntime, services.ollamaProvider));
     this._app.use('/health', createHealthRoutes(healthAuthority));
 
     // PG-dependent routes — only mount when Postgres is available
@@ -532,6 +619,7 @@ class GatewayRuntime {
       this._app.use('/tenants', createTenantRoutes(services.tenantRegistry));
       this._app.use('/deployments', createDeploymentRoutes(services.deploymentRegistry));
       this._app.use('/runtime', createRuntimeRoutes(services.runtimeRegistry));
+      this._app.use('/ingest', createIngestRoutes(services.canonicalizationService));
     } else {
       // Degraded mode stubs
       this._app.use('/events', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
@@ -542,6 +630,7 @@ class GatewayRuntime {
       this._app.use('/tenants', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
       this._app.use('/deployments', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
       this._app.use('/runtime', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
+      this._app.use('/ingest', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
     }
     
     // Constitution — filesystem only, always available
@@ -583,6 +672,24 @@ class GatewayRuntime {
       if (!services.eventGovernance) return { status: 'not_initialized' };
       const stats = services.eventGovernance.getStats();
       return { status: stats.rejected === 0 ? 'healthy' : 'degraded', stats };
+    });
+    healthAuthority.registerHealthCheck('event_runtime', async () => {
+      if (!services.unifiedEventRuntime) return { status: 'not_initialized' };
+      const stats = services.unifiedEventRuntime.getStats();
+      return { status: 'healthy', stats };
+    });
+    healthAuthority.registerHealthCheck('canonicalization', async () => {
+      if (!services.canonicalizationService) return { status: 'not_initialized' };
+      return { status: 'healthy', boundary: 'canonicalization_service' };
+    });
+    healthAuthority.registerHealthCheck('qdrant', async () => {
+      if (!services.qdrantAdapter) return { status: 'not_initialized' };
+      const health = await services.qdrantAdapter.health();
+      return { status: health.status === 'healthy' ? 'healthy' : 'degraded', ...health };
+    });
+    healthAuthority.registerHealthCheck('embedding', async () => {
+      if (!services.embeddingService) return { status: 'not_initialized' };
+      return { status: 'healthy', stats: services.embeddingService.getStats() };
     });
     this._app.use('/ops', createOpsRoutes({
       healthAuthority,

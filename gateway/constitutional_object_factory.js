@@ -7,8 +7,14 @@
  * 
  * Eliminates duplicated object construction patterns across authorities.
  * Every constitutional object follows a single canonical schema.
+ * 
+ * Consolidation: Envelope construction delegated to the shared
+ * canonical_object envelope (canonical_object.js). This factory keeps
+ * domain-specific constructors (Symbol, Commit, Semantic) and delegates
+ * the envelope to the single canonical field contract.
  */
 
+const { createCanonicalObject } = require('./canonical_object');
 const { CanonicalAuthority } = require('./canonical_authority');
 const { identityAuthority } = require('./identity_authority');
 
@@ -35,29 +41,29 @@ class ConstitutionalObjectFactory {
       metadata = {},
     } = config;
 
-    // Generate canonical hash from payload
-    const canonicalHash = CanonicalAuthority.hash(payload);
-
-    // Generate identity envelope
-    const identity = identityAuthority.generateIdentityEnvelope(id, this._factoryVersion);
-
-    return {
-      id,
+    const envelope = createCanonicalObject({
       kind,
-      canonical_hash: canonicalHash,
       payload,
       authority,
-      identity,
-      lineage: {
+      options: {
+        id,
         source_id: sourceId,
         source_kind: sourceKind,
+        relationships,
+        metadata,
       },
-      relationships,
-      metadata: {
-        schema_version: this._schemaVersion,
-        ...metadata,
-      },
+    });
+
+    // Identity envelope via identity authority (factory contract)
+    envelope.identity = identityAuthority.generateIdentityEnvelope(id, this._factoryVersion);
+
+    // Factory lineage contract uses source_id/source_kind naming
+    envelope.lineage = {
+      source_id: sourceId,
+      source_kind: sourceKind,
     };
+
+    return envelope;
   }
 
   /**

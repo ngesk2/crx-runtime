@@ -17,11 +17,13 @@
  * lineage
  *   ↓
  * constitutional object
+ * 
+ * Consolidation: This authority delegates envelope construction to the
+ * shared canonical_object envelope (canonical_object.js). All envelope
+ * producers now build through the same field contract.
  */
 
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { createCanonicalObject } = require('./canonical_object');
 
 class CanonicalObjectAuthority {
   constructor() {
@@ -54,51 +56,20 @@ class CanonicalObjectAuthority {
     // Step 1: Normalize payload (if needed)
     const normalizedPayload = this._normalize(payload);
 
-    // Step 2: Generate canonical bytes
-    const canonicalBytes = CanonicalBytes.serialize(normalizedPayload);
-
-    // Step 3: Generate canonical hash
-    const canonicalHash = CanonicalAuthority.hashBytes(canonicalBytes);
-
-    // Step 4: Generate identity from canonical bytes
-    const objectId = identityAuthority.generateFromCanonicalHash(canonicalBytes, kind);
-
-    // Step 5: Build lineage
-    const lineage = {
-      source_id: objectId,
-      derivation_path: derivation_path,
-      provenance_chain: provenance_chain,
-    };
-
-    // Step 6: Build identity
-    const identity = {
-      namespace: namespace,
-      version: 'v1',
-      created_at: constitutionalTimeAuthority.nowISO(),
-      created_by: this._authorityId,
-    };
-
-    // Step 7: Build constitutional object
-    const constitutionalObject = {
-      id: objectId,
-      kind: kind,
-      authority: this._authorityId,
-      identity: identity,
-      canonical_hash: canonicalHash,
-      canonical_bytes: canonicalBytes,
-      lineage: lineage,
-      health: 'healthy',
-      confidence: 1.0,
-      relationships: relationships,
-      metadata: {
-        lifecycle_id: lifecycle_id,
-        timestamp: constitutionalTimeAuthority.nowISO(),
-        schema_version: '1.0.0',
-        constitution_version: '1.0.0',
-        runtime_version: '1.0.0',
-      },
+    // Steps 2-7: Delegate envelope construction to shared canonical envelope
+    const constitutionalObject = createCanonicalObject({
+      kind,
       payload: normalizedPayload,
-    };
+      authority: this._authorityId,
+      options: {
+        namespace,
+        lifecycle_id,
+        derivation_path,
+        provenance_chain,
+        relationships,
+        source_id: null,
+      },
+    });
 
     return constitutionalObject;
   }

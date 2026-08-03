@@ -12,7 +12,7 @@ class OllamaProvider {
    * @param {string} options.defaultModel — default model name
    */
   constructor(options = {}) {
-    this._baseUrl = options.baseUrl || process.env.INFERENCE_BASE_URL || 'http://ping-ollama:11434';
+    this._baseUrl = options.baseUrl || process.env.INFERENCE_BASE_URL || 'http://localhost:11434';
     this._defaultModel = options.defaultModel || 'qwen2.5-coder:7b';
   }
 

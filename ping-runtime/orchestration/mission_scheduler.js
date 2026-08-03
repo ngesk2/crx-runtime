@@ -168,16 +168,30 @@ class MissionScheduler {
       // Start mission
       await this._missionRuntime.start(mission.mission_id);
 
-      // Build event for worker
+      // Build event for worker — dispatch on the ORIGINAL business event type
+      // (mission.payload.event_type, stored by EventToMissionBridge), not the
+      // mission_type. Workers register on business event types (e.g. LEAD_CREATED);
+      // dispatching mission_type (e.g. LEAD_FOLLOWUP) would silently no-op and
+      // produce a phantom completion. Mirrors test_commissioning.js:345-352.
+      const payload = typeof mission.payload === 'string'
+        ? JSON.parse(mission.payload)
+        : (mission.payload || {});
       const event = {
-        event_type: mission.mission_type,
-        source: 'mission-scheduler',
+        // Thread the original event fields through so downstream workers can
+        // project (needs event_id), preserve namespace (privacy boundary) and
+        // source, and unwrap the bridge's nested payload so workers read the
+        // business payload directly (e.g. ObservationWorker's documentId).
+        event_id: payload.event_id || mission.mission_id,
+        event_type: payload.event_type || mission.mission_type,
+        source: payload.source || 'mission-scheduler',
+        namespace: payload.namespace || 'core::system',
         mission_id: mission.mission_id,
-        payload: typeof mission.payload === 'string' ? JSON.parse(mission.payload) : mission.payload,
+        payload: payload.payload || payload,
         metadata: {
           mission_type: mission.mission_type,
           priority: mission.priority,
           assigned_to: workerName,
+          canonical_hash: payload.canonical_hash || null,
         },
       };
 

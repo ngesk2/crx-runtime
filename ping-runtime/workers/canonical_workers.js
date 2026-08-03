@@ -119,6 +119,7 @@ class ProjectionWorker extends BaseWorker {
   constructor(options = {}) {
     super(options);
     this._name = 'projection';
+    this._embeddingService = options.embeddingService || null;
   }
 
   async handle(event) {
@@ -140,6 +141,28 @@ class ProjectionWorker extends BaseWorker {
     }, {
       causation_id: event.event_id,
     });
+
+    // This worker's purpose: write the canonical observation to Qdrant.
+    if (this._embeddingService) {
+      try {
+        const point = await this._embeddingService.projectToQdrant({
+          id: event.event_id,
+          kind: event.event_type,
+          event_id: event.event_id,
+          namespace: event.namespace,
+          canonical_hash: (event.metadata && event.metadata.canonical_hash) || null,
+          identity: event.identity || null,
+          payload: event.payload || {},
+        }, {
+          sourceEventId: event.event_id,
+          eventType: event.event_type,
+          namespace: event.namespace,
+        });
+        console.log(`[ProjectionWorker] Projected ${event.event_type} → qdrant point ${point.id.slice(0, 12)}`);
+      } catch (err) {
+        console.error(`[ProjectionWorker] Qdrant projection failed: ${err.message}`);
+      }
+    }
 
     return { status: 'ok', projection };
   }
