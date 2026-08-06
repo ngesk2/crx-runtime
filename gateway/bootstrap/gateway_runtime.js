@@ -95,6 +95,9 @@ const createConnectorRoutes = require('../routes/connectors');
 const createMissionControlRoutes = require('../routes/mission_control');
 const { CanonicalizationService } = require('../../ping-runtime/canonicalization/canonicalization_service');
 const { EmbeddingService } = require('../../ping-runtime/embeddings/embedding_service');
+const { EvidenceAuthority } = require('../../ping-runtime/evidence/evidence_authority');
+const { HybridSearch } = require('../../ping-runtime/search/hybrid_search');
+const { verifyCanonicalObject } = require('../canonical_object');
 const createIngestRoutes = require('../routes/ingest');
 
 class GatewayRuntime {
@@ -357,6 +360,8 @@ class GatewayRuntime {
     let eventToMissionBridge = null;
     let canonicalizationService = null;
     let embeddingService = null;
+    let evidenceAuthority = null;
+    let hybridSearch = null;
 
     if (pgAvailable) {
       try {
@@ -493,7 +498,25 @@ class GatewayRuntime {
           pool: this._pool,
           aiRuntime,
           embeddingService, // ProjectionWorker consumes options.embeddingService (C3)
+          knowledgeGraph,   // KnowledgePromoter consumes options.knowledgeGraph (Phase F)
         });
+
+        // ─── Evidence Authority + Hybrid Search (Phase E) ─────────
+        // EvidenceAuthority verifies every retrieval result (recomputes the
+        // canonical hash via gateway/canonical_object.js + traces Qdrant hits
+        // back to ping_events). HybridSearch composes semantic (Qdrant) +
+        // verification (evidence) + context (knowledge graph) into one result.
+        evidenceAuthority = new EvidenceAuthority({
+          pool: this._pool,
+          eventRuntime: unifiedEventRuntime,
+          canonicalObjectVerifier: verifyCanonicalObject,
+        });
+        hybridSearch = new HybridSearch({
+          embeddingService,
+          evidenceAuthority,
+          knowledgeGraph,
+        });
+        console.log('[GatewayRuntime] Evidence Authority + Hybrid Search initialized');
 
         // Mission Scheduler — polls MissionRuntime, dispatches to WorkerRuntime
         missionScheduler = new MissionScheduler({
@@ -596,6 +619,7 @@ class GatewayRuntime {
       reviewEmitter, customerEmitter, projectEmitter, connectorEmitter, systemEmitter,
       neo4jAdapter, qdrantAdapter,
       canonicalizationService, embeddingService,
+      evidenceAuthority, hybridSearch,
       // Capability + OAuth framework
       capabilityRegistry, oauthManager, tokenStore,
     });
@@ -726,7 +750,9 @@ class GatewayRuntime {
 
     // ─── PING Core v1 Routes ───────────────────────────────────────
     if (services.knowledgeGraph) {
-      this._app.use('/knowledge', createKnowledgeRoutes(services.knowledgeGraph));
+      this._app.use('/knowledge', createKnowledgeRoutes(services.knowledgeGraph, {
+        hybridSearch: services.hybridSearch,
+      }));
     }
     if (services.missionRuntime) {
       this._app.use('/missions', createMissionRoutes(services.missionRuntime));

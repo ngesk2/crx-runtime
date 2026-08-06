@@ -2,15 +2,41 @@
  * Knowledge Graph Routes — PING Core v1
  */
 
-function createKnowledgeRoutes(knowledgeGraph) {
+function createKnowledgeRoutes(knowledgeGraph, options = {}) {
   const express = require('express');
   const router = express.Router();
+  const hybridSearch = options.hybridSearch || null;
 
   // Get knowledge stats
   router.get('/stats', async (req, res) => {
     try {
       const stats = await knowledgeGraph.getStats();
       res.json({ status: 'ok', stats });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
+  // Hybrid semantic + knowledge search (Phase E.2). Namespace is the privacy
+  // boundary and is required — every result carries evidence + verification.
+  router.post('/search', async (req, res) => {
+    if (!hybridSearch) {
+      return res.status(503).json({ status: 'error', error: 'hybrid search not available' });
+    }
+    try {
+      const { query, namespace, limit } = req.body || {};
+      if (!query) {
+        return res.status(400).json({ status: 'error', error: 'query required' });
+      }
+      if (!namespace) {
+        return res.status(400).json({ status: 'error', error: 'namespace required (privacy boundary)' });
+      }
+      const result = await hybridSearch.search({
+        query,
+        namespace,
+        limit: parseInt(limit) || 10,
+      });
+      res.json(result);
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }

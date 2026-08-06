@@ -80,6 +80,42 @@ class KnowledgeGraph {
   }
 
   /**
+   * Update status/confidence on a node identified by its source event.
+   * Promotion path (Phase F): SNIPPET_APPROVED / AI_RESPONSE_ACCEPTED move a
+   * candidate to approved (confidence 1.0); rejection moves it to rejected.
+   * Never rewrites data — ADD-only provenance; only lifecycle fields change.
+   * @param {string} sourceEventId
+   * @param {object} options — { status?, confidence?, namespace? (guard) }
+   * @returns {Promise<boolean>} true when exactly one node was updated
+   */
+  async updateNodeBySourceEvent(sourceEventId, options = {}) {
+    if (!sourceEventId) return false;
+    const clause = ['source_event_id = $1'];
+    const params = [sourceEventId];
+    let idx = 2;
+    if (options.namespace) {
+      clause.push(`namespace = $${idx++}`);
+      params.push(options.namespace);
+    }
+    const sets = [];
+    if (typeof options.status === 'string') {
+      sets.push(`status = $${idx++}`);
+      params.push(options.status);
+    }
+    if (typeof options.confidence === 'number') {
+      sets.push(`confidence = $${idx++}`);
+      params.push(options.confidence);
+    }
+    if (sets.length === 0) return false;
+    sets.push('updated_at = NOW()');
+    const result = await this._pool.query(
+      `UPDATE knowledge_nodes SET ${sets.join(', ')} WHERE ${clause.join(' AND ')}`,
+      params
+    );
+    return result.rowCount === 1;
+  }
+
+  /**
    * Add an edge between two nodes.
    */
   async addEdge(sourceId, targetId, edgeType, data = {}, weight = 1.0) {

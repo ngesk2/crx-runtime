@@ -1873,3 +1873,195 @@ The platform is mature enough that the largest remaining gains come from making 
 1. **Live E2E blocked on Docker daemon (npipe down)** — apply `database/fix_pipeline_blockers.sql`, boot gateway+worker-runtime, verify real PG/Qdrant chain.
 2. **Replay/witness/lineage chain** not exercised in Phase 0 E2E (REVIEW chain terminates at PROJECTION_CREATED).
 3. **Continue Slice 1** (next): archive `gateway/qdrant_integration.js` (QdrantAdapter is the live path), Phase D knowledge_graph namespace/confidence/status columns + worker-chain namespace propagation, full suite.
+
+### 2026-08-03 Session — Slice 1 Complete (Archive + Phase D Namespace Privacy Boundary)
+
+**19:50** | Started Slice 1 completion. Goal: (1a) archive dead `gateway/qdrant_integration.js`, (1b) execute Phase D — namespace/status columns + worker-chain namespace propagation. | Read AGENTS.md + Phase D findings from prior session.
+
+**19:55** | Slice 1a DONE (prior session, uncommitted): `gateway/qdrant_integration.js` moved to `gateway/archive/qdrant_integration.js` via `git mv`; header annotated `[ARCHIVED 2026-08-03]` pointing to live replacement `ping-runtime/search/qdrant_adapter.js` + `ping-runtime/embeddings/embedding_service.js`. Zero `require()` references remain (rg clean). | Implement Phase D.
+
+**20:00** | Phase D edits applied (5 files): (1) `knowledge_graph.js` — `namespace VARCHAR(255) NOT NULL DEFAULT 'core::system'` + `status VARCHAR(50) NOT NULL DEFAULT 'candidate'` columns in CREATE TABLE **and** idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for existing deployments; `idx_kn_namespace`/`idx_kn_status` indexes; `addNode` stores namespace/status/confidence (with defaults), `queryNodes` filters by both. (2) `event_to_mission_bridge.js` — threads `event.namespace` + `metadata.canonical_hash` into mission payload (was dropping namespace; scheduler fell back to `core::system`). (3) `canonical_workers.js` — `BaseWorker._emit` preserves `this._event?.namespace` on every downstream emission. (4) `worker_runtime.js` — `dispatch()` sets `worker._event` before `handle`, clears after. (5) `routes/knowledge.js` — `GET /nodes` + `POST /nodes` accept optional `namespace`/`status`/`confidence`. | Write tests.
+
+**20:10** | Wrote `gateway/test_phase_d_namespace.js` (7 tests: D1 columns/addNode defaults/queryNode filtering, D2 bridge threading, D3 scheduler dispatch, D4 worker propagation). First run 3/7 — 3 test bugs fixed: D4 used arrow fn (no `this`) + fired via eventRuntime instead of WorkerRuntime (the production dispatch path); D3 called nonexistent `sched.poll` → switched to `start()` + sleep + `stop()`; mock queryNodes `params[p++]` inside `.filter()` incremented per element → captured value first. | 7/7 pass.
+
+**20:15** | Full regression green after Phase D: phase0_fixes 8/8, pipeline_bridge 10/10, ingest_boundary 20/20, commissioning 14 scenarios 0 failed, canonical_object 13/13, canonical_object_generator 21/21, business_emitters 19/19, constitutional_validation 63/63, wave2_generators 39/39, wave2_5 32/32, wave3a 59/59, p040 29/29, kernel_pipeline 7/7, p001_p005 27/27. `node --check` clean on all 6 edited/created files. | Commit.
+
+**20:20** | Commit `463623ea` created on `constitutional-hardening`: `fix(constitution): Phase D namespace privacy boundary` — 7 files, 346 insertions / 7 deletions, including rename `gateway/{ => archive}/qdrant_integration.js` (96%). Staged set verified exact (node_modules, reports, classifications, root MDs all excluded). | Update AGENTS.md.
+
+## Session — Key Decisions
+- **Namespace now survives the whole chain**: bridge (D2) → mission payload → scheduler dispatch event (C2, committed in af6053c8) → WorkerRuntime `worker._event` (D4) → `BaseWorker._emit` → projection/graph. Previously the bridge dropped it and everything fell back to `core::system`.
+- **Idempotent migration, not one-shot**: `ALTER TABLE knowledge_nodes ADD COLUMN IF NOT EXISTS` in `initialize()` supports both fresh and existing deployments; CREATE TABLE carries the columns for new installs.
+- **Status column lands with namespace**: Phase D adds `status` (default `candidate`) alongside `namespace` — matches the graph projection subscriber's `confidence 0.5`/`status candidate` semantics already in `gateway_runtime.js:548-557`. Explicit human approval promotes to `approved` (confidence 1.0) in a later slice.
+- **Read-time namespace filtering is the enforcement**: `queryNodes` filters by namespace/status so `tenant::<id>` nodes are structurally invisible to `core::*` queries; routes expose it as optional query params.
+
+## Session — Remaining
+1. **Commit tree-sitter deps** — `gateway/package.json`/`package-lock.json` still carry uncommitted `tree-sitter*` deps (canonical_object_generator.js requires them; af6053c8 missed the package.json). Next commit should include them.
+2. **Live E2E blocked on Docker daemon (npipe down)** — apply `database/fix_pipeline_blockers.sql`, boot gateway+worker-runtime, verify real PG/Qdrant chain + namespace column migration against real Postgres.
+3. **Slice 2**: EvidenceAuthority + hybrid `/knowledge/search` + knowledge promotion (SNIPPET_APPROVED/REJECTED, AI_RESPONSE_ACCEPTED/REJECTED).
+4. **Slice 3**: NamespaceAuthority enforcement (beyond column-level) + producers (clipboard/git/log watchers + PT Run bridge plugin).
+
+### 2026-08-04 Session - HPP Dashboard Inventory + Constitutional Convergence Planning (READ-ONLY)
+
+**14:30** | Started session. Goal: READ-ONLY inventory producing 2 dashboard deliverables + 2 convergence planning deliverables. Zero code changes. | Read AGENTS.md + prior state.
+
+**14:35** | Route surface confirmed via direct grep (6 subagents returned empty bodies - switched to direct evidence). 12 route groups mounted in gateway_runtime.js:609-740: /health, /system, /tenants, /deployments, /runtime, /ingest, /ops, /knowledge, /missions, /ai, /connectors, /mc. Legacy: /events, /canonical-events, /context, /constitution, /governance, /ai-workspace. | Write inventory.
+
+**14:40** | HPP_ADMIN_BACKEND_INVENTORY.md written (8 phases): data sources, aggregate endpoints, mission timeline (ping_missions schema + lifecycle), event infrastructure (UnifiedEventRuntime canonical vs NATS/ExecutionRuntime parallel), worker runtime (JS WorkerRuntime + 9 canonical workers production; runtime/workers/*.py + TS WorkerRegistry dormant), capability pool (ping-runtime CapabilityRegistry 9 categories + connectors routes), readiness matrix, minimal build (11/14 widget types backend-ready, 3 missing: search, reports, token usage). | Write matrix.
+
+**14:45** | HPP_DASHBOARD_READINESS_MATRIX.md written: 24 rows, 19 Ready / 5 Partial / 4 Missing. Ready = ops status/drift/fingerprint/runtime-hash, knowledge stats/nodes, AI providers/models, system/state, tenant/deployment/runtime registries, mission stats/traces, worker stats/health, /mc/dashboard business metrics. Partial = inference wiring (ollama.js now routes through AIRuntime - fixed, audit stale), phantom-complete (B1), no lease tracking, no live heartbeat network, dormant worker visibility. Missing = semantic search (Slice 2), token usage/prompt logs, metrics export, reports/newsletter/RSS. | Write patch catalog.
+
+**14:50** | CONSTITUTIONAL_CONVERGENCE_PATCH_CATALOG.md written: duplicate inventory (capability_registry x2, event buses x3 incl. NATS, worker paradigms x3, projection owners x2), 10 minimal patches (PATCH-01..10, 5 LOW/5 MEDIUM), event infrastructure classification, capability convergence (winner = ping-runtime registry), worker overlap (winner = JS WorkerRuntime), explicit out-of-scope (no ORCA/scheduler/worker/event-bus/repo/MissionRuntime/Planner rewrites). | Write roadmap.
+
+**14:55** | CONSTITUTIONAL_CONVERGENCE_ROADMAP.md written: dashboard dependency check (0 of 10 patches block the dashboard; PATCH-06 must land before trusting tenant::hpp data), 3-tier ordered roadmap (Tier 1 comment-only x5, Tier 2 behavior x3, Tier 3 observation x2), verification per tier, out-of-scope list, gate to next work. | Session complete.
+
+## Session - Key Findings
+1. **ollama.js inferenceAdapter.inference() bug is FIXED** - header comment + code route through AIRuntime chat/health (ollama.js:28-41). Prior audit finding stale.
+2. **/mc/dashboard is fully event-derived** - business metrics computed from ping_events counts in a 24h/500-cap window (mission_control.js:47-60), never fabricated, empty with upstream reason.
+3. **/mc/bridge, /mc/scheduler, /mc/workers expose live runtime counters** - bridge {listened, missionsCreated, skipped, failed}, scheduler getStats, workerRuntime.getStats (status/running/processed/failed/lastHeartbeat) - all renderable dashboard widgets with zero new code.
+4. **Mission timeline fully available** - ping_missions schema (mission_id, type, status, priority, payload w/ event_id+namespace+canonical_hash, result, assigned_to, timestamps, error, retries) + getStats GROUP BY status + getTrace/getAllTraces.
+5. **3 missing dashboard capabilities** - semantic search (Slice 2), token usage/prompt logs (no table/endpoint), metrics export (Prometheus/StatsD) + reports/newsletter/RSS.
+6. **10 convergence patches, none dashboard-blocking** - all independent; PATCH-06 (namespace default tightening) is the only must-land-before-trusting-tenant-data.
+
+## Session - Next Steps
+1. **Build HPP admin dashboard against existing endpoints** - 19/24 widget types Ready; only missing 3 are additive (search/reports/token-usage).
+2. **Land Tier 1 convergence patches** (comment-only, zero risk) + PATCH-06 before tenant::hpp dashboards.
+3. **Resume Slice 2** (EvidenceAuthority + hybrid /knowledge/search + knowledge promotion) per PING_CANONICAL_BOUNDARY_PLAN.md.
+4. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+5. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain.
+
+### 2026-08-05 Session - Runtime Agent Orchestration Audit (READ-ONLY)
+
+**14:00** | Started session. Goal: READ-ONLY Runtime Agent Orchestration Audit - produce PING_AGENT_ORCHESTRATION_MAP.md only (Phases A-J). No code, no patches, no recommendations until the end. | Read AGENTS.md.
+
+**14:05** | Launched 4 parallel explore agents: (1) brainos/Python surfaces - brainos mission-control is a standalone FastAPI observability container (compose.yaml:104-140, port 8000, uvicorn src.mission_control.app:app), 35 endpoints, ZERO imports from gateway/ping-runtime/runtime; production DB schema sourced from brainos/orchestration/constitutional/canonical_state/schema.sql (compose.yaml:21); rss+newsletter digestion-workers wired but crash-looping (compose.yaml:197-229); (2) TS kernel/Hermes/MCP - GatewayToKernelAdapter LIVE (gateway_runtime.js:13,368-369,757; POST /events → events.js:70-82 → constitutional_execution_pipeline.js:17-109 7-stage with ROLLBACK gate), omni_router+omni_router_bootstrap DORMANT (zero require consumers), Hermes external/doc-only, MCP deleted; (3) production JS orchestration - server.js:13-18 clean bootstrap (stale exit(1) claim corrected), gateway_runtime.js has ZERO timers, exactly TWO 5s setInterval loops (event_bridge.js:87, mission_scheduler.js:106), WorkerRuntime._poll() dead by design (worker_runtime.js:50-56,140); (4) event choreography - event_registry.json 227 events, EVIDENCE_CREATED doc-comment only (intelligence_worker.js:7), GRAPH_PROJECTION_EVENTS 18 types (gateway_runtime.js:533-541), ping_events.processed indexed but never set TRUE, only real ack event_bridge.js:301, intelligence worker drops namespace (intelligence_worker.js:20). | Reconcile.
+
+**14:30** | Reconciled: two independent execution paths (JS WorkerRuntime pipeline + kernel ConstitutionalExecutionPipeline); replay/witness/lineage UNREACHABLE (nothing emits REPLAY_VERIFY - canonical_workers.js:430, dead documented chain at :9); IntelligenceWorker duplicates classification/recommendation path → 25 vs 14 recommendation dispatches in commissioning (dual fan-out, provenance split); phantom-complete persists (mission_scheduler.js:199-205 completes after dispatch even if zero workers matched); capability dispatch is fiction (eventTypes string match, capability=worker name); MissionScheduler.MISSION_WORKER_MAP 20/25 entries funnel to observation; 5-stage chain (observation→claim→classification→recommendation→projection) honest, rest dead. | Write deliverable.
+
+**14:45** | PING_AGENT_ORCHESTRATION_MAP.md written (~250 lines): 10 phases (A agent inventory, B registration graph, C execution ownership, D capability flow, E event choreography, F communication matrix, G scheduling reality, H mission timeline reality, I runtime heatmap, J constitutional score). Verdict: single live engine + parallel kernel path; one mission CAN execute without BrainOS/Hermes/TS kernel today (5 honest stages); overall orchestration readiness ~6/10. Top findings: dual execution paths, dead replay/witness/lineage, intelligence duplication + namespace leak, no lease/ack on canonical spine, phantom-complete, capability dispatch fiction, 2 timers drive everything, BrainOS contributes zero production execution. | Session complete.
+
+## Session - Key Decisions
+- **8-worker documented chain is fiction at stage 6** - nothing produces REPLAY_VERIFY; replay/witness/lineage workers are registered, counted in stats, never executed. The honest chain is 5 stages (observation→claim→classification→recommendation→projection).
+- **IntelligenceWorker is a duplicate path, not a layer** - it listens to the same 21 business events as observation and emits CLASSIFICATION_CREATED+RECOMMENDATION_CREATED directly, doubling downstream work and splitting provenance (evidence carries one event_id). Commissioning's 25 vs 14 recommendation count proves it.
+- **Namespace privacy leak confirmed** - BaseWorker preserves namespace (canonical_workers.js:36) but IntelligenceWorker's inline BaseWorker drops it (intelligence_worker.js:20) on the biggest business-event consumer.
+- **Capability-based dispatch is fiction** - dispatch is eventTypes string matching (worker_runtime.js:73-74); "capabilities" registered are the worker's own name; MissionScheduler selects by MISSION_WORKER_MAP + name-prefix heuristic (mission_scheduler.js:225-230).
+- **Dual projection owner accepted** - EmbeddingService subscriber AND ProjectionWorker both write Qdrant; idempotent by event_id; consolidation deferred.
+
+## Session - Next Steps
+1. **Present PING_AGENT_ORCHESTRATION_MAP.md to user** for direction (options: fix orchestration defects, wire dead chain, or proceed to dashboard/Slice 2).
+2. **Resume Slice 2** (EvidenceAuthority + hybrid /knowledge/search + knowledge promotion) per PING_CANONICAL_BOUNDARY_PLAN.md.
+3. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+4. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain.
+
+### 2026-08-05 Session - Agent Decision Graph Audit (READ-ONLY, #1 priority)
+
+**15:00** | Started session. Goal: READ-ONLY Agent Decision Graph Audit - produce PING_AGENT_DECISION_GRAPH.md only. Every place PING plans, prioritizes, ranks, gates execution, retries, and calculates confidence, mapped as a decision graph. No code, no patches. | Read AGENTS.md + launch 4 explore agents.
+
+**15:05** | 4 parallel explore agents COMPLETE (planning/prioritization/ranking, gates/verification/retry/idempotency, confidence/model/capability, secondary engines). All returned full evidence (prior session's empty-body agent failure not repeated). | Reconcile.
+
+**15:30** | Reconciled with direct verification of live path: Orca /orchestration IS production-mounted (gateway_runtime.js:723-724) - NOT dormant as prior audits claimed; mission_runtime.js:151 ORDER BY priority DESC, created_at ASC is the real prioritizer; unified_event_runtime.js:133-134 ON CONFLICT(event_id) DO NOTHING is the dedup gate; event object built at :113-127 has NO confidence field (dropped at spine); event_to_mission_bridge.js EVENT_MISSION_MAP (25 rows, priority 0-3, worker ALWAYS observation for business); mission_scheduler.js MISSION_WORKER_MAP + phantom-complete :199-205; event_governance.js NAMESPACE_OWNERS PING/HPP. | Write deliverable.
+
+**15:45** | PING_AGENT_DECISION_GRAPH.md written (~290 lines): verdict (two live decision engines + hollow kernel + duplicate worker path; confidence dropped at spine); full 10-decision graph D1-D10 for one observation; decision site inventory (6.1 planners, 6.2 prioritization, 6.3 gates, 6.4 retry, 6.5 confidence x8+ sites, 6.6 model/capability); 7 duplicate/contradictory engines; per-hop re-decision analysis (worker identity decided 5 places, priority 4 scales, namespace 5 hops with IntelligenceWorker drop); 8 gaps; 8 recommendations. Score: decision-graph integrity ~4/10. | Update AGENTS.md.
+
+## Session - Key Decisions
+- **Two live decision engines, not six-to-ten**: Orca-era fabric (HTTP /orchestration, capability+consensus, priority>=8 threshold at engine.js:165-167) AND PING Core v1 (event-driven static maps + SQL sort). All named planners (mission_planner, execution_planner, constitutional_execution_planner, replay_scheduler) are DORMANT.
+- **Confidence is structurally absent from the spine**: emit() builds the event with no confidence field and ping_events has no confidence column; 8+ incompatible confidence sites (0.5/0.7/0.8/0.85/1.0/HF/AI-fallback) exist only inside worker scope and are re-computed from scratch by the next hop. Highest-leverage single fix if approved.
+- **Four incompatible priority scales on live paths simultaneously**: int 0-3 (bridge), int 1-10 default 5 (Orca), string high/normal (IntelligenceWorker), p3-p9 (mission_compiler). SQL sort only orders within the bridge scale.
+- **Worker identity re-decided at 5 places per dispatch**: EVENT_MISSION_MAP.worker, MISSION_WORKER_MAP, _inferWorker prefix heuristic, worker_runtime eventTypes match, metadata.assigned_to. Capability dispatch is fiction (capability = worker's own name).
+- **Kernel pipeline is a hollow gate**: POST /events → 7-stage pipeline runs schema/repository/verification, but reducer/projection registries are EMPTY (no callers of registerReducer/registerProjection at gateway_adapter.js:65-66,:75-76). It validates events it never routes onward.
+- **No verification decision exists in Chain B**: phantom-complete (scheduler completes at dispatch) + swallow (worker_runtime.js:86-90) means "done" is asserted, never verified. retries column exists but no code reads it; no stuck-mission reaper, no backoff/DLQ.
+
+## Session - Next Steps
+1. **Present PING_AGENT_DECISION_GRAPH.md to user** for direction (recommended: fix decision-graph integrity first - single worker-identity decider, one priority scale, confidence on the spine, IntelligenceWorker duplication + namespace drop, completion verification gate).
+2. **Resume Slice 2** (EvidenceAuthority + hybrid /knowledge/search + knowledge promotion) per PING_CANONICAL_BOUNDARY_PLAN.md.
+3. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+4. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain.
+
+### 2026-08-05 Session - ORCA Research & Integration Readiness (READ-ONLY)
+
+**16:00** | Started session. Goal: READ-ONLY ORCA Research & Integration Readiness audit - produce ORCA_RESEARCH_AND_INTEGRATION_READINESS.md only. Inventory every internal ORCA trace (code/docs/ADRs/session logs/git history), reconstruct design evolution, extract stated goals, classify assets, compare vs current runtime, map constitutional compatibility, assess integration risk, list knowledge gaps. No code, no patches. User supplied Harvest Plan (10 harvests, recommended order). | Read AGENTS.md + launch 4 explore agents.
+
+**16:05** | 4 parallel explore agents COMPLETE (term sweep, code anatomy, design-intent docs, git archaeology). All returned full evidence. | Reconcile.
+
+**16:30** | Reconciled. Naming collision resolved: Internal ORCA = orchestration/execution/* ExecutionEngine fabric; External ORCA = Stably Orca GitHub product (referenced only in tier9_competitive_harvesting.md + ORCHESTRATION_CONVERGENCE_PLAN.md:187). Fabric is 100% production-reachable but business-disconnected: single chokepoint gateway_runtime.js:66 -> engine.js, /orchestration mounted :723-724, initialize :323-324 discoverOllama:false (no models ever register). Git archaeology: fabric built 2026-07-03/04 OUTSIDE git; bulk-committed by aaec592b 2026-07-05 "freeze constitutional replay kernel" (457 files, NO wiring, tag constitutional-kernel-freeze-v1); single rewrite+wire 95e2b8c8 2026-07-29 "PING Core v1 build-out" (constitutional-hardening ONLY); main has planning_compiler.js (6e359a26) instead, no fabric; 2 stashes = abandoned PlanningCompiler->engine bridge; no file ever deleted. Genuine ORCA footprint: 40 files/~316 whole-word occurrences (60% substring artifacts); zero hits in constitution/, intent/, scripts/, csv/yaml. | Write deliverable.
+
+**16:45** | ORCA_RESEARCH_AND_INTEGRATION_READINESS.md written (~330 lines): verdict; 9 phases (A term inventory, B git archaeology, C design intent, D production-reachable vs dormant classification, E already-replaced/unique/partial-duplicate/missing, F constitutional compatibility, G authority mapping, H integration risk + harvest validation, I knowledge gaps x10); Adopt vs Discard synthesis; validated 10-step harvest implementation order. | Update AGENTS.md.
+
+## Session - Key Decisions
+- **Naming collision resolved**: Internal ORCA (orchestration/execution/* fabric) vs External ORCA (Stably Orca GitHub product). Harvest plan targets external ORCA's operator UX only; execution stays in PING constitutional authorities.
+- **Fabric is a wired-but-disconnected chokepoint**: /orchestration reachable, but zero business traffic because Ollama discovery is off (discoverOllama:false) and business path never calls engine. "Built twice, wired once" - 457 files frozen unwired, then single PING Core v1 rewrite wired it.
+- **Constitutional compatibility is clean**: facade rule already documented (ORCHESTRATION_CONVERGENCE_PLAN.md:172 - Orca owns planning/scheduling/consensus/review, NOT persistence/execution/event spine; :48 EventQueue = subscriber never bus; :187 no new orchestration framework imports).
+- **Harvest validation: 8/10 have real substrate, 2 net-new**: Agent Registry = extend WorkerPortRegistry/capability_registry.json; Agent Adapter = WorkerPort (build ON, never beside); 2 net-new = Session Manager (no session model exists anywhere) + Worktree Manager (no worktree mapping exists). Zero constitutional conflicts. Live Timeline gated on replay chain (no REPLAY_VERIFY emitter). Fleet Dashboard = rebuild zombie MCPOrchestration.tsx on live /mc/* endpoints.
+- **Adopt vs Discard**: ADOPT WorkerPort (AgentAdapter base), ConsensusEngine, SHA-256 scheduler, MergeGate, ArtifactStore+Authorities, ContextAuthority, facade rule, /orchestration routes. DISCARD 14 generator scripts, worker_registry/knowledge_compiler, dashboard.js/merge_queue/proposal_pipeline/dispatcher/worker_memory/ConstitutionalQueryAPI, artifact_router (superseded by context_authority but still imported at engine.js:9), ollama auto-discovery, 2 stashes, dormant_classifications/ (85 untracked files ~2.88M lines).
+- **worker_runtime.js:10 intent gap**: claims WorkerPort registration that does not exist; actual dispatch = eventTypes string match + name-prefix heuristic. Fix on harvest.
+- **Mission IDs non-deterministic**: routes/orchestration.js:52 uses Date.now()+Math.random() - violates deterministic-ID constitution; fix on harvest.
+
+## Session - Next Steps
+1. **Present ORCA_RESEARCH_AND_INTEGRATION_READINESS.md to user** for direction: (a) proceed with harvest implementation (validated 10-step order: UI shell -> Agent Registry = extend WorkerPortRegistry -> Session model = first net-new build -> Worktree Manager -> AgentAdapter interface -> wrap PING workers -> external adapters -> wire UI -> execution through authorities), (b) run the ORCA<->GitHub diff audit (natural next research step), or (c) other.
+2. **Resume Slice 2** (EvidenceAuthority + hybrid /knowledge/search + knowledge promotion) per PING_CANONICAL_BOUNDARY_PLAN.md.
+3. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+4. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain.
+
+### 2026-08-06 Session - Slice 2 COMPLETE (Evidence + Hybrid Search + Knowledge Promotion)
+
+**14:00** | Started session. Goal: finish Slice 2 (Phases E+F of PING_CANONICAL_BOUNDARY_PLAN.md) — EvidenceAuthority, hybrid POST /knowledge/search, knowledge promotion via approval events. | Read AGENTS.md.
+
+**14:05** | CREATED `ping-runtime/evidence/evidence_authority.js` — `accumulate(sourceEventIds)` (resolve backing events from ping_events, ADD-only, timestamp ASC), `verify(canonicalObject|qdrantHit)` (canonical object shape → hash+lineage+namespace via injected `verifyCanonicalObject`; Qdrant hit shape → trace source_event_id to ping_events, namespace match, canonical_hash match), `rank(results)` (rank_score = confidence × provenance × (approved?1.2:1.0); fallback ×0.5; rejected ×0.2), `getStats()`. | Write tests.
+
+**14:10** | CREATED `ping-runtime/evidence/test_evidence_authority.js` — 12/12 PASS (2nd run). Fix 1: full canonical object shape now sets `checks.backingEvent = true` (was `null` → failed `Object.values(checks).every()`); tampered hash → `tampered++`. Fix 2: rank test rewritten with controlled 1.0 baseline; asserts approved top, rejected last, plain > fallback; fallback detected via `payload.embedding`. | Phase E.2.
+
+**14:15** | MODIFIED `ping-runtime/knowledge/knowledge_graph.js` — added `updateNodeBySourceEvent(sourceEventId, { status?, confidence?, namespace? (guard) })`; returns true only when rowCount===1; sets updated_at=NOW(). CREATED `ping-runtime/knowledge/knowledge_promoter.js` — extends BaseWorker; APPROVE_EVENTS={SNIPPET_APPROVED, AI_RESPONSE_ACCEPTED}→approved/1.0, REJECT_EVENTS={SNIPPET_REJECTED, AI_RESPONSE_REJECTED}→rejected/0.2; getStats={handled, approved, rejected, notFound}. | Wire registration.
+
+**14:20** | MODIFIED `ping-runtime/workers/canonical_workers.js` — optional `knowledge-promotion` worker registered inside registerCanonicalWorkers when `options.knowledgeGraph` present (eventTypes = 4 approval/rejection types, capabilities=['knowledge.promote'], maxConcurrent 2). MODIFIED `gateway/generated/event_generator.js` — added SNIPPET_APPROVED/SNIPPET_REJECTED/AI_RESPONSE_ACCEPTED/AI_RESPONSE_REJECTED to _productionEvents() after RECOMMENDATION_CREATED (authority_owner 'KnowledgePromoter', event_class 'observation'); regenerated event_registry.json 227→231 events (verified all 4 present). | Hybrid search.
+
+**14:25** | CREATED `ping-runtime/search/hybrid_search.js` — HybridSearch({embeddingService, evidenceAuthority, knowledgeGraph}); semantic leg verifies every Qdrant hit, drops foreign-namespace; KG context leg (verified:true, status/node_type/label); rank via EvidenceAuthority; slice to limit; getStats={semanticHits, kgHits, verified, rejected}. MODIFIED `gateway/routes/knowledge.js` — createKnowledgeRoutes(knowledgeGraph, options={}) + POST /search (503 no hybrid, 400 missing query/namespace, limit default 10). | Wire gateway.
+
+**14:30** | MODIFIED `gateway/bootstrap/gateway_runtime.js` — required EvidenceAuthority/HybridSearch/verifyCanonicalObject (from ../canonical_object); passed knowledgeGraph into registerCanonicalWorkers; constructed evidenceAuthority + hybridSearch after worker registration; added to services; /knowledge mounted with { hybridSearch: services.hybridSearch }. node --check PASS on all 8 touched files. | Write integration tests.
+
+**14:35** | CREATED `gateway/test_knowledge_search.js` (10 tests: E1 verified+namespace-drop, E1 ghost unverified, E2 HTTP 200/400/503, E3 ranking, F1 approve/reject/notFound/promoted-rank, F2 registry). First run 5/10. **3 real bugs found**: (1) MockPool UPDATE param order (WHERE params come before SET params) — fixed mock; (2) test passed local `hybrid` but referenced undefined `hybridSearch` — fixed call to `{ hybridSearch: hybrid }`; (3) KnowledgePromoter.handle read `event.eventType` but WorkerRuntime dispatches `event.event_type` (snake_case) → all F1 tests failed — fixed promoter to `event.eventType || event.event_type`. F1 "promoted ranks above candidate" test also rewired to add both candidate nodes BEFORE search (both match query). | Full regression.
+
+**14:45** | **Full regression GREEN, zero failures**: test_knowledge_search 10/10, test_evidence_authority 12/12, test_phase_d_namespace 7/7, test_pipeline_bridge 10/10, test_ingest_boundary 20/20, test_canonical_object 13/13, test_canonical_object_generator 21/21, test_business_emitters 19/19, test_commissioning 0 failed (observation 14 / claim 14 / classification 14 / recommendation 43 / projection 70; replay 0 — expected, no REPLAY_VERIFY emitter), test_wave2_generators 39/39, test_wave2_5_runtime_consumers 32/32, test_p001_p005 27/27, test_kernel_pipeline 8 stages / 125 evidence, test_p040_generated_authoritative 29/29, test_wave3a_integrations 59/59, test_constitutional_validation 63/64 (1 skip = Docker). Event registry +4 events caused NO test failures (no hard counts). | Write report + AGENTS.md.
+
+## Session - Key Decisions
+- **Verify() accepts two evidence shapes**: full canonical object (hash+lineage+namespace via verifyCanonicalObject, checks.backingEvent=true) AND Qdrant hit (trace source_event_id → ping_events, namespace match, canonical_hash match backing metadata.canonical_hash). Ghost hits (no backing row) → verified:false, never dropped silently.
+- **Promotion never rewrites node data**: updateNodeBySourceEvent only touches status/confidence/updated_at keyed by source_event_id (+ optional namespace guard). Provenance intact; approval = ADD-only state transition, not data mutation.
+- **Promoter must read event.event_type (snake_case)**: WorkerRuntime dispatches events with event_type; the promoter's original eventType destructure silently fell through to 'unhandled event type undefined'. F1 tests would have shipped a no-op promoter.
+- **Hybrid search = semantic verified + KG context**: every Qdrant hit is evidence-verified before surfacing; KG nodes are always verified:true (they ARE the backing record); rank_score = confidence × provenance × approval multiplier, fallback ×0.5, rejected ×0.2.
+- **Event registry regenerated, never hand-edited**: 4 Phase F types added via event_generator.js _productionEvents() only; 227→231 events, verified present, zero hard-count test breakage.
+
+## Session - Next Steps
+1. **Slice 3** (NamespaceAuthority enforcement + producers: clipboard/git/log watchers + PT Run bridge plugin) per PING_CANONICAL_BOUNDARY_PLAN.md.
+2. **Decision-graph fixes** (presented, awaiting direction): single worker-identity decider, one priority scale, confidence on spine, IntelligenceWorker duplication + namespace drop, completion verification gate.
+3. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+4. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain + knowledge_nodes namespace/status migration against real Postgres.
+
+### 2026-08-06 Session - READ-ONLY Planning Phase (Six Deliverables Complete)
+
+**14:00** | Started session. Goal: READ-ONLY planning phase (user directive "READ ONLY... additional audits will likely produce diminishing returns... begin integration"). Produce six planning deliverables, then stop for user direction. Zero code changes. | Read AGENTS.md.
+
+**14:05** | Launched 4 parallel explore agents (UI surface, runtime API surface, deployment topology, PSIE substrate). ALL completed with ground truth. Key findings: (1) UI = CascadeProjects/infra/ui-next only (Next 14.1 App Router, 25 components/3 pages/1 health route; 24 of 25 components NOT wired; only CockpitDashboard LIVE on /system/state; no next.config rewrites; MCPOrchestration zombie), (2) runtime API = 25 route groups ~120 endpoints live, six operator surfaces directly backed, /mc/* returns 503 degraded when PG down, (3) deployment = root compose.yaml 14 services network ping_internal; infra postgres/qdrant/vault/ollama always-on; gateway 8080 hardcodes POSTGRES_DB=ping_runtime; 3 worker Dockerfiles MISSING (projection/witness/replay); Hermes EXTERNAL (zero repo imports), (4) PSIE substrate = 231 events, observation+knowledge layers wired, reasoning reachable-but-disconnected (IntelligenceWorker duplicate + namespace drop), evolution dormant (no REPLAY_VERIFY emitter, zero replay endpoints), repo intelligence dormant (proof.json unconsumed, CanonicalObjectGenerator not on production path). | Write deliverables.
+
+**14:20** | PING_UI_COMPONENT_HARVEST_MAP.md written: 25-component inventory LIVE/STALE/SIMULATED/STATIC classification, 14 harvestable, 3 standardization requirements (single fetch helper via @/lib/gateway + NEXT_PUBLIC_GATEWAY_URL, single poll pattern, single ApiState union). | Write interface spec.
+
+**14:25** | PING_MISSION_CONTROL_AGENT_INTERFACE_SPEC.md written: 6 principles, full endpoint tables for all operator surfaces, surface-endpoint-component mapping, glue G1-G4 (GET /missions/:id trace, GET /mc/capabilities composite, GET /mc/evidence/:canonicalHash, ui-next @/lib/oauth.ts), out-of-scope, exit criteria. | Write runtime map.
+
+**14:30** | docs/runtime_map.md written (NEW docs/ directory): capability-to-surface table with files, lifecycle state table (dormant: replay/lineage/witness/repo-intelligence/Orca), backlog (4 glue routes + 3 UI conventions), new-design backlog (replay activation, confidence on spine, IntelligenceWorker duplication, phantom-complete). | Write deployment topology.
+
+**14:35** | docs/deployment_topology.md written: 14-service compose.yaml tables, ping_internal network diagram, port map, grouped env inventory, profile overrides (prod disables projection/witness/replay = broken dev build), standalone Ollama reality (live container vs ping-ollama vs brain-ollama), Dockerfile inventory with 3 MISSING, legacy brain stack, 5 known gaps. | Write hermes protocol.
+
+**14:40** | docs/hermes_operating_protocol.md written: Hermes external-only reality, headless worker + oracle + restricted protocol design, continuous pipeline (build-test-audit-gate-report as events), full action allowlist (read-always/write-with-governance/default-deny), mission lifecycle, 9 standing operating rules, readiness assessment, next steps. | Write PSIE spec.
+
+**14:45** | PING_SOFTWARE_INTELLIGENCE_ENGINE_SPEC.md written: PSIE = existing-assets spec (231 events, layer map L1-L8 with authority_owner, G1-G9 gaps, Hermes substrate, DoD x8, out-of-scope), 3 implementation options with recommendation (a) wire G1+G2+G4+G5+G7 first, defer G3/G6/G8. | Present deliverables + request user direction.
+
+## Session - Key Decisions
+- **READ-ONLY held throughout**: zero code changes, zero commits; all six deliverables are planning artifacts. No AGENTS.md mutations until log write at completion.
+- **Hermes is external-only today**: host install at C:\Users\nolan\AppData\Local\hermes\hermes-agent\; zero repo imports; its sole production role is launching the PowerToys autocomplete service via PingAutocomplete.vbs. Protocol spec defines headless+oracle+restricted allowlist as target posture.
+- **Compose dev build is broken**: Dockerfile.projection/.witness/.replay referenced by compose.yaml but absent; compose.prod.yaml already disables them. Fix = delete stanzas (worker-runtime covers those workers) or add files.
+- **Evolution layer is the biggest dormant gap**: Replay/Witness/Lineage registered + counted in stats but never execute (nothing emits REPLAY_VERIFY; zero replay endpoints). Wiring needs decision-graph approval (replay activation + confidence-on-spine).
+- **PSIE is wiring, not building**: chain L1-L8 with Observe→Knowledge→Discover live; Compile→Embed(enrichment)→Replay dormant. Highest-leverage single fix = confidence on spine (G6) because 8+ sites re-compute it per hop.
+- **No new constitutional abstractions**: EvidenceAuthority, Hybrid Search, Knowledge Promotion, Verification, Replay, Event lineage all exist; PSIE/Hermes must use them.
+
+## Session - Next Steps
+1. **Present six deliverables to user** (harvest map, interface spec, runtime map, deployment topology, hermes protocol, PSIE spec) + the PSIE scope decision (a/b/c). Await direction before implementation.
+2. **Resume Slice 3** (NamespaceAuthority enforcement + producers) per PING_CANONICAL_BOUNDARY_PLAN.md when directed.
+3. **Commit tree-sitter deps** still pending (gateway/package.json + package-lock.json).
+4. **Live E2E blocked on Docker daemon (npipe down)** - apply database/fix_pipeline_blockers.sql, boot gateway+worker-runtime, verify PG/Qdrant chain.

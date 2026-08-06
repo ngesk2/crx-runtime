@@ -314,6 +314,13 @@ class EventGenerator {
       // Worker pipeline — complete chain
       { event_type: 'CLASSIFICATION_CREATED', authority_owner: 'ClassificationWorker', event_class: 'inference' },
       { event_type: 'RECOMMENDATION_CREATED', authority_owner: 'RecommendationWorker', event_class: 'inference' },
+      // Knowledge promotion (Phase F — human approval signals). Raw capture is
+      // observation evidence (confidence < 1); explicit approval promotes a node
+      // to knowledge (confidence 1.0, status approved); rejection down-ranks it.
+      { event_type: 'SNIPPET_APPROVED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
+      { event_type: 'SNIPPET_REJECTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
+      { event_type: 'AI_RESPONSE_ACCEPTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
+      { event_type: 'AI_RESPONSE_REJECTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
     ];
 
     return pipelineEvents.map(e => ({

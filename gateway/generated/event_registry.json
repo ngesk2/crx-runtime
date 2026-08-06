@@ -2,10 +2,74 @@
   "schema_version": "1.0.0",
   "generator": "EventGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-08-03T21:35:37.577Z",
-  "count": 227,
-  "hash": "30055d7dc94ce6b312c0b9469b751f0f05ea5beb7dae583ade58b84b39786df6",
+  "generated_at": "2026-08-06T16:42:04.014Z",
+  "count": 231,
+  "hash": "75c7bd5e35b9f11cdf7b1d0b282840505ac022fa78e0b4e0130e8785977034bc",
   "events": [
+    {
+      "event_type": "AI_RESPONSE_ACCEPTED",
+      "schema_version": "1.0.0",
+      "authority_owner": "KnowledgePromoter",
+      "event_class": "observation",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "AI_RESPONSE_REJECTED",
+      "schema_version": "1.0.0",
+      "authority_owner": "KnowledgePromoter",
+      "event_class": "observation",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
     {
       "event_type": "artifact_produced",
       "schema_version": "1.0.0",
@@ -6211,6 +6275,70 @@
       "schema_version": "1.0.0",
       "authority_owner": "SMSConnector",
       "event_class": "system",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "SNIPPET_APPROVED",
+      "schema_version": "1.0.0",
+      "authority_owner": "KnowledgePromoter",
+      "event_class": "observation",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "SNIPPET_REJECTED",
+      "schema_version": "1.0.0",
+      "authority_owner": "KnowledgePromoter",
+      "event_class": "observation",
       "payload_schema": {
         "type": "object",
         "properties": {

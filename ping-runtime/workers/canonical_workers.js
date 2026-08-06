@@ -407,6 +407,21 @@ const { IntelligenceWorker } = require('./intelligence_worker');
  * Register all canonical workers with a WorkerRuntime instance.
  */
 function registerCanonicalWorkers(workerRuntime, options = {}) {
+  // ─── Knowledge Promotion (Phase F) ────────────────────────────
+  // Optional: only registered when a KnowledgeGraph is provided. Promotion is a
+  // side-effect-only worker — SNIPPET_APPROVED / AI_RESPONSE_ACCEPTED promote a
+  // candidate node to approved (confidence 1.0); rejection down-ranks it.
+  if (options.knowledgeGraph) {
+    const { KnowledgePromoter } = require('../knowledge/knowledge_promoter');
+    const promoter = new KnowledgePromoter({ ...options, knowledgeGraph: options.knowledgeGraph });
+    workerRuntime.register('knowledge-promotion', promoter, {
+      eventTypes: ['SNIPPET_APPROVED', 'SNIPPET_REJECTED', 'AI_RESPONSE_ACCEPTED', 'AI_RESPONSE_REJECTED'],
+      capabilities: ['knowledge.promote'],
+      maxConcurrent: 2,
+    });
+    console.log(`[CanonicalWorkers] Registered 'knowledge-promotion' worker for [SNIPPET_APPROVED, SNIPPET_REJECTED, AI_RESPONSE_ACCEPTED, AI_RESPONSE_REJECTED]`);
+  }
+
   // ─── Registration ─────────────────────────────────────────────
   const BUSINESS_EVENTS = [
     'LEAD_CREATED', 'LEAD_CONVERTED',
