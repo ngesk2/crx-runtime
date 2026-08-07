@@ -184,7 +184,9 @@ class MissionScheduler {
         event_id: payload.event_id || mission.mission_id,
         event_type: payload.event_type || mission.mission_type,
         source: payload.source || 'mission-scheduler',
-        namespace: payload.namespace || 'core::system',
+        // Namespace is set by the bridge from the spine event (always resolved);
+        // the 'core::system' default is owned by UnifiedEventRuntime.emit() only.
+        namespace: payload.namespace,
         mission_id: mission.mission_id,
         payload: payload.payload || payload,
         metadata: {

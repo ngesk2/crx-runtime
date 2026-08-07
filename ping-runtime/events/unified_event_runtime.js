@@ -95,21 +95,28 @@ class UnifiedEventRuntime {
       }
     }
 
-    // 3. Check governance (skip for bridge-sourced events that are already governed)
+    // 3. Check governance (skip for bridge-sourced events that are already governed).
+    //    Namespace is resolved exactly once here — the spine is the single owner of
+    //    the 'core::system' default — and passed into governance so the canonical
+    //    privacy boundary (core::<name> | tenant::<id>) is validated at this one
+    //    choke point rather than re-derived by every downstream caller.
+    const namespace = options.namespace || 'core::system';
     if (this._eventGovernance && !options._skipGovernance) {
       const governance = this._eventGovernance.validateEvent({
         event_type: eventType,
         source,
         payload,
+        namespace,
       });
       if (!governance.valid) {
         this._stats.failed++;
-        return { status: 'error', error: governance.error, eventId };
+        // _reject() returns { errors:[reason], code } — surface the reason string.
+        const reason = governance.error || (governance.errors && governance.errors[0]) || 'Governance violation';
+        return { status: 'error', error: reason, code: governance.code, eventId };
       }
     }
 
-    // 4. Build canonical event
-    const namespace = options.namespace || 'core::system';
+    // 4. Build canonical event (namespace resolved in step 3)
     const event = {
       event_id: eventId,
       event_type: eventType,

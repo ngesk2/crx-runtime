@@ -148,6 +148,15 @@ class EventGovernance {
       return this._reject('OWNER_MISMATCH', `Event '${event.event_type}' declares owner '${event.authority_owner}' but policy requires '${policy.authority_owner}'`);
     }
 
+    // Canonical privacy boundary (core::<name> | tenant::<id>). Routed here from
+    // UnifiedEventRuntime.emit() step 3 — the single choke point. Distinct from the
+    // event-type-prefix namespace below (that is the ownership policy, this is the
+    // tenant privacy boundary).
+    const canonicalNamespace = this._validateCanonicalNamespace(event.namespace);
+    if (!canonicalNamespace.valid) {
+      return this._reject('INVALID_NAMESPACE', canonicalNamespace.reason);
+    }
+
     const namespaceValid = this._validateNamespace(policy.namespace, event);
     if (!namespaceValid.valid) {
       return this._reject('NAMESPACE_VIOLATION', namespaceValid.reason);
@@ -168,6 +177,19 @@ class EventGovernance {
     const expectedOwner = NAMESPACE_OWNERS[namespace];
     if (!expectedOwner) {
       return { valid: false, reason: `No owner defined for namespace '${namespace}'` };
+    }
+    return { valid: true };
+  }
+
+  _validateCanonicalNamespace(namespace) {
+    if (namespace === undefined || namespace === null) {
+      return { valid: true };
+    }
+    if (typeof namespace !== 'string' || !/^(core|tenant)::[a-zA-Z0-9_-]+$/.test(namespace)) {
+      return {
+        valid: false,
+        reason: `Invalid canonical namespace '${namespace}' (must be core::<name> or tenant::<id>)`,
+      };
     }
     return { valid: true };
   }

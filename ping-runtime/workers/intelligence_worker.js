@@ -17,7 +17,11 @@ class BaseWorker {
   async handle(event) { throw new Error(`${this._name}.handle() must be implemented`); }
   async _emit(eventType, payload, options = {}) {
     if (!this._eventRuntime) throw new Error(`${this._name}: no EventRuntime — cannot emit ${eventType}`);
-    const result = await this._eventRuntime.emit(eventType, this._name, payload, options);
+    // Preserve the triggering event's namespace so the privacy boundary survives
+    // the intelligence hop (mirrors canonical_workers.js BaseWorker._emit). The
+    // 'core::system' default is owned by UnifiedEventRuntime.emit() only.
+    const namespace = options.namespace || this._event?.namespace;
+    const result = await this._eventRuntime.emit(eventType, this._name, payload, { ...options, namespace });
     if (result.status !== 'ok') throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
     return result;
   }

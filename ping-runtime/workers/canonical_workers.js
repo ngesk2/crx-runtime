@@ -32,8 +32,9 @@ class BaseWorker {
     }
     // Preserve the namespace from the event that triggered this worker so the
     // privacy boundary (core::system / core::owner / tenant::<id>) survives the
-    // full worker chain down to projection and knowledge graph.
-    const namespace = options.namespace || this._event?.namespace || 'core::system';
+    // full worker chain down to projection and knowledge graph. The 'core::system'
+    // default is owned by UnifiedEventRuntime.emit() — never re-derived here.
+    const namespace = options.namespace || this._event?.namespace;
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
       ...options,
       namespace,

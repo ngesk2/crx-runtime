@@ -106,7 +106,7 @@ class EventToMissionBridge {
         event_id: event.event_id,
         event_type: event.event_type,
         source: event.source,
-        namespace: event.namespace || 'core::system',
+        namespace: event.namespace,
         canonical_hash: (event.metadata && event.metadata.canonical_hash) || null,
         payload: event.payload,
       }, {

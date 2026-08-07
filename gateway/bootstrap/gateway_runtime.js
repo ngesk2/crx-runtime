@@ -573,7 +573,9 @@ class GatewayRuntime {
                 source: event.source,
                 payload,
               }, {
-                namespace: event.namespace || 'core::system',
+                // Namespace comes from the spine event (always resolved); the
+                // 'core::system' default is owned by UnifiedEventRuntime.emit() only.
+                namespace: event.namespace,
                 confidence: 0.5,
                 status: 'candidate',
                 sourceEventId: event.event_id,
