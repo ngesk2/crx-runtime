@@ -112,7 +112,7 @@ function testStats() {
 
 function testEventQueueGovernance() {
   console.log('\n=== P7: EventQueue Governance Integration ===');
-  const { EventQueue } = require('../orchestration/execution/event_queue');
+  const { EventQueue } = require('../ping-runtime/orchestration/execution/event_queue');
   const queue = new EventQueue();
   const governance = queue.getGovernance();
 

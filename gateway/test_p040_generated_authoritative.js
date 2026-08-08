@@ -11,7 +11,7 @@ const { EventValidator } = require('./runtime/event_validator');
 const { CapabilityResolver } = require('./runtime/capability_resolver');
 const { DeploymentLoader } = require('./runtime/deployment_loader');
 const { StateMachineExecutor } = require('./runtime/state_machine_executor');
-const { EventQueue } = require('../orchestration/execution/event_queue');
+const { EventQueue } = require('../ping-runtime/orchestration/execution/event_queue');
 
 let passed = 0;
 let failed = 0;
@@ -196,12 +196,12 @@ test('StateMachineExecutor transition hash is deterministic', () => {
 // --- Regression: worker_port.js loads from generated state machine ---
 console.log('\n--- WorkerPort: loads transitions from generated state machine ---');
 test('WorkerPort WORKER_STATES loaded from generated registry', () => {
-  const { WORKER_STATES } = require('../orchestration/execution/worker_port');
+  const { WORKER_STATES } = require('../ping-runtime/orchestration/execution/worker_port');
   assert.deepStrictEqual(WORKER_STATES, ['idle', 'assigned', 'running', 'waiting', 'consensus', 'completed', 'failed', 'archived']);
 });
 
 test('WorkerPort VALID_TRANSITIONS loaded from generated registry', () => {
-  const { VALID_TRANSITIONS } = require('../orchestration/execution/worker_port');
+  const { VALID_TRANSITIONS } = require('../ping-runtime/orchestration/execution/worker_port');
   assert.ok(VALID_TRANSITIONS.idle, 'idle transitions should exist');
   assert.ok(VALID_TRANSITIONS.assigned, 'assigned transitions should exist');
   assert.ok(VALID_TRANSITIONS.running, 'running transitions should exist');

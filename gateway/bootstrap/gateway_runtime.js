@@ -63,7 +63,7 @@ const { CustomerAuthority } = require('../runtime/business/customer_authority');
 const createCustomerRoutes = require('../routes/customers');
 const { ProjectAuthority } = require('../runtime/business/project_authority');
 const createProjectRoutes = require('../routes/projects');
-const { ExecutionEngine } = require('../../orchestration/execution/engine');
+const { ExecutionEngine } = require('../../ping-runtime/orchestration/execution/engine');
 const createOrchestrationRoutes = require('../routes/orchestration');
 
 // PING Core v1
