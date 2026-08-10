@@ -14,7 +14,7 @@
  * This file is now a gateway shim that re-exports from kernel
  */
 
-const { EventReadAuthority: KernelEventReadAuthority } = require('../runtime/kernel/event_read_authority');
+const { EventReadAuthority: KernelEventReadAuthority } = require('../../runtime/kernel/event_read_authority');
 
 // PATCH_003: Gateway shim - delegates to kernel implementation
 class EventReadAuthority extends KernelEventReadAuthority {

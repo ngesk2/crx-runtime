@@ -85,7 +85,7 @@ class MergeQueue {
 
     this._gate.clear();
     for (const file of (entry.files_affected || [])) {
-      const fullPath = path.resolve(path.join(__dirname, '..'), file);
+      const fullPath = path.resolve(path.join(__dirname, '..', '..'), file);
       if (fs.existsSync(fullPath)) {
         this._gate.validateFile(fullPath);
       }

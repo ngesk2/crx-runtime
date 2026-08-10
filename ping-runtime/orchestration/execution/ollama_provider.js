@@ -5,7 +5,7 @@ const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 
 // Generated from capability_registry.json — single source of truth
 const _modelMappings = (() => {
-  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'capability_registry.json'));
+  const registry = require(path.join(__dirname, '..', '..', '..', 'gateway', 'generated', 'capability_registry.json'));
   if (!registry.model_mappings) throw new Error('[OllamaProvider] model_mappings not found in capability_registry.json');
   return registry.model_mappings;
 })();

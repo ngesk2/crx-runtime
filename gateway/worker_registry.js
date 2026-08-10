@@ -20,8 +20,8 @@
  * - Replayable worker state reconstruction
  */
 
-const { StandardEventSchema } = require('./standard_event_schema');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { StandardEventSchema } = require('../ping-runtime/events/standard_event_schema');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class WorkerRegistry {
   constructor(options = {}) {

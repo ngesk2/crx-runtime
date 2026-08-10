@@ -39,17 +39,17 @@
  * Verification
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { deterministicKeyAuthority } = require('./deterministic_key_authority');
 const { canonicalObjectAuthority } = require('./canonical_object_authority');
 const { MigrationEngine } = require('./migration_engine');
-const { RepositoryStore } = require('./repository_store');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
 const { AppendOrchestrator } = require('./append_orchestrator');
 const { WitnessRecorder } = require('./witness_recorder');
 const { ReplayCertificate } = require('./replay_certificate');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class AuthorityRegistry {
   constructor() {

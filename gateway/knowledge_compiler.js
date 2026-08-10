@@ -26,9 +26,9 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalEventBus } = require('./event_bus');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { ReflectionPass } = require('./reflection_pass');
 
 /**
@@ -180,9 +180,9 @@ class AcquisitionPass extends CompilerPass {
 
   async _process(input) {
     const { owner, repo, lifecycleId } = input;
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-    const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+    const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
     
     const snapshot = await this._githubSnapshot.fetchSnapshot();
     
@@ -219,8 +219,8 @@ class NormalizationPass extends CompilerPass {
   }
 
   async _process(input) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const normalized = {
       id: identityAuthority.generateId('normalization', { type: 'normalization' }),
       pass: 'Normalization',
@@ -352,8 +352,8 @@ class StructuralCompilationPass extends CompilerPass {
   }
 
   async _process(input) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const structural = {
       id: identityAuthority.generateId('structural_compilation', { type: 'structural_compilation' }),
       pass: 'StructuralCompilation',
@@ -450,8 +450,8 @@ class SemanticCompilationPass extends CompilerPass {
   }
 
   async _process(input) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const semantic = {
       id: identityAuthority.generateId('semantic_compilation', { type: 'semantic_compilation' }),
       pass: 'SemanticCompilation',
@@ -476,7 +476,7 @@ class SemanticCompilationPass extends CompilerPass {
   }
 
   _computeActivityLevel(input) {
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const recentCommits = input.commits.filter(c => {
       const commitDate = new Date(c.author_date);
       const monthAgo = new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 24 * 60 * 60 * 1000);
@@ -554,8 +554,8 @@ class VerificationPass extends CompilerPass {
   }
 
   async _process(input) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const verification = {
       id: identityAuthority.generateId('verification', { type: 'verification' }),
       pass: 'Verification',
@@ -632,8 +632,8 @@ class ConstitutionalObjectSynthesisPass extends CompilerPass {
   }
 
   async _process(input) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const objects = [];
     const lifecycleId = input.lifecycleId || identityAuthority.generateId('lifecycle', { type: 'lifecycle' });
 
@@ -668,7 +668,7 @@ class ConstitutionalObjectSynthesisPass extends CompilerPass {
   }
 
   async _synthesizeRepository(input, lifecycleId) {
-    const { identityAuthority } = require('./identity_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
     return {
       id: identityAuthority.generateId('repository', { type: 'repository' }),
       kind: 'Repository',
@@ -700,8 +700,8 @@ class ConstitutionalObjectSynthesisPass extends CompilerPass {
   }
 
   async _synthesizeCommit(commit, repoId, lifecycleId) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     return {
       id: identityAuthority.generateId('commit', { type: 'commit' }),
       kind: 'Commit',
@@ -738,8 +738,8 @@ class ConstitutionalObjectSynthesisPass extends CompilerPass {
   }
 
   async _synthesizeBranch(branch, repoId, lifecycleId) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     return {
       id: identityAuthority.generateId('branch', { type: 'branch' }),
       kind: 'Branch',
@@ -809,8 +809,8 @@ class KnowledgeCompiler {
   }
 
   async compile(owner, repo, lifecycleId = null) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const input = {
       id: identityAuthority.generateId('compilation', { type: 'compilation' }),
       owner,

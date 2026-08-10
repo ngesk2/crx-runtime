@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const filesystemIndex = JSON.parse(fs.readFileSync('c:\\Users\\nolan\\PING\\orchestration\\RepositoryKnowledgeIndex_Filesystem.json', 'utf8').replace(/^\uFEFF/, ''));
+const filesystemIndex = JSON.parse(fs.readFileSync(path.join(__dirname, 'RepositoryKnowledgeIndex_Filesystem.json'), 'utf8').replace(/^\uFEFF/, ''));
 
 const constitutionManifest = {
   version: '1.0.0',
@@ -14,11 +14,11 @@ const constitutionManifest = {
   artifacts: []
 };
 
-// Focus on kernel components (gateway/, runtime/, orchestration/)
+// Focus on kernel components (gateway/, runtime/, ping-runtime/orchestration/)
 const kernelFiles = filesystemIndex.filter(f => 
   f.RelativePath.startsWith('gateway\\') || 
   f.RelativePath.startsWith('runtime\\') || 
-  f.RelativePath.startsWith('orchestration\\')
+  f.RelativePath.startsWith('ping-runtime\\orchestration\\')
 );
 
 console.log(`Processing ${kernelFiles.length} kernel files...`);
@@ -65,7 +65,7 @@ kernelFiles.forEach(file => {
   constitutionManifest.artifacts.push(artifact);
 });
 
-fs.writeFileSync('c:\\Users\\nolan\\PING\\orchestration\\RepositoryConstitutionManifest.json', JSON.stringify(constitutionManifest, null, 2));
+fs.writeFileSync(path.join(__dirname, 'RepositoryConstitutionManifest.json'), JSON.stringify(constitutionManifest, null, 2));
 console.log('Constitutional ownership manifest generated successfully.');
 console.log(`Total artifacts: ${constitutionManifest.artifacts.length}`);
 console.log('All ownership fields marked as UNKNOWN - requires human constitutional judgment.');

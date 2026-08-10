@@ -9,7 +9,7 @@
  */
 
 const express = require('express');
-const { constitutionalTimeAuthority } = require('../constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 const ROUTER_MODEL_7B = 'qwen2.5-coder:7b';
 const ROUTER_MODEL_14B = 'qwen2.5-coder:14b';

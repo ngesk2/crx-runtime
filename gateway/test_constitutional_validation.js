@@ -30,11 +30,11 @@ const {
   AUTHORITY_CONTRACT_SCHEMA,
   EVENT_CONTRACT_SCHEMA,
   REGISTRY_CONTRACT_SCHEMA,
-} = require('./constitutional_validation');
+} = require('../ping-runtime/authorities/constitutional_validation');
 const { CanonicalEventEnvelope } = require('./canonical_event_envelope');
-const { TenantRegistry } = require('./tenant_registry');
-const { DeploymentRegistry } = require('./deployment_registry');
-const { RuntimeRegistry } = require('./runtime_registry');
+const { TenantRegistry } = require('../ping-runtime/runtime/tenant_registry');
+const { DeploymentRegistry } = require('../ping-runtime/runtime/deployment_registry');
+const { RuntimeRegistry } = require('../ping-runtime/runtime/runtime_registry');
 
 // ============================================================
 // MOCK DATABASE

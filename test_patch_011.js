@@ -16,7 +16,7 @@ try {
 // Test 2: Load gateway shim
 console.log('\nTest 2: Loading gateway StandardEventSchema shim...');
 try {
-  const { StandardEventSchema: GatewayStandardEventSchema } = require('./gateway/standard_event_schema');
+  const { StandardEventSchema: GatewayStandardEventSchema } = require('./ping-runtime/events/standard_event_schema');
   console.log('✓ Gateway StandardEventSchema shim loaded');
 } catch (error) {
   console.error('✗ Failed to load gateway shim:', error.message);
@@ -27,7 +27,7 @@ try {
 console.log('\nTest 3: Verifying gateway shim delegates to kernel...');
 try {
   const { StandardEventSchema: KernelStandardEventSchema } = require('./runtime/kernel/authorities/standard_event_schema');
-  const { StandardEventSchema: GatewayStandardEventSchema } = require('./gateway/standard_event_schema');
+  const { StandardEventSchema: GatewayStandardEventSchema } = require('./ping-runtime/events/standard_event_schema');
   
   if (GatewayStandardEventSchema.prototype instanceof KernelStandardEventSchema) {
     console.log('✓ Gateway StandardEventSchema subclasses kernel');

@@ -20,8 +20,8 @@
  * Pure function evaluation with no runtime dependencies.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class ConditionAuthority {
   constructor() {

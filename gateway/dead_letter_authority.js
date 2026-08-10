@@ -30,11 +30,11 @@
  * - replayable (boolean)
  */
 
-const { CanonicalBytes } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { witnessAuthority } = require('./witness_authority');
 const { RetryPolicy } = require('./retry_policy');
-const { identityAuthority } = require('./identity_authority');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class DeadLetterAuthority {
   constructor(postgresPool) {

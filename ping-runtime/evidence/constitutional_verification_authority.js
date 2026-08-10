@@ -29,8 +29,8 @@
  * PASS or FAIL
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../authorities/canonical_authority.js');
+const { identityAuthority } = require('../authorities/identity_authority.js');
 
 /**
  * Deterministic failure codes

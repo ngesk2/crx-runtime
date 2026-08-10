@@ -16,8 +16,8 @@
  *   2. const id = identityAuthority.generateFromCanonicalHash(canonicalBytes, 'type');
  */
 
-const { CanonicalBytes } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalBytes } = require('./canonical_authority.js');
+const { identityAuthority } = require('./identity_authority.js');
 
 class DeterministicIdAuthority {
   /**

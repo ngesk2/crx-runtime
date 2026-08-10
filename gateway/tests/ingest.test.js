@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { SemanticChunker } = require('../semantic_chunker');
 const { MetadataExtractor } = require('../metadata_extractor');
-const { getInferenceAdapter } = require('../inference_adapter');
+const { getInferenceAdapter } = require('../../ping-runtime/ai/inference_adapter');
 const { QdrantClient } = require('../qdrant_client');
 
 // Test configuration

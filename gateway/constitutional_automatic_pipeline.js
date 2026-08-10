@@ -14,8 +14,8 @@
  * Runtime never decides. Runtime only interprets immutable plans.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 const { ConstitutionalExecutionPlanner } = require('./constitutional_execution_planner');
 
 class ConstitutionalAutomaticPipeline {

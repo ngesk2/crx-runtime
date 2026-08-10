@@ -14,9 +14,9 @@
  * the envelope to the single canonical field contract.
  */
 
-const { createCanonicalObject } = require('./canonical_object');
-const { CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { createCanonicalObject } = require('../ping-runtime/canonicalization/canonical_object');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class ConstitutionalObjectFactory {
   constructor() {
@@ -72,7 +72,7 @@ class ConstitutionalObjectFactory {
    * @returns {Object} Symbol constitutional object
    */
   createSymbol(symbolData) {
-    const { identityAuthority } = require('./identity_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
     const symbolId = identityAuthority.generateSymbolId(
       symbolData.canonical_name,
       symbolData.language,

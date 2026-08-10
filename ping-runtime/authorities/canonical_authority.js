@@ -36,7 +36,7 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalBytes: KernelCanonicalBytes, CanonicalAuthority: KernelCanonicalAuthority } = require('../runtime/kernel/authorities/canonical_authority');
+const { CanonicalBytes: KernelCanonicalBytes, CanonicalAuthority: KernelCanonicalAuthority } = require('../../runtime/kernel/authorities/canonical_authority');
 
 // PATCH_004: Gateway shim - delegates to kernel implementation
 class CanonicalBytes {

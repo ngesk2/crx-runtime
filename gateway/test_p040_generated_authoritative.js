@@ -6,11 +6,11 @@ const path = require('path');
 const fs = require('fs');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const { WorkflowExecutor } = require('./runtime/workflow_executor');
-const { EventValidator } = require('./runtime/event_validator');
-const { CapabilityResolver } = require('./runtime/capability_resolver');
-const { DeploymentLoader } = require('./runtime/deployment_loader');
-const { StateMachineExecutor } = require('./runtime/state_machine_executor');
+const { WorkflowExecutor } = require('../ping-runtime/runtime/workflow_executor');
+const { EventValidator } = require('../ping-runtime/events/event_validator');
+const { CapabilityResolver } = require('../ping-runtime/runtime/capability_resolver');
+const { DeploymentLoader } = require('../ping-runtime/runtime/deployment_loader');
+const { StateMachineExecutor } = require('../ping-runtime/runtime/state_machine_executor');
 const { EventQueue } = require('../ping-runtime/orchestration/execution/event_queue');
 
 let passed = 0;

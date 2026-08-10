@@ -13,7 +13,7 @@
  * - Error handling with retry
  */
 
-const { getInferenceAdapter } = require('./inference_adapter');
+const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 
 class EmbeddingBatcher {
   constructor(config = {}) {

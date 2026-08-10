@@ -13,7 +13,7 @@
  * `embedding: 'fallback'` so retrieval can down-rank it.
  */
 
-const { CanonicalBytes, CanonicalAuthority } = require('../../gateway/canonical_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../authorities/canonical_authority.js');
 
 const DEFAULT_COLLECTION = 'knowledge';
 const DEFAULT_MODEL = 'nomic-embed-text';

@@ -1,4 +1,4 @@
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { AdapterCompilerV2 } = require('./adapter_compiler_v2');
 
 /**

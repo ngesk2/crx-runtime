@@ -9,9 +9,9 @@
  * This authority handles creating immutable snapshots from Git data.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 const { constitutionalObjectFactory } = require('./constitutional_object_factory');
 
 class SnapshotAuthority {

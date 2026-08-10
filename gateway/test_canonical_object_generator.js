@@ -16,7 +16,7 @@ const assert = require('assert');
 const path = require('path');
 
 const { CanonicalObjectGenerator } = require('./canonical_object_generator');
-const { verifyCanonicalObject } = require('./canonical_object');
+const { verifyCanonicalObject } = require('../ping-runtime/canonicalization/canonical_object');
 
 let passed = 0;
 let failed = 0;

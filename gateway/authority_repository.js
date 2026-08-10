@@ -17,7 +17,7 @@
  * Eventually can become persistent storage without changing callers.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class AuthorityRepository {
   constructor() {

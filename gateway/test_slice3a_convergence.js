@@ -15,7 +15,7 @@
 const assert = require('assert');
 const path = require('path');
 const { UnifiedEventRuntime } = require('../ping-runtime/events/unified_event_runtime');
-const { EventGovernance } = require('./runtime/event_governance');
+const { EventGovernance } = require('../ping-runtime/events/event_governance');
 const { MissionScheduler } = require('../ping-runtime/orchestration/mission_scheduler');
 const { WorkerRuntime } = require('../ping-runtime/workers/worker_runtime');
 const { registerCanonicalWorkers } = require('../ping-runtime/workers/canonical_workers');

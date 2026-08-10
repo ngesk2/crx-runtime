@@ -11,8 +11,8 @@
  */
 
 const { PublicationAuthority } = require('../../gateway/publication_authority');
-const { constitutionalTimeAuthority } = require('../../gateway/constitutional_time_authority');
-const { deterministicIdAuthority } = require('../../gateway/deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../../ping-runtime/authorities/deterministic_id_authority');
 
 /**
  * Test publication validation (uncertified artifact rejection)

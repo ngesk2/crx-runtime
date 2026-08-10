@@ -1,4 +1,4 @@
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalRecord } = require('./constitutional_record');
 
 /**
@@ -122,7 +122,7 @@ class ConstitutionalFreezeAuthority {
     });
 
     // Set storage metadata (Phase 2.12: frozen_at in storage metadata, not constitutional identity)
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     constitutionalRecordObj.setStorageMetadata({
       stored_at: constitutionalTimeAuthority.nowAsMillis(),
       storage_location: 'memory',

@@ -61,7 +61,7 @@ class CodeGenerator {
    * @returns {string} SHA256 hash
    */
   _computeHash(source) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     return CanonicalAuthority.hash(source);
   }
 }

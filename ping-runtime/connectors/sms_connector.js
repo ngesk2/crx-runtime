@@ -7,7 +7,7 @@
  * Capabilities: sms, alerts
  */
 
-const { SmsIntegration } = require('../../gateway/runtime/integrations/sms_integration');
+const { SmsIntegration } = require('./sms_integration');
 
 class SMSConnector {
   constructor(options = {}) {

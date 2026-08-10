@@ -10,7 +10,7 @@
  * Response is deterministic: same inputs → same output.
  */
 
-const { computeCanonicalHash } = require('../constitutional_validation');
+const { computeCanonicalHash } = require('../../ping-runtime/authorities/constitutional_validation');
 
 // Lazy import — only needed when container is provided
 let _buildDependencyGraph = null;

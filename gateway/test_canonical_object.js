@@ -17,7 +17,7 @@ const {
   verifyCanonicalObject,
   CANONICAL_OBJECT_SCHEMA_VERSION,
   CANONICAL_OBJECT_CONSTITUTION_VERSION,
-} = require('./canonical_object');
+} = require('../ping-runtime/canonicalization/canonical_object');
 const { canonicalObjectAuthority } = require('./canonical_object_authority');
 const { constitutionalObjectFactory } = require('./constitutional_object_factory');
 

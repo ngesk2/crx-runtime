@@ -30,9 +30,9 @@
  * - VerificationAuthority.verify(object) before RepositoryStore.append(object)
  * - Persistence never stores unconstitutional artifacts
  */
-const { RepositoryInterface } = require('./repository_interface');
-const { MigrationEngine } = require('./migration_engine');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { RepositoryInterface } = require('../../gateway/repository_interface');
+const { MigrationEngine } = require('../../gateway/migration_engine');
+const { constitutionalVerificationAuthority } = require('../evidence/constitutional_verification_authority');
 
 class RepositoryStore extends RepositoryInterface {
   constructor(pool) {

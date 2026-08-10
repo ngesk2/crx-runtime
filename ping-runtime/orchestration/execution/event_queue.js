@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { EventValidator } = require('../../gateway/runtime/event_validator');
-const { EventGovernance } = require('../../gateway/runtime/event_governance');
+const { EventValidator } = require('../../events/event_validator');
+const { EventGovernance } = require('../../events/event_governance');
 
 const QUEUE_DIR = path.join(__dirname, '..', 'event_queue');
 
@@ -15,10 +15,10 @@ class EventQueue {
     this._emittedIds = new Set();
     this._globalSequence = 0;
     this._governance = options.governance || null;
-    this._validator = new EventValidator(require('path').join(__dirname, '..', '..'));
+    this._validator = new EventValidator(require('path').join(__dirname, '..', '..', '..'));
     this._validator.load();
     if (!this._governance) {
-      this._governance = new EventGovernance(require('path').join(__dirname, '..', '..'));
+      this._governance = new EventGovernance(require('path').join(__dirname, '..', '..', '..'));
       this._governance.load();
     }
     if (!fs.existsSync(QUEUE_DIR)) {

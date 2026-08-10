@@ -10,7 +10,7 @@
  * Mission Authority consumes constitutional mission rule set instead of hardcoded policy.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalObjectFactory, OperationalEnvelope, OperationalMetadataCollector } = require('./operational_envelope');
 const { MissionRuleAuthority } = require('./mission_rule_authority');
 

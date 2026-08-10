@@ -9,7 +9,7 @@
  */
 
 const { QdrantClient } = require('./qdrant_client');
-const { getInferenceAdapter } = require('./inference_adapter');
+const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 
 class ConversationMemory {
   constructor(config = {}) {

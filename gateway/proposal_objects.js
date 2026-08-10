@@ -35,8 +35,8 @@
  * These are proposals that must pass through admission before becoming constitutional.
  */
 
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ProposalObject {
   constructor(data) {

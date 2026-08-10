@@ -1,11 +1,11 @@
 // P051-P054: Integration Manager + All Integrations
 // Tests: IntegrationManager, PostHogIntegration, WebhookIntegration, EmailIntegration, SmsIntegration
 
-const { IntegrationManager } = require('./runtime/integration_manager');
-const { PostHogIntegration } = require('./runtime/integrations/posthog_integration');
+const { IntegrationManager } = require('../ping-runtime/runtime/integration_manager');
+const { PostHogIntegration } = require('../ping-runtime/connectors/posthog_integration');
 const { WebhookIntegration } = require('./runtime/integrations/webhook_integration');
-const { EmailIntegration } = require('./runtime/integrations/email_integration');
-const { SmsIntegration } = require('./runtime/integrations/sms_integration');
+const { EmailIntegration } = require('../ping-runtime/connectors/email_integration');
+const { SmsIntegration } = require('../ping-runtime/connectors/sms_integration');
 
 let passed = 0;
 let failed = 0;

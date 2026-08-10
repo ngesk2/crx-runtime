@@ -12,8 +12,8 @@
  * ExecutionAuthority delegates parallel execution to this authority.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class ParallelExecutionAuthority {
   constructor(executionAuthority) {
@@ -57,7 +57,7 @@ class ParallelExecutionAuthority {
       authority_version: '45.6.0',
       constitutional_version: '45.6.0'
     };
-    const hash = require('./canonical_authority').CanonicalAuthority.hash(authorityData);
+    const hash = require('../ping-runtime/authorities/canonical_authority.js').CanonicalAuthority.hash(authorityData);
     return `parallel_execution_${hash.substring(0, 16)}`;
   }
 }

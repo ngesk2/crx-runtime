@@ -1,6 +1,6 @@
 // P8: Analytics Policy Engine — allowed/forbidden metrics, redaction, projection, retention
 
-const { AnalyticsPolicy, ALLOWED_OPERATIONAL_METRICS, FORBIDDEN_BUSINESS_METRICS, REDACTION_RULES, PROJECTION_RULES, RETENTION_CLASSES } = require('./runtime/analytics_policy');
+const { AnalyticsPolicy, ALLOWED_OPERATIONAL_METRICS, FORBIDDEN_BUSINESS_METRICS, REDACTION_RULES, PROJECTION_RULES, RETENTION_CLASSES } = require('../ping-runtime/runtime/analytics_policy');
 
 let passed = 0;
 let failed = 0;
@@ -139,8 +139,8 @@ function testStats() {
 
 async function testIntegrationManagerPolicy() {
   console.log('\n=== P8: IntegrationManager + Policy ===');
-  const { IntegrationManager } = require('./runtime/integration_manager');
-  const { PostHogIntegration } = require('./runtime/integrations/posthog_integration');
+  const { IntegrationManager } = require('../ping-runtime/runtime/integration_manager');
+  const { PostHogIntegration } = require('../ping-runtime/connectors/posthog_integration');
 
   const policy = new AnalyticsPolicy();
   const manager = new IntegrationManager({ policy });

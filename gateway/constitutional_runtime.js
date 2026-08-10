@@ -19,11 +19,11 @@
  */
 
 const crypto = require('crypto');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 const { GitHubSnapshot } = require('./github_snapshot');
 const { EmbeddingAuthority } = require('./embedding_authority');
-const { getInferenceAdapter } = require('./inference_adapter');
+const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 const { ReflectionGenerator } = require('./reflection_generator');
 const { MissionGenerator } = require('./mission_generator');
 const { ReplayAuthority } = require('./replay_authority');

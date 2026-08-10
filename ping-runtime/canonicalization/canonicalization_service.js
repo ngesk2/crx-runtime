@@ -23,7 +23,7 @@
  * capture adapters) are thin adapters over this service.
  */
 
-const { createCanonicalObject, verifyCanonicalObject } = require('../../gateway/canonical_object');
+const { createCanonicalObject, verifyCanonicalObject } = require('./canonical_object');
 
 const CANONICAL_VERSION = '1.0.0';
 const DEFAULT_NAMESPACE = 'core::owner';
@@ -60,6 +60,26 @@ class CanonicalizationService {
       throw new Error(`Invalid namespace: '${namespace}' (must be core::<name> or tenant::<id>)`);
     }
     return namespace;
+  }
+
+  /**
+   * Authorize a producer's namespace claim at the boundary (audit §7 #1).
+   * Producers' allowed namespaces = the per-source map + explicit override,
+   * resolved by the same rule as resolveNamespace. This is the guard decision
+   * (authorized: true/false) the boundary route uses before canonicalizing;
+   * it wraps resolveNamespace so resolution + validation have exactly one owner.
+   *
+   * @param {string} source — producing source/authority ID
+   * @param {string} [requested] — explicit namespace override (optional)
+   * @returns {{authorized: true, namespace: string} | {authorized: false, reason: string}}
+   */
+  authorizeNamespace(source, requested) {
+    try {
+      const namespace = this.resolveNamespace(source, requested);
+      return { authorized: true, namespace };
+    } catch (err) {
+      return { authorized: false, reason: err.message };
+    }
   }
 
   /**

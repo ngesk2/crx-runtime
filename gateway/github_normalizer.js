@@ -32,7 +32,7 @@ const {
   GitHubDirectoryObject,
   GitHubBlobObject,
 } = require('./github_constitutional_objects');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class GitHubNormalizer {
   constructor() {

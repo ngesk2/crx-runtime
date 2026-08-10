@@ -34,9 +34,9 @@
  */
 
 const { RelationshipEdgeObject, RelationshipProposalObject } = require('./relationship_objects');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class RelationshipRuntime {
   constructor() {
@@ -316,8 +316,8 @@ class RelationshipRuntime {
           property_type: prop.type,
         };
         
-        const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-        const { identityAuthority } = require('./identity_authority');
+        const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+        const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
         
         const propertyCanonicalBytes = CanonicalBytes.serialize(propertyCanonicalData);
         const propertyCanonicalHash = CanonicalAuthority.hashBytes(propertyCanonicalBytes);
@@ -344,8 +344,8 @@ class RelationshipRuntime {
           method_kind: method.kind,
         };
         
-        const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-        const { identityAuthority } = require('./identity_authority');
+        const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+        const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
         
         const methodCanonicalBytes = CanonicalBytes.serialize(methodCanonicalData);
         const methodCanonicalHash = CanonicalAuthority.hashBytes(methodCanonicalBytes);

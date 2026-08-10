@@ -13,7 +13,7 @@
  */
 
 const crypto = require('crypto');
-const { validateRegistry, computeCanonicalHash } = require('./constitutional_validation');
+const { validateRegistry, computeCanonicalHash } = require('../authorities/constitutional_validation');
 
 class TenantRegistry {
   constructor(storage) {

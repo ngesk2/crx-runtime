@@ -29,11 +29,11 @@
  * - Agent lifecycle is constitutional
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
-const { witnessAuthority } = require('./witness_authority');
-const { constitutionVersionAuthority } = require('./constitution_version_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../authorities/canonical_authority');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority');
+const { identityAuthority } = require('../authorities/identity_authority');
+const { witnessAuthority } = require('../../gateway/witness_authority');
+const { constitutionVersionAuthority } = require('../../gateway/constitution_version_authority');
 
 /**
  * Machine Types

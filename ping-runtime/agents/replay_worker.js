@@ -6,7 +6,7 @@
  */
 
 const { BaseWorker } = require('./base_worker');
-const { CanonicalBytes } = require('./canonical_authority');
+const { CanonicalBytes } = require('../authorities/canonical_authority');
 
 class ReplayWorker extends BaseWorker {
   constructor(workerId, dependencies = {}) {

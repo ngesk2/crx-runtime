@@ -13,7 +13,7 @@
  * MemoryAuthority delegates vector operations to this authority.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class MemoryVectorStoreAuthority {
   constructor(qdrantClient) {

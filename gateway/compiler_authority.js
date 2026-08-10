@@ -26,8 +26,8 @@
  * - No business logic in CompilerAuthority
  */
 
-const { identityAuthority } = require('./identity_authority');
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 const { compilationPolicy } = require('./compilation_policy');
 const { versionedSchemaCompiler } = require('./schema_compiler');
 

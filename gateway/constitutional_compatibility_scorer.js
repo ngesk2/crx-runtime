@@ -14,9 +14,9 @@
  * The compatibility score is decomposable into these factors so it is auditable rather than opaque.
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConstitutionalCompatibilityScorer {
   constructor(postgresPool) {

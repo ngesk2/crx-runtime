@@ -12,7 +12,7 @@
  */
 
 const { deterministicIdAuthority } = require('./deterministic_id_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('./constitutional_time_authority.js');
 
 class WorkflowIdentityAuthority {
   constructor() {

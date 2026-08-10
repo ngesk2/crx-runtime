@@ -7,7 +7,7 @@
  * Used for fleet drift detection.
  */
 
-const { computeCanonicalHash } = require('./constitutional_validation');
+const { computeCanonicalHash } = require('../ping-runtime/authorities/constitutional_validation');
 
 // Lazy import — only needed by computeLivePlatformHash
 let _buildDependencyGraph = null;

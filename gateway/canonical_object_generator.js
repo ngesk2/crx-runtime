@@ -15,7 +15,7 @@
  */
 
 const path = require('path');
-const { createCanonicalObject } = require('./canonical_object');
+const { createCanonicalObject } = require('../ping-runtime/canonicalization/canonical_object');
 
 const SUPPORTED_LANGUAGES = ['javascript', 'typescript', 'python'];
 
@@ -96,7 +96,7 @@ class CanonicalObjectGenerator {
   generateFileObject({ filePath, content, language, symbols }) {
     const lang = language || this.detectLanguage(filePath) || 'unknown';
     const lines = content.split(/\r?\n/);
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     const contentHash = CanonicalAuthority.hashBytes(Buffer.from(content, 'utf8'));
     const symbolIndex = (symbols || []).map((s) => ({
       id: s.id,

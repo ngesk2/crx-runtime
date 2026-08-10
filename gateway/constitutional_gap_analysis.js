@@ -13,9 +13,9 @@
  * - Does it improve replay determinism?
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class ConstitutionalGapAnalysis {
   constructor(postgresPool, knowledgeAcquisition, ollamaIntegration) {

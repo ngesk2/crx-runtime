@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '../..');
 const GATEWAY = path.join(ROOT, 'gateway');
 const RUNTIME = path.join(ROOT, 'runtime');
 
@@ -37,7 +37,7 @@ class IntelligenceGraph {
     if (fs.existsSync(RUNTIME)) {
       this._scanModuleGraph(RUNTIME, 'runtime');
     }
-    this._scanModuleGraph(ROOT + '/orchestration', 'orchestration');
+    this._scanModuleGraph(ROOT + '/ping-runtime/orchestration', 'ping-runtime/orchestration');
   }
 
   _scanEntryPoints() {
@@ -245,7 +245,7 @@ class IntelligenceGraph {
           node.ownership = 'bootstrap';
         } else if (node.path.startsWith('gateway/routes/')) {
           node.ownership = 'routes';
-        } else if (node.path.startsWith('orchestration/')) {
+        } else if (node.path.startsWith('ping-runtime/orchestration/')) {
           node.ownership = 'orchestration';
         } else {
           node.ownership = 'gateway';
@@ -260,7 +260,7 @@ class IntelligenceGraph {
       pathToNode.set(node.fullPath, node);
       const reqKey = node.path;
       pathToNode.set(reqKey, node);
-      const noPrefix = node.path.replace(/^(gateway|runtime|orchestration)\//, '');
+      const noPrefix = node.path.replace(/^(gateway|runtime|ping-runtime\/orchestration)\//, '');
       pathToNode.set(noPrefix, node);
     }
 

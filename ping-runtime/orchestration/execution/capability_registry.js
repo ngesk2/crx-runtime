@@ -6,7 +6,7 @@ const REGISTRY_FILE = path.join(__dirname, 'capability_registry.json');
 
 // Generated from capability_registry.json — single source of truth for valid capabilities
 const _generatedCapabilities = (() => {
-  const registryPath = path.join(__dirname, '..', '..', 'gateway', 'generated', 'capability_registry.json');
+  const registryPath = path.join(__dirname, '..', '..', '..', 'gateway', 'generated', 'capability_registry.json');
   try {
     const registry = require(registryPath);
     const names = new Set();

@@ -1,6 +1,6 @@
 // P7: Event Governance — ownership policy, namespace validation, enforcement
 
-const { EventGovernance, NAMESPACE_OWNERS } = require('./runtime/event_governance');
+const { EventGovernance, NAMESPACE_OWNERS } = require('../ping-runtime/events/event_governance');
 const path = require('path');
 
 let passed = 0;

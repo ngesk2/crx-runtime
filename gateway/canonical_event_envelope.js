@@ -16,7 +16,7 @@
  */
 
 const crypto = require('crypto');
-const { computeCanonicalHash } = require('./constitutional_validation');
+const { computeCanonicalHash } = require('../ping-runtime/authorities/constitutional_validation');
 
 class CanonicalEventEnvelope {
   constructor(storage) {

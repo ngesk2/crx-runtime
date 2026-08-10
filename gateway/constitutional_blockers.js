@@ -40,12 +40,12 @@ class ConstitutionalBlockers {
       path.join(gatewayRoot, 'replay_certificate_authority.js'),
       path.join(gatewayRoot, 'reducer_authority.js'),
       path.join(gatewayRoot, 'event_repository.js'),
-      path.join(gatewayRoot, 'standard_event_schema.js'),
+      path.join(gatewayRoot, '..', 'ping-runtime', 'events', 'standard_event_schema.js'),
       path.join(gatewayRoot, 'execution_graph_authority.js'),
       path.join(gatewayRoot, 'worker_registry.js'),
-      path.join(gatewayRoot, 'canonical_authority.js'),
+      path.join(gatewayRoot, '..', 'ping-runtime', 'authorities', 'canonical_authority.js'),
       path.join(gatewayRoot, 'runtime_identity_authority.js'),
-      path.join(gatewayRoot, 'constitutional_time_authority.js'),
+      path.join(gatewayRoot, '..', 'ping-runtime', 'authorities', 'constitutional_time_authority.js'),
       path.join(gatewayRoot, 'replay_time_authority.js'),
       path.join(gatewayRoot, 'witness_authority.js'),
       path.join(gatewayRoot, 'witness_generator.js'),
@@ -67,7 +67,7 @@ class ConstitutionalBlockers {
     const gatewayRoot = path.join(__dirname);
     return [
       path.join(gatewayRoot, 'runtime_clock.js'),
-      path.join(gatewayRoot, 'constitutional_time_authority.js'),
+      path.join(gatewayRoot, '..', 'ping-runtime', 'authorities', 'constitutional_time_authority.js'),
       path.join(gatewayRoot, 'replay_time_authority.js')
     ];
   }
@@ -79,7 +79,7 @@ class ConstitutionalBlockers {
   _defineJSONAllowedPaths() {
     const gatewayRoot = path.join(__dirname);
     return [
-      path.join(gatewayRoot, 'canonical_authority.js'),
+      path.join(gatewayRoot, '..', 'ping-runtime', 'authorities', 'canonical_authority.js'),
       path.join(gatewayRoot, 'witness_generator.js')
     ];
   }

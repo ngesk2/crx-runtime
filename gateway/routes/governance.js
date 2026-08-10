@@ -27,7 +27,7 @@ function createGovernanceRoutes(governance) {
   router.get('/namespaces', (req, res) => {
     res.json({
       namespaces: governance.getNamespacePolicy(),
-      namespace_owners: require('../runtime/event_governance').NAMESPACE_OWNERS,
+      namespace_owners: require('../../ping-runtime/events/event_governance').NAMESPACE_OWNERS,
     });
   });
 

@@ -14,8 +14,8 @@
  */
 
 const { ProviderInterface, GenerationRequest, GenerationResponse, EmbeddingResponse, HealthStatus, ModelInfo } = require('./provider_interface');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class OllamaProvider extends ProviderInterface {
   constructor(baseUrl = 'http://localhost:11434') {

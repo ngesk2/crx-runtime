@@ -1,5 +1,5 @@
 const https = require('https');
-const { repositoryDiscoveryAuthority } = require('./repository_discovery_authority');
+const { repositoryDiscoveryAuthority } = require('../../gateway/repository_discovery_authority');
 
 function parseGithubUrl(url) {
   if (!url) return null;

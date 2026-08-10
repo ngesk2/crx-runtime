@@ -29,7 +29,7 @@
  * This file is now a gateway shim that re-exports from kernel
  */
 
-const { IdentityAuthority: KernelIdentityAuthority, identityAuthority: kernelIdentityAuthority } = require('../runtime/kernel/authorities/identity_authority');
+const { IdentityAuthority: KernelIdentityAuthority, identityAuthority: kernelIdentityAuthority } = require('../../runtime/kernel/authorities/identity_authority');
 
 // PATCH_004: Gateway shim - delegates to kernel implementation
 class IdentityAuthority extends KernelIdentityAuthority {

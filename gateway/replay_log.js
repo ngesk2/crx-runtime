@@ -18,9 +18,9 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class ReplayLogEntry {
   constructor(data, previousHash = null, authority = 'ReplayAuthority') {

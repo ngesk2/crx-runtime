@@ -3,7 +3,7 @@ const path = require('path');
 
 // Generated from state_machine_registry.json — single source of truth
 const _generatedMachine = (() => {
-  const registry = require(path.join(__dirname, '..', '..', 'gateway', 'generated', 'state_machine_registry.json'));
+  const registry = require(path.join(__dirname, '..', '..', '..', 'gateway', 'generated', 'state_machine_registry.json'));
   const worker = registry.state_machines.find(m => m.name === 'WorkerLifecycle');
   if (!worker) throw new Error('[WorkerStateMachine] WorkerLifecycle not found in state_machine_registry.json');
   const transMap = {};

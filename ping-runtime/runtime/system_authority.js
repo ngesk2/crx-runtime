@@ -8,9 +8,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { dockerodeAdapter } = require('./dockerode_adapter');
-const { simpleGitAdapter } = require('./simple_git_adapter');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { dockerodeAdapter } = require('../../gateway/dockerode_adapter');
+const { simpleGitAdapter } = require('../../gateway/simple_git_adapter');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 function tryReadJSON(filePath, fallback = null) {
   try {

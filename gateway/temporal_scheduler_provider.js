@@ -22,7 +22,7 @@
  * - No provider-specific semantics leak through port
  */
 
-const { workflowIdentityAuthority } = require('./workflow_identity_authority');
+const { workflowIdentityAuthority } = require('../ping-runtime/authorities/workflow_identity_authority');
 
 class TemporalSchedulerProvider {
   constructor(client, options = {}) {

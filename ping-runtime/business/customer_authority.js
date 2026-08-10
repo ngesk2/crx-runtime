@@ -598,7 +598,7 @@ class CustomerAuthority {
       authority_version: this._authorityVersion,
     };
 
-    const { computeCanonicalHash } = require('../../constitutional_validation');
+    const { computeCanonicalHash } = require('../authorities/constitutional_validation');
     contract.contract_hash = computeCanonicalHash(contract);
 
     return contract;

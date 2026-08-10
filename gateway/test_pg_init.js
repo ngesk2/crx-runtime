@@ -10,12 +10,12 @@ async function main() {
   // Try the same init sequence as gateway_runtime.js
   const files = [
     ['EventReadAuthority', '../ping-runtime/events/unified_event_runtime', 'initialize'],
-    ['RepositoryStore', '../repository_store', 'initialize'],
+    ['RepositoryStore', '../ping-runtime/events/repository_store', 'initialize'],
     ['PostgresAdapter', '../postgres_adapter', 'initialize'],
     ['CanonicalEventEnvelope', '../canonical_event_envelope', 'initialize'],
-    ['TenantRegistry', '../tenant_registry', 'initialize'],
-    ['DeploymentRegistry', '../deployment_registry', 'initialize'],
-    ['RuntimeRegistry', '../runtime_registry', 'initialize'],
+    ['TenantRegistry', '../ping-runtime/runtime/tenant_registry', 'initialize'],
+    ['DeploymentRegistry', '../ping-runtime/runtime/deployment_registry', 'initialize'],
+    ['RuntimeRegistry', '../ping-runtime/runtime/runtime_registry', 'initialize'],
     ['KnowledgeGraph', '../ping-runtime/knowledge/knowledge_graph', 'initialize'],
     ['MissionRuntime', '../ping-runtime/orchestration/mission_runtime', 'initialize'],
     ['WorkerRuntime', '../ping-runtime/workers/worker_runtime', 'initialize'],

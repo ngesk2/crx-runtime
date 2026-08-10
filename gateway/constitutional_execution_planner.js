@@ -17,8 +17,8 @@
  * - Execution ordering
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConstitutionalExecutionPlanner {
   constructor() {
@@ -83,7 +83,7 @@ class ConstitutionalExecutionPlanner {
    * Generate plan ID
    */
   _generatePlanId(mission) {
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     return `plan-${CanonicalAuthority.hash({ mission_id: mission.mission_id, timestamp: constitutionalTimeAuthority.nowAsMillis() })}`;
   }
 

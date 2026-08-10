@@ -13,7 +13,7 @@
  * - graph roots
  */
 
-const { RepositoryStore } = require('./repository_store');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
 const { GitHubConstitutionalPipeline } = require('./github_constitutional_pipeline');
 const { ConstitutionalParser } = require('./constitutional_parser');
 const { KnowledgeRuntime } = require('./knowledge_runtime');
@@ -23,7 +23,7 @@ const { PromptRuntime } = require('./prompt_runtime');
 const { OllamaRuntime } = require('./ollama_runtime');
 const { ReplayRuntime } = require('./replay_runtime');
 const { PipelineWitness } = require('./pipeline_witness');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class RepositoryResetHarness {
   constructor(config) {

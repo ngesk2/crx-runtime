@@ -42,6 +42,14 @@ function createIngestRoutes(canonicalizationService) {
     }
 
     try {
+      // Boundary authorization: a producer may claim its per-source namespace or
+      // an explicit override. Unauthorized claims (invalid namespace) are rejected
+      // here BEFORE canonicalization — the route guard for the namespace boundary.
+      const auth = canonicalizationService.authorizeNamespace(body.source, body.namespace);
+      if (!auth.authorized) {
+        return res.status(400).json({ status: 'error', error: auth.reason });
+      }
+
       const result = await canonicalizationService.canonicalizeAndEmit({
         source: body.source,
         eventType: body.eventType,

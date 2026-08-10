@@ -7,7 +7,7 @@
  * Capabilities: email, notifications
  */
 
-const { EmailIntegration } = require('../../gateway/runtime/integrations/email_integration');
+const { EmailIntegration } = require('./email_integration');
 
 class EmailConnector {
   constructor(options = {}) {

@@ -20,7 +20,7 @@
  */
 
 const { PromptRuntime } = require('./prompt_runtime');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class OllamaRuntime {
   constructor(config) {

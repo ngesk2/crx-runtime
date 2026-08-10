@@ -12,13 +12,13 @@
  * Merge ordering changes should not affect hashes.
  */
 
-const { RepositoryStore } = require('./repository_store');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
 const { GitHubConstitutionalPipeline } = require('./github_constitutional_pipeline');
 const { ConstitutionalParser } = require('./constitutional_parser');
 const { KnowledgeRuntime } = require('./knowledge_runtime');
 const { RelationshipRuntime } = require('./relationship_runtime');
 const { KnowledgeGraphRuntime } = require('./knowledge_graph');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class MultiRepositoryHarness {
   constructor(config) {

@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class MetadataExtractor {
   constructor(config = {}) {

@@ -1,4 +1,4 @@
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 const { runtimeFailureAuthority } = require('./runtime_failure_authority');
 const { transcriptAuthority } = require('./transcript_authority');
 const { replayVerifier } = require('./replay_verifier');

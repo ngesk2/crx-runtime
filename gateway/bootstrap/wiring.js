@@ -24,15 +24,15 @@ const { BackgroundWorkers } = require('../background_workers');
 const { ConversationMemory } = require('../conversation_memory');
 const { KnowledgeRetrieval } = require('../knowledge_retrieval');
 const { DocumentIngestion } = require('../document_ingestion');
-const { InferenceService } = require('../inference_service');
-const { SystemAuthority } = require('../system_authority');
+const { InferenceService } = require('../../ping-runtime/ai/inference_service');
+const { SystemAuthority } = require('../../ping-runtime/runtime/system_authority');
 const { TemporalRuntime } = require('../temporal_runtime');
 const { TemporalSchedulerProvider } = require('../temporal_scheduler_provider');
 const { SchedulerPort } = require('../scheduler_port');
 const { CanonicalEventEnvelope } = require('../canonical_event_envelope');
-const { TenantRegistry } = require('../tenant_registry');
-const { DeploymentRegistry } = require('../deployment_registry');
-const { RuntimeRegistry } = require('../runtime_registry');
+const { TenantRegistry } = require('../../ping-runtime/runtime/tenant_registry');
+const { DeploymentRegistry } = require('../../ping-runtime/runtime/deployment_registry');
+const { RuntimeRegistry } = require('../../ping-runtime/runtime/runtime_registry');
 
 /**
  * Create and wire the dependency container.

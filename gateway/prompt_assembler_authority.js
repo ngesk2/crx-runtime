@@ -33,8 +33,8 @@
  * Every prompt becomes reproducible.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { witnessAuthority } = require('./witness_authority');
 const { promptAuthority } = require('./prompt_authority');
 

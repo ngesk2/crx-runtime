@@ -17,8 +17,8 @@
 const crypto = require('crypto');
 const Database = require('better-sqlite3');
 const path = require('path');
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class EmbeddingCache {
   constructor(config = {}) {

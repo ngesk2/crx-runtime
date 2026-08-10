@@ -352,7 +352,7 @@ class ExecutionEngine {
 
       this._mergeGate.clear();
       for (const file of (mission.files || [])) {
-        const fullPath = path.resolve(__dirname, '../../', file);
+        const fullPath = path.resolve(__dirname, '../../../', file);
         if (fs.existsSync(fullPath)) {
           this._mergeGate.validateFile(fullPath);
         }

@@ -327,13 +327,13 @@ function buildReachability(graphType) {
   const graphDirectories = {
     gatewayHTTP: ['gateway'],
     gatewayCLI: ['gateway'],
-    kernel: ['runtime/kernel', 'runtime/replay', 'runtime/commit-service', 'orchestration'],
+    kernel: ['runtime/kernel', 'runtime/replay', 'runtime/commit-service', 'ping-runtime/orchestration'],
     replay: ['runtime/replay'],
-    witness: ['orchestration/execution/witness'],
+    witness: ['ping-runtime/orchestration/execution/witness'],
     commit: ['runtime/commit-service'],
-    worker: ['runtime/workers', 'orchestration/execution/worker_port'],
+    worker: ['runtime/workers', 'ping-runtime/orchestration/execution/worker_port'],
     migration: [],
-    knowledgeCompiler: ['orchestration/knowledge_compiler'],
+    knowledgeCompiler: ['ping-runtime/orchestration/knowledge_compiler'],
     build: [],
     test: []
   };

@@ -74,9 +74,9 @@ class InferenceAdapter {
      * Constitutional Constraint: InferenceAuthority must NOT consume raw files or GitHub payloads.
      * Constitutional Constraint: Every analysis stores model, prompt hash, object IDs, evidence references, confidence, timestamp.
      */
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-    const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-    const { identityAuthority } = require('./identity_authority');
+    const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+    const { CanonicalAuthority, CanonicalBytes } = require('../authorities/canonical_authority.js');
+    const { identityAuthority } = require('../authorities/identity_authority.js');
     
     if (!Array.isArray(knowledgeObjects) || knowledgeObjects.length === 0) {
       throw new Error('InferenceAuthority.analyze requires at least one KnowledgeObject');

@@ -8,9 +8,9 @@
 
 const assert = require('assert');
 const { CanonicalEventEnvelope } = require('./canonical_event_envelope');
-const { TenantRegistry } = require('./tenant_registry');
-const { DeploymentRegistry } = require('./deployment_registry');
-const { RuntimeRegistry } = require('./runtime_registry');
+const { TenantRegistry } = require('../ping-runtime/runtime/tenant_registry');
+const { DeploymentRegistry } = require('../ping-runtime/runtime/deployment_registry');
+const { RuntimeRegistry } = require('../ping-runtime/runtime/runtime_registry');
 const { DependencyGraph } = require('./bootstrap/dependency_graph');
 const { computePlatformHash } = require('./runtime_hash');
 

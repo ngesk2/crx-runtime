@@ -9,8 +9,8 @@
  * Queue only new repositories and new versions.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 
 class GitHubReleaseWatcher {
   constructor(postgresPool, githubAdapter) {

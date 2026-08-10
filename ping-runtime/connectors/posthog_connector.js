@@ -7,7 +7,7 @@
  * Capabilities: analytics, events, metrics
  */
 
-const { PostHogIntegration } = require('../../gateway/runtime/integrations/posthog_integration');
+const { PostHogIntegration } = require('./posthog_integration');
 
 class PostHogConnector {
   constructor(options = {}) {

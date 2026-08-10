@@ -1,7 +1,7 @@
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 const { runtimeFailureAuthority } = require('./runtime_failure_authority');
 const { witnessAuthority } = require('./witness_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 /**
  * Replay Verifier

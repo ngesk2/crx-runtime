@@ -34,9 +34,9 @@
  *   schema_version, canonical_version, constitution_version
  */
 
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../authorities/canonical_authority.js');
+const { identityAuthority } = require('../authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 const SCHEMA_VERSION = '1.0.0';
 const CONSTITUTION_VERSION = '1.0.0';

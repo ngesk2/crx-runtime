@@ -23,7 +23,7 @@
  * producers now build through the same field contract.
  */
 
-const { createCanonicalObject } = require('./canonical_object');
+const { createCanonicalObject } = require('../ping-runtime/canonicalization/canonical_object');
 
 class CanonicalObjectAuthority {
   constructor() {

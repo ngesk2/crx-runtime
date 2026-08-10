@@ -37,11 +37,11 @@
  * across repeated runs.
  */
 
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { canonicalObjectAuthority } = require('./canonical_object_authority');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 /**
  * GitHub Repository Object

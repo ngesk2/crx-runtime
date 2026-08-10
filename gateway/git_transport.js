@@ -68,7 +68,7 @@ class GitTransport {
 
   _computeCommitHash(owner, repo, commitSha, treeSha) {
     const input = `${owner}/${repo}/commit/${commitSha}/tree/${treeSha}`;
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     return CanonicalAuthority.hash(input);
   }
 

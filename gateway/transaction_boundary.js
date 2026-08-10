@@ -21,10 +21,10 @@
  * - witnessAuthority: Witness generation
  */
 
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { witnessAuthority } = require('./witness_authority');
-const { StandardEventSchema } = require('./standard_event_schema');
+const { StandardEventSchema } = require('../ping-runtime/events/standard_event_schema');
 
 class TransactionBoundary {
   constructor(postgresPool, outbox, repository) {

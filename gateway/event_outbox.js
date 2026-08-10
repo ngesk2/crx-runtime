@@ -21,10 +21,10 @@
  * and will be published on restart.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { witnessAuthority } = require('./witness_authority');
-const { StandardEventSchema } = require('./standard_event_schema');
-const { identityAuthority } = require('./identity_authority');
+const { StandardEventSchema } = require('../ping-runtime/events/standard_event_schema');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class EventOutbox {
   constructor(postgresPool, eventBus, redisClient = null, transactionBoundary = null) {
@@ -119,7 +119,7 @@ class EventOutbox {
                    (this._transactionBoundary?.getTransactionContext()?.query.bind(this._transactionBoundary.getTransactionContext())) ||
                    this._postgres.query.bind(this._postgres);
 
-    const { CanonicalBytes } = require('./canonical_authority');
+    const { CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 
     // Attach witness to event before serialization
     const eventWithWitness = {
@@ -189,7 +189,7 @@ class EventOutbox {
   async _publishOutboxEvent(event) {
     try {
       // Deserialize canonical event directly
-      const { CanonicalBytes } = require('./canonical_authority');
+      const { CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
       const standardEvent = CanonicalBytes.deserialize(event.canonical_event);
 
       // Publish to subscribers

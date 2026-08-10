@@ -14,7 +14,7 @@
  */
 
 const crypto = require('crypto');
-const { computeCanonicalHash } = require('./constitutional_validation');
+const { computeCanonicalHash } = require('../authorities/constitutional_validation');
 
 class DeploymentRegistry {
   constructor(storage) {

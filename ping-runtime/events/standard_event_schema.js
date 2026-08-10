@@ -29,7 +29,7 @@
  * This file is now a gateway shim that re-exports from kernel
  */
 
-const { StandardEventSchema: KernelStandardEventSchema } = require('../runtime/kernel/authorities/standard_event_schema');
+const { StandardEventSchema: KernelStandardEventSchema } = require('../../runtime/kernel/authorities/standard_event_schema');
 
 // PATCH_011: Gateway shim - delegates to kernel implementation
 class StandardEventSchema extends KernelStandardEventSchema {

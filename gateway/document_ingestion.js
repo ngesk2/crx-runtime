@@ -11,7 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const { QdrantClient } = require('./qdrant_client');
-const { getInferenceAdapter } = require('./inference_adapter');
+const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 
 class DocumentIngestion {
   constructor(config = {}) {

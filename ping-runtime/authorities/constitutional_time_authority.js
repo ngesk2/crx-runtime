@@ -23,7 +23,7 @@
  * This file is now a gateway shim that re-exports from kernel
  */
 
-const { ConstitutionalTimeAuthority: KernelConstitutionalTimeAuthority, constitutionalTimeAuthority: kernelConstitutionalTimeAuthority } = require('../runtime/kernel/authorities/constitutional_time_authority');
+const { ConstitutionalTimeAuthority: KernelConstitutionalTimeAuthority, constitutionalTimeAuthority: kernelConstitutionalTimeAuthority } = require('../../runtime/kernel/authorities/constitutional_time_authority');
 
 // PATCH_004: Gateway shim - delegates to kernel implementation
 class ConstitutionalTimeAuthority extends KernelConstitutionalTimeAuthority {

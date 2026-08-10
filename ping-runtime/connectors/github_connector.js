@@ -7,7 +7,7 @@
  * Capabilities: repository, commits, pull-requests, branches, contributors
  */
 
-const { getGithubMetadata } = require('../../gateway/github_adapter');
+const { getGithubMetadata } = require('./github_adapter');
 
 class GitHubConnector {
   constructor(options = {}) {

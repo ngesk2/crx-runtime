@@ -38,8 +38,8 @@
 
 const { GitHubSnapshot } = require('./github_snapshot');
 const { GitHubNormalizer } = require('./github_normalizer');
-const { RepositoryStore } = require('./repository_store');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class GitHubConstitutionalPipeline {
   constructor(config) {

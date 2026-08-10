@@ -17,7 +17,7 @@ const http = require('http');
 
 const { UnifiedEventRuntime } = require('../ping-runtime/events/unified_event_runtime');
 const { CanonicalizationService, DEFAULT_NAMESPACE, CANONICAL_VERSION } = require('../ping-runtime/canonicalization/canonicalization_service');
-const { verifyCanonicalObject } = require('./canonical_object');
+const { verifyCanonicalObject } = require('../ping-runtime/canonicalization/canonical_object');
 const createIngestRoutes = require('./routes/ingest');
 
 // ── Test runner (async) ───────────────────────────────────────────────
@@ -155,6 +155,31 @@ test('invalid namespace is rejected', async () => {
   await assert.rejects(() => service.canonicalizeAndEmit({
     source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: { review_id: 'r5' }, namespace: 'hpp',
   }), /Invalid namespace/);
+});
+
+test('authorizeNamespace: mapped source → authorized with mapped namespace', async () => {
+  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
+  const auth = service.authorizeNamespace('review-authority');
+  assert.deepStrictEqual(auth, { authorized: true, namespace: 'tenant::hpp' });
+});
+
+test('authorizeNamespace: explicit override → authorized (map + override rule)', async () => {
+  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
+  const auth = service.authorizeNamespace('review-authority', 'core::system');
+  assert.deepStrictEqual(auth, { authorized: true, namespace: 'core::system' });
+});
+
+test('authorizeNamespace: invalid claim → unauthorized with reason (no throw)', async () => {
+  const { service } = buildService();
+  const auth = service.authorizeNamespace('review-authority', 'hpp');
+  assert.strictEqual(auth.authorized, false);
+  assert.match(auth.reason, /Invalid namespace/);
+});
+
+test('authorizeNamespace: unmapped source → authorized with default', async () => {
+  const { service } = buildService();
+  const auth = service.authorizeNamespace('unmapped-source');
+  assert.deepStrictEqual(auth, { authorized: true, namespace: DEFAULT_NAMESPACE });
 });
 
 test('unknown event type returns status error (not throw)', async () => {
