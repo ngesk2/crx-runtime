@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-Observation Worker
-Processes DOCUMENT_IMPORTED events and extracts observations.
-Emits OBSERVATION_CREATED events.
+Observation Worker (DEPRECATED - NOT DEPLOYED IN PRODUCTION)
+
+This is a legacy reference implementation. The production runtime uses:
+- FastAPI api service (deploy/docker-compose.yml)
+- SQLAlchemy async engine (storage/postgres/database.py)
+- EventApplicationService (application/event_service.py)
+
+This file is preserved for reference but is not reachable from the active runtime.
 """
 
 import os

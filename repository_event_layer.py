@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Repository Event Layer Implementation
-Constitutional Freeze - Repository Authority and Replay Authority
+Repository Event Layer (DEPRECATED - NOT DEPLOYED IN PRODUCTION)
+
+This is a legacy reference implementation. The production runtime uses:
+- FastAPI api service (deploy/docker-compose.yml)
+- SQLAlchemy async engine (storage/postgres/database.py)
+- EventApplicationService (application/event_service.py)
+
+This file is preserved for reference but is not reachable from the active runtime.
 
 Event Types:
 - REPOSITORY_DISCOVERED
