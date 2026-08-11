@@ -314,3 +314,24 @@ P9: subprocess       — FIXED (all production runtime violations replaced with 
 - **Single-file change** - Only capabilities/github/acquire_repository.py was modified, following surgical execution principle.
 - **Bootstrap_loader reachability** - The capability is reachable from production via bootstrap_loader despite being marked "not registered" in some docs, justifying the fix.
 - **AGENTS.md clarification** - Updated gate status to distinguish between production runtime violations (all fixed) and exempt tooling/audit/test code (intentionally outside boundary).
+
+## Session 14 — Phase 7: Documentation-First Constitutional Reconciliation & Surgical Execution
+
+**11:30** | Started Phase 7: Documentation-first reconciliation and highest-confidence surgical execution. | Inspected constitutional laws, deployment configurations, and runtime paths.
+
+**11:45** | **CRITICAL FINDING:** NO ACTIVE CONSTITUTIONAL VIOLATION EXISTS. The active runtime (FastAPI api service in deploy/docker-compose.yml) uses SQLAlchemy async engine, not direct psycopg2. The "violations" identified in Phase 6 are in dormant code not deployed in production. | Deployment reachability verification.
+
+**11:50** | **VERIFIED ACTIVE RUNTIME:** FastAPI api service → EventApplicationService → SQLAlchemy async engine → PostgreSQL. This is constitutional and follows Layer 2 adapter pattern. | Active runtime tracing.
+
+**11:55** | **DORMANT CODE CLASSIFIED:** 8 root-level files are legacy reference implementations not deployed in any docker-compose configuration. They use direct psycopg2 but are not reachable from production. | Dormant code classification.
+
+**12:00** | **EXECUTED:** Added DEPRECATED markers to 8 dormant files (claim_worker.py, witness_worker.py, replay_worker.py, lineage_worker.py, observation_worker.py, constitutional_runtime.py, repository_event_layer.py, repository_scanner.py). Clarified that production runtime uses FastAPI api service with SQLAlchemy async engine. | Surgical documentation update.
+
+**12:05** | **COMMITTED:** Commit 87461fe - Phase 7: Clarify dormant worker status with deprecation markers. No behavioral changes, only documentation to prevent future confusion. | Complete.
+
+## Session 14 — Key Decisions
+- **Active runtime is constitutional** - FastAPI api service uses SQLAlchemy async engine through proper dependency injection. No direct psycopg2 in active path.
+- **Dormant code contained via documentation** - 8 root-level files clearly marked as DEPRECATED with explanation of actual production runtime. No deletion to preserve reference value.
+- **No adapter replacement needed** - The supposed "violations" are in unreachable code. The active runtime already uses proper Layer 2 adapter pattern.
+- **RepositoryAdapter ≠ Authority** - Confirmed again that RepositoryAdapter is a connection factory, not a constitutional authority. The active runtime uses SQLAlchemy async engine, not RepositoryAdapter.
+- **Transaction semantics preserved** - No changes to transaction semantics because active runtime uses async SQLAlchemy with proper session management.
