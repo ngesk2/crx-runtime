@@ -12,7 +12,7 @@ P3: QdrantClient     — CLEAN (only retrieval/adapter/tool/worker/projection)
 P4: uuid.uuid4       — CLEAN (only identity/worker/cognitive/drive)
 P5: hashlib.sha256   — CLEAN (only authority/certificate/adapter/cognitive)
 P5: crypto.createHash — CLEAN (only certificate/replay)
-P9: subprocess       — FIXED (all 5 violations replaced with KernelCapabilities)
+P9: subprocess       — FIXED (all production runtime violations replaced with KernelCapabilities; 11 exempt files in tooling/audit/test)
 ```
 
 ## Standards
@@ -289,3 +289,28 @@ P9: subprocess       — FIXED (all 5 violations replaced with KernelCapabilitie
 - **IdentityAuthority and CanonicalHashAuthority are thin wrappers** around uuid.uuid4() and hashlib.sha256(). They exist so workers never import these modules directly.
 - **P9 (subprocess) is the last remaining gate failure**. 5 violations — all runtime orchestration subprocess spawning. Requires Temporal (P8) to fix. Known infrastructure gap.
 - **Docker still not running** — all changes compile-time verified only.
+
+### 2026-08-11 Session 13 (P0.1 Surgical P9 Classification and Fix)
+
+**09:00** | Started Session 13. Goal: Execute P0.1 surgically - fix only the confirmed production violation in capabilities/github/acquire_repository.py. Classification audit found 12 alleged violations but 11 were exempt (tooling/audit/test/legacy/false positive). Only acquire_repository.py was a genuine runtime violation reachable from bootstrap_loader. | Read AGENTS.md, classification audit results.
+
+**09:15** | Read capabilities/github/acquire_repository.py to verify asyncio.create_subprocess_exec usage in _clone_repository and _hash_repository methods. Confirmed bypass exists. | Read KernelCapabilities to verify API.
+
+**09:20** | Read KernelCapabilities (runtime/kernel/capabilities.py) - confirmed run_process() is synchronous. To preserve async API behavior without blocking event loop, wrapped calls in asyncio.to_thread(). This is the smallest adapter that preserves behavior without redesigning the capability layer. | Implemented fix.
+
+**09:25** | Replaced asyncio.create_subprocess_exec with KernelCapabilities.run_process wrapped in asyncio.to_thread in both _clone_repository and _hash_repository. Removed subprocess import, added KernelCapabilities import, initialized capabilities in __init__. Preserved command arguments, working directory, stdout/stderr handling, return semantics, and async API behavior. | Verified syntax.
+
+**09:30** | Python syntax validation passed. Git diff showed only capabilities/github/acquire_repository.py changed (promotion_pipeline.py had unintended uncommitted changes from previous session, restored them). | Staged and committed fix (commit 532a3a7).
+
+**09:35** | Re-scanned for direct process primitives: asyncio.create_subprocess_exec = 0 files (fixed), subprocess imports = 13 files (1 authorized = runtime/kernel/capabilities.py, 1 fixed = acquire_repository.py, 11 exempt = tooling/audit/test/legacy), os.system = 1 file (runtime/oracle/oracle.py - in docstring only, static analysis), os.popen = 2 files (scripts/audit_*.py - privileged tooling). | Production path verified clean.
+
+**09:40** | Verified bootstrap_loader references acquire_repository.py - confirms this is a production-reachable capability, justifying the fix despite it being marked "not registered" in some docs. | Updated AGENTS.md gate status to clarify 11 exempt files.
+
+**09:45** | Committed fix and updated AGENTS.md gate status. P9 boundary now truthfully marked as FIXED with clarification that 11 exempt files remain in tooling/audit/test infrastructure outside the runtime boundary. | P0.1 complete.
+
+## Session 13 — Key Decisions
+- **Classification audit was critical** - prevented fixing 11 exempt files that are intentionally outside the runtime boundary (audit tools, test infrastructure, dead/legacy code).
+- **Async behavior preservation** - Used asyncio.to_thread to wrap synchronous KernelCapabilities.run_process() without blocking the event loop or redesigning the capability layer.
+- **Single-file change** - Only capabilities/github/acquire_repository.py was modified, following surgical execution principle.
+- **Bootstrap_loader reachability** - The capability is reachable from production via bootstrap_loader despite being marked "not registered" in some docs, justifying the fix.
+- **AGENTS.md clarification** - Updated gate status to distinguish between production runtime violations (all fixed) and exempt tooling/audit/test code (intentionally outside boundary).
