@@ -150,12 +150,17 @@ input (event_type, event_category, payload, occurred_at, correlation_id, causali
 input (stream, event_type, payload)
 → uuid4()
 → event_id (random)
-→ persistence (PostgreSQL events table)
+→ persistence (PostgreSQL events table via event_emitter.js)
 ```
 
 **Includes global_sequence?** NO
 
 **Contract Consistent?** NO - Non-deterministic, non-replayable, random identity.
+
+**CORRECTION:** Gateway has TWO incompatible INSERT contracts:
+1. event_emitter.js uses PING schema (stream, event_type, payload, created_at)
+2. /api/v1/events uses canonical_state schema (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+Both write to the same 'crx_runtime' database, creating schema inconsistency.
 
 ### BrainOS
 ```
@@ -319,12 +324,15 @@ input (event_type, payload)
 
 | Store | Type | Schema | Authority | Status |
 | ----- | ---- | ------ | --------- | ------ |
-| PostgreSQL events table (constitutional-runtime) | Relational | constitutional-runtime schema (hash-derived identity, canonical bytes) | SHADOW (multiple authorities write to it) | AUTHORITATIVE for FastAPI, SHADOW for Gateway/BrainOS |
-| PostgreSQL events table (PING/Gateway) | Relational | gateway schema (uuid4 identity, JSON payload) | SHADOW (multiple authorities write to it) | Same physical table as constitutional-runtime (different column usage) |
-| BrainOS canonical_state (PostgreSQL) | Relational | canonical_state schema | DERIVED | PROJECTION (not event source) |
+| PostgreSQL events table (constitutional-runtime) | Relational | constitutional-runtime schema (hash-derived identity, canonical bytes) | AUTHORITATIVE | AUTHORITATIVE for FastAPI EventApplicationService in 'constitutional' database |
+| PostgreSQL events table (PING/Gateway) | Relational | INCOMPATIBLE SCHEMAS (PING + canonical_state) | SHADOW (multiple authorities write to it) | Multiple authorities write to 'crx_runtime' database with incompatible schemas |
+| BrainOS canonical_state (PostgreSQL) | Relational | canonical_state schema | SHADOW | Writes to 'crx_runtime' database (same as Gateway) |
 | Qdrant | Vector | Vector projection | DERIVED | PROJECTION (not event source) |
 
-**KEY FINDING:** ONE physical PostgreSQL events table exists, but it receives events from 5 independent authorities (FastAPI, Gateway, BrainOS, Drive ingestion, Root workers). This is a SHADOW STORE pattern, not a single source of truth.
+**KEY FINDING:** TWO separate databases exist:
+1. 'constitutional' database (deploy/docker-compose.yml) - canonical EventEnvelope schema, single authority
+2. 'crx_runtime' database (compose.yaml + .env.base) - multiple authorities (Gateway, BrainOS, Drive) with INCOMPATIBLE schemas
+Gateway has TWO incompatible INSERT contracts for the SAME 'crx_runtime' database, which is a constitutional violation.
 
 **EVIDENCE QUALITY:** HIGH - Database schema inspection and deployment tracing confirm topology.
 
@@ -350,7 +358,7 @@ input (event_type, payload)
 
 8. **Can the repository reconstruct one event history from another subsystem?** NO - gateway and BrainOS events use uuid4() identity, making them non-replayable. Only constitutional-runtime events are theoretically replayable, but no executable replay implementation exists.
 
-9. **Is there currently one constitution or multiple parallel constitutions?** ONE constitution (constitutional-runtime) but MULTIPLE parallel event creation authorities that bypass the constitutional EventEnvelope.create() path. This is SHADOW AUTHORITY, not separate constitutions.
+9. **Is there currently one constitution or multiple parallel constitutions?** ONE constitution (constitutional-runtime) but MULTIPLE parallel event creation authorities that bypass the constitutional EventEnvelope.create() path. PING stack has INCOMPATIBLE SCHEMAS in the same 'crx_runtime' database, which is a constitutional violation. This is SHADOW AUTHORITY, not separate constitutions.
 
 **EVIDENCE QUALITY:** HIGH - All answers verified through source inspection, deployment tracing, and schema analysis.
 
@@ -366,7 +374,7 @@ input (event_type, payload)
 | simple_projection_worker.py | Standalone projection script using docker exec + raw SQL UPDATE | NO (reads events, does not create) | Reads constitutional-runtime schema | UNKNOWN (not deployed) |
 | runtime/adapters/google_drive/google_drive_ingestion_adapter.py | Drive ingestion with direct INSERT + uuid4() | YES (bypasses EventEnvelope.create()) | Minimal schema (uuid4 identity) | LIVE (via runtime bootstrap) |
 | runtime/ingestion/drive_ingestor.py | Drive ingestion orchestrator with direct INSERT + uuid4() | YES (bypasses EventEnvelope.create()) | Minimal schema (uuid4 identity) | LIVE (via runtime bootstrap) |
-| gateway/event_emitter.js | Gateway event emitter with direct INSERT + uuid4() | YES (bypasses EventEnvelope.create()) | Minimal schema (uuid4 identity) | LIVE (via compose.yaml) |
+| gateway/event_emitter.js | Gateway event emitter with direct INSERT + uuid4() | YES (bypasses EventEnvelope.create()) | INCOMPATIBLE SCHEMAS (PING + canonical_state) | LIVE (via compose.yaml) - TWO incompatible INSERT contracts for same database |
 | brainos/orchestration/src/constitutional/event_emitter.py | BrainOS event emitter with direct INSERT + uuid4() | YES (bypasses EventEnvelope.create()) | Minimal schema (uuid4 identity) | LIVE (via compose.yaml) |
 
 **EVIDENCE QUALITY:** HIGH - All newly discovered areas verified through source inspection.

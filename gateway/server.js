@@ -23,6 +23,8 @@ repoStore.initialize().catch(err => console.error('Failed to initialize reposito
 app.use(express.json());
 
 // CORS headers
+// SECURITY NOTE: Wildcard CORS is used for development convenience
+// This should be restricted to specific origins in production with proper authentication
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -106,6 +108,12 @@ function calculateComplexityScore(message) {
 }
 
 function routeMessage(messages) {
+  /**
+   * Observational routing analysis (SHADOW MODE)
+   * Calculates complexity score and suggests model routing for logging/metrics only
+   * Does NOT actively control model selection
+   * Current active routing: /api/v1/chat uses ROUTER_MODEL_14B, /api/v1/autocomplete uses ROUTER_MODEL_7B
+   */
   const lastMessage = messages[messages.length - 1]?.content || '';
   const complexityScore = calculateComplexityScore(lastMessage);
   
@@ -132,7 +140,6 @@ function routeMessage(messages) {
 
 async function invokeInference(messages, model = CHAT_MODEL) {
   const controller = new AbortController();
-
   const timeout = setTimeout(() => {
     controller.abort();
   }, 120000);
@@ -149,7 +156,7 @@ async function invokeInference(messages, model = CHAT_MODEL) {
 
   try {
     const inferenceAdapter = getInferenceAdapter();
-    const result = await inferenceAdapter.chat(messages);
+    const result = await inferenceAdapter.chat(messages, { signal: controller.signal });
 
     console.log(`[${new Date().toISOString()}] INFERENCE CALL RESPONSE`, {
       success: result !== null
@@ -161,10 +168,8 @@ async function invokeInference(messages, model = CHAT_MODEL) {
 
     const content = result.message?.content || '';
 
-    // Emit constitutional event for inference response
-    emitInferenceResponse(model, content, 0).catch(err => {
-      console.error('Failed to emit INFERENCE_RESPONSE event:', err);
-    });
+    // Response event emission is handled by calling routes with correct latency
+    // invokeInference only emits request event to avoid duplication
 
     return {
       success: true,
@@ -281,6 +286,66 @@ app.get('/events', async (req, res) => {
   }
 });
 
+// Recent events endpoint (must be registered before /events/:stream)
+app.get('/events/recent', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] ROUTE: /events/recent`, { method: req.method, query: req.query });
+  
+  try {
+    const minutes = parseInt(req.query.minutes) || 60;
+    const limit = parseInt(req.query.limit) || 100;
+    
+    const query = `
+      SELECT id, stream, event_type, payload, created_at
+      FROM events
+      WHERE created_at >= NOW() - INTERVAL '${minutes} minutes'
+      ORDER BY created_at DESC
+      LIMIT $1
+    `;
+    
+    const result = await eventPool.query(query, [limit]);
+    
+    res.json({
+      events: result.rows,
+      count: result.rows.length,
+      minutes: minutes,
+      limit: limit
+    });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] EVENTS ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Event stats endpoint (must be registered before /events/:stream)
+app.get('/events/stats', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] ROUTE: /events/stats`, { method: req.method, query: req.query });
+  
+  try {
+    const query = `
+      SELECT 
+        COUNT(*) as total_events,
+        COUNT(DISTINCT stream) as streams,
+        COUNT(DISTINCT event_type) as event_types,
+        MIN(created_at) as oldest_event,
+        MAX(created_at) as newest_event
+      FROM events
+    `;
+    
+    const result = await eventPool.query(query);
+    
+    res.json({
+      total_events: result.rows[0].total_events,
+      streams: result.rows[0].streams,
+      event_types: result.rows[0].event_types,
+      oldest_event: result.rows[0].oldest_event,
+      newest_event: result.rows[0].newest_event
+    });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] EVENTS ERROR: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Events by stream endpoint
 app.get('/events/:stream', async (req, res) => {
   console.log(`[${new Date().toISOString()}] ROUTE: /events/${req.params.stream}`, { method: req.method, query: req.query });
@@ -306,36 +371,6 @@ app.get('/events/:stream', async (req, res) => {
       count: result.rows.length,
       limit: limit,
       offset: offset
-    });
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] EVENTS ERROR: ${error.message}`);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Recent events endpoint
-app.get('/events/recent', async (req, res) => {
-  console.log(`[${new Date().toISOString()}] ROUTE: /events/recent`, { method: req.method, query: req.query });
-  
-  try {
-    const minutes = parseInt(req.query.minutes) || 60;
-    const limit = parseInt(req.query.limit) || 100;
-    
-    const query = `
-      SELECT id, stream, event_type, payload, created_at
-      FROM events
-      WHERE created_at >= NOW() - INTERVAL '${minutes} minutes'
-      ORDER BY created_at DESC
-      LIMIT $1
-    `;
-    
-    const result = await eventPool.query(query, [limit]);
-    
-    res.json({
-      events: result.rows,
-      count: result.rows.length,
-      minutes: minutes,
-      limit: limit
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] EVENTS ERROR: ${error.message}`);
@@ -468,6 +503,9 @@ app.get('/context/daily-activity', async (req, res) => {
 });
 
 // Repository Authority API
+// NOTE: This is a separate event write path with canonical_state schema (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+// This is different from event_emitter.js which uses PING schema (stream, event_type, payload, created_at)
+// Both write to the same crx_runtime database but with incompatible schemas - this is a known architectural inconsistency
 
 app.post('/api/v1/events', async (req, res) => {
   try {
@@ -533,6 +571,7 @@ app.get('/api/v1/repository/objects', async (req, res) => {
   }
 });
 
+// SECURITY NOTE: Unauthenticated delete endpoint - should require authentication in production
 app.delete('/api/v1/repository/objects/:id', async (req, res) => {
   try {
     await repoStore.delete(req.params.id);

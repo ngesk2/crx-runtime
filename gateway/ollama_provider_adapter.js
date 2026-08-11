@@ -48,14 +48,27 @@ class OllamaProviderAdapter {
       };
       
       if (options) {
-        payload.options = options;
+        // Extract signal if present (for timeout support)
+        const { signal, ...restOptions } = options;
+        if (signal) {
+          payload.options = restOptions;
+        } else {
+          payload.options = options;
+        }
       }
       
-      const response = await fetch(`${this.baseUrl}/api/chat`, {
+      const fetchOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
+      };
+      
+      // Add AbortSignal if provided
+      if (options && options.signal) {
+        fetchOptions.signal = options.signal;
+      }
+      
+      const response = await fetch(`${this.baseUrl}/api/chat`, fetchOptions);
       
       if (response.ok) {
         return await response.json();

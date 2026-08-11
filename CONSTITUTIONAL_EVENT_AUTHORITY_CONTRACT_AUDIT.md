@@ -333,17 +333,25 @@
 
 ## DECISION
 
-**ALREADY_ISOLATED_AS_SEPARATE_BOUNDED_CONTEXTS**
+**ARCHITECTURALLY_UNRESOLVED**
 
 **Rationale:**
 
-1. **CRITICAL CORRECTION:** Source code review reveals that the PING stack and constitutional runtime are ALREADY DEPLOYED IN SEPARATE DATABASES:
-   - PING stack (compose.yaml): Database `ping_runtime`, container `ping-postgres`, schema (stream, event_type, payload, created_at)
-   - Constitutional runtime (deploy/docker-compose.yml): Database `constitutional`, container `constitutional-postgres`, schema (full EventEnvelope fields)
+1. **CRITICAL CORRECTION:** Source code review reveals that Gateway has TWO INCOMPATIBLE INSERT contracts for the SAME database table:
+   - gateway/event_emitter.js uses PING schema (stream, event_type, payload, created_at)
+   - gateway/server.js /api/v1/events uses canonical_state schema (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
+   - Both use POSTGRES_DB='crx_runtime' (default from .env.base)
+   - Both are live in the same compose deployment
 
-2. **The previous audit's assumption was INCORRECT:** The audit assumed all producers shared one physical events table. In reality, they are in separate databases in separate containers. They are ALREADY architecturally isolated as separate bounded contexts.
+2. **Previous audit assumption was INCORRECT:** The audit assumed PING stack and constitutional runtime were in separate databases. In reality:
+   - compose.yaml defaults POSTGRES_DB to 'ping_runtime' but .env.base sets it to 'crx_runtime'
+   - All PING stack services (Gateway, BrainOS, Drive ingestion) default to 'crx_runtime'
+   - deploy/docker-compose.yml uses 'constitutional' database for constitutional runtime
+   - HOWEVER, .env.base is the shared config for PING stack, so they all write to 'crx_runtime'
 
-3. **No surgical change required:** The constitutional runtime is already canonical with its own database and EventEnvelope.create() implementation. The PING stack is a separate bounded context with its own legacy schema. This isolation already satisfies SOURCE_OF_TRUTH_LAW.md at the deployment level.
+3. **Constitutional authority is NOT yet established:** The constitutional runtime (deploy/docker-compose.yml) is isolated with its own database, but the PING stack has competing authorities writing to the same 'crx_runtime' database with incompatible schemas. This violates SOURCE_OF_TRUTH_LAW.md at the PING stack level.
+
+4. **Bounded context isolation is UNPROVEN:** While the constitutional runtime is in a separate deployment, the PING stack has multiple independent authorities (Gateway, BrainOS, Drive) writing to the same database with incompatible schemas. Jurisdiction is not explicitly established.
 
 4. **Constitutional compliance:** Each deployment has one authority for its truth domain:
    - Constitutional runtime: Single authority for `constitutional` database with EventEnvelope.create()
@@ -355,36 +363,34 @@
 
 1. **INVARIANT E1 — Event Authority:** The Event Recording Authority (EventApplicationService) is the ONLY canonical owner of constitutional_event and governance_event facts in the `constitutional` database. No other component may independently create authoritative constitutional events in this database without delegating to this authority.
 
-2. **INVARIANT E2 — Canonicalization:** Constitutional events (constitutional_event, governance_event) in the `constitutional` database MUST use hash-derived identity (SHA-256 of canonical bytes). PING stack events in the `ping_runtime` database use legacy schema (uuid4() identity) but are isolated in a separate database, so this does not violate constitutional authority.
+2. **INVARIANT E2 — Canonicalization:** Constitutional events (constitutional_event, governance_event) in the `constitutional` database MUST use hash-derived identity (SHA-256 of canonical bytes). PING stack events in the `crx_runtime` database use legacy schemas (PING schema and canonical_state schema) with uuid4() identity. Bounded context isolation is UNPROVEN at the PING stack level due to incompatible schemas in the same database.
 
 3. **INVARIANT E3 — Event Immutability:** Once committed to any event store, an event MUST NEVER be modified, deleted, or superseded. Event correction is performed by appending a new event. This applies to both databases.
 
-4. **INVARIANT E4 — Legal Mutation Path:** Constitutional events (constitutional_event, governance_event) in the `constitutional` database MUST pass through the legal mutation path (Proposal → Claim → Policy Evaluation → Policy Decision → Event Recording → Replay → Witness → State Promotion). PING stack events in the `ping_runtime` database are inference_event/observation_event classes and are exempt from this path due to separate bounded context isolation.
+4. **INVARIANT E4 — Legal Mutation Path:** Constitutional events (constitutional_event, governance_event) in the `constitutional` database MUST pass through the legal mutation path (Proposal → Claim → Policy Evaluation → Policy Decision → Event Recording → Replay → Witness → State Promotion). PING stack events in the `crx_runtime` database are inference_event/observation_event classes. Bounded context isolation exemption requires explicit constitutional jurisdiction establishment.
 
-5. **INVARIANT E5 — Single Source of Truth:** Each deployment has one authority for its truth domain. Constitutional runtime has one authority for `constitutional` database. PING stack has one authority for `ping_runtime` database. No authority may write to the other deployment's database.
+5. **INVARIANT E5 — Single Source of Truth:** Each deployment has one authority for its truth domain. Constitutional runtime has one authority for `constitutional` database. PING stack has UNRESOLVED authority structure due to multiple independent authorities (Gateway, BrainOS, Drive) writing to the same `crx_runtime` database with incompatible schemas.
 
-6. **INVARIANT E6 — Layer Boundaries:** Layer 3 (Gateway, BrainOS) in the PING stack MAY directly access the `ping_runtime` database for their bounded context events. Layer 3 MUST NOT directly access the `constitutional` database (different deployment, different network).
+6. **INVARIANT E6 — Layer Boundaries:** Layer 3 (Gateway, BrainOS) in the PING stack directly access the `crx_runtime` database. Layer 3 MUST NOT directly access the `constitutional` database (different deployment, different network). This invariant is currently satisfied.
 
-7. **INVARIANT E7 — Event Class Verification:** All events must be classified into one of 6 event classes (constitutional_event, governance_event, observation_event, inference_event, projection_event, system_event) with corresponding authority_class, replay_class, and verification_required. PING stack events are inference_event/observation_event classes with non-constitutional authority_class, which is consistent with their deployment isolation.
+7. **INVARIANT E7 — Event Class Verification:** All events must be classified into one of 6 event classes (constitutional_event, governance_event, observation_event, inference_event, projection_event, system_event) with corresponding authority_class, replay_class, and verification_required. PING stack events are inference_event/observation_event classes with non-constitutional authority_class. Constitutional jurisdiction for these classes is UNPROVEN.
 
 ## Explicit Non-Goals
 
 During this pass:
 
-1. **DO NOT** migrate Gateway to EventEnvelope.create() (already isolated in separate deployment)
-2. **DO NOT** migrate BrainOS to EventEnvelope.create() (already isolated in separate deployment)
-3. **DO NOT** migrate Drive ingestion to EventEnvelope.create() (already isolated in separate deployment)
+1. **DO NOT** migrate Gateway to EventEnvelope.create() (PING stack schema inconsistency is unresolved, requiring architectural decision)
+2. **DO NOT** migrate BrainOS to EventEnvelope.create() (PING stack schema inconsistency is unresolved, requiring architectural decision)
+3. **DO NOT** migrate Drive ingestion to EventEnvelope.create() (PING stack schema inconsistency is unresolved, requiring architectural decision)
 4. **DO NOT** make replay/witness/lineage executable (not in scope of this pass)
 5. **DO NOT** modify root workers (preserve as dormant reference)
 6. **DO NOT** modify workers/ directory (preserve as dormant reference)
-7. **DO NOT** modify the PING database schema (legacy schema is acceptable for bounded context)
-8. **DO NOT** introduce HTTP dependency between PING stack and constitutional runtime (already isolated)
-9. **DO NOT** rewrite gateway/event_emitter.js (legacy schema is acceptable for bounded context)
-10. **DO NOT** rewrite brainos/event_emitter.py (legacy schema is acceptable for bounded context)
+7. **DO NOT** modify the PING database schema (schema inconsistency resolution requires architectural decision)
+8. **DO NOT** introduce HTTP dependency between PING stack and constitutional runtime (maintain deployment isolation)
+9. **DO NOT** rewrite gateway/event_emitter.js (documented inconsistency, requires architectural decision)
+10. **DO NOT** rewrite brainos/event_emitter.py (documented inconsistency, requires architectural decision)
 
-## Next Read-Only Investigation
-
-**ALREADY COMPLETED:** The following verifications were performed during this audit:
+## Verified Findings
 
 1. **Gateway event types:** VERIFIED - Gateway events (INFERENCE_REQUEST, INFERENCE_RESPONSE, INFERENCE_FAILED) are inference_event class under EVENT_LAW.md Article 2.4 (authority_class AI_GENERATED_ANALYSIS, replay_class non_replayable, verification_required false).
 
@@ -392,20 +398,46 @@ During this pass:
 
 3. **Drive ingestion event types:** VERIFIED - Drive ingestion events are observation_event class under EVENT_LAW.md Article 2.3 (authority_class TEMPORARY_OBSERVATION, replay_class conditional_replay, verification_required false).
 
-4. **Bounded context isolation:** VERIFIED - PING stack and constitutional runtime are in separate databases (ping_runtime vs constitutional) in separate containers (ping-postgres vs constitutional-postgres). They are already architecturally isolated.
+4. **Database configuration:** VERIFIED - .env.base sets POSTGRES_DB='crx_runtime' for PING stack. deploy/docker-compose.yml uses 'constitutional' database for constitutional runtime. However, all PING stack services (Gateway, BrainOS, Drive) write to 'crx_runtime' in the same compose deployment.
 
-5. **Constitutional runtime authority:** VERIFIED - FastAPI EventApplicationService is the ONLY producer of constitutional_event and governance_event classes in the constitutional deployment (deploy/docker-compose.yml).
+5. **Schema inconsistency:** VERIFIED - Gateway has TWO incompatible INSERT contracts for the SAME 'crx_runtime' database:
+   - gateway/event_emitter.js uses PING schema (stream, event_type, payload, created_at)
+   - gateway/server.js /api/v1/events uses canonical_state schema (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)
 
-**CONCLUSION:** No surgical change is required. The systems are already isolated as separate bounded contexts with separate databases. The constitutional authority boundary is already preserved at the deployment level.
+6. **Constitutional runtime authority:** VERIFIED - FastAPI EventApplicationService is the ONLY producer of constitutional_event and governance_event classes in the constitutional deployment (deploy/docker-compose.yml).
+
+## Implemented Changes
+
+1. **Fixed route shadowing:** Moved /events/recent and /events/stats route registrations before /events/:stream to prevent shadowing
+2. **Fixed timeout behavior:** Passed AbortSignal through inference adapter to Ollama provider for actual timeout support
+3. **Fixed duplicate response events:** Removed response event emission from invokeInference() to prevent duplication (now only emitted by calling routes with correct latency)
+4. **Clarified routing decision:** Added explicit documentation that routeMessage() is observational/shadow mode, not active routing
+5. **Documented event write paths:** Added inline documentation for the two incompatible Gateway event INSERT contracts
+6. **Added security notes:** Added comments for wildcard CORS and unauthenticated deletion (deferred fixes)
+
+## Deferred Recommendations
+
+1. **Resolve PING stack schema inconsistency:** Choose one canonical schema for 'crx_runtime' database and migrate all authorities to use it
+2. **Implement authentication:** Add authentication for repository deletion endpoint
+3. **Restrict CORS:** Replace wildcard CORS with specific origins for production
+4. **Establish constitutional jurisdiction:** Explicitly define constitutional authority for PING stack bounded context
+
+## Non-Goals
+
+1. Constitutional runtime code was NOT modified (preserved canonical authority)
+2. Root workers were NOT modified (preserved as dormant reference)
+3. Workers/ directory was NOT modified (preserved as dormant reference)
+4. PING database schema was NOT modified (requires architectural decision)
+5. No new authentication system was introduced (out of scope)
 
 ---
 
 # FINAL STATUS
 
-**READ-ONLY AUDIT COMPLETE**
+**CORRECTIVE AUDIT AND IMPLEMENTATION COMPLETE**
 
-**DECISION:** MULTIPLE_EXPLICIT_BOUNDED_EVENT_AUTHORITIES
+**DECISION:** ARCHITECTURALLY_UNRESOLVED
 
-**NEXT STEP:** Perform the 5 required read-only verifications above before implementing the first surgical change (CREATE TABLE for bounded contexts).
+**REASON:** PING stack has multiple independent authorities (Gateway, BrainOS, Drive) writing to the same 'crx_runtime' database with incompatible schemas. Constitutional jurisdiction for PING stack bounded context is unproven. Architectural decision required to resolve schema inconsistency.
 
-**NO IMPLEMENTATION PERFORMED**
+**IMPLEMENTATION PERFORMED:** Gateway route shadowing, timeout behavior, duplicate response events, routing documentation, and security notes added. No constitutional runtime code modified.
