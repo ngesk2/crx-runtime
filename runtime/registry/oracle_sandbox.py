@@ -11,7 +11,6 @@ This prevents code injection and ensures Oracle remains read-only.
 """
 
 import asyncio
-import subprocess
 import tempfile
 import shutil
 from pathlib import Path
@@ -20,6 +19,7 @@ from datetime import datetime, timezone
 from dataclasses import dataclass
 import json
 import hashlib
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 @dataclass
@@ -55,7 +55,8 @@ class OracleSandbox:
     def __init__(self, workspace_base: str = "runtime/registry/oracle_sandbox"):
         self.workspace_base = Path(workspace_base)
         self.workspace_base.mkdir(parents=True, exist_ok=True)
-        self._containers: Dict[str, subprocess.Popen] = {}
+        self._containers: Dict[str, Any] = {}
+        self.capabilities = KernelCapabilities()
     
     def _create_temp_workspace(self, sandbox_id: str) -> Path:
         """Create temporary workspace for sandbox."""
@@ -181,48 +182,43 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
     async def _build_container(self, dockerfile: Path, image_tag: str) -> Dict[str, Any]:
         """Build container image."""
         try:
-            result = subprocess.run(
-                ["docker", "build", "-t", image_tag, "-f", str(dockerfile), str(dockerfile.parent)],
+            result = self.capabilities.run_process(
+                command=["docker", "build", "-t", image_tag, "-f", str(dockerfile), str(dockerfile.parent)],
                 capture_output=True,
-                text=True,
                 timeout=600
             )
             
             return {
-                "success": result.returncode == 0,
-                "error": result.stderr if result.returncode != 0 else None
+                "success": result.success,
+                "error": result.error if not result.success else None
             }
-        except subprocess.TimeoutExpired:
+        except Exception as e:
             return {
                 "success": False,
-                "error": "Container build timed out"
+                "error": str(e)
             }
-        except FileNotFoundError:
-            # Docker not available, use subprocess fallback
-            return await self._run_subprocess_fallback(dockerfile.parent)
     
     async def _run_subprocess_fallback(self, workspace: Path) -> Dict[str, Any]:
         """Fallback to subprocess if Docker not available."""
         try:
             # Install dependencies
-            subprocess.run(
-                ["pip", "install", "pytest", "pytest-cov", "flake8", "black", "mypy"],
+            self.capabilities.run_process(
+                command=["pip", "install", "pytest", "pytest-cov", "flake8", "black", "mypy"],
                 capture_output=True,
                 timeout=300
             )
             
             # Run tests
-            result = subprocess.run(
-                ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json"],
+            result = self.capabilities.run_process(
+                command=["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json"],
                 cwd=str(workspace / "candidate"),
                 capture_output=True,
-                text=True,
                 timeout=300
             )
             
             return {
-                "success": result.returncode == 0,
-                "error": result.stderr if result.returncode != 0 else None
+                "success": result.success,
+                "error": result.error if not result.success else None
             }
         except Exception as e:
             return {
@@ -233,8 +229,8 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
     async def _run_container_tests(self, image_tag: str, config: ContainerConfig) -> Dict[str, Any]:
         """Run tests in container."""
         try:
-            result = subprocess.run(
-                [
+            result = self.capabilities.run_process(
+                command=[
                     "docker", "run",
                     "--rm",
                     f"--memory={config.memory_limit}",
@@ -242,12 +238,11 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
                     image_tag
                 ],
                 capture_output=True,
-                text=True,
                 timeout=config.timeout
             )
             
             # Parse test results
-            test_results = self._parse_test_output(result.stdout)
+            test_results = self._parse_test_output(result.output.get("stdout", ""))
             
             # Load coverage report if exists
             coverage_report = {}
@@ -257,25 +252,17 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
                     coverage_report = json.load(f)
             
             return {
-                "success": result.returncode == 0,
+                "success": result.success,
                 "tests": test_results,
                 "coverage": coverage_report,
-                "error": result.stderr if result.returncode != 0 else None
+                "error": result.error if not result.success else None
             }
-        except subprocess.TimeoutExpired:
+        except Exception as e:
             return {
                 "success": False,
                 "tests": {},
                 "coverage": {},
-                "error": "Container execution timed out"
-            }
-        except FileNotFoundError:
-            # Docker not available, return empty results
-            return {
-                "success": True,
-                "tests": {},
-                "coverage": {},
-                "error": "Docker not available, skipped container execution"
+                "error": str(e)
             }
     
     async def _extract_artifacts(self, image_tag: str, workspace: Path) -> Dict[str, str]:
@@ -284,29 +271,27 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
         
         # Extract coverage report
         try:
-            result = subprocess.run(
-                ["docker", "run", "--rm", image_tag, "cat", "coverage.json"],
+            result = self.capabilities.run_process(
+                command=["docker", "run", "--rm", image_tag, "cat", "coverage.json"],
                 capture_output=True,
-                text=True,
                 timeout=30
             )
             
-            if result.returncode == 0:
-                artifacts["coverage.json"] = result.stdout
+            if result.success:
+                artifacts["coverage.json"] = result.output.get("stdout", "")
         except:
             pass
         
         # Extract test results
         try:
-            result = subprocess.run(
-                ["docker", "run", "--rm", image_tag, "cat", ".pytest_cache/v/cache/lastfailed"],
+            result = self.capabilities.run_process(
+                command=["docker", "run", "--rm", image_tag, "cat", ".pytest_cache/v/cache/lastfailed"],
                 capture_output=True,
-                text=True,
                 timeout=30
             )
             
-            if result.returncode == 0:
-                artifacts["lastfailed"] = result.stdout
+            if result.success:
+                artifacts["lastfailed"] = result.output.get("stdout", "")
         except:
             pass
         
@@ -315,8 +300,8 @@ CMD ["python", "-m", "pytest", "-v", "--cov=.", "--cov-report=json", "--timeout=
     async def _cleanup_container(self, image_tag: str) -> None:
         """Cleanup container image."""
         try:
-            subprocess.run(
-                ["docker", "rmi", image_tag],
+            self.capabilities.run_process(
+                command=["docker", "rmi", image_tag],
                 capture_output=True,
                 timeout=30
             )

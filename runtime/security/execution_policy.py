@@ -18,13 +18,13 @@ This is a critical security layer preventing unauthorized operations.
 """
 
 import os
-import subprocess
 import shutil
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Callable
 from datetime import datetime, timezone
 from dataclasses import dataclass
 from enum import Enum
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 class Permission(Enum):
@@ -62,6 +62,7 @@ class ExecutionPolicy:
         self.policy_file = Path(policy_file)
         self._policies: Dict[str, Any] = {}
         self._load_policy()
+        self.capabilities = KernelCapabilities()
     
     def _load_policy(self) -> None:
         """Load policy from file."""
@@ -499,26 +500,22 @@ class PolicyMediator:
                 raise PermissionError(f"Execute requires approval: {decision.reason}")
             raise PermissionError(f"Execute denied: {decision.reason}")
         
-        try:
-            result = subprocess.run(
-                command,
-                shell=True,
-                cwd=cwd,
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
-            
-            return {
-                "success": result.returncode == 0,
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "returncode": result.returncode
-            }
-        except subprocess.TimeoutExpired:
-            raise RuntimeError("Command timed out")
-        except Exception as e:
-            raise RuntimeError(f"Execute failed: {e}")
+        # Convert shell command string to list for KernelCapabilities
+        command_list = command.split() if isinstance(command, str) else command
+        
+        result = self.capabilities.run_process(
+            command=command_list,
+            cwd=cwd,
+            capture_output=True,
+            timeout=300
+        )
+        
+        return {
+            "success": result.success,
+            "stdout": result.output.get("stdout") if result.output else None,
+            "stderr": result.error,
+            "returncode": 0 if result.success else 1
+        }
     
     async def network_request(self, url: str) -> Optional[str]:
         """

@@ -8,13 +8,13 @@ No exceptions.
 """
 
 import asyncio
-import subprocess
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 
 from .work_claim_manager import WorkClaimManager
 from .merge_manifest import MergeManifest, MergeManifestRegistry
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 class PromotionPipeline:
@@ -39,6 +39,7 @@ class PromotionPipeline:
         self.sandbox_base = Path(sandbox_base)
         self.work_claim_manager = work_claim_manager or WorkClaimManager()
         self.manifest_registry = manifest_registry or MergeManifestRegistry()
+        self.capabilities = KernelCapabilities()
     
     async def clone_to_sandbox(self, sandbox: str, branch: str = "main") -> bool:
         """

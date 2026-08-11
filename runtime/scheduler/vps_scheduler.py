@@ -23,6 +23,7 @@ from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, asdict
 import sqlite3
 import aiohttp
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 @dataclass
@@ -543,33 +544,30 @@ class GitPuller:
     
     def __init__(self, scheduler: VPSScheduler):
         self.scheduler = scheduler
+        self.capabilities = KernelCapabilities()
     
     async def pull_git(self, job_id: str, config: Dict[str, Any]) -> None:
         """Pull git repository and enqueue changes."""
-        import subprocess
-        
         repo_path = config.get("repo_path")
         
         # Pull changes
-        result = subprocess.run(
-            ["git", "-C", repo_path, "pull"],
-            capture_output=True,
-            text=True
+        result = self.capabilities.run_process(
+            command=["git", "-C", repo_path, "pull"],
+            capture_output=True
         )
         
-        if result.returncode == 0:
+        if result.success:
             # Check for changes
-            log_result = subprocess.run(
-                ["git", "-C", repo_path, "log", "--oneline", "-10"],
-                capture_output=True,
-                text=True
+            log_result = self.capabilities.run_process(
+                command=["git", "-C", repo_path, "log", "--oneline", "-10"],
+                capture_output=True
             )
             
             self.scheduler.enqueue_work(
                 work_type="GIT_CHANGES",
                 payload={
                     "repo": repo_path,
-                    "changes": log_result.stdout
+                    "changes": log_result.output.get("stdout", "")
                 },
                 priority=config.get("priority", 0)
             )

@@ -22,9 +22,9 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
-import subprocess
 import psycopg2
 from constitution.authority import CanonicalAuthority
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 class RepositoryEventLayer:
@@ -42,6 +42,7 @@ class RepositoryEventLayer:
             "password": ""
         }
         self.repository_aggregate_id = str(uuid.uuid4())
+        self.capabilities = KernelCapabilities()
         
     def calculate_sha256(self, file_path: Path) -> str:
         """Calculate SHA256 hash of a file using constitutional hashing"""
@@ -266,22 +267,20 @@ class RepositoryEventLayer:
         
         try:
             # Get current commit
-            result = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=self.repository_path,
-                capture_output=True,
-                text=True
+            result = self.capabilities.run_process(
+                command=["git", "rev-parse", "HEAD"],
+                cwd=str(self.repository_path),
+                capture_output=True
             )
-            commit_hash = result.stdout.strip() if result.returncode == 0 else None
+            commit_hash = result.output.get("stdout", "").strip() if result.success else None
             
             # Get parent commit
-            result = subprocess.run(
-                ["git", "rev-parse", "HEAD^"],
-                cwd=self.repository_path,
-                capture_output=True,
-                text=True
+            result = self.capabilities.run_process(
+                command=["git", "rev-parse", "HEAD^"],
+                cwd=str(self.repository_path),
+                capture_output=True
             )
-            parent_hash = result.stdout.strip() if result.returncode == 0 else None
+            parent_hash = result.output.get("stdout", "").strip() if result.success else None
             
             if commit_hash:
                 # Emit COMMIT_CREATED event
