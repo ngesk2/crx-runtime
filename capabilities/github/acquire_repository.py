@@ -6,7 +6,6 @@ Implements ConnectorCapability contract.
 """
 
 import asyncio
-import subprocess
 import tempfile
 import shutil
 from pathlib import Path
@@ -20,6 +19,7 @@ from constitution.models.evidence import (
     PlatformProvenance, AcquisitionProvenance
 )
 from constitution.hashing import hash_dict, hash_bytes
+from runtime.kernel.capabilities import KernelCapabilities
 
 
 class AcquireGitHubRepository:
@@ -38,6 +38,7 @@ class AcquireGitHubRepository:
             author="hermes",
         )
         self._state = CapabilityState.REGISTERED
+        self.capabilities = KernelCapabilities()
     
     @property
     def metadata(self) -> CapabilityMetadata:
@@ -136,43 +137,30 @@ class AcquireGitHubRepository:
         """Clone GitHub repository."""
         url = f"https://github.com/{owner}/{repo}.git"
         
-        # Run git clone
-        process = await asyncio.create_subprocess_exec(
-            "git",
-            "clone",
-            "--branch",
-            branch,
-            "--depth",
-            "1",
-            url,
-            str(repo_path),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+        # Use KernelCapabilities.run_process (wrap in asyncio.to_thread to avoid blocking event loop)
+        result = await asyncio.to_thread(
+            self.capabilities.run_process,
+            command=["git", "clone", "--branch", branch, "--depth", "1", url, str(repo_path)],
+            timeout=300
         )
         
-        stdout, stderr = await process.communicate()
-        
-        if process.returncode != 0:
-            raise RuntimeError(f"Failed to clone repository: {stderr.decode()}")
+        if not result.success:
+            raise RuntimeError(f"Failed to clone repository: {result.error}")
     
     async def _hash_repository(self, repo_path: Path) -> str:
         """Hash repository contents."""
-        # Get git hash of HEAD
-        process = await asyncio.create_subprocess_exec(
-            "git",
-            "rev-parse",
-            "HEAD",
-            cwd=repo_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+        # Use KernelCapabilities.run_process (wrap in asyncio.to_thread to avoid blocking event loop)
+        result = await asyncio.to_thread(
+            self.capabilities.run_process,
+            command=["git", "rev-parse", "HEAD"],
+            cwd=str(repo_path),
+            timeout=30
         )
         
-        stdout, stderr = await process.communicate()
+        if not result.success:
+            raise RuntimeError(f"Failed to get repository hash: {result.error}")
         
-        if process.returncode != 0:
-            raise RuntimeError(f"Failed to get repository hash: {stderr.decode()}")
-        
-        return stdout.decode().strip()
+        return result.output.get("stdout", "").strip() if result.output else ""
     
     def _create_canonical_artifact(
         self,
