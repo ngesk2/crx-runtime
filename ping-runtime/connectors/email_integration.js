@@ -1,6 +1,8 @@
 // P054: Email Integration Stub
 // Stub for email delivery — not functional until SMTP provider configured.
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class EmailIntegration {
   constructor(options = {}) {
     this._smtpHost = options.smtpHost || process.env.SMTP_HOST || null;
@@ -18,7 +20,7 @@ class EmailIntegration {
       from: this._fromAddress,
       subject: `[TenantOS] ${eventType}`,
       body: JSON.stringify({ eventType, payload }),
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
     };
     this._sentEmails.push(email);
     return { status: 'queued', email };

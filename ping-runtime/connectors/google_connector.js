@@ -7,6 +7,8 @@
  * Capabilities: reviews, contacts, email, calendar, drive
  */
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class GoogleConnector {
   /**
    * @param {object} options
@@ -110,7 +112,7 @@ class GoogleConnector {
       events: (syncResult.data || []).map(item => ({
         source: `google.${service}`,
         type: this._inferEventType(service, item),
-        timestamp: item.updated || item.created || new Date().toISOString(),
+        timestamp: item.updated || item.created || constitutionalTimeAuthority.nowAsISOString(),
         payload: item,
       })),
     };

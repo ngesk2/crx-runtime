@@ -15,6 +15,7 @@
 
 const crypto = require('crypto');
 const { computeCanonicalHash } = require('../authorities/constitutional_validation');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class DeploymentRegistry {
   constructor(storage) {
@@ -176,7 +177,7 @@ class DeploymentRegistry {
     return this.executeTransitionStatus(deploymentId, {
       status: 'running',
       health,
-      completed_at: new Date().toISOString(),
+      completed_at: constitutionalTimeAuthority.nowAsISOString(),
     });
   }
 
@@ -203,7 +204,7 @@ class DeploymentRegistry {
   async executeRollbackDeployment(deploymentId) {
     return this.executeTransitionStatus(deploymentId, {
       status: 'rolled_back',
-      rolled_back_at: new Date().toISOString(),
+      rolled_back_at: constitutionalTimeAuthority.nowAsISOString(),
     });
   }
 

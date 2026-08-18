@@ -8,6 +8,7 @@
  */
 
 const { getGithubMetadata } = require('./github_adapter');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class GitHubConnector {
   constructor(options = {}) {
@@ -56,7 +57,7 @@ class GitHubConnector {
       if (meta.status !== 'available') {
         return { status: 'error', error: meta.error };
       }
-      this._lastSync = new Date().toISOString();
+      this._lastSync = constitutionalTimeAuthority.nowAsISOString();
 
       switch (service) {
         case 'repository':
@@ -86,7 +87,7 @@ class GitHubConnector {
       events: (Array.isArray(syncResult.data) ? syncResult.data : [syncResult.data]).map(item => ({
         source: `github.${service || 'repository'}`,
         type: this._inferEventType(service, item),
-        timestamp: item.date || item.created_at || item.pushed_at || new Date().toISOString(),
+        timestamp: item.date || item.created_at || item.pushed_at || constitutionalTimeAuthority.nowAsISOString(),
         payload: item,
       })),
     };

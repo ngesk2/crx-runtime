@@ -14,6 +14,7 @@
 
 const HF_API_BASE = process.env.HF_API_BASE || 'https://api-inference.huggingface.co/models';
 const HF_TOKEN = process.env.HF_TOKEN || '';
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 const MODELS = {
   sentiment:    'IberaSoft/customer-sentiment-analyzer',
@@ -125,7 +126,7 @@ class HuggingFaceAdapter {
       sentiment: label.toLowerCase(),
       confidence: score,
       model: result.model,
-      analyzedAt: new Date().toISOString(),
+      analyzedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 
@@ -161,7 +162,7 @@ class HuggingFaceAdapter {
       labels: raw?.labels || [],
       scores: raw?.scores || [],
       model: result.model,
-      classifiedAt: new Date().toISOString(),
+      classifiedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 
@@ -192,7 +193,7 @@ class HuggingFaceAdapter {
       translation,
       direction,
       model: result.model,
-      translatedAt: new Date().toISOString(),
+      translatedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 
@@ -224,7 +225,7 @@ class HuggingFaceAdapter {
       tenantId,
       summary,
       model: result.model,
-      summarizedAt: new Date().toISOString(),
+      summarizedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 
@@ -261,7 +262,7 @@ class HuggingFaceAdapter {
       tenantId,
       fields,
       model: result.model,
-      parsedAt: new Date().toISOString(),
+      parsedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 
@@ -288,7 +289,7 @@ class HuggingFaceAdapter {
       tenantId,
       results,
       count: results.length,
-      batchClassifiedAt: new Date().toISOString(),
+      batchClassifiedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
   }
 

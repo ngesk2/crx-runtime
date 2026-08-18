@@ -16,6 +16,7 @@
  */
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class UnifiedEventRuntime {
   /**
@@ -122,7 +123,7 @@ class UnifiedEventRuntime {
       event_type: eventType,
       source,
       namespace,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       payload,
       metadata: {
         schema_version: '1.0.0',

@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class DriftDetector {
   constructor(repoRoot) {
@@ -58,7 +59,7 @@ class DriftDetector {
       issues,
       warnings,
       hashes: { ...this._hashes },
-      checkedAt: new Date().toISOString(),
+      checkedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
 
     if (!result.healthy) {

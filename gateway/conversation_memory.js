@@ -10,6 +10,7 @@
 
 const { QdrantClient } = require('./qdrant_client');
 const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConversationMemory {
   constructor(config = {}) {
@@ -60,7 +61,7 @@ class ConversationMemory {
       return {
         conversation_id: conversationId,
         chunks: chunks.length,
-        timestamp: new Date().toISOString()
+        timestamp: constitutionalTimeAuthority.nowAsISOString()
       };
     } catch (error) {
       console.error('[ConversationMemory] Error storing conversation:', error.message);
@@ -222,7 +223,7 @@ class ConversationMemory {
         text: chunk,
         conversation_id: conversationId,
         chunk_index: index,
-        timestamp: new Date().toISOString()
+        timestamp: constitutionalTimeAuthority.nowAsISOString()
       }
     }));
     

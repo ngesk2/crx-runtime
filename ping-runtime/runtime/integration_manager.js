@@ -4,6 +4,7 @@
 // PING owns the plumbing. HPP owns the meaning.
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class IntegrationManager {
   constructor(options = {}) {
@@ -20,7 +21,7 @@ class IntegrationManager {
     }
     this._integrations.set(name, {
       provider,
-      registeredAt: new Date().toISOString(),
+      registeredAt: constitutionalTimeAuthority.nowAsISOString(),
       lastEventAt: null,
       eventCount: 0,
       errorCount: 0,
@@ -61,7 +62,7 @@ class IntegrationManager {
 
       try {
         await integration.provider.send(eventType, finalPayload);
-        integration.lastEventAt = new Date().toISOString();
+        integration.lastEventAt = constitutionalTimeAuthority.nowAsISOString();
         integration.eventCount++;
         integration.status = 'healthy';
         this._stats.sent++;
@@ -130,8 +131,8 @@ class IntegrationManager {
       eventType,
       status,
       error: error || null,
-      timestamp: new Date().toISOString(),
-      event_id: crypto.createHash('sha256').update(`${integration}:${eventType}:${Date.now()}`).digest('hex').slice(0, 16),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
+      event_id: crypto.createHash('sha256').update(`${integration}:${eventType}:${constitutionalTimeAuthority.nowAsMillis()}`).digest('hex').slice(0, 16),
     });
     if (this._eventLog.length > this._maxLogSize) {
       this._eventLog = this._eventLog.slice(-this._maxLogSize);

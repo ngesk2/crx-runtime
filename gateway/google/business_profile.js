@@ -13,6 +13,7 @@
  */
 
 const { google } = require('googleapis');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 class BusinessProfileAdapter {
   constructor(storage, googleAuth, canonicalEventEnvelope) {
@@ -109,7 +110,7 @@ class BusinessProfileAdapter {
       rating: raw.starRating ? this._starToRating(raw.starRating) : null,
       comment: raw.comment || null,
       review_reply: raw.reviewReply?.comment || null,
-      review_time: raw.createTime || new Date().toISOString(),
+      review_time: raw.createTime || constitutionalTimeAuthority.nowAsISOString(),
       update_time: raw.updateTime || null,
       raw,
     };

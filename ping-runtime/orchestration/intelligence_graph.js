@@ -289,9 +289,6 @@ class IntelligenceGraph {
     }
 
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-    const recentCutoff = new Date(Date.now() - sevenDays).toISOString();
-    const monthCutoff = new Date(Date.now() - thirtyDays).toISOString();
 
     try {
       const logOutput = execSync('git log --name-only --oneline --since="90 days ago" --format="%H %ct"', {

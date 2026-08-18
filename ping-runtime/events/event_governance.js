@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 const NAMESPACE_OWNERS = {
   artifact: 'PING',
@@ -197,7 +198,7 @@ class EventGovernance {
   _reject(code, reason) {
     this._stats.rejected++;
     this._stats.violations[code] = (this._stats.violations[code] || 0) + 1;
-    this._violations.push({ code, reason, timestamp: new Date().toISOString() });
+    this._violations.push({ code, reason, timestamp: constitutionalTimeAuthority.nowAsISOString() });
     return { valid: false, errors: [reason], code };
   }
 

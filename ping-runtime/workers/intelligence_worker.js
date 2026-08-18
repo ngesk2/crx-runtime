@@ -7,6 +7,8 @@
  * Only emits: CLASSIFICATION_CREATED, RECOMMENDATION_CREATED, EVIDENCE_CREATED.
  */
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 // Inline BaseWorker to avoid circular dependency with canonical_workers.js
 class BaseWorker {
   constructor(options = {}) {
@@ -82,7 +84,7 @@ class IntelligenceWorker extends BaseWorker {
     const classification = {
       documentId: payload._object_id || payload.documentId || payload.review_id || payload.lead_id || payload.estimate_id || payload.invoice_id || payload.project_id || payload.customer_id,
       eventType,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       category: aiAnalysis?.category || ruleBased.category,
       priority: aiAnalysis?.priority || ruleBased.priority,
       confidence: aiAnalysis?.confidence || 0.85,
@@ -93,7 +95,7 @@ class IntelligenceWorker extends BaseWorker {
     const recommendation = {
       documentId: classification.documentId,
       eventType,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       action: aiAnalysis?.action || ruleBased.action,
       reason: aiAnalysis?.reason || ruleBased.reason,
       priority: classification.priority,

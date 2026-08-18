@@ -3,6 +3,7 @@
 // Fleet will use this later for drift detection.
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class RuntimeFingerprint {
   constructor(options = {}) {
@@ -30,7 +31,7 @@ class RuntimeFingerprint {
         state_machine: this._stateMachineExecutor ? this._stateMachineExecutor.getHash() : null,
       },
       artifact_stats: {},
-      computed_at: new Date().toISOString(),
+      computed_at: constitutionalTimeAuthority.nowAsISOString(),
     };
 
     // Add stats from each consumer

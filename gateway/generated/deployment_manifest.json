@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "generator": "DeploymentGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-08-03T21:35:37.588Z",
+  "generated_at": "2026-08-18T21:17:44.900Z",
   "services": [
     {
       "name": "capability_service",

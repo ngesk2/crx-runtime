@@ -8,6 +8,7 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 function createEventRoutes(eventReadAuthority, executeEvent, pool) {
   router.get('/', asyncHandler('/events', async (req) => {
@@ -29,7 +30,7 @@ function createEventRoutes(eventReadAuthority, executeEvent, pool) {
       events = await eventReadAuthority.getRecentEvents(minutes, limit);
     } catch (e) {}
     if ((!events || events.length === 0) && pool) {
-      const since = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+      const since = new Date(constitutionalTimeAuthority.nowAsMillis() - minutes * 60 * 1000).toISOString();
       const result = await pool.query('SELECT * FROM ping_events WHERE timestamp >= $1 ORDER BY timestamp DESC LIMIT $2', [since, limit]);
       events = result.rows;
     }
@@ -84,14 +85,16 @@ function createEventRoutes(eventReadAuthority, executeEvent, pool) {
   router.post('/processed', asyncHandler('/events/processed', async (req) => {
     const { event_id, worker } = req.body;
     if (!event_id) throw new Error('event_id is required');
-    await eventReadAuthority.markProcessed(event_id, worker || 'worker_runtime');
+    const ok = await eventReadAuthority.markProcessed(event_id, worker || 'worker_runtime');
+    if (!ok) throw new Error(`Failed to mark event processed: ${event_id}`);
     return { processed: true, event_id };
   }));
 
   router.post('/failed', asyncHandler('/events/failed', async (req) => {
     const { event_id, worker, error } = req.body;
     if (!event_id) throw new Error('event_id is required');
-    await eventReadAuthority.markFailed(event_id, worker || 'worker_runtime', error || 'unknown');
+    const ok = await eventReadAuthority.markFailed(event_id, worker || 'worker_runtime', error || 'unknown');
+    if (!ok) throw new Error(`Failed to mark event failed: ${event_id}`);
     return { failed: true, event_id };
   }));
 

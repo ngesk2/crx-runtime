@@ -1,6 +1,8 @@
 // P054: SMS Integration Stub
 // Stub for SMS delivery — not functional until Twilio/provider configured.
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class SmsIntegration {
   constructor(options = {}) {
     this._provider = options.provider || 'twilio';
@@ -17,7 +19,7 @@ class SmsIntegration {
       to: payload.to || '+10000000000',
       from: this._fromNumber || '+10000000000',
       body: `[TenantOS] ${eventType}: ${payload.message || JSON.stringify(payload)}`,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
     };
     this._sentSms.push(sms);
     return { status: 'queued', sms };

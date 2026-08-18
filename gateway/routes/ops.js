@@ -3,6 +3,7 @@
 // Every response includes generated_runtime_authoritative and runtime_artifact_hash.
 
 const express = require('express');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 function createOpsRoutes(services) {
   const router = express.Router();
@@ -38,7 +39,7 @@ function createOpsRoutes(services) {
         },
         drift_hashes: drift || {},
         fingerprint: fp || {},
-        checked_at: new Date().toISOString(),
+        checked_at: constitutionalTimeAuthority.nowAsISOString(),
       });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
@@ -70,7 +71,7 @@ function createOpsRoutes(services) {
         status: healthy ? 'healthy' : 'degraded',
         healthy,
         hashes,
-        checked_at: new Date().toISOString(),
+        checked_at: constitutionalTimeAuthority.nowAsISOString(),
       });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
@@ -98,7 +99,7 @@ function createOpsRoutes(services) {
         status: 'ok',
         generated_runtime_authoritative: true,
         dashboard: dashboardData,
-        generated_at: new Date().toISOString(),
+        generated_at: constitutionalTimeAuthority.nowAsISOString(),
       });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
@@ -116,7 +117,7 @@ function createOpsRoutes(services) {
         status: 'ok',
         generated_runtime_authoritative: true,
         system: systemState,
-        generated_at: new Date().toISOString(),
+        generated_at: constitutionalTimeAuthority.nowAsISOString(),
       });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });

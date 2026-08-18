@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const { QdrantClient } = require('./qdrant_client');
 const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class DocumentIngestion {
   constructor(config = {}) {
@@ -292,7 +293,7 @@ class DocumentIngestion {
         text: chunk,
         file_path: filePath,
         chunk_index: index,
-        timestamp: new Date().toISOString()
+        timestamp: constitutionalTimeAuthority.nowAsISOString()
       }
     }));
     

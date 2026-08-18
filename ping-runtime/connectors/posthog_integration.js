@@ -2,6 +2,8 @@
 // Business events flow: HPP → Canonical Event Bus → IntegrationManager → PostHog
 // PING owns the plumbing. HPP owns the meaning.
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class PostHogIntegration {
   constructor(options = {}) {
     this._apiKey = options.apiKey || process.env.POSTHOG_API_KEY || null;
@@ -17,7 +19,7 @@ class PostHogIntegration {
     const event = {
       event: eventType,
       properties: payload,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
     };
     this._sentEvents.push(event);
     return { status: 'queued', event };

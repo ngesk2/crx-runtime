@@ -15,6 +15,8 @@
  *   4. Returns result
  */
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class BaseWorker {
   constructor(options = {}) {
     this._eventRuntime = options.eventRuntime || null;
@@ -66,7 +68,7 @@ class ObservationWorker extends BaseWorker {
     const observation = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       source: event.source,
       metadata: event.metadata || {},
     };
@@ -103,7 +105,7 @@ class ClaimWorker extends BaseWorker {
     const claim = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       source: event.source,
     };
 
@@ -139,7 +141,7 @@ class ProjectionWorker extends BaseWorker {
     const projection = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
     };
 
     await this._emit('PROJECTION_CREATED', {
@@ -195,7 +197,7 @@ class ReplayWorker extends BaseWorker {
     const replay = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       verified: true,
     };
 
@@ -230,7 +232,7 @@ class WitnessWorker extends BaseWorker {
     const witness = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       attestation: event.event_id ? `witness-${event.event_id.slice(0, 16)}` : `witness-${documentId || 'unknown'}`,
     };
 
@@ -265,7 +267,7 @@ class LineageWorker extends BaseWorker {
     const lineage = {
       documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       causationChain: payload.causation_id ? [payload.causation_id] : [],
     };
 
@@ -301,7 +303,7 @@ class ClassificationWorker extends BaseWorker {
     const classification = {
       documentId: observation.documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       category: this._categorize(event.event_type),
       priority: this._prioritize(event.event_type, payload),
       confidence: 0.85,
@@ -364,7 +366,7 @@ class RecommendationWorker extends BaseWorker {
     const recommendation = {
       documentId: payload.documentId,
       eventType: event.event_type,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       action: this._recommendAction(classification),
       reason: this._recommendReason(classification),
       priority: classification.priority || 'normal',

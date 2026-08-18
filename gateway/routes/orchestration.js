@@ -18,6 +18,7 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 function createOrchestrationRoutes(engine) {
   // ── Missions ──────────────────────────────────────────────
@@ -62,7 +63,7 @@ function createOrchestrationRoutes(engine) {
           : ['orchestration.review'],
         ...metadata,
       },
-      createdAt: new Date().toISOString(),
+      createdAt: constitutionalTimeAuthority.nowAsISOString(),
     };
 
     engine._missions.push(mission);

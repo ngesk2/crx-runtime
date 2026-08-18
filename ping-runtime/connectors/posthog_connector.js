@@ -8,6 +8,7 @@
  */
 
 const { PostHogIntegration } = require('./posthog_integration');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class PostHogConnector {
   constructor(options = {}) {
@@ -35,7 +36,7 @@ class PostHogConnector {
 
   async sync(service, options = {}) {
     const sentEvents = this._integration._sentEvents || [];
-    this._lastSync = new Date().toISOString();
+    this._lastSync = constitutionalTimeAuthority.nowAsISOString();
     return { status: 'ok', data: sentEvents, count: sentEvents.length };
   }
 

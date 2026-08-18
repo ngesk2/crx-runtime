@@ -10,6 +10,7 @@
 function createMissionControlRoutes(services) {
   const express = require('express');
   const router = express.Router();
+  const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
   const { unifiedEventRuntime, knowledgeGraph, missionRuntime, aiRuntime,
     googleConnector, connectorRegistry, workerRuntime, missionScheduler, eventBridge } = services;
@@ -40,7 +41,7 @@ function createMissionControlRoutes(services) {
     try {
       const [missionStats, allEvents] = await Promise.all([
         missionRuntime.getStats(),
-        queryEventsSince(new Date(Date.now() - 86400000).toISOString(), 500),
+        queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 86400000).toISOString(), 500),
       ]);
 
       // Classify events by business category
@@ -71,7 +72,7 @@ function createMissionControlRoutes(services) {
           missions: missionStats,
           eventSummary: { total: allEvents.length, byType: counts },
           uptime: process.uptime(),
-          timestamp: new Date().toISOString(),
+          timestamp: constitutionalTimeAuthority.nowAsISOString(),
         },
       });
     } catch (err) {
@@ -86,7 +87,7 @@ function createMissionControlRoutes(services) {
   // Who needs follow-up? (leads, estimates, unanswered reviews)
   router.get('/business/who-needs-followup', requirePG, async (req, res) => {
     try {
-      const since = new Date(Date.now() - 7 * 86400000).toISOString(); // 7 days
+      const since = new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(); // 7 days
       const all = await queryEventsSince(since, 500);
 
       const leads = all.filter(e => e.event_type === 'LEAD_CREATED');
@@ -127,7 +128,7 @@ function createMissionControlRoutes(services) {
   router.get('/business/stalled-estimates', requirePG, async (req, res) => {
     try {
       const days = parseInt(req.query.days) || 48; // hours
-      const since = new Date(Date.now() - days * 3600000).toISOString();
+      const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 3600000).toISOString();
       const all = await queryEventsSince(since, 500);
 
       const estimateSent = all.filter(e => e.event_type === 'ESTIMATE_SENT');
@@ -141,7 +142,7 @@ function createMissionControlRoutes(services) {
           amount: e.payload?.amount,
           sentTo: e.payload?.sent_to,
           sentAt: e.timestamp,
-          hoursSinceSent: Math.round((Date.now() - new Date(e.timestamp).getTime()) / 3600000),
+          hoursSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 3600000),
         }));
 
       res.json({ status: 'ok', count: stalled.length, stalled });
@@ -153,7 +154,7 @@ function createMissionControlRoutes(services) {
   // Which reviews require responses?
   router.get('/business/pending-reviews', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(Date.now() - 30 * 86400000).toISOString(), 500);
+      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 86400000).toISOString(), 500);
       const reviews = all.filter(e => e.event_type === 'REVIEW_RECEIVED');
       const responses = all.filter(e => e.event_type === 'REVIEW_RESPONDED');
       const respondedIds = new Set(responses.map(e => e.payload?.review_id));
@@ -178,7 +179,7 @@ function createMissionControlRoutes(services) {
   // What is AI recommending?
   router.get('/business/ai-recommendations', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(Date.now() - 7 * 86400000).toISOString(), 500);
+      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
       const recommendations = all.filter(e => e.event_type === 'RECOMMENDATION_CREATED');
 
       const items = recommendations.map(e => ({
@@ -223,7 +224,7 @@ function createMissionControlRoutes(services) {
   // Which invoices remain unpaid?
   router.get('/business/unpaid-invoices', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(Date.now() - 90 * 86400000).toISOString(), 500);
+      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 90 * 86400000).toISOString(), 500);
       const invoicesSent = all.filter(e => e.event_type === 'INVOICE_SENT');
       const invoicesPaid = all.filter(e => e.event_type === 'INVOICE_PAID');
       const paidIds = new Set(invoicesPaid.map(e => e.payload?.invoice_id));
@@ -235,7 +236,7 @@ function createMissionControlRoutes(services) {
           amount: e.payload?.amount,
           sentTo: e.payload?.sent_to,
           sentAt: e.timestamp,
-          daysSinceSent: Math.round((Date.now() - new Date(e.timestamp).getTime()) / 86400000),
+          daysSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
       res.json({ status: 'ok', count: unpaid.length, unpaid });
@@ -248,7 +249,7 @@ function createMissionControlRoutes(services) {
   router.get('/business/at-risk-projects', requirePG, async (req, res) => {
     try {
       const days = parseInt(req.query.days) || 30;
-      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 86400000).toISOString();
       const all = await queryEventsSince(since, 500);
 
       const created = all.filter(e => e.event_type === 'PROJECT_CREATED');
@@ -263,7 +264,7 @@ function createMissionControlRoutes(services) {
           type: e.payload?.type,
           customerId: e.payload?.customer_id,
           createdAt: e.timestamp,
-          daysOpen: Math.round((Date.now() - new Date(e.timestamp).getTime()) / 86400000),
+          daysOpen: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
       res.json({ status: 'ok', count: atRisk.length, atRisk });
@@ -275,7 +276,7 @@ function createMissionControlRoutes(services) {
   // What should marketing do today?
   router.get('/business/marketing', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(Date.now() - 7 * 86400000).toISOString(), 500);
+      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
 
       // Projects completed = case study candidates
       const completed = all.filter(e => e.event_type === 'PROJECT_COMPLETED');
@@ -319,7 +320,7 @@ function createMissionControlRoutes(services) {
   // ═══════════════════════════════════════════════════════════════
   router.get('/queues', requirePG, async (req, res) => {
     try {
-      const since = req.query.since || new Date(Date.now() - 3600000).toISOString();
+      const since = req.query.since || new Date(constitutionalTimeAuthority.nowAsMillis() - 3600000).toISOString();
       const limit = parseInt(req.query.limit) || 50;
       const result = await unifiedEventRuntime.query({ since, limit });
 
@@ -414,7 +415,7 @@ function createMissionControlRoutes(services) {
           bridge: bridgeStats,
           uptime: process.uptime(),
           memory: process.memoryUsage(),
-          timestamp: new Date().toISOString(),
+          timestamp: constitutionalTimeAuthority.nowAsISOString(),
         },
       });
     } catch (err) {
@@ -428,7 +429,7 @@ function createMissionControlRoutes(services) {
   router.get('/activity', requirePG, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 25;
-      const since = req.query.since || new Date(Date.now() - 86400000).toISOString();
+      const since = req.query.since || new Date(constitutionalTimeAuthority.nowAsMillis() - 86400000).toISOString();
       const result = await unifiedEventRuntime.query({ since, limit });
       res.json({ status: 'ok', activity: result.events, count: result.count });
     } catch (err) {

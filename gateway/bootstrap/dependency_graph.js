@@ -14,6 +14,7 @@
  */
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 class DependencyGraph {
   constructor() {
@@ -173,7 +174,7 @@ class DependencyGraph {
     // Build report
     const report = {
       valid: errors.length === 0,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       nodeCount: this._nodes.size,
       edgeCount: Array.from(this._edges.values()).reduce((sum, deps) => sum + deps.size, 0),
       errors,

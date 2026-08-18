@@ -4,6 +4,7 @@
 // IntegrationManager consults this policy before forwarding.
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 const ALLOWED_OPERATIONAL_METRICS = [
   'event_count',
@@ -228,7 +229,7 @@ class AnalyticsPolicy {
     this._violations.push({
       code,
       detail,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
     });
   }
 

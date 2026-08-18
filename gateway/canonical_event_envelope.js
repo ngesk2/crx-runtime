@@ -17,6 +17,7 @@
 
 const crypto = require('crypto');
 const { computeCanonicalHash } = require('../ping-runtime/authorities/constitutional_validation');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class CanonicalEventEnvelope {
   constructor(storage) {
@@ -134,7 +135,7 @@ class CanonicalEventEnvelope {
     } = command;
 
     const sequence = await this.getNextSequence(tenantId);
-    const timestamp = new Date().toISOString();
+    const timestamp = constitutionalTimeAuthority.nowAsISOString();
     const eventId = this.generateEventId(tenantId, eventType, timestamp, sequence);
 
     const event = {

@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 class StateMachineExecutor {
   constructor(repoRoot) {
@@ -85,12 +86,12 @@ class StateMachineExecutor {
       return { success: false, error: `Machine not found: ${machineId}` };
     }
 
-    const instanceId = `${machineId}_${Date.now()}`;
+    const instanceId = `${machineId}_${constitutionalTimeAuthority.nowAsMillis()}`;
     this._instances.set(instanceId, {
       machineId,
       currentState: machine.initial_state,
       history: [],
-      instantiatedAt: new Date().toISOString(),
+      instantiatedAt: constitutionalTimeAuthority.nowAsISOString(),
     });
 
     return { success: true, instanceId, initialState: machine.initial_state };
@@ -137,7 +138,7 @@ class StateMachineExecutor {
       from: previousState,
       to: transition.to,
       event: eventName,
-      timestamp: new Date().toISOString(),
+      timestamp: constitutionalTimeAuthority.nowAsISOString(),
       transitionHash: crypto.createHash('sha256')
         .update(`${previousState}:${eventName}:${transition.to}`)
         .digest('hex'),

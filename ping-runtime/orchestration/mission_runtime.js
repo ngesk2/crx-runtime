@@ -40,12 +40,20 @@ class MissionRuntime {
         started_at TIMESTAMPTZ,
         completed_at TIMESTAMPTZ,
         error TEXT,
-        retries INTEGER DEFAULT 0
+        retries INTEGER DEFAULT 0,
+        retry_at TIMESTAMPTZ,
+        lease_until TIMESTAMPTZ,
+        claimed_at TIMESTAMPTZ
       );
       CREATE INDEX IF NOT EXISTS idx_pm_status ON ping_missions(status);
       CREATE INDEX IF NOT EXISTS idx_pm_type ON ping_missions(mission_type);
       CREATE INDEX IF NOT EXISTS idx_pm_priority ON ping_missions(priority DESC);
       CREATE INDEX IF NOT EXISTS idx_pm_assigned ON ping_missions(assigned_to);
+      CREATE INDEX IF NOT EXISTS idx_pm_retry_at ON ping_missions(retry_at);
+      CREATE INDEX IF NOT EXISTS idx_pm_lease_until ON ping_missions(lease_until);
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS retry_at TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS lease_until TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ;
     `);
   }
 
@@ -54,8 +62,9 @@ class MissionRuntime {
    */
   async create(missionType, payload = {}, options = {}) {
     const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
     const missionId = crypto.createHash('sha256')
-      .update(`${missionType}:${Date.now()}:${JSON.stringify(payload)}`)
+      .update(`${missionType}:${constitutionalTimeAuthority.nowAsMillis()}:${JSON.stringify(payload)}`)
       .digest('hex').slice(0, 16);
 
     await this._pool.query(
@@ -74,19 +83,30 @@ class MissionRuntime {
   }
 
   /**
-   * Assign a mission to a worker.
+   * Assign (claim) a mission to a worker.
+   *
+   * P0-1: conditional transition. Claim state, claimed_at and lease_until are
+   * set in the SAME mutation, and the UPDATE only matches missions still in
+   * status 'created'. A second claim on an already-claimed mission is rejected
+   * (rowCount 0) — the assignment can never be stolen by a concurrent scheduler.
+   *
+   * @returns {Promise<number>} rowCount — 1 if claimed, 0 if not claimable
    */
   async assign(missionId, workerName) {
-    await this._pool.query(
-      `UPDATE ping_missions SET status = 'assigned', assigned_to = $1 WHERE mission_id = $2`,
+    const result = await this._pool.query(
+      `UPDATE ping_missions SET status = 'assigned', assigned_to = $1, claimed_at = NOW(), lease_until = NOW() + INTERVAL '60 seconds' WHERE mission_id = $2 AND status = 'created' RETURNING mission_id`,
       [workerName, missionId]
     );
 
-    if (this._eventRuntime) {
+    const claimed = (result.rowCount || 0) === 1;
+
+    if (claimed && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_ASSIGNED', 'mission-runtime', {
         missionId, assignedTo: workerName,
       });
     }
+
+    return result.rowCount || 0;
   }
 
   /**

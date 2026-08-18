@@ -11,6 +11,7 @@
  */
 
 const { computeCanonicalHash } = require('../../ping-runtime/authorities/constitutional_validation');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 // Lazy import — only needed when container is provided
 let _buildDependencyGraph = null;
@@ -126,7 +127,7 @@ function createConstitutionRoutes({ tenantRegistry, deploymentRegistry, runtimeR
           state_machines: consumers && consumers.stateMachineExecutor ? consumers.stateMachineExecutor.getHash() : null,
         },
         runtime_fingerprint: fingerprint ? fingerprint.getFingerprint() : null,
-        computed_at: new Date().toISOString(),
+        computed_at: constitutionalTimeAuthority.nowAsISOString(),
         latency_ms: Date.now() - startTime,
       };
 
@@ -138,7 +139,7 @@ function createConstitutionRoutes({ tenantRegistry, deploymentRegistry, runtimeR
       res.status(500).json({
         healthy: false,
         error: error.message,
-        computed_at: new Date().toISOString(),
+        computed_at: constitutionalTimeAuthority.nowAsISOString(),
       });
     }
   });

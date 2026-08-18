@@ -6,6 +6,8 @@
  * No new infrastructure — just wiring.
  */
 
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+
 class ReviewEmitter {
   constructor(eventRuntime) { this._er = eventRuntime; }
   async received(review) {
@@ -41,7 +43,7 @@ class ProjectEmitter {
     return this._er.emit('PROJECT_UPDATED', 'project-authority', { project_id: projectId, status, changes });
   }
   async completed(projectId) {
-    return this._er.emit('PROJECT_COMPLETED', 'project-authority', { project_id: projectId, completed_at: new Date().toISOString() });
+    return this._er.emit('PROJECT_COMPLETED', 'project-authority', { project_id: projectId, completed_at: constitutionalTimeAuthority.nowAsISOString() });
   }
   async estimateCreated(estimate) {
     return this._er.emit('ESTIMATE_CREATED', 'project-authority', estimate);
@@ -50,7 +52,7 @@ class ProjectEmitter {
     return this._er.emit('ESTIMATE_SENT', 'project-authority', { estimate_id: estimateId, sent_to: sentTo });
   }
   async estimateAccepted(estimateId) {
-    return this._er.emit('ESTIMATE_ACCEPTED', 'project-authority', { estimate_id: estimateId, accepted_at: new Date().toISOString() });
+    return this._er.emit('ESTIMATE_ACCEPTED', 'project-authority', { estimate_id: estimateId, accepted_at: constitutionalTimeAuthority.nowAsISOString() });
   }
   async invoiceCreated(invoice) {
     return this._er.emit('INVOICE_CREATED', 'project-authority', invoice);
@@ -59,7 +61,7 @@ class ProjectEmitter {
     return this._er.emit('INVOICE_SENT', 'project-authority', { invoice_id: invoiceId, sent_to: sentTo });
   }
   async invoicePaid(invoiceId, amount) {
-    return this._er.emit('INVOICE_PAID', 'project-authority', { invoice_id: invoiceId, amount, paid_at: new Date().toISOString() });
+    return this._er.emit('INVOICE_PAID', 'project-authority', { invoice_id: invoiceId, amount, paid_at: constitutionalTimeAuthority.nowAsISOString() });
   }
 }
 

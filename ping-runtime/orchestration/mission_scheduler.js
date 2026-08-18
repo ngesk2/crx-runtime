@@ -23,6 +23,7 @@
  */
 
 const crypto = require('crypto');
+const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
 // Map mission_type → worker name
 // Workers register with WorkerRuntime using these names
@@ -203,7 +204,7 @@ class MissionScheduler {
       // Complete mission
       await this._missionRuntime.complete(mission.mission_id, {
         worker: workerName,
-        completed_at: new Date().toISOString(),
+        completed_at: constitutionalTimeAuthority.nowAsISOString(),
       });
 
       this._stats.completed++;
