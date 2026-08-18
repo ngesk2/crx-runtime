@@ -23,7 +23,14 @@ class BaseWorker {
     // the intelligence hop (mirrors canonical_workers.js BaseWorker._emit). The
     // 'core::system' default is owned by UnifiedEventRuntime.emit() only.
     const namespace = options.namespace || this._event?.namespace;
-    const result = await this._eventRuntime.emit(eventType, this._name, payload, { ...options, namespace });
+    // Preserve correlation_id from the triggering event (mirrors canonical_workers.js
+    // BaseWorker._emit) so all events from the same originating observation share a
+    // single correlation group across the intelligence dual-emit path.
+    const correlation_id = options.correlation_id
+      || this._event?.metadata?.correlation_id
+      || this._event?.event_id
+      || options.causation_id;
+    const result = await this._eventRuntime.emit(eventType, this._name, payload, { ...options, namespace, correlation_id });
     if (result.status !== 'ok') throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
     return result;
   }

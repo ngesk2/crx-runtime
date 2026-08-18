@@ -37,9 +37,18 @@ class BaseWorker {
     // full worker chain down to projection and knowledge graph. The 'core::system'
     // default is owned by UnifiedEventRuntime.emit() — never re-derived here.
     const namespace = options.namespace || this._event?.namespace;
+    // Preserve correlation_id from the triggering event so all events from the
+    // same originating observation share a single correlation group. The spine
+    // defaults correlation_id to the new event's own ID when this is absent,
+    // which breaks the correlation chain at every worker hop.
+    const correlation_id = options.correlation_id
+      || this._event?.metadata?.correlation_id
+      || this._event?.event_id
+      || options.causation_id;
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
       ...options,
       namespace,
+      correlation_id,
     });
     if (result.status !== 'ok') {
       throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
