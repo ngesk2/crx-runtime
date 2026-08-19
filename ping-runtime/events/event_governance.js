@@ -46,6 +46,16 @@ const NAMESPACE_OWNERS = {
   constitutional_ir: 'PING',
   canonical_hash: 'PING',
   canonical_identity: 'PING',
+  classification: 'PING',
+  recommendation: 'PING',
+  citation: 'PING',
+  entity: 'PING',
+  relationship: 'PING',
+  topic: 'PING',
+  repository: 'PING',
+  file: 'PING',
+  snippet: 'PING',
+  ai: 'PING',
 
   // Business namespaces
   customer: 'HPP',
