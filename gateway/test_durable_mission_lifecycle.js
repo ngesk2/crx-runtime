@@ -98,8 +98,10 @@ class MockPool {
       return { rows: m ? [{ started_at: m.started_at }] : [], rowCount: 1 };
     }
 
-    // INSERT INTO ping_missions
+    // INSERT INTO ping_missions — ON CONFLICT DO NOTHING
     if (S.includes('INSERT INTO ping_missions')) {
+      const existing = this._tables.ping_missions.find(m => m.mission_id === params[0]);
+      if (existing) return { rows: [], rowCount: 0 }; // ON CONFLICT DO NOTHING
       const mission = {
         mission_id: params[0], mission_type: params[1], payload: params[2],
         priority: params[3] || 0, created_by: params[4] || null,

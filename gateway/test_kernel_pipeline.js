@@ -45,6 +45,8 @@ class MockPool {
     }
 
     if (sql.includes('INSERT INTO ping_missions')) {
+      const existing = this._tables.ping_missions.find(m => m.mission_id === params[0]);
+      if (existing) return { rows: [], rowCount: 0 };
       this._tables.ping_missions.push({
         mission_id: params[0], mission_type: params[1], payload: params[2],
         priority: params[3], created_by: params[4],

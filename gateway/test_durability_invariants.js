@@ -81,8 +81,10 @@ class MockPool {
       return { rows: m ? [m] : [], rowCount: m ? 1 : 0 };
     }
 
-    // INSERT INTO ping_missions
+    // INSERT INTO ping_missions — ON CONFLICT DO NOTHING
     if (S.includes('INSERT INTO ping_missions')) {
+      const existing = this._tables.ping_missions.find(m => m.mission_id === params[0]);
+      if (existing) return { rows: [], rowCount: 0 }; // ON CONFLICT DO NOTHING
       const mission = {
         mission_id: params[0], mission_type: params[1], payload: params[2],
         priority: params[3] || 0, created_by: params[4] || null,
@@ -422,6 +424,22 @@ test('INV-9: failed mission is NOT overwritten by stale complete()', async () =>
 
   const final_ = await findMission(pool, id);
   assert.strictEqual(final_.status, 'failed', 'still failed — not overwritten');
+});
+
+// ─── INV-10: same event_id produces exactly one mission ─────────────
+
+test('INV-10: duplicate event_id yields same mission_id (idempotent create)', async () => {
+  const { pool, mr } = makeMr();
+  const payload = { event_id: 'EVT-IDEMPOTENT-001', event_type: 'REVIEW_RECEIVED' };
+
+  const id1 = await mr.create('REVIEW_RESPONSE', payload, { priority: 3 });
+  const id2 = await mr.create('REVIEW_RESPONSE', payload, { priority: 3 });
+
+  assert.strictEqual(id1, id2, 'same event_id produces same mission_id');
+
+  // Only one mission in the table
+  const all = await pool.query('SELECT * FROM ping_missions WHERE mission_id = $1', [id1]);
+  assert.strictEqual(all.rows.length, 1, 'exactly one mission row');
 });
 
 run();

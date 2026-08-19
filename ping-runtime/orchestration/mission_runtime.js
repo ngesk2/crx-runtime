@@ -59,21 +59,32 @@ class MissionRuntime {
 
   /**
    * Create a new mission.
+   *
+   * mission_id is deterministic: hash(missionType:event_id) when event_id is
+   * present in payload, otherwise hash(missionType:canonical_payload). Same
+   * event always produces the same mission — idempotent by construction.
+   * ON CONFLICT DO NOTHING prevents duplicate missions for the same event.
    */
   async create(missionType, payload = {}, options = {}) {
     const crypto = require('crypto');
-const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+    const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+    const idempotencyKey = payload.event_id
+      ? `${missionType}:${payload.event_id}`
+      : `${missionType}:${JSON.stringify(payload)}`;
     const missionId = crypto.createHash('sha256')
-      .update(`${missionType}:${constitutionalTimeAuthority.nowAsMillis()}:${JSON.stringify(payload)}`)
+      .update(idempotencyKey)
       .digest('hex').slice(0, 16);
 
-    await this._pool.query(
+    const result = await this._pool.query(
       `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by)
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (mission_id) DO NOTHING`,
       [missionId, missionType, JSON.stringify(payload), options.priority || 0, options.createdBy || null]
     );
 
-    if (this._eventRuntime) {
+    const created = (result.rowCount || 0) === 1;
+
+    if (created && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_CREATED', 'mission-runtime', {
         missionId, missionType, payload, priority: options.priority || 0,
       });
