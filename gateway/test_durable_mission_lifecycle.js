@@ -127,18 +127,24 @@ class MockPool {
       return { rows: [], rowCount: 1 };
     }
 
-    // start()
+    // start() — conditional: only from 'assigned'
     if (S.includes("SET status = 'running'")) {
       const m = this._tables.ping_missions.find(m => m.mission_id === params[0]);
-      if (m) { m.status = 'running'; m.started_at = new Date().toISOString(); }
-      return { rows: [], rowCount: m ? 1 : 0 };
+      if (!m) return { rows: [], rowCount: 0 };
+      const conditional = S.includes("status = 'assigned'");
+      if (conditional && m.status !== 'assigned') return { rows: [], rowCount: 0 };
+      m.status = 'running'; m.started_at = new Date().toISOString();
+      return { rows: [], rowCount: 1 };
     }
 
-    // complete()
+    // complete() — conditional: only from 'running'
     if (S.includes("SET status = 'completed'")) {
       const m = this._tables.ping_missions.find(m => m.mission_id === params[1]);
-      if (m) { m.status = 'completed'; m.result = JSON.parse(params[0]); m.completed_at = new Date().toISOString(); }
-      return { rows: [], rowCount: m ? 1 : 0 };
+      if (!m) return { rows: [], rowCount: 0 };
+      const conditional = S.includes("status = 'running'");
+      if (conditional && m.status !== 'running') return { rows: [], rowCount: 0 };
+      m.status = 'completed'; m.result = JSON.parse(params[0]); m.completed_at = new Date().toISOString();
+      return { rows: [], rowCount: 1 };
     }
 
     // failWithRetry exhaustion → failed (has retries column in SET)

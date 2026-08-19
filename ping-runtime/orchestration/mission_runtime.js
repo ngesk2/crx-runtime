@@ -111,20 +111,26 @@ const { constitutionalTimeAuthority } = require('../authorities/constitutional_t
 
   /**
    * Start a mission.
+   *
+   * Conditional: only transitions from 'assigned' to 'running'. A mission
+   * that is already completed, failed, or retry_pending is never restarted.
    */
   async start(missionId) {
-    await this._pool.query(
-      `UPDATE ping_missions SET status = 'running', started_at = NOW() WHERE mission_id = $1`,
+    const result = await this._pool.query(
+      `UPDATE ping_missions SET status = 'running', started_at = NOW() WHERE mission_id = $1 AND status = 'assigned'`,
       [missionId]
     );
 
-    if (this._eventRuntime) {
+    if ((result.rowCount || 0) === 1 && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_STARTED', 'mission-runtime', { missionId });
     }
   }
 
   /**
    * Complete a mission.
+   *
+   * Conditional: only transitions from 'running' to 'completed'. A mission
+   * that is failed, retry_pending, or already completed is never overwritten.
    */
   async complete(missionId, result = {}) {
     // Calculate duration from started_at
@@ -139,12 +145,12 @@ const { constitutionalTimeAuthority } = require('../authorities/constitutional_t
       }
     } catch (_) {}
 
-    await this._pool.query(
-      `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2`,
+    const updateResult = await this._pool.query(
+      `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2 AND status = 'running'`,
       [JSON.stringify({ ...result, duration_ms }), missionId]
     );
 
-    if (this._eventRuntime) {
+    if ((updateResult.rowCount || 0) === 1 && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_COMPLETED', 'mission-runtime', { missionId, result, duration_ms });
     }
   }
