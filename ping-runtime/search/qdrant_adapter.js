@@ -33,9 +33,9 @@ class QdrantAdapter {
     const existing = await this._fetch('/collections').catch(() => ({ result: { collections: [] } }));
     const names = (existing.result?.collections || []).map(c => c.name);
     if (names.includes(name)) return;
-    await this._fetch('/collections', {
+    await this._fetch(`/collections/${name}`, {
       method: 'PUT',
-      body: JSON.stringify({ name, vectors: { size: vectorSize, distance: 'Cosine' } }),
+      body: JSON.stringify({ vectors: { size: vectorSize, distance: 'Cosine' } }),
     });
   }
 

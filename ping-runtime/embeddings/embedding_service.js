@@ -44,6 +44,12 @@ const INDEXABLE_TYPES = new Set([
   'GOOGLE_REVIEW_RECEIVED',
 ]);
 
+function toQdrantId(raw) {
+  if (typeof raw === 'number') return raw;
+  const hex = String(raw).replace(/[^0-9a-fA-F]/g, '').slice(0, 32).padEnd(32, '0');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+
 function extractText(payload) {
   if (!payload || typeof payload !== 'object') return String(payload || '');
   const candidates = ['text', 'content', 'summary', 'observation', 'claim', 'recommendation', 'title', 'name', 'review', 'response'];
@@ -206,7 +212,7 @@ class EmbeddingService {
     const { embedding, fallback, model } = await this.embed(text, { model: options.model });
 
     const point = {
-      id,
+      id: toQdrantId(id),
       vector: embedding,
       payload: {
         kind,

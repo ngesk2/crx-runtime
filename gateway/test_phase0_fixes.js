@@ -197,7 +197,7 @@ test('C1: subscribing an indexable event projects to Qdrant', async () => {
   });
   assert.strictEqual(qdrant.upserts.length, 1, 'one upsert on indexable event');
   assert.strictEqual(qdrant.upserts[0].collection, 'knowledge');
-  assert.strictEqual(qdrant.upserts[0].points[0].id, 'evt-1');
+  assert.ok(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(qdrant.upserts[0].points[0].id), 'point ID is a UUID');
   assert.strictEqual(qdrant.upserts[0].points[0].payload.namespace, 'core::owner');
   assert.strictEqual(qdrant.upserts[0].points[0].payload.source_event_id, 'evt-1');
 });
@@ -292,7 +292,7 @@ test('C3: ProjectionWorker projects to Qdrant when embeddingService present', as
   });
   assert.strictEqual(result.status, 'ok');
   assert.strictEqual(qdrant.upserts.length, 1, 'projection worker writes to Qdrant');
-  assert.strictEqual(qdrant.upserts[0].points[0].id, 'evt-3');
+  assert.ok(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(qdrant.upserts[0].points[0].id), 'projection point ID is a UUID');
 });
 
 // ─── E2E: full canonical chain ────────────────────────────────────────
