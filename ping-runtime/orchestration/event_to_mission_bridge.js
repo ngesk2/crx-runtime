@@ -50,6 +50,7 @@ const EVENT_MISSION_MAP = {
   CLAIM_CREATED: { missionType: 'CLASSIFICATION_CREATE', worker: 'classification', priority: 2 },
   CLASSIFICATION_CREATED: { missionType: 'RECOMMENDATION_CREATE', worker: 'recommendation', priority: 2 },
   RECOMMENDATION_CREATED: { missionType: 'PROJECTION_CREATE', worker: 'projection', priority: 1 },
+  PROJECTION_CREATED: { missionType: 'REPLAY_VERIFY', worker: 'replay', priority: 1 },
   REPLAY_COMPLETED: { missionType: 'WITNESS_CREATE', worker: 'witness', priority: 1 },
   WITNESS_CREATED: { missionType: 'LINEAGE_CREATE', worker: 'lineage', priority: 1 },
   LINEAGE_CREATED: { missionType: 'PROJECTION_CREATE', worker: 'projection', priority: 1 },

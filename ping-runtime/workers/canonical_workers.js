@@ -453,10 +453,10 @@ function registerCanonicalWorkers(workerRuntime, options = {}) {
     { name: 'claim', Worker: ClaimWorker, eventTypes: ['OBSERVATION_CREATED', 'CLAIM_GENERATE'] },
     { name: 'classification', Worker: ClassificationWorker, eventTypes: ['CLAIM_CREATED', 'CLASSIFICATION_CREATE'] },
     { name: 'recommendation', Worker: RecommendationWorker, eventTypes: ['CLASSIFICATION_CREATED', 'RECOMMENDATION_CREATE'] },
-    { name: 'projection', Worker: ProjectionWorker, eventTypes: ['KNOWLEDGE_INDEX', 'PROJECTION_CREATE', 'RECOMMENDATION_CREATED'] },
-    { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY'] },
-    { name: 'witness', Worker: WitnessWorker, eventTypes: ['WITNESS_CREATE'] },
-    { name: 'lineage', Worker: LineageWorker, eventTypes: ['LINEAGE_CREATE'] },
+    { name: 'projection', Worker: ProjectionWorker, eventTypes: ['KNOWLEDGE_INDEX', 'PROJECTION_CREATE', 'RECOMMENDATION_CREATED', 'LINEAGE_CREATED'] },
+    { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY', 'PROJECTION_CREATED'] },
+    { name: 'witness', Worker: WitnessWorker, eventTypes: ['WITNESS_CREATE', 'REPLAY_COMPLETED'] },
+    { name: 'lineage', Worker: LineageWorker, eventTypes: ['LINEAGE_CREATE', 'WITNESS_CREATED'] },
     { name: 'intelligence', Worker: IntelligenceWorker, eventTypes: BUSINESS_EVENTS, options: { aiRuntime: options.aiRuntime } },
   ];
 
