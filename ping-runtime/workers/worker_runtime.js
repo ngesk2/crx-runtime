@@ -68,6 +68,7 @@ class WorkerRuntime {
    */
   async dispatch(event) {
     const eventType = event.event_type;
+    let lastResult = null;
     
     // Find workers that handle this event type
     for (const [name, entry] of this._workers) {
@@ -79,7 +80,7 @@ class WorkerRuntime {
             // Track the current event on the worker so downstream emissions can
             // preserve its namespace (privacy boundary) via BaseWorker._emit.
             entry.worker._event = event;
-            await entry.worker.handle(event);
+            lastResult = await entry.worker.handle(event);
             entry.worker._event = null;
             entry.totalProcessed++;
             this._stats.completed++;
@@ -88,6 +89,7 @@ class WorkerRuntime {
             entry.totalFailed++;
             this._stats.failed++;
             console.error(`[WorkerRuntime] Worker '${name}' failed:`, err.message);
+            throw err;  // P0-2: propagate to caller (MissionScheduler) for retry/fail path
           } finally {
             entry.running--;
             entry.status = entry.running > 0 ? 'processing' : 'idle';
@@ -96,6 +98,7 @@ class WorkerRuntime {
         }
       }
     }
+    return lastResult;
   }
 
   /**

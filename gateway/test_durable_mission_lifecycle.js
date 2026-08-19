@@ -72,21 +72,23 @@ class MockPool {
     const S = sql.trim().replace(/\s+/g, ' ');
     if (S.startsWith('CREATE')) return { rows: [], rowCount: 0 };
 
-    // getPending — created + (retry_at IS NULL OR retry_at <= NOW())
+    // getPending — created + retry_pending with retry_at <= NOW()
     if (S.includes('WHERE status =') && S.includes('LIMIT')) {
       const limit = params[0] || 10;
       const now = this._now();
       const pending = this._tables.ping_missions
-        .filter(m => m.status === 'created')
-        .filter(m => !m.retry_at || m.retry_at <= now)
+        .filter(m => m.status === 'created' || (m.status === 'retry_pending' && m.retry_at && m.retry_at <= now))
         .sort((a, b) => (b.priority || 0) - (a.priority || 0))
         .slice(0, limit);
       return { rows: pending, rowCount: pending.length };
     }
 
-    // SELECT * FROM ping_missions WHERE mission_id = $1
-    if (S.includes('SELECT * FROM ping_missions') && S.includes('WHERE mission_id')) {
+    // SELECT retries ... (failWithRetry pre-read) or SELECT * ... WHERE mission_id
+    if (S.includes('FROM ping_missions') && S.includes('WHERE mission_id')) {
       const m = this._tables.ping_missions.find(m => m.mission_id === params[0]);
+      if (S.includes('SELECT retries')) {
+        return { rows: m ? [{ retries: m.retries || 0 }] : [], rowCount: m ? 1 : 0 };
+      }
       return { rows: m ? [m] : [], rowCount: m ? 1 : 0 };
     }
 
@@ -139,7 +141,14 @@ class MockPool {
       return { rows: [], rowCount: m ? 1 : 0 };
     }
 
-    // fail() / failWithRetry exhaustion → failed
+    // failWithRetry exhaustion → failed (has retries column in SET)
+    if (S.includes("SET status = 'failed'") && S.includes('retries')) {
+      const m = this._tables.ping_missions.find(m => m.mission_id === params[2]);
+      if (m) { m.status = 'failed'; m.error = params[0]; m.retries = params[1]; m.completed_at = new Date().toISOString(); }
+      return { rows: [], rowCount: m ? 1 : 0 };
+    }
+
+    // fail() — plain failure (no retries column in SET)
     if (S.includes("SET status = 'failed'")) {
       const m = this._tables.ping_missions.find(m => m.mission_id === params[1]);
       if (m) { m.status = 'failed'; m.error = params[0]; m.completed_at = new Date().toISOString(); }
@@ -152,8 +161,8 @@ class MockPool {
       if (m) {
         m.status = 'retry_pending';
         m.error = params[0];
-        m.retry_at = params[1];
-        m.retries = (m.retries || 0) + 1;
+        m.retries = params[1];           // $2 = nextRetry count
+        m.retry_at = params[2];          // $3 = ISO timestamp
       }
       return { rows: [], rowCount: m ? 1 : 0 };
     }
@@ -300,7 +309,7 @@ test('G3-T5: failWithRetry increments retries, sets retry_pending + retry_at, re
   let m = pool._tables.ping_missions.find(m => m.mission_id === id);
   assert.strictEqual(m.status, 'retry_pending', 'RETRY_PENDING');
   assert.strictEqual(m.retries, 1, 'retries incremented');
-  assert.ok(m.retry_at > Date.now(), 'retry_at is in the future (backoff gate)');
+  assert.ok(new Date(m.retry_at).getTime() > Date.now(), 'retry_at is in the future (backoff gate)');
   assert.ok(m.error.includes('transient error'), 'error captured');
 
   // Not claimable before backoff elapses

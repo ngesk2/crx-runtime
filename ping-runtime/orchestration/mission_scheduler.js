@@ -72,6 +72,8 @@ class MissionScheduler {
    * @param {object} options.missionRuntime — MissionRuntime instance
    * @param {object} options.workerRuntime — WorkerRuntime instance
    * @param {object} options.eventRuntime — UnifiedEventRuntime instance (for emitting)
+   * @param {object} options.deadLetterAuthority — P0-5: receives recordDeadLetter(job, error) on exhaustion
+   * @param {object} options.retryPolicy — P0-4: { max_attempts, backoff_delay_ms } default retry config
    * @param {number} options.pollIntervalMs — poll interval (default 5000)
    * @param {number} options.maxConcurrent — max missions processed in parallel (default 3)
    */
@@ -79,6 +81,8 @@ class MissionScheduler {
     this._missionRuntime = options.missionRuntime || null;
     this._workerRuntime = options.workerRuntime || null;
     this._eventRuntime = options.eventRuntime || null;
+    this._deadLetterAuthority = options.deadLetterAuthority || null;
+    this._retryPolicy = options.retryPolicy || { max_attempts: 3, backoff_delay_ms: 5000 };
     this._pollIntervalMs = options.pollIntervalMs || 5000;
     this._maxConcurrent = options.maxConcurrent || 3;
     this._timer = null;
@@ -198,24 +202,23 @@ class MissionScheduler {
         },
       };
 
-      // Dispatch to worker
-      await this._workerRuntime.dispatch(event);
+      // Dispatch to worker — P0-2: throws on worker failure
+      const dispatchResult = await this._workerRuntime.dispatch(event);
 
-      // Complete mission
-      await this._missionRuntime.complete(mission.mission_id, {
-        worker: workerName,
-        completed_at: constitutionalTimeAuthority.nowAsISOString(),
-      });
-
-      this._stats.completed++;
+      // P0-3: complete() only when worker returns verified ok.
+      // Workers that return {status:'failed'} instead of throwing are caught here.
+      if (dispatchResult && dispatchResult.status === 'failed') {
+        await this._failMission(mission, dispatchResult.error || 'worker returned failed status');
+      } else {
+        await this._missionRuntime.complete(mission.mission_id, {
+          worker: workerName,
+          completed_at: constitutionalTimeAuthority.nowAsISOString(),
+        });
+        this._stats.completed++;
+      }
     } catch (err) {
       console.error(`[MissionScheduler] Mission ${mission.mission_id} failed: ${err.message}`);
-      try {
-        await this._missionRuntime.fail(mission.mission_id, err.message);
-      } catch (failErr) {
-        console.error(`[MissionScheduler] Failed to mark mission as failed: ${failErr.message}`);
-      }
-      this._stats.failed++;
+      await this._failMission(mission, err.message);
     } finally {
       this._processing.delete(mission.mission_id);
     }
@@ -230,6 +233,45 @@ class MissionScheduler {
     const prefix = missionType.split('_')[0].toLowerCase();
     const knownPrefixes = ['observation', 'claim', 'projection', 'replay', 'witness', 'lineage'];
     return knownPrefixes.includes(prefix) ? prefix : null;
+  }
+
+  /**
+   * P0-4/P0-5: Fail with retry → exhaustion → DLQ.
+   *
+   * Calls failWithRetry on the mission. If the retry policy is exhausted
+   * (retries >= max_attempts), the mission is `failed` and, when a
+   * deadLetterAuthority is wired, recorded as a dead letter (P0-5).
+   */
+  async _failMission(mission, error) {
+    try {
+      const retries = await this._missionRuntime.failWithRetry(
+        mission.mission_id,
+        error,
+        this._retryPolicy,
+      );
+
+      // P0-5: after exhaustion, route to DLQ
+      if (retries >= this._retryPolicy.max_attempts && this._deadLetterAuthority) {
+        try {
+          const payload = typeof mission.payload === 'string'
+            ? JSON.parse(mission.payload)
+            : (mission.payload || {});
+          await this._deadLetterAuthority.recordDeadLetter(
+            {
+              job_id: mission.mission_id,
+              job_type: mission.mission_type,
+              original_event: payload,
+            },
+            new Error(error),
+          );
+        } catch (dlqErr) {
+          console.error(`[MissionScheduler] DLQ record failed: ${dlqErr.message}`);
+        }
+      }
+    } catch (failErr) {
+      console.error(`[MissionScheduler] Failed to mark mission as failed: ${failErr.message}`);
+    }
+    this._stats.failed++;
   }
 
   /**

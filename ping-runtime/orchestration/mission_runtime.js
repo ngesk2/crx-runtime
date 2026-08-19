@@ -164,11 +164,101 @@ const { constitutionalTimeAuthority } = require('../authorities/constitutional_t
   }
 
   /**
+   * Fail with retry — P0-4.
+   *
+   * Increments `retries`, sets `retry_pending` status and `retry_at` to enforce
+   * a backoff gate.  When `retries >= max_attempts`, the mission is marked
+   * `failed` instead (exhaustion).
+   *
+   * `getPending()` only returns `created` missions, so retry_pending missions
+   * are invisible until `retry_at` is reached and `reclaimRetryPending()`
+   * moves them back to `created` (or until `reapExpiredLeases()` picks them up
+   * if retry_at has passed).
+   *
+   * @param {string} missionId
+   * @param {string} error — error description
+   * @param {object} options
+   * @param {number} options.max_attempts — total attempts before exhaustion (default 3)
+   * @param {number} options.backoff_delay_ms — base delay before retry (default 5000)
+   */
+  async failWithRetry(missionId, error, options = {}) {
+    const maxAttempts = options.max_attempts || 3;
+    const backoffMs = options.backoff_delay_ms || 5000;
+
+    // Read current retries
+    const row = await this._pool.query(
+      `SELECT retries FROM ping_missions WHERE mission_id = $1`,
+      [missionId]
+    );
+    const currentRetries = (row.rows[0] && row.rows[0].retries) || 0;
+    const nextRetry = currentRetries + 1;
+
+    if (nextRetry >= maxAttempts) {
+      // Exhausted — mark failed permanently
+      await this._pool.query(
+        `UPDATE ping_missions SET status = 'failed', error = $1, retries = $2, completed_at = NOW() WHERE mission_id = $3`,
+        [error, nextRetry, missionId]
+      );
+    } else {
+      // Schedule retry
+      const retryAt = new Date(Date.now() + backoffMs);
+      await this._pool.query(
+        `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3 WHERE mission_id = $4`,
+        [error, nextRetry, retryAt.toISOString(), missionId]
+      );
+    }
+
+    if (this._eventRuntime) {
+      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error, retries: nextRetry });
+    }
+
+    return nextRetry;
+  }
+
+  /**
+   * Reclaim expired leases — P0-6.
+   *
+   * Finds missions with status IN ('running', 'assigned') whose `lease_until`
+   * has passed, resets them to `created` (AVAILABLE) so the scheduler can
+   * re-claim them.
+   *
+   * @returns {Promise<number>} count of reclaimed missions
+   */
+  async reapExpiredLeases() {
+    const result = await this._pool.query(
+      `UPDATE ping_missions
+       SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NOW()
+       WHERE status IN ('running', 'assigned')
+         AND lease_until IS NOT NULL
+         AND lease_until < NOW()
+       RETURNING mission_id`
+    );
+
+    const reclaimed = result.rowCount || 0;
+    if (reclaimed > 0) {
+      console.log(`[MissionRuntime] Reclaimed ${reclaimed} expired lease(s)`);
+      for (const row of result.rows) {
+        if (this._eventRuntime) {
+          await this._eventRuntime.emit('MISSION_LEASE_EXPIRED', 'mission-runtime', { missionId: row.mission_id });
+        }
+      }
+    }
+
+    return reclaimed;
+  }
+
+  /**
    * Get pending missions (for Orca scheduler).
+   *
+   * Returns missions in `created` status AND `retry_pending` missions whose
+   * `retry_at` has elapsed — both are claimable.
    */
   async getPending(limit = 10) {
     const result = await this._pool.query(
-      `SELECT * FROM ping_missions WHERE status = 'created' ORDER BY priority DESC, created_at ASC LIMIT $1`,
+      `SELECT * FROM ping_missions
+       WHERE status = 'created'
+          OR (status = 'retry_pending' AND retry_at IS NOT NULL AND retry_at <= NOW())
+       ORDER BY priority DESC, created_at ASC LIMIT $1`,
       [limit]
     );
     return result.rows;
