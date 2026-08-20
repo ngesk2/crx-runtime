@@ -87,6 +87,7 @@ const { registerCanonicalWorkers } = require('../../ping-runtime/workers/canonic
 const { EventToMissionBridge } = require('../../ping-runtime/orchestration/event_to_mission_bridge');
 const { ReviewEmitter, CustomerEmitter, ProjectEmitter, ConnectorEmitter, SystemEmitter } = require('../../ping-runtime/business/business_emitters');
 const { Neo4jAdapter } = require('../../ping-runtime/graph/neo4j_adapter');
+const { DeadLetterAuthority } = require('../dead_letter_authority');
 const { QdrantAdapter } = require('../../ping-runtime/search/qdrant_adapter');
 const createKnowledgeRoutes = require('../routes/knowledge');
 const createMissionRoutes = require('../routes/missions');
@@ -362,6 +363,7 @@ class GatewayRuntime {
     let embeddingService = null;
     let evidenceAuthority = null;
     let hybridSearch = null;
+    let deadLetterAuthority = null;
 
     if (pgAvailable) {
       try {
@@ -519,10 +521,23 @@ class GatewayRuntime {
         console.log('[GatewayRuntime] Evidence Authority + Hybrid Search initialized');
 
         // Mission Scheduler — polls MissionRuntime, dispatches to WorkerRuntime
+        // Arrow 2: DeadLetterAuthority — DLQ path was permanently unreachable
+        // (constructor accepted it but gateway never injected it). Now instantiated
+        // and injected so exhausted retries route to repository_dead_letters.
+        try {
+          deadLetterAuthority = new DeadLetterAuthority(this._pool);
+          await deadLetterAuthority.initialize();
+          console.log('[GatewayRuntime] Dead Letter Authority initialized');
+        } catch (dlqErr) {
+          console.error('[GatewayRuntime] Dead Letter Authority init failed (non-fatal):', dlqErr.message);
+          deadLetterAuthority = null;
+        }
+
         missionScheduler = new MissionScheduler({
           missionRuntime,
           workerRuntime,
           eventRuntime: unifiedEventRuntime,
+          deadLetterAuthority,
           pollIntervalMs: 5000,
           maxConcurrent: 3,
         });
@@ -622,6 +637,7 @@ class GatewayRuntime {
       neo4jAdapter, qdrantAdapter,
       canonicalizationService, embeddingService,
       evidenceAuthority, hybridSearch,
+      deadLetterAuthority,
       // Capability + OAuth framework
       capabilityRegistry, oauthManager, tokenStore,
     });

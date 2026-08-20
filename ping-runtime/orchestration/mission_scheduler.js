@@ -133,6 +133,15 @@ class MissionScheduler {
     if (this._processing.size >= this._maxConcurrent) return;
 
     try {
+      // Arrow 1: Reap expired leases — turns assigned/running missions whose
+      // lease expired back to created, enabling re-dispatch after worker crash.
+      try {
+        const reaped = await this._missionRuntime.reapExpiredLeases();
+        if (reaped > 0) console.log(`[MissionScheduler] Reaped ${reaped} expired leases`);
+      } catch (reapErr) {
+        console.error('[MissionScheduler] Lease reaping failed (non-fatal):', reapErr.message);
+      }
+
       const availableSlots = this._maxConcurrent - this._processing.size;
       const pending = await this._missionRuntime.getPending(availableSlots);
 
@@ -204,6 +213,7 @@ class MissionScheduler {
 
       // Dispatch to worker — P0-2: throws on worker failure
       const dispatchResult = await this._workerRuntime.dispatch(event);
+      this._stats.dispatched++;
 
       // P0-3: complete() only when worker returns verified ok.
       // Workers that return {status:'failed'} instead of throwing are caught here.

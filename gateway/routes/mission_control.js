@@ -458,6 +458,55 @@ function createMissionControlRoutes(services) {
     res.json({ status: 'ok', workers: workers.getStats() });
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // DEAD LETTER OBSERVABILITY
+  // ═══════════════════════════════════════════════════════════════
+  router.get('/dead-letters', async (req, res) => {
+    const dlq = services.deadLetterAuthority;
+    if (!dlq) return res.json({ status: 'degraded', message: 'DeadLetterAuthority not initialized' });
+    try {
+      const jobType = req.query.jobType || null;
+      const limit = parseInt(req.query.limit) || 50;
+      const offset = parseInt(req.query.offset) || 0;
+      let letters;
+      if (jobType) {
+        letters = await dlq.getDeadLettersByJobType(jobType, { limit, offset, replayableOnly: false });
+      } else {
+        // No jobType filter — get all via stats aggregation (lighter than unbounded SELECT)
+        const stats = await dlq.getStats();
+        letters = { stats, message: 'Use ?jobType=<type> to list specific dead letters' };
+      }
+      res.json({ status: 'ok', deadLetters: letters, limit, offset });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
+  router.get('/dead-letters/stats', async (req, res) => {
+    const dlq = services.deadLetterAuthority;
+    if (!dlq) return res.json({ status: 'degraded', message: 'DeadLetterAuthority not initialized' });
+    try {
+      const stats = await dlq.getStats();
+      res.json({ status: 'ok', stats });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
+  router.get('/dead-letters/:id', async (req, res) => {
+    const dlq = services.deadLetterAuthority;
+    if (!dlq) return res.json({ status: 'degraded', message: 'DeadLetterAuthority not initialized' });
+    try {
+      const letters = await dlq.getDeadLettersByMission(req.params.id);
+      if (!letters || letters.length === 0) {
+        return res.status(404).json({ status: 'not_found', message: `No dead letters for mission ${req.params.id}` });
+      }
+      res.json({ status: 'ok', deadLetters: letters });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
   return router;
 }
 
