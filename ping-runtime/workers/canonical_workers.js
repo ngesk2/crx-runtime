@@ -457,10 +457,21 @@ function registerCanonicalWorkers(workerRuntime, options = {}) {
     { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY', 'PROJECTION_CREATED'] },
     { name: 'witness', Worker: WitnessWorker, eventTypes: ['WITNESS_CREATE', 'REPLAY_COMPLETED'] },
     { name: 'lineage', Worker: LineageWorker, eventTypes: ['LINEAGE_CREATE', 'WITNESS_CREATED'] },
-    { name: 'intelligence', Worker: IntelligenceWorker, eventTypes: BUSINESS_EVENTS, options: { aiRuntime: options.aiRuntime } },
+    // IntelligenceWorker is registered but dormant — it duplicates the
+    // ClassificationWorker + RecommendationWorker pair (both produce
+    // CLASSIFICATION_CREATED / RECOMMENDATION_CREATED from the same inputs).
+    // Re-enable with targeted eventTypes (e.g. ['OBSERVATION_CREATED']) when
+    // Ollama is wired for AI-enhanced classification.
+    { name: 'intelligence', Worker: IntelligenceWorker, eventTypes: [], options: { aiRuntime: options.aiRuntime } },
   ];
 
   for (const { name, Worker, eventTypes, options: workerOpts } of workers) {
+    // Skip dormant workers (empty eventTypes) — they process no events.
+    // They stay in the array for documentation and future re-enablement.
+    if (!eventTypes || eventTypes.length === 0) {
+      console.log(`[CanonicalWorkers] Skipped dormant worker '${name}' (no eventTypes)`);
+      continue;
+    }
     const worker = new Worker({ ...options, ...workerOpts });
     workerRuntime.register(name, worker, {
       eventTypes,

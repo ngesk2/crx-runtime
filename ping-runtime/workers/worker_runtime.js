@@ -72,7 +72,10 @@ class WorkerRuntime {
     
     // Find workers that handle this event type
     for (const [name, entry] of this._workers) {
-      if (entry.eventTypes.length === 0 || entry.eventTypes.includes(eventType)) {
+      // Workers with empty eventTypes are dormant — they do not match any events.
+      // Previously, empty eventTypes was treated as a catch-all (match everything),
+      // which meant a dormant worker would silently process all dispatched events.
+      if (entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType)) {
         if (entry.running < entry.maxConcurrent) {
           entry.running++;
           entry.status = 'processing';

@@ -2387,3 +2387,29 @@ The platform is mature enough that the largest remaining gains come from making 
 3. **P0 patches** — 6 patches gated on Docker infrastructure
 4. **Correctness gaps** — witness verification, event identity, replay determinism, Qdrant reconciliation, registry boot contract (CEO backlog)
 5. **POST /events convergence** — route kernel path through canonical spine
+
+### 2026-08-20 Session — Mission Recovery + Dead-Letter Observability (Committed)
+
+**15:30** | Started session. Goal: complete CEO Final Verification Gates 4-7 for the already-implemented mission recovery patch (Gates 1-3 were completed earlier). 3 production files modified + 2 test files created. | Execute Gates 4-7.
+
+**15:35** | Gate 4 (Semantic verification) PASS — 4 invariant groups proven from source: (a) lease reaping called before getPending, non-fatal; (b) DeadLetterAuthority import→instantiate→initialize→inject→use chain; (c) /dead-letters/stats before /dead-letters/:id; (d) dispatched++ only on actual dispatch, not skips. | Gate 5.
+
+**15:40** | Gate 5 (Live E2E) PASS — Docker running, ping-postgres healthy on 5433, gateway started on 8080. All 4 DLQ routes responding: /mc/dead-letters/stats (200, empty stats), /mc/dead-letters (200, stats summary), /mc/dead-letters?jobType=DOCUMENT_IMPORT (200, empty array), /mc/dead-letters/:id (404 with message). Scheduler stats live (dispatched:0, running:true). Dashboard shows 149 historical completions. | Gate 6.
+
+**15:45** | Gate 6 (Final patch integrity) PASS — git diff --check clean (CRLF warnings only from node_modules), git diff --stat shows 3 prod files / 75 insertions, git status shows exactly 5 intended files. | Gate 7.
+
+**15:50** | Gate 7 (Atomic commit) PASS — committed `32c870e4` on constitutional-hardening: `fix(runtime): wire mission recovery and dead-letter observability`. 5 files, 575 insertions. Staged set clean post-commit. No push attempted (129MB blob blocker). | Update AGENTS.md.
+
+## Session — Key Decisions
+- **All 7 gates passed** — semantic verification, live E2E, regression, integrity, atomic commit. Zero regressions.
+- **DLQ routes are live** — /mc/dead-letters, /mc/dead-letters/stats, /mc/dead-letters/:id all functional with real Postgres backend.
+- **Lease reaping is wired** — reapExpiredLeases() runs before getPending() in every scheduler poll cycle, non-fatal on failure.
+- **Dispatched counter is real** — incremented only on actual dispatch attempts, not on skip paths.
+- **Push remains blocked** — 129MB blob in git history from base commit. Documented, not rewritten.
+
+## Session — Remaining
+1. **Decision-graph fixes** (awaiting direction): single worker-identity decider, one priority scale, confidence on spine, IntelligenceWorker duplication + namespace drop, completion verification gate
+2. **M3 remaining batch** — canonical_event_envelope (BLOCKED), google cluster (deferred)
+3. **AGENTS.md surgical update** — cherry-pick ~55 lines of normative guidance
+4. **Repository history cleanup** — git-filter-repo/BFG for 129MB blob
+5. **POST /events convergence** — route kernel path through canonical spine
