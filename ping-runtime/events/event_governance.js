@@ -68,8 +68,6 @@ const NAMESPACE_OWNERS = {
   sms: 'HPP',
   google: 'HPP',
   github: 'HPP',
-  system: 'HPP',
-  worker: 'HPP',
 };
 
 class EventGovernance {

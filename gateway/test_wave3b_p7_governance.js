@@ -24,7 +24,7 @@ function testLoading() {
   gov.load();
 
   const policy = gov.getOwnershipPolicy();
-  assert(policy.length === 195, `Loaded 195 ownership rules (got ${policy.length})`);
+  assert(policy.length === 232, `Loaded 232 ownership rules (got ${policy.length})`);
 
   const namespaces = gov.getNamespacePolicy();
   assert(namespaces.length > 0, `Loaded ${namespaces.length} namespace rules`);
@@ -112,12 +112,24 @@ function testStats() {
 
 function testEventQueueGovernance() {
   console.log('\n=== P7: EventQueue Governance Integration ===');
+  const fs = require('fs');
+  const path = require('path');
   const { EventQueue } = require('../ping-runtime/orchestration/execution/event_queue');
+
+  // Clear stale persisted event files from prior test runs to avoid
+  // deterministic event_id collisions in the dedup check.
+  const queueDir = path.join(__dirname, '..', 'ping-runtime', 'orchestration', 'event_queue');
+  if (fs.existsSync(queueDir)) {
+    for (const f of fs.readdirSync(queueDir)) {
+      if (f.endsWith('.json')) fs.unlinkSync(path.join(queueDir, f));
+    }
+  }
+
   const queue = new EventQueue();
   const governance = queue.getGovernance();
 
   assert(governance !== null, 'EventQueue has governance');
-  assert(governance.getOwnershipPolicy().length === 195, 'Governance loaded 195 rules');
+  assert(governance.getOwnershipPolicy().length === 232, 'Governance loaded 232 rules');
 
   const result = queue.emit('COMPLETELY_UNKNOWN_EVENT', {});
   assert(result === null, 'Unknown event is rejected by queue (returns null)');

@@ -69,6 +69,8 @@ const REDACTION_RULES = {
   'payload.credit_card': { action: 'redact', replacement: '[CARD]' },
   'payload.password': { action: 'redact', replacement: '[REDACTED]' },
   'payload.token': { action: 'redact', replacement: '[TOKEN]' },
+  'payload.nested.password': { action: 'redact', replacement: '[REDACTED]' },
+  'payload.nested.token': { action: 'redact', replacement: '[TOKEN]' },
   'payload.api_key': { action: 'redact', replacement: '[KEY]' },
   'payload.secret': { action: 'redact', replacement: '[SECRET]' },
   'payload.ip_address': { action: 'hash', replacement: '[HASH]' },

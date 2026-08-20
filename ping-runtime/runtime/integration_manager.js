@@ -110,7 +110,7 @@ class IntegrationManager {
   }
 
   getStats() {
-    return { ...this._stats };
+    return { ...this._stats, policyActive: this._policy !== null };
   }
 
   _shouldRoute(integrationName, eventType) {
