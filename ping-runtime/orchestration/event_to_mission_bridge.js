@@ -53,7 +53,7 @@ const EVENT_MISSION_MAP = {
   PROJECTION_CREATED: { missionType: 'REPLAY_VERIFY', worker: 'replay', priority: 1 },
   REPLAY_COMPLETED: { missionType: 'WITNESS_CREATE', worker: 'witness', priority: 1 },
   WITNESS_CREATED: { missionType: 'LINEAGE_CREATE', worker: 'lineage', priority: 1 },
-  LINEAGE_CREATED: { missionType: 'PROJECTION_CREATE', worker: 'projection', priority: 1 },
+  // LINEAGE_CREATED is terminal — chain complete. No further missions created.
 
   // System events
   SYSTEM_HEALTH_CHECK: { missionType: 'SYSTEM_AUDIT', worker: 'observation', priority: 0 },

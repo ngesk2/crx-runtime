@@ -56,9 +56,10 @@ async function main() {
     assert.strictEqual(EVENT_MISSION_MAP['CLAIM_CREATED'].worker, 'classification');
     assert.strictEqual(EVENT_MISSION_MAP['CLASSIFICATION_CREATED'].worker, 'recommendation');
     assert.strictEqual(EVENT_MISSION_MAP['RECOMMENDATION_CREATED'].worker, 'projection');
+    assert.strictEqual(EVENT_MISSION_MAP['PROJECTION_CREATED'].worker, 'replay');
     assert.strictEqual(EVENT_MISSION_MAP['REPLAY_COMPLETED'].worker, 'witness');
     assert.strictEqual(EVENT_MISSION_MAP['WITNESS_CREATED'].worker, 'lineage');
-    assert.strictEqual(EVENT_MISSION_MAP['LINEAGE_CREATED'].worker, 'projection');
+    assert.strictEqual(EVENT_MISSION_MAP['LINEAGE_CREATED'], undefined, 'LINEAGE_CREATED is terminal — chain complete');
   });
 
   // Test 5: Bridge creates missions for business events
