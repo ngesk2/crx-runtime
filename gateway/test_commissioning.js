@@ -329,7 +329,7 @@ async function main() {
   console.log('\nPhase 1b: Dispatch missions to workers\n');
 
   let totalDispatched = 0;
-  let maxRounds = 5; // business → observation → claim → classification → recommendation → projection
+  let maxRounds = 10; // business → observation → claim → classification → recommendation → projection → replay → witness → lineage
   for (let round = 0; round < maxRounds; round++) {
     const pendingMissions = pool._tables.ping_missions.filter(m => m.status === 'created');
     if (pendingMissions.length === 0) break;
