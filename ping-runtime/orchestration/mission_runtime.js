@@ -340,6 +340,14 @@ class MissionRuntime {
 
   /**
    * Get full trace for a mission — evidence bundle.
+   *
+   * Resolves the correlation_id from the mission's triggering event (stored in
+   * payload.event_id by EventToMissionBridge). All events in a causal chain
+   * share the same correlation_id (preserved by BaseWorker._emit), so querying
+   * by the triggering event's correlation_id returns the full chain.
+   *
+   * Previously queried by mission_id directly, which is a sha256 hash — never
+   * equal to any event's correlation_id.
    */
   async getTrace(missionId) {
     const mission = await this._pool.query(
@@ -348,14 +356,38 @@ class MissionRuntime {
     );
     if (!mission.rows[0]) return null;
 
-    // Get all events related to this mission
+    const missionRow = mission.rows[0];
+    const payload = typeof missionRow.payload === 'string'
+      ? JSON.parse(missionRow.payload)
+      : (missionRow.payload || {});
+
+    // Resolve correlation_id from the triggering event's metadata.
+    // The bridge stores event_id in payload; the triggering event carries
+    // correlation_id in its metadata (set by UnifiedEventRuntime.emit).
+    let correlationId = missionId; // fallback: query by mission_id if no event found
+    if (payload.event_id) {
+      const triggeringEvent = await this._pool.query(
+        `SELECT metadata->>'correlation_id' AS cid FROM ping_events WHERE event_id = $1`,
+        [payload.event_id]
+      );
+      if (triggeringEvent.rows[0]?.cid) {
+        correlationId = triggeringEvent.rows[0].cid;
+      } else {
+        // Triggering event not in ping_events (pre-bridge or different store).
+        // Fall back to using the event_id itself as correlation_id —
+        // UnifiedEventRuntime defaults correlation_id to eventId when absent.
+        correlationId = payload.event_id;
+      }
+    }
+
     const events = await this._pool.query(
       `SELECT * FROM ping_events WHERE metadata->>'correlation_id' = $1 ORDER BY timestamp ASC`,
-      [missionId]
+      [correlationId]
     );
 
     return {
-      mission: mission.rows[0],
+      mission: missionRow,
+      correlation_id: correlationId,
       events: events.rows,
       eventCount: events.rowCount,
     };

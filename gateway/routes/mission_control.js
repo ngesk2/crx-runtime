@@ -379,6 +379,21 @@ function createMissionControlRoutes(services) {
     }
   });
 
+  // Mission trace — full causal chain for a mission.
+  // Returns the mission, its correlation_id, and all events sharing that
+  // correlation_id (the full worker chain from business event to lineage).
+  router.get('/missions/:id/trace', requirePG, async (req, res) => {
+    try {
+      const trace = await missionRuntime.getTrace(req.params.id);
+      if (!trace) {
+        return res.status(404).json({ status: 'not_found', message: `Mission ${req.params.id} not found` });
+      }
+      res.json({ status: 'ok', trace });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
   // ═══════════════════════════════════════════════════════════════
   // KNOWLEDGE
   // ═══════════════════════════════════════════════════════════════

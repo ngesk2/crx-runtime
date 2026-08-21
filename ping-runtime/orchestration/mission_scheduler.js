@@ -228,6 +228,7 @@ class MissionScheduler {
           assigned_to: workerName,
           canonical_hash: payload.canonical_hash || null,
           confidence: payload.confidence != null ? payload.confidence : null,
+          correlation_id: payload.correlation_id || payload.event_id || mission.mission_id,
         },
       };
 

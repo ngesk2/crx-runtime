@@ -106,11 +106,20 @@ class EventToMissionBridge {
     this._stats.listened++;
 
     try {
+      // Thread the root correlation_id through the entire chain. The spine
+      // sets correlation_id = eventId on the originating event; every subsequent
+      // worker must preserve it so all events from one observation share a
+      // single correlation group. Without this, each worker creates a new
+      // correlation_id (= its trigger's event_id), breaking causal traceability.
+      const correlationId = event.metadata?.correlation_id
+        || event.correlation_id
+        || event.event_id;
       const missionId = await this._missionRuntime.create(mapping.missionType, {
         event_id: event.event_id,
         event_type: event.event_type,
         source: event.source,
         namespace: event.namespace,
+        correlation_id: correlationId,
         canonical_hash: (event.metadata && event.metadata.canonical_hash) || null,
         confidence: (event.metadata && event.metadata.confidence != null) ? event.metadata.confidence : null,
         payload: event.payload,

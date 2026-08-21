@@ -225,4 +225,175 @@ test('CORR-5: Namespace preserved alongside correlation_id', async () => {
   assert.strictEqual(runtime._calls[0].options.correlation_id, 'corr_1');
 });
 
+// ─── Bridge + Scheduler correlation threading ─────────────────────────
+
+test('CORR-6: Bridge stores correlation_id in mission payload', async () => {
+  const { EventToMissionBridge } = require('../ping-runtime/orchestration/event_to_mission_bridge');
+  const { MissionRuntime } = require('../ping-runtime/orchestration/mission_runtime');
+
+  const missionRuntime = new MissionRuntime();
+  missionRuntime.create = async function(missionType, payload, opts) {
+    this._lastPayload = payload;
+    return 'mission_test_1';
+  };
+
+  const bridge = new EventToMissionBridge({ missionRuntime });
+  bridge._missionRuntime = missionRuntime;
+
+  // Emit a worker output event (as it would appear from BaseWorker._emit)
+  await bridge._handleEvent({
+    event_id: 'worker_output_event_id',
+    event_type: 'OBSERVATION_CREATED',
+    source: 'ObservationWorker',
+    namespace: 'core::owner',
+    metadata: { correlation_id: 'root_event_123', confidence: 0.8 },
+    payload: { documentId: 'doc1' },
+  });
+
+  assert.strictEqual(missionRuntime._lastPayload.correlation_id, 'root_event_123',
+    'Bridge must store correlation_id in mission payload');
+  assert.strictEqual(missionRuntime._lastPayload.event_id, 'worker_output_event_id');
+  assert.strictEqual(missionRuntime._lastPayload.event_type, 'OBSERVATION_CREATED');
+});
+
+test('CORR-7: Bridge uses event_id as correlation_id fallback when metadata absent', async () => {
+  const { EventToMissionBridge } = require('../ping-runtime/orchestration/event_to_mission_bridge');
+  const { MissionRuntime } = require('../ping-runtime/orchestration/mission_runtime');
+
+  const missionRuntime = new MissionRuntime();
+  missionRuntime.create = async function(missionType, payload, opts) {
+    this._lastPayload = payload;
+    return 'mission_test_2';
+  };
+
+  const bridge = new EventToMissionBridge({ missionRuntime });
+  bridge._missionRuntime = missionRuntime;
+
+  await bridge._handleEvent({
+    event_id: 'fallback_event_id',
+    event_type: 'REVIEW_RECEIVED',
+    source: 'api',
+    namespace: 'core::owner',
+    metadata: {},
+    payload: { rating: 5 },
+  });
+
+  assert.strictEqual(missionRuntime._lastPayload.correlation_id, 'fallback_event_id',
+    'Without metadata.correlation_id, bridge should fall back to event.event_id');
+});
+
+test('CORR-8: Scheduler includes correlation_id in synthetic event metadata', async () => {
+  const { MissionScheduler } = require('../ping-runtime/orchestration/mission_scheduler');
+
+  const dispatchedEvents = [];
+  const mockWorkerRuntime = {
+    getStats: () => ({ workers: { observation: {} } }),
+    dispatch: async (event) => {
+      dispatchedEvents.push(event);
+      return { status: 'ok', workerName: 'observation' };
+    },
+  };
+  const mockMissionRuntime = {
+    getPending: async () => [{
+      mission_id: 'mis_abc',
+      mission_type: 'REVIEW_RESPONSE',
+      status: 'pending',
+      payload: {
+        event_id: 'trigger_event_id',
+        event_type: 'REVIEW_RECEIVED',
+        correlation_id: 'root_corr_456',
+        namespace: 'tenant::hpp',
+        payload: { rating: 5 },
+      },
+    }],
+    assign: async () => {},
+    start: async () => {},
+    complete: async () => {},
+  };
+
+  const scheduler = new MissionScheduler({ workerRuntime: mockWorkerRuntime, missionRuntime: mockMissionRuntime });
+  await scheduler._dispatch(mockMissionRuntime.getPending.mock_results?.[0] || {
+    mission_id: 'mis_abc',
+    mission_type: 'REVIEW_RESPONSE',
+    status: 'pending',
+    payload: {
+      event_id: 'trigger_event_id',
+      event_type: 'REVIEW_RECEIVED',
+      correlation_id: 'root_corr_456',
+      namespace: 'tenant::hpp',
+      payload: { rating: 5 },
+    },
+  });
+
+  assert.strictEqual(dispatchedEvents.length, 1, 'Should dispatch exactly 1 event');
+  const syntheticEvent = dispatchedEvents[0];
+  assert.strictEqual(syntheticEvent.metadata.correlation_id, 'root_corr_456',
+    'Scheduler must thread correlation_id from mission payload into synthetic event metadata');
+  assert.strictEqual(syntheticEvent.namespace, 'tenant::hpp',
+    'Namespace must also be threaded');
+  assert.strictEqual(syntheticEvent.event_id, 'trigger_event_id');
+});
+
+test('CORR-9: Bridge→Scheduler→Worker full path preserves root correlation_id', async () => {
+  const { EventToMissionBridge } = require('../ping-runtime/orchestration/event_to_mission_bridge');
+  const { MissionRuntime } = require('../ping-runtime/orchestration/mission_runtime');
+  const { BaseWorker } = require('../ping-runtime/workers/canonical_workers');
+
+  // Set up a spy event runtime
+  const emitted = [];
+  const mockRuntime = {
+    emit: async (eventType, source, payload, opts) => {
+      emitted.push({ eventType, source, payload, options: opts });
+      return { status: 'ok', eventId: 'emitted_' + emitted.length };
+    },
+    on: () => {},
+  };
+
+  // Bridge creates mission
+  const missionRuntime = new MissionRuntime();
+  let createdPayload = null;
+  missionRuntime.create = async (missionType, payload, opts) => {
+    createdPayload = payload;
+    return 'mis_chain';
+  };
+
+  const bridge = new EventToMissionBridge({ missionRuntime });
+
+  // Simulate: spine emits REVIEW_RECEIVED with correlation_id = eventId
+  await bridge._handleEvent({
+    event_id: 'root_event_001',
+    event_type: 'REVIEW_RECEIVED',
+    source: 'api',
+    namespace: 'tenant::hpp',
+    metadata: { correlation_id: 'root_event_001' },
+    payload: { rating: 5 },
+  });
+
+  // Now simulate what MissionScheduler does with the stored payload
+  const schedulerPayload = createdPayload;
+  const syntheticEvent = {
+    event_id: schedulerPayload.event_id,
+    event_type: schedulerPayload.event_type,
+    source: schedulerPayload.source,
+    namespace: schedulerPayload.namespace,
+    metadata: {
+      mission_type: 'REVIEW_RESPONSE',
+      priority: 0,
+      assigned_to: 'observation',
+      correlation_id: schedulerPayload.correlation_id || schedulerPayload.event_id,
+    },
+  };
+
+  // Observation worker receives the synthetic event and emits
+  const worker = new BaseWorker({ eventRuntime: mockRuntime });
+  worker._event = syntheticEvent;
+  await worker._emit('OBSERVATION_CREATED', { docId: 'doc1' });
+
+  // The emitted event must carry the root correlation_id
+  assert.strictEqual(emitted[0].options.correlation_id, 'root_event_001',
+    'Full bridge→scheduler→worker path must preserve root correlation_id');
+  assert.strictEqual(emitted[0].options.namespace, 'tenant::hpp',
+    'Namespace must survive the full path');
+});
+
 run();
