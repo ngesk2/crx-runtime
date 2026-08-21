@@ -653,7 +653,7 @@ class GatewayRuntime {
 
     // PG-dependent routes — only mount when Postgres is available
     if (hasPG) {
-      this._app.use('/events', createEventRoutes(services.eventReadAuthority, services.kernelAdapter.executeEvent.bind(services.kernelAdapter), services.pool));
+      this._app.use('/events', createEventRoutes(services.eventReadAuthority, services.unifiedEventRuntime, services.pool));
       this._app.use('/context', createContextRoutes(services.eventReadAuthority));
       this._app.use('/api/v1/repository', createRepositoryRoutes(services.repoStore));
       this._app.use('/system', createSystemRoutes(services.eventReadAuthority));

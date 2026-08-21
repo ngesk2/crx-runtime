@@ -10,7 +10,7 @@ const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
 const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
-function createEventRoutes(eventReadAuthority, executeEvent, pool) {
+function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
   router.get('/', asyncHandler('/events', async (req) => {
     const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
@@ -73,13 +73,16 @@ function createEventRoutes(eventReadAuthority, executeEvent, pool) {
     if (!event_type || !aggregate_id || !aggregate_type || !event_data) {
       throw new Error('event_type, aggregate_id, aggregate_type, and event_data are required');
     }
-    const artifact = await executeEvent({
-      event_type, aggregate_id, aggregate_type, event_data, authority: 'api', sequence: 1
+    // Canonical spine: emit directly through UnifiedEventRuntime (ping_events),
+    // not through the kernel pipeline (repository_events). The kernel's reducer/projection
+    // registries are empty and EventBridge adds a 5s delay for no benefit.
+    const result = await eventRuntime.emit(event_type, 'api', event_data, {
+      metadata: { aggregate_id, aggregate_type }
     });
-    if (artifact.failed) {
-      throw new Error(artifact.error.message);
+    if (result.status !== 'ok') {
+      throw new Error(result.error || 'Event rejected');
     }
-    return artifact.toResponse();
+    return { event_id: result.eventId, event_type, status: 'ok' };
   }));
 
   router.post('/processed', asyncHandler('/events/processed', async (req) => {

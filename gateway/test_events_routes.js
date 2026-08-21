@@ -102,6 +102,63 @@ function main() {
     assert.ok(threw, 'should throw when event_id missing');
   });
 
+  console.log('\n=== POST /events convergence — routes through UnifiedEventRuntime ===');
+
+  test('POST /events routes through eventRuntime.emit, not kernel pipeline', async () => {
+    const router = makeRouter();
+    let emitCalls = [];
+    const fakeEventRuntime = {
+      emit: async (eventType, source, payload, options) => {
+        emitCalls.push({ eventType, source, payload, options });
+        return { status: 'ok', eventId: 'evt-abc', event: {} };
+      }
+    };
+    createEventRoutes(router, fakeEventRuntime, null);
+    const handler = router._routes['POST /'];
+    assert.ok(handler, 'POST / registered');
+    let result = null;
+    await handler(
+      { body: { event_type: 'REVIEW_RECEIVED', aggregate_id: 'agg-1', aggregate_type: 'business', event_data: { text: 'great' } } },
+      { json: (b) => { result = b; }, headersSent: false }
+    );
+    assert.strictEqual(emitCalls.length, 1);
+    assert.strictEqual(emitCalls[0].eventType, 'REVIEW_RECEIVED');
+    assert.strictEqual(emitCalls[0].source, 'api');
+    assert.deepStrictEqual(emitCalls[0].payload, { text: 'great' });
+    assert.deepStrictEqual(emitCalls[0].options.metadata, { aggregate_id: 'agg-1', aggregate_type: 'business' });
+    assert.deepStrictEqual(result, { event_id: 'evt-abc', event_type: 'REVIEW_RECEIVED', status: 'ok' });
+  });
+
+  test('POST /events throws on missing required fields', async () => {
+    const router = makeRouter();
+    createEventRoutes(router, { emit: async () => ({ status: 'ok' }) }, null);
+    const handler = router._routes['POST /'];
+    let threw = null;
+    try {
+      await handler({ body: { event_type: 'X' } }, { json: () => {}, headersSent: false });
+    } catch (e) { threw = e; }
+    assert.ok(threw, 'should throw');
+    assert.match(threw.message, /required/);
+  });
+
+  test('POST /events surfaces governance rejection', async () => {
+    const router = makeRouter();
+    const fakeEventRuntime = {
+      emit: async () => ({ status: 'error', error: 'unknown event_type: FAKE' })
+    };
+    createEventRoutes(router, fakeEventRuntime, null);
+    const handler = router._routes['POST /'];
+    let threw = null;
+    try {
+      await handler(
+        { body: { event_type: 'FAKE', aggregate_id: 'a', aggregate_type: 't', event_data: {} } },
+        { json: () => {}, headersSent: false }
+      );
+    } catch (e) { threw = e; }
+    assert.ok(threw, 'should throw on governance rejection');
+    assert.match(threw.message, /unknown event_type/);
+  });
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed ? 1 : 0);
 }
