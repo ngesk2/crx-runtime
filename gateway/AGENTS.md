@@ -523,3 +523,30 @@ All 3 registries updated: event_generator.js, EVENT_MISSION_MAP, MISSION_WORKER_
 - Full chain verified: Business Event → Observation → Claim → Classification → Recommendation → Projection
 
 **Full test suite:** 158 total, 158 passed, 0 failed, 1 skipped (Docker)
+
+---
+
+### 2026-08-21 — Correlation Chain Fix + Mission Trace (Commit `5d21ef08`)
+
+**Goal:** Fix the causal correlation chain so all events from one observation share a single correlation_id, and prove it via HTTP trace endpoint.
+
+**Critical bug found:** Every worker created a new correlation_id (= its trigger's event_id) instead of preserving the root. Chain of 9 events had 8 unique correlation_ids.
+
+**Root cause:** Two gaps:
+1. `EventToMissionBridge` stored `event.event_id` in mission payload but NOT `event.metadata.correlation_id`
+2. `MissionScheduler` built synthetic event metadata without `correlation_id`, so `BaseWorker._emit` fell through to `this._event?.event_id` (the trigger's ID, not the root)
+
+**Fix (2 surgical edits):**
+1. `event_to_mission_bridge.js:109` — store `correlation_id` (= `event.metadata?.correlation_id || event.correlation_id || event.event_id`) in mission payload
+2. `mission_scheduler.js:225` — include `correlation_id: payload.correlation_id || payload.event_id || mission.mission_id` in synthetic event metadata
+
+**Additionally:**
+- `mission_runtime.js` `getTrace()` fixed — now resolves correlation_id from triggering event via 3-level fallback (triggering event's correlation_id → payload.event_id → mission_id)
+- `mission_control.js` — added `GET /mc/missions/:id/trace` route
+
+**Verified (live E2E):**
+- 9/9 events share single correlation_id: REVIEW_RECEIVED → OBSERVATION → CLAIM → CLASSIFICATION → RECOMMENDATION → PROJECTION → REPLAY → WITNESS → LINEAGE
+- HTTP trace endpoint returns all 9 events
+- 22 test suites, 380 assertions, 0 failures
+
+**Files changed:** `event_to_mission_bridge.js`, `mission_scheduler.js`, `mission_runtime.js`, `mission_control.js`, `test_correlation_chain.js`
