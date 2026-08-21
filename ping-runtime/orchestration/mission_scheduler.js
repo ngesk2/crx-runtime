@@ -289,7 +289,14 @@ class MissionScheduler {
             {
               job_id: mission.mission_id,
               job_type: mission.mission_type,
-              original_event: payload,
+              mission_id: mission.mission_id,
+              correlation_id: payload.correlation_id || payload.event_id || mission.mission_id,
+              causation_id: payload.event_id || mission.mission_id,
+              authority: 'MissionScheduler',
+              authority_version: '1.0.0',
+              created_at: mission.created_at ? new Date(mission.created_at).getTime() : Date.now(),
+              retry_count: retries,
+              payload,
             },
             new Error(error),
           );

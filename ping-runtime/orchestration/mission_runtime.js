@@ -170,12 +170,13 @@ class MissionRuntime {
    * Fail a mission.
    */
   async fail(missionId, error) {
-    await this._pool.query(
-      `UPDATE ping_missions SET status = 'failed', error = $1, completed_at = NOW() WHERE mission_id = $2`,
+    const result = await this._pool.query(
+      `UPDATE ping_missions SET status = 'failed', error = $1, completed_at = NOW()
+       WHERE mission_id = $2 AND status IN ('running', 'assigned', 'retry_pending')`,
       [error, missionId]
     );
 
-    if (this._eventRuntime) {
+    if ((result.rowCount || 0) >= 1 && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error });
     }
   }
@@ -210,22 +211,27 @@ class MissionRuntime {
     const currentRetries = (row.rows[0] && row.rows[0].retries) || 0;
     const nextRetry = currentRetries + 1;
 
+    let affectedRows = 0;
     if (nextRetry >= maxAttempts) {
       // Exhausted — mark failed permanently
-      await this._pool.query(
-        `UPDATE ping_missions SET status = 'failed', error = $1, retries = $2, completed_at = NOW() WHERE mission_id = $3`,
+      const result = await this._pool.query(
+        `UPDATE ping_missions SET status = 'failed', error = $1, retries = $2, completed_at = NOW()
+         WHERE mission_id = $3 AND status IN ('running', 'assigned', 'retry_pending')`,
         [error, nextRetry, missionId]
       );
+      affectedRows = result.rowCount || 0;
     } else {
       // Schedule retry
       const retryAt = new Date(Date.now() + backoffMs);
-      await this._pool.query(
-        `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3 WHERE mission_id = $4`,
+      const result = await this._pool.query(
+        `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3
+         WHERE mission_id = $4 AND status IN ('running', 'assigned')`,
         [error, nextRetry, retryAt.toISOString(), missionId]
       );
+      affectedRows = result.rowCount || 0;
     }
 
-    if (this._eventRuntime) {
+    if (affectedRows >= 1 && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error, retries: nextRetry });
     }
 
