@@ -118,6 +118,8 @@ class UnifiedEventRuntime {
     }
 
     // 4. Build canonical event (namespace resolved in step 3)
+    //    Confidence is optional — producers that compute it pass it via options.metadata.confidence.
+    //    The spine carries but does NOT compute confidence; each worker re-evaluates at its hop.
     const event = {
       event_id: eventId,
       event_type: eventType,
@@ -130,6 +132,9 @@ class UnifiedEventRuntime {
         namespace,
         causation_id: options.causation_id || null,
         correlation_id: options.correlation_id || eventId,
+        ...(options.metadata && options.metadata.confidence != null
+          ? { confidence: options.metadata.confidence }
+          : {}),
         ...options.metadata,
       },
     };

@@ -177,7 +177,7 @@ class MissionScheduler {
    * Dispatch a mission to the appropriate worker.
    */
   async _dispatch(mission) {
-    const workerName = MISSION_WORKER_MAP[mission.mission_type] || this._inferWorker(mission.mission_type);
+    const workerName = MISSION_WORKER_MAP[mission.mission_type];
     if (!workerName) {
       console.log(`[MissionScheduler] No worker for mission type '${mission.mission_type}' — skipping ${mission.mission_id}`);
       this._stats.skipped++;
@@ -235,9 +235,19 @@ class MissionScheduler {
       this._stats.dispatched++;
 
       // P0-3: complete() only when worker returns verified ok.
-      // Workers that return {status:'failed'} instead of throwing are caught here.
+      // Three outcomes:
+      //   (a) dispatchResult.status === 'failed' → fail the mission (worker reported failure)
+      //   (b) dispatchResult is null/undefined → no worker matched → skip (phantom-complete prevention)
+      //   (c) dispatchResult.status === 'ok' (or truthy without status:'failed') → complete
       if (dispatchResult && dispatchResult.status === 'failed') {
         await this._failMission(mission, dispatchResult.error || 'worker returned failed status');
+      } else if (!dispatchResult) {
+        // No worker matched this event type — skip, do not phantom-complete.
+        // This prevents the null-dispatch→complete gap where MISSION_WORKER_MAP maps a
+        // mission type to a worker whose eventTypes don't include the dispatched event.
+        console.log(`[MissionScheduler] No worker matched ${mission.mission_id} (event_type=${event.event_type}) — skipping`);
+        this._stats.skipped++;
+        await this._failMission(mission, `no worker matched event_type=${event.event_type}`);
       } else {
         await this._missionRuntime.complete(mission.mission_id, {
           worker: workerName,
@@ -251,17 +261,6 @@ class MissionScheduler {
     } finally {
       this._processing.delete(mission.mission_id);
     }
-  }
-
-  /**
-   * Infer worker name from mission type using naming convention.
-   * DOCUMENT_IMPORT → document (no match → null)
-   */
-  _inferWorker(missionType) {
-    // Try to match first word
-    const prefix = missionType.split('_')[0].toLowerCase();
-    const knownPrefixes = ['observation', 'claim', 'projection', 'replay', 'witness', 'lineage'];
-    return knownPrefixes.includes(prefix) ? prefix : null;
   }
 
   /**

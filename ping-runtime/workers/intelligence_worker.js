@@ -4,7 +4,12 @@
  * One new worker. Uses existing AIRuntime when available.
  * Degrades to deterministic rule-based logic when Ollama is unavailable.
  * Never mutates business state. Never bypasses constitutional authority.
- * Only emits: CLASSIFICATION_CREATED, RECOMMENDATION_CREATED, EVIDENCE_CREATED.
+ *
+ * Currently DORMANT (empty eventTypes) — registered but never constructed.
+ * Would run IN PARALLEL with the canonical ClassificationWorker +
+ * RecommendationWorker pair if re-enabled. Emits CLASSIFICATION_CREATED
+ * and RECOMMENDATION_CREATED only (not EVIDENCE_CREATED — that was historical
+ * fiction from a prior design iteration that was never implemented).
  */
 
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');

@@ -30,35 +30,40 @@ async function main() {
     assert.ok(Object.keys(EVENT_MISSION_MAP).length >= 23);
   });
 
-  // Test 2: Every mapping has required fields
-  test('Every mapping has missionType, worker, priority', () => {
+  // Test 2: Every mapping has required fields (worker field removed — single decider is MISSION_WORKER_MAP)
+  test('Every mapping has missionType and priority (no dead worker field)', () => {
     for (const [eventType, mapping] of Object.entries(EVENT_MISSION_MAP)) {
       assert.ok(mapping.missionType, `${eventType} missing missionType`);
-      assert.ok(mapping.worker, `${eventType} missing worker`);
       assert.ok(typeof mapping.priority === 'number', `${eventType} missing priority`);
+      assert.strictEqual(mapping.worker, undefined, `${eventType} must NOT have dead worker field (single decider = MISSION_WORKER_MAP)`);
     }
   });
 
-  // Test 3: Business events map to observation worker
-  test('All business events map to observation worker', () => {
+  // Test 3: Single decider — all business event missions resolve through MISSION_WORKER_MAP
+  test('All business event missions resolve through MISSION_WORKER_MAP (single decider)', () => {
+    const { MISSION_WORKER_MAP } = require('../ping-runtime/orchestration/mission_scheduler');
     const businessEvents = ['CUSTOMER_CREATED', 'CUSTOMER_UPDATED', 'LEAD_CREATED', 'LEAD_CONVERTED',
       'PROJECT_CREATED', 'PROJECT_UPDATED', 'PROJECT_COMPLETED', 'ESTIMATE_CREATED', 'ESTIMATE_SENT',
       'ESTIMATE_ACCEPTED', 'INVOICE_CREATED', 'INVOICE_SENT', 'INVOICE_PAID', 'REVIEW_RECEIVED',
       'REVIEW_RESPONDED', 'EMAIL_RECEIVED', 'GOOGLE_REVIEW_RECEIVED'];
     for (const eventType of businessEvents) {
-      assert.strictEqual(EVENT_MISSION_MAP[eventType].worker, 'observation', `${eventType} should map to observation`);
+      const mapping = EVENT_MISSION_MAP[eventType];
+      assert.ok(mapping, `${eventType} missing from EVENT_MISSION_MAP`);
+      const workerName = MISSION_WORKER_MAP[mapping.missionType];
+      assert.strictEqual(workerName, 'observation', `${eventType} → ${mapping.missionType} should resolve to observation worker via MISSION_WORKER_MAP`);
     }
   });
 
-  // Test 4: Downstream pipeline events map correctly
-  test('Downstream pipeline maps to correct workers', () => {
-    assert.strictEqual(EVENT_MISSION_MAP['OBSERVATION_CREATED'].worker, 'claim');
-    assert.strictEqual(EVENT_MISSION_MAP['CLAIM_CREATED'].worker, 'classification');
-    assert.strictEqual(EVENT_MISSION_MAP['CLASSIFICATION_CREATED'].worker, 'recommendation');
-    assert.strictEqual(EVENT_MISSION_MAP['RECOMMENDATION_CREATED'].worker, 'projection');
-    assert.strictEqual(EVENT_MISSION_MAP['PROJECTION_CREATED'].worker, 'replay');
-    assert.strictEqual(EVENT_MISSION_MAP['REPLAY_COMPLETED'].worker, 'witness');
-    assert.strictEqual(EVENT_MISSION_MAP['WITNESS_CREATED'].worker, 'lineage');
+  // Test 4: Downstream pipeline events resolve correctly through single decider
+  test('Downstream pipeline resolves through MISSION_WORKER_MAP (single decider)', () => {
+    const { MISSION_WORKER_MAP } = require('../ping-runtime/orchestration/mission_scheduler');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['OBSERVATION_CREATED'].missionType], 'claim');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['CLAIM_CREATED'].missionType], 'classification');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['CLASSIFICATION_CREATED'].missionType], 'recommendation');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['RECOMMENDATION_CREATED'].missionType], 'projection');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['PROJECTION_CREATED'].missionType], 'replay');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['REPLAY_COMPLETED'].missionType], 'witness');
+    assert.strictEqual(MISSION_WORKER_MAP[EVENT_MISSION_MAP['WITNESS_CREATED'].missionType], 'lineage');
     assert.strictEqual(EVENT_MISSION_MAP['LINEAGE_CREATED'], undefined, 'LINEAGE_CREATED is terminal — chain complete');
   });
 

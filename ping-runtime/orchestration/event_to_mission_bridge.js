@@ -12,51 +12,54 @@
  * The bridge does NOT modify state — it only creates missions.
  */
 
-// Business event → mission type → worker mapping
+// Business event → mission type mapping
+// Worker identity is resolved by MissionScheduler via MISSION_WORKER_MAP —
+// this map declares mission type and priority only. The 'worker' field was
+// historically present but never read; removed to eliminate dead data.
 const EVENT_MISSION_MAP = {
   // Customer events
-  CUSTOMER_CREATED: { missionType: 'CUSTOMER_ONBOARD', worker: 'observation', priority: 2 },
-  CUSTOMER_UPDATED: { missionType: 'CUSTOMER_UPDATE', worker: 'observation', priority: 1 },
+  CUSTOMER_CREATED: { missionType: 'CUSTOMER_ONBOARD', priority: 2 },
+  CUSTOMER_UPDATED: { missionType: 'CUSTOMER_UPDATE', priority: 1 },
 
   // Lead events
-  LEAD_CREATED: { missionType: 'LEAD_FOLLOWUP', worker: 'observation', priority: 3 },
-  LEAD_CONVERTED: { missionType: 'LEAD_CONVERT', worker: 'observation', priority: 2 },
+  LEAD_CREATED: { missionType: 'LEAD_FOLLOWUP', priority: 3 },
+  LEAD_CONVERTED: { missionType: 'LEAD_CONVERT', priority: 2 },
 
   // Project events
-  PROJECT_CREATED: { missionType: 'PROJECT_SETUP', worker: 'observation', priority: 2 },
-  PROJECT_UPDATED: { missionType: 'PROJECT_UPDATE', worker: 'observation', priority: 1 },
-  PROJECT_COMPLETED: { missionType: 'PROJECT_CLOSEOUT', worker: 'observation', priority: 3 },
+  PROJECT_CREATED: { missionType: 'PROJECT_SETUP', priority: 2 },
+  PROJECT_UPDATED: { missionType: 'PROJECT_UPDATE', priority: 1 },
+  PROJECT_COMPLETED: { missionType: 'PROJECT_CLOSEOUT', priority: 3 },
 
   // Estimate events
-  ESTIMATE_CREATED: { missionType: 'ESTIMATE_PREPARE', worker: 'observation', priority: 2 },
-  ESTIMATE_SENT: { missionType: 'ESTIMATE_FOLLOWUP', worker: 'observation', priority: 3 },
-  ESTIMATE_ACCEPTED: { missionType: 'ESTIMATE_CONVERT', worker: 'observation', priority: 3 },
+  ESTIMATE_CREATED: { missionType: 'ESTIMATE_PREPARE', priority: 2 },
+  ESTIMATE_SENT: { missionType: 'ESTIMATE_FOLLOWUP', priority: 3 },
+  ESTIMATE_ACCEPTED: { missionType: 'ESTIMATE_CONVERT', priority: 3 },
 
   // Invoice events
-  INVOICE_CREATED: { missionType: 'INVOICE_TRACK', worker: 'observation', priority: 2 },
-  INVOICE_SENT: { missionType: 'INVOICE_FOLLOWUP', worker: 'observation', priority: 3 },
-  INVOICE_PAID: { missionType: 'INVOICE_CLOSE', worker: 'observation', priority: 1 },
+  INVOICE_CREATED: { missionType: 'INVOICE_TRACK', priority: 2 },
+  INVOICE_SENT: { missionType: 'INVOICE_FOLLOWUP', priority: 3 },
+  INVOICE_PAID: { missionType: 'INVOICE_CLOSE', priority: 1 },
 
   // Review events
-  REVIEW_RECEIVED: { missionType: 'REVIEW_RESPONSE', worker: 'observation', priority: 3 },
-  REVIEW_RESPONDED: { missionType: 'REVIEW_ACK', worker: 'observation', priority: 1 },
+  REVIEW_RECEIVED: { missionType: 'REVIEW_RESPONSE', priority: 3 },
+  REVIEW_RESPONDED: { missionType: 'REVIEW_ACK', priority: 1 },
 
   // Connector events
-  EMAIL_RECEIVED: { missionType: 'EMAIL_PROCESS', worker: 'observation', priority: 2 },
-  GOOGLE_REVIEW_RECEIVED: { missionType: 'REVIEW_RESPONSE', worker: 'observation', priority: 3 },
+  EMAIL_RECEIVED: { missionType: 'EMAIL_PROCESS', priority: 2 },
+  GOOGLE_REVIEW_RECEIVED: { missionType: 'REVIEW_RESPONSE', priority: 3 },
 
   // Worker events (downstream pipeline)
-  OBSERVATION_CREATED: { missionType: 'CLAIM_GENERATE', worker: 'claim', priority: 2 },
-  CLAIM_CREATED: { missionType: 'CLASSIFICATION_CREATE', worker: 'classification', priority: 2 },
-  CLASSIFICATION_CREATED: { missionType: 'RECOMMENDATION_CREATE', worker: 'recommendation', priority: 2 },
-  RECOMMENDATION_CREATED: { missionType: 'PROJECTION_CREATE', worker: 'projection', priority: 1 },
-  PROJECTION_CREATED: { missionType: 'REPLAY_VERIFY', worker: 'replay', priority: 1 },
-  REPLAY_COMPLETED: { missionType: 'WITNESS_CREATE', worker: 'witness', priority: 1 },
-  WITNESS_CREATED: { missionType: 'LINEAGE_CREATE', worker: 'lineage', priority: 1 },
+  OBSERVATION_CREATED: { missionType: 'CLAIM_GENERATE', priority: 2 },
+  CLAIM_CREATED: { missionType: 'CLASSIFICATION_CREATE', priority: 2 },
+  CLASSIFICATION_CREATED: { missionType: 'RECOMMENDATION_CREATE', priority: 2 },
+  RECOMMENDATION_CREATED: { missionType: 'PROJECTION_CREATE', priority: 1 },
+  PROJECTION_CREATED: { missionType: 'REPLAY_VERIFY', priority: 1 },
+  REPLAY_COMPLETED: { missionType: 'WITNESS_CREATE', priority: 1 },
+  WITNESS_CREATED: { missionType: 'LINEAGE_CREATE', priority: 1 },
   // LINEAGE_CREATED is terminal — chain complete. No further missions created.
 
   // System events
-  SYSTEM_HEALTH_CHECK: { missionType: 'SYSTEM_AUDIT', worker: 'observation', priority: 0 },
+  SYSTEM_HEALTH_CHECK: { missionType: 'SYSTEM_AUDIT', priority: 0 },
 };
 
 class EventToMissionBridge {
