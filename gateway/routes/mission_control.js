@@ -13,7 +13,8 @@ function createMissionControlRoutes(services) {
   const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
   const { unifiedEventRuntime, knowledgeGraph, missionRuntime, aiRuntime,
-    googleConnector, connectorRegistry, workerRuntime, missionScheduler, eventBridge } = services;
+    googleConnector, connectorRegistry, workerRuntime, missionScheduler, eventBridge,
+    eventToMissionBridge } = services;
 
   const hasPG = !!(unifiedEventRuntime && missionRuntime);
 
@@ -404,6 +405,7 @@ function createMissionControlRoutes(services) {
       const workerStats = workerRuntime ? workerRuntime.getStats() : null;
       const schedulerStats = missionScheduler ? missionScheduler.getStats() : null;
       const bridgeStats = eventBridge ? eventBridge.getStats() : null;
+      const eventMissionBridgeStats = eventToMissionBridge ? eventToMissionBridge.getStats() : null;
 
       res.json({
         status: 'ok',
@@ -413,6 +415,7 @@ function createMissionControlRoutes(services) {
           workers: workerStats,
           scheduler: schedulerStats,
           bridge: bridgeStats,
+          eventMissionBridge: eventMissionBridgeStats,
           uptime: process.uptime(),
           memory: process.memoryUsage(),
           timestamp: constitutionalTimeAuthority.nowAsISOString(),
@@ -444,6 +447,12 @@ function createMissionControlRoutes(services) {
     const bridge = services.eventBridge;
     if (!bridge) return res.json({ status: 'degraded', message: 'EventBridge not initialized (PG unavailable)' });
     res.json({ status: 'ok', bridge: bridge.getStats() });
+  });
+
+  router.get('/event-mission-bridge', (req, res) => {
+    const bridge = services.eventToMissionBridge;
+    if (!bridge) return res.json({ status: 'degraded', message: 'EventToMissionBridge not initialized' });
+    res.json({ status: 'ok', eventMissionBridge: bridge.getStats() });
   });
 
   router.get('/scheduler', (req, res) => {
