@@ -233,11 +233,38 @@ class MissionRuntime {
   }
 
   /**
+   * Renew a lease for a mission still being processed by the scheduler.
+   *
+   * Extends lease_until by `durationSeconds` from now. Only renews missions
+   * still in 'running' or 'assigned' status — completed/failed missions are
+   * untouched. Called by the scheduler on each poll cycle for every mission
+   * in its _processing set, preventing the reaper from resetting in-progress
+   * missions while still catching orphaned ones from crashed schedulers.
+   *
+   * @param {string} missionId
+   * @param {number} durationSeconds — lease extension (default 60)
+   * @returns {Promise<number>} rowCount — 1 if renewed, 0 if not renewable
+   */
+  async renewLease(missionId, durationSeconds = 60) {
+    const result = await this._pool.query(
+      `UPDATE ping_missions
+       SET lease_until = NOW() + INTERVAL '1 second' * $1
+       WHERE mission_id = $2
+         AND status IN ('running', 'assigned')
+         AND lease_until IS NOT NULL`,
+      [durationSeconds, missionId]
+    );
+    return result.rowCount || 0;
+  }
+
+  /**
    * Reclaim expired leases — P0-6.
    *
    * Finds missions with status IN ('running', 'assigned') whose `lease_until`
    * has passed, resets them to `created` (AVAILABLE) so the scheduler can
-   * re-claim them.
+   * re-claim them. Only catches missions NOT being actively renewed by the
+   * scheduler (orphans from crashed schedulers or stuck workers beyond the
+   * lease renewal window).
    *
    * @returns {Promise<number>} count of reclaimed missions
    */

@@ -94,6 +94,7 @@ class MissionScheduler {
       completed: 0,
       failed: 0,
       skipped: 0,
+      renewals: 0,
     };
   }
 
@@ -130,17 +131,35 @@ class MissionScheduler {
    */
   async _poll() {
     if (!this._missionRuntime || !this._workerRuntime) return;
-    if (this._processing.size >= this._maxConcurrent) return;
 
     try {
+      // Arrow 0: Renew leases for missions still being processed — prevents
+      // the reaper from resetting in-progress missions whose workers are slow.
+      // Must run BEFORE reapExpiredLeases so the lease is extended first.
+      // Runs regardless of capacity — in-progress missions must always be renewed.
+      for (const missionId of this._processing) {
+        try {
+          const renewed = await this._missionRuntime.renewLease(missionId);
+          if (renewed > 0) this._stats.renewals++;
+        } catch (renewErr) {
+          // Non-fatal — if renewal fails, the reaper may reclaim on next cycle
+          console.error(`[MissionScheduler] Lease renewal failed for ${missionId}: ${renewErr.message}`);
+        }
+      }
+
       // Arrow 1: Reap expired leases — turns assigned/running missions whose
       // lease expired back to created, enabling re-dispatch after worker crash.
+      // Only catches orphaned missions NOT in the scheduler's _processing set
+      // (those had their leases renewed in Arrow 0).
       try {
         const reaped = await this._missionRuntime.reapExpiredLeases();
         if (reaped > 0) console.log(`[MissionScheduler] Reaped ${reaped} expired leases`);
       } catch (reapErr) {
         console.error('[MissionScheduler] Lease reaping failed (non-fatal):', reapErr.message);
       }
+
+      // Arrow 2: Dispatch new missions — only when capacity available.
+      if (this._processing.size >= this._maxConcurrent) return;
 
       const availableSlots = this._maxConcurrent - this._processing.size;
       const pending = await this._missionRuntime.getPending(availableSlots);
