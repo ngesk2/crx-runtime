@@ -146,7 +146,7 @@ async function testLeaseReapingIsCalledDuringPoll() {
   });
 
   // Create a mission so poll has something to do
-  await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
 
   // Run one poll cycle
   await scheduler._poll();
@@ -167,14 +167,14 @@ async function testExpiredLeasesAreReapedBeforeDispatch() {
   });
 
   // Create a mission and manually assign it with an expired lease
-  const mission = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const mission = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(mission.mission_id, 'observation');
   // Force lease into the past
   mission.lease_until = new Date(Date.now() - 10000).toISOString();
   mission.status = 'assigned';
 
   // Also create a fresh pending mission
-  const fresh = await runtime.create('OBSERVATION', { event_type: 'CUSTOMER_CREATED' });
+  const fresh = await runtime.create('OBSERVATION_CREATE', { event_type: 'CUSTOMER_CREATED' });
 
   // Run one poll cycle
   await scheduler._poll();
@@ -208,7 +208,7 @@ async function testReapingFailureDoesNotBlockPoll() {
   });
 
   // Create a pending mission
-  await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
 
   // Poll should NOT throw — reaping failure is non-fatal
   let threw = false;
@@ -235,7 +235,7 @@ async function testActiveLeasesAreNotReaped() {
   });
 
   // Create a mission with a FUTURE lease (not expired)
-  const mission = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const mission = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(mission.mission_id, 'observation');
   mission.lease_until = new Date(Date.now() + 30000).toISOString(); // 30s from now
   mission.status = 'assigned';
