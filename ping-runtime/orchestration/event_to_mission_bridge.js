@@ -112,6 +112,7 @@ class EventToMissionBridge {
         source: event.source,
         namespace: event.namespace,
         canonical_hash: (event.metadata && event.metadata.canonical_hash) || null,
+        confidence: (event.metadata && event.metadata.confidence != null) ? event.metadata.confidence : null,
         payload: event.payload,
       }, {
         priority: mapping.priority,

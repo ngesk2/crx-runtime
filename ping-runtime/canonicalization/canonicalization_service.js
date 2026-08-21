@@ -150,6 +150,9 @@ class CanonicalizationService {
         canonical_version: CANONICAL_VERSION,
         lifecycle_stage: lifecycle,
         evidence: evidence || [],
+        // Forward confidence from producer into event metadata so downstream
+        // workers and projection subscribers can read it without recomputing.
+        confidence: confidence === undefined ? 0.5 : confidence,
         ...(options.metadata || {}),
       },
     });

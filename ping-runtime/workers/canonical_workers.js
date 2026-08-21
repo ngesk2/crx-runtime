@@ -45,10 +45,19 @@ class BaseWorker {
       || this._event?.metadata?.correlation_id
       || this._event?.event_id
       || options.causation_id;
+    // Preserve confidence from the triggering event unless the downstream
+    // producer explicitly supplies a new one. Workers re-evaluate at their
+    // hop but the spine carries the source confidence forward.
+    const confidence = options.confidence != null
+      ? options.confidence
+      : this._event?.metadata?.confidence;
+    const emitMetadata = { ...(options.metadata || {}) };
+    if (confidence != null) emitMetadata.confidence = confidence;
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
       ...options,
       namespace,
       correlation_id,
+      metadata: emitMetadata,
     });
     if (result.status !== 'ok') {
       throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);

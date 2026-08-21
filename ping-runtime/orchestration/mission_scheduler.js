@@ -227,6 +227,7 @@ class MissionScheduler {
           priority: mission.priority,
           assigned_to: workerName,
           canonical_hash: payload.canonical_hash || null,
+          confidence: payload.confidence != null ? payload.confidence : null,
         },
       };
 

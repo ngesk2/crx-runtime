@@ -591,7 +591,10 @@ class GatewayRuntime {
                 // Namespace comes from the spine event (always resolved); the
                 // 'core::system' default is owned by UnifiedEventRuntime.emit() only.
                 namespace: event.namespace,
-                confidence: 0.5,
+                // Read confidence delivered by the spine producer. Fallback 0.5
+                // only when genuinely absent (legacy events before confidence
+                // propagation was wired).
+                confidence: event.metadata?.confidence != null ? event.metadata.confidence : 0.5,
                 status: 'candidate',
                 sourceEventId: event.event_id,
               });
