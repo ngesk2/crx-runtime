@@ -550,3 +550,33 @@ All 3 registries updated: event_generator.js, EVENT_MISSION_MAP, MISSION_WORKER_
 - 22 test suites, 380 assertions, 0 failures
 
 **Files changed:** `event_to_mission_bridge.js`, `mission_scheduler.js`, `mission_runtime.js`, `mission_control.js`, `test_correlation_chain.js`
+
+---
+
+### 2026-08-21 — Causal Chain Completion (Commit `a78b7e38`)
+
+**Goal:** Complete the causal identifier chain so every event in a worker chain has a correct `causation_id` pointing to its immediate parent.
+
+**Two gaps found and fixed:**
+
+| # | Gap | File | Fix |
+|---|-----|------|-----|
+| 1 | Scheduler synthetic event missing `causation_id` — spine defaulted to null, breaking chain at scheduler→worker hop | `mission_scheduler.js:232` | Added `causation_id: payload.event_id \|\| null` to metadata block |
+| 2 | `BaseWorker._emit` preserved `correlation_id` and `namespace` but never set `causation_id` — spine defaulted to null, breaking every worker→downstream hop | `canonical_workers.js:48-52,63` | Added `const causation_id = options.causation_id \|\| this._event?.event_id \|\| null` and passed to emit options |
+
+**Causal identifier matrix (post-fix):**
+
+| Hop | Producer | event_id | causation_id | correlation_id |
+|-----|----------|----------|-------------|----------------|
+| 0 | HTTP POST /ingest | SHA-256 hash | null (root) | = event_id (root) |
+| 1 | EventToMissionBridge | stored in mission payload | N/A (not an event) | = event.metadata.correlation_id |
+| 2 | MissionScheduler synthetic | payload.event_id (reuses root's) | payload.event_id (root) | payload.correlation_id |
+| 3 | Worker._emit (observation) | SHA-256 hash | synth event.event_id | parent.metadata.correlation_id |
+| 4 | Worker._emit (claim) | SHA-256 hash | obs event.event_id | preserved from hop 3 |
+| 5+ | Subsequent workers | SHA-256 hash | previous worker's event_id | preserved from hop 3 |
+
+**Key invariant:** `causation_id` = immediate parent's `event_id` at every hop. `correlation_id` = root event's `event_id` across all hops. The chain is a tree (fan-out at scheduler → multiple workers), not a linear chain.
+
+**4 new tests:** CAUSATION-1 (scheduler metadata), CAUSATION-2 (worker _emit), CAUSATION-3 (4-hop lineage), CAUSATION-4 (spine default).
+
+**Regression:** commissioning 14/0, correlation 13/13, confidence 7/7, slice3a 8/8.
