@@ -286,7 +286,7 @@ class LineageWorker extends BaseWorker {
       documentId,
       eventType: event.event_type,
       timestamp: constitutionalTimeAuthority.nowAsISOString(),
-      causationChain: payload.causation_id ? [payload.causation_id] : [],
+      causationChain: event.metadata?.causation_id ? [event.metadata.causation_id] : [],
     };
 
     await this._emit('LINEAGE_CREATED', {
