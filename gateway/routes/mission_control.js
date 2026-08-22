@@ -71,7 +71,7 @@ function createMissionControlRoutes(services) {
         dashboard: {
           business,
           missions: missionStats,
-          eventSummary: { total: allEvents.length, byType: counts },
+          eventSummary: { total: allEvents.length, byType: counts, window_size_ms: 86400000, cap: 500 },
           uptime: process.uptime(),
           timestamp: constitutionalTimeAuthority.nowAsISOString(),
         },

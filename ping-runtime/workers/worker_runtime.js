@@ -122,7 +122,7 @@ class WorkerRuntime {
         capabilities: entry.capabilities,
       };
     }
-    return { workers, stats: this._stats, running: this._running };
+    return { workers, stats: { ...this._stats, scope: 'session' }, running: this._running };
   }
 
   /**

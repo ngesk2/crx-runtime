@@ -318,6 +318,7 @@ class MissionScheduler {
   getStats() {
     return {
       ...this._stats,
+      scope: 'session',
       running: this._running,
       processing: this._processing.size,
       pollIntervalMs: this._pollIntervalMs,

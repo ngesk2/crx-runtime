@@ -42,7 +42,6 @@ class EventBridge {
       repositoryBridged: 0,
       canonicalBridged: 0,
       errors: 0,
-      skipped: 0,
     };
   }
 
@@ -338,6 +337,7 @@ class EventBridge {
   getStats() {
     return {
       ...this._stats,
+      scope: 'session',
       running: this._running,
       pollIntervalMs: this._pollIntervalMs,
       lastRepoEventId: this._lastRepoEventId,

@@ -32,7 +32,6 @@ class SystemAuthority {
     this.repoRoot = options.repoRoot || path.resolve(__dirname);
     this.startTime = constitutionalTimeAuthority.nowAsMillis();
     this.requestCount = 0;
-    this.errorCount = 0;
   }
 
   async collectContainers() {
@@ -220,14 +219,11 @@ class SystemAuthority {
       return {
         status: total > 0 ? 'available' : 'unavailable',
         total_runs: total,
-        success_rate: 100,
-        failures: 0,
         latest_replay: latest || null,
-        witness_coverage: Math.min(Math.round(total * 6.25), 100),
         lifecycle_stages: stages,
       };
     } catch (e) {
-      return { status: 'unavailable', total_runs: 0, success_rate: 0, failures: 0, latest_replay: null, witness_coverage: 0 };
+      return { status: 'unavailable', total_runs: 0, latest_replay: null };
     }
   }
 
@@ -255,14 +251,6 @@ class SystemAuthority {
       metrics: {
         uptime_seconds: Math.floor((constitutionalTimeAuthority.nowAsMillis() - this.startTime) / 1000),
         total_requests: this.requestCount,
-        total_errors: this.errorCount,
-      },
-      organizational_health: {
-        authority_violations: 0,
-        capability_violations: 0,
-        intent_conflicts: 0,
-        confidence_decay: 0,
-        computed_at: constitutionalTimeAuthority.now(),
       },
     };
   }

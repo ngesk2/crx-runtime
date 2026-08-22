@@ -140,7 +140,7 @@ class EventToMissionBridge {
    * Get stats.
    */
   getStats() {
-    return { ...this._stats };
+    return { ...this._stats, scope: 'session' };
   }
 }
 

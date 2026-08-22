@@ -335,7 +335,7 @@ class MissionRuntime {
     for (const row of result.rows) {
       stats[row.status] = parseInt(row.count);
     }
-    return stats;
+    return { ...stats, scope: 'persistent' };
   }
 
   /**
