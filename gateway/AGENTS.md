@@ -580,3 +580,39 @@ All 3 registries updated: event_generator.js, EVENT_MISSION_MAP, MISSION_WORKER_
 **4 new tests:** CAUSATION-1 (scheduler metadata), CAUSATION-2 (worker _emit), CAUSATION-3 (4-hop lineage), CAUSATION-4 (spine default).
 
 **Regression:** commissioning 14/0, correlation 13/13, confidence 7/7, slice3a 8/8.
+
+---
+
+### 2026-08-21 — P0-A: Causal Queryability Complete (Commit `d03271dd`)
+
+**Goal:** Make the causal tree queryable — expression indexes for O(1) lookups, traversal methods for tree walks, HTTP endpoints for operator access.
+
+**What was added:**
+
+1. **Expression indexes on `ping_events`** (verified on live Postgres):
+   - `idx_ping_events_causation` on `(metadata->>'causation_id')` — Bitmap Index Scan 0.148ms (was Seq Scan 0.417ms)
+   - `idx_ping_events_correlation` on `(metadata->>'correlation_id')` — same improvement
+   - DDL in `unified_event_runtime.js` creates these idempotently via `CREATE INDEX IF NOT EXISTS`
+
+2. **Traversal methods on `UnifiedEventRuntime`:**
+   - `getChildren(eventId, limit)` — direct children via causation_id index
+   - `getDescendants(eventId, maxDepth, limit)` — recursive CTE tree walk with safety limits
+   - `getAncestors(eventId, maxDepth)` — upward traversal to root
+   - `getCorrelationGroup(correlationId, limit)` — all events sharing a correlation_id
+
+3. **HTTP routes in `gateway/routes/events.js`:**
+   - `GET /events/:eventId/children?limit=50`
+   - `GET /events/:eventId/descendants?maxDepth=10&limit=200`
+   - `GET /events/:eventId/ancestors?maxDepth=20`
+   - `GET /events/correlation/:correlationId?limit=200`
+
+4. **`gateway/test_causal_traversal.js`:** 9 tests (TRAVERSAL-1 through TRAVERSAL-9) covering tree walk, depth limits, leaf/root edge cases, empty results.
+
+**Key design decisions:**
+- Traversal methods live on `UnifiedEventRuntime` (the spine), not on `EventReadAuthority` (the kernel reader). The spine IS the query surface for causal data.
+- Recursive CTEs use `maxDepth` (default 10) and `limit` (default 200) safety caps to prevent runaway queries on malformed data.
+- `getCorrelationGroup` queries by `metadata->>'correlation_id'` using the expression index, not by a dedicated column.
+
+**Files changed:** `ping-runtime/events/unified_event_runtime.js`, `gateway/routes/events.js`, `gateway/test_causal_traversal.js` (new)
+
+**Regression:** 17 suites, 0 failures. commissioning 14/0, correlation 13/13, confidence 7/7, slice3a 8/8, phase_d 7/7, ingest 24/24, pipeline_bridge pass, canonical_object 13/13, generator 21/21, knowledge_search 10/10, evidence 12/12, business_emitters 19/19, wave2_generators 39/39, wave2_5 32/32, p001_p005 27/27, p040 29/29, wave3a 59/59.
