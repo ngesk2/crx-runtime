@@ -58,6 +58,8 @@ class UnifiedEventRuntime {
       CREATE INDEX IF NOT EXISTS idx_ping_events_namespace ON ping_events(namespace);
       CREATE INDEX IF NOT EXISTS idx_ping_events_processed ON ping_events(processed);
       CREATE INDEX IF NOT EXISTS idx_ping_events_timestamp ON ping_events(timestamp);
+      CREATE INDEX IF NOT EXISTS idx_ping_events_causation ON ping_events ((metadata->>'causation_id'));
+      CREATE INDEX IF NOT EXISTS idx_ping_events_correlation ON ping_events ((metadata->>'correlation_id'));
     `);
   }
 
@@ -230,6 +232,110 @@ class UnifiedEventRuntime {
 
     const result = await this._pool.query(sql, params);
     return { status: 'ok', events: result.rows, count: result.rowCount };
+  }
+
+  /**
+   * Get direct children of an event (events caused by it).
+   * Uses the causation_id expression index for O(log n) lookup.
+   * @param {string} eventId — parent event_id
+   * @param {number} [limit=50]
+   * @returns {{ status: string, events: Array }}
+   */
+  async getChildren(eventId, limit = 50) {
+    if (!this._pool) return { status: 'error', error: 'No pool' };
+    const result = await this._pool.query(
+      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace
+       FROM ping_events
+       WHERE metadata->>'causation_id' = $1
+       ORDER BY created_at ASC
+       LIMIT $2`,
+      [eventId, limit]
+    );
+    return { status: 'ok', events: result.rows };
+  }
+
+  /**
+   * Get all descendants of an event (recursive tree walk via causation_id).
+   * Returns the full subtree breadth-first, with depth for each node.
+   * @param {string} eventId — root event_id
+   * @param {number} [maxDepth=10] — safety limit
+   * @param {number} [limit=200] — total event limit
+   * @returns {{ status: string, events: Array }}
+   */
+  async getDescendants(eventId, maxDepth = 10, limit = 200) {
+    if (!this._pool) return { status: 'error', error: 'No pool' };
+    const result = await this._pool.query(
+      `WITH RECURSIVE causal_tree AS (
+        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace,
+               0 AS depth, ARRAY[event_id] AS path
+        FROM ping_events
+        WHERE event_id = $1
+        UNION ALL
+        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace,
+               ct.depth + 1, ct.path || e.event_id
+        FROM ping_events e
+        JOIN causal_tree ct ON e.metadata->>'causation_id' = ct.event_id
+        WHERE ct.depth < $3
+          AND NOT e.event_id = ANY(ct.path)
+      )
+      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, depth, path
+      FROM causal_tree
+      ORDER BY depth ASC, created_at ASC
+      LIMIT $2`,
+      [eventId, limit, maxDepth]
+    );
+    return { status: 'ok', events: result.rows };
+  }
+
+  /**
+   * Get all ancestors of an event (walk up the causation chain).
+   * Returns the chain from immediate parent to root, with depth.
+   * @param {string} eventId — leaf event_id
+   * @param {number} [maxDepth=20] — safety limit
+   * @returns {{ status: string, events: Array }}
+   */
+  async getAncestors(eventId, maxDepth = 20) {
+    if (!this._pool) return { status: 'error', error: 'No pool' };
+    const result = await this._pool.query(
+      `WITH RECURSIVE causal_chain AS (
+        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace,
+               0 AS depth, ARRAY[event_id] AS path
+        FROM ping_events
+        WHERE event_id = $1
+        UNION ALL
+        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace,
+               cc.depth + 1, cc.path || e.event_id
+        FROM ping_events e
+        JOIN causal_chain cc ON e.event_id = cc.metadata->>'causation_id'
+        WHERE cc.depth < $2
+          AND NOT e.event_id = ANY(cc.path)
+      )
+      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, depth, path
+      FROM causal_chain
+      ORDER BY depth ASC`,
+      [eventId, maxDepth]
+    );
+    return { status: 'ok', events: result.rows };
+  }
+
+  /**
+   * Get full correlation group (all events sharing the same correlation_id).
+   * This is the "view everything from one originating observation" query.
+   * @param {string} correlationId
+   * @param {number} [limit=200]
+   * @returns {{ status: string, events: Array }}
+   */
+  async getCorrelationGroup(correlationId, limit = 200) {
+    if (!this._pool) return { status: 'error', error: 'No pool' };
+    const result = await this._pool.query(
+      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace
+       FROM ping_events
+       WHERE metadata->>'correlation_id' = $1
+       ORDER BY created_at ASC
+       LIMIT $2`,
+      [correlationId, limit]
+    );
+    return { status: 'ok', events: result.rows };
   }
 
   /**

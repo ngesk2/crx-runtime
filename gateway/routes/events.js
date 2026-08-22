@@ -107,6 +107,38 @@ function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
     return { events, count: events.length };
   }));
 
+  // Causal traversal endpoints — query the causal tree in ping_events
+  // via UnifiedEventRuntime's indexed traversal methods.
+
+  router.get('/:eventId/children', asyncHandler('/events/:eventId/children', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const limit = parseInt(req.query.limit) || 50;
+    return await eventRuntime.getChildren(eventId, limit);
+  }));
+
+  router.get('/:eventId/descendants', asyncHandler('/events/:eventId/descendants', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const maxDepth = parseInt(req.query.maxDepth) || 10;
+    const limit = parseInt(req.query.limit) || 200;
+    return await eventRuntime.getDescendants(eventId, maxDepth, limit);
+  }));
+
+  router.get('/:eventId/ancestors', asyncHandler('/events/:eventId/ancestors', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const maxDepth = parseInt(req.query.maxDepth) || 20;
+    return await eventRuntime.getAncestors(eventId, maxDepth);
+  }));
+
+  router.get('/correlation/:correlationId', asyncHandler('/events/correlation/:correlationId', async (req) => {
+    const { correlationId } = req.params;
+    if (!correlationId) throw new Error('correlationId is required');
+    const limit = parseInt(req.query.limit) || 200;
+    return await eventRuntime.getCorrelationGroup(correlationId, limit);
+  }));
+
   return router;
 }
 
