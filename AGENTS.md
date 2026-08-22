@@ -2508,3 +2508,19 @@ The platform is mature enough that the largest remaining gains come from making 
 - **SYSTEM_HEALTH_CHECK routing gap is dormant** — SYSTEM_AUDIT → claim worker, but claim's eventTypes don't include SYSTEM_HEALTH_CHECK. If emitted, the mission would fail with "no worker matched". Not a bug — SYSTEM_HEALTH_CHECK is never emitted in production.
 - **failWithRetry race condition is acceptable** — Two concurrent failures can read retries=0, both increment to 1, both succeed. Worst case: one wasted retry attempt. The mission still exhausts after max_attempts total transitions. Not worth fixing (would require SELECT FOR UPDATE).
 - **Scheduler poll ordering is correct** — Arrow 0 (renew) → Arrow 1 (reap) → Arrow 2 (dispatch). Renewal runs first, preventing the reaper from resetting slow-but-alive missions.
+
+### 2026-08-21 Session — Confidence Convergence Matrix (12/12 PASS)
+
+**16:30** | Started session. Goal: write and verify T1–T10 confidence propagation matrix test. | Execute.
+
+**16:35** | First attempt: 7/10 passing. 4 test bugs found: (1) test overrode `eventRuntime.emit` which bypassed EventEmitter `.on()` listeners the bridge registered — worker chain never started; (2) MockPool `_nodes` array stored `{id, confidence}` without `label` field — KnowledgeGraph node lookups failed; (3) `bridge.stop()` called but bridge has no stop method — crash; (4) fixed wait (200–500ms) too short for scheduler 5s poll — T4/T9 downstream events not emitted. | Fix test.
+
+**16:40** | Rewrote test: removed emit override (let real chain run), used fast scheduler (100ms poll), polling waitFor helper instead of fixed sleep, proper MockPool node storage with all 10 columns. | Verify.
+
+**16:45** | **12/12 PASS.** Full regression GREEN: all 22 suites, zero failures. T1–T10 all proven: explicit confidence persists on root event; omitted stays null; null survives bridge+scheduler; numeric survives full chain; IntelligenceWorker _emit preserves; explicit override wins; KnowledgeGraph stores null/0.73 correctly; null never fabricated to 0.5/0.7/0.85/1.0; ClassificationWorker+RecommendationWorker record confidence_source: inherited; EvidenceAuthority ranks null neutrally. | Complete.
+
+## Session — Key Decisions
+- **Emit override breaks EventEmitter listeners** — `eventRuntime.on(eventType, handler)` registers in `_handlers` map; `emit()` iterates `_handlers` and calls them. Overriding `emit` to call `origEmit` works for persistence but loses the listener dispatch. Let the real chain run instead.
+- **Fast scheduler (100ms) is the correct test pattern** — The production scheduler polls every 5s. Tests need faster feedback. Setting `pollIntervalMs: 100` on the scheduler constructor makes the chain complete in <2s instead of >10s.
+- **polling waitFor beats fixed sleep** — Fixed sleeps are unreliable across environments. Polling until a condition is met (up to timeout) is deterministic.
+- **All 12 tests prove confidence propagates correctly** — The 5 drop points closed in commit `754cd77a` are verified end-to-end: BaseWorker._emit inheritance, IntelligenceWorker transport, KnowledgeGraph null preservation, EvidenceAuthority null ranking, ClassificationWorker/RecommendationWorker provenance recording.
