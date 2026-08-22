@@ -45,6 +45,11 @@ class BaseWorker {
       || this._event?.metadata?.correlation_id
       || this._event?.event_id
       || options.causation_id;
+    // Set causation_id to the triggering event's own ID so every downstream
+    // event has a direct link to its immediate parent in the causal chain.
+    // Without this, the spine defaults causation_id to null and the chain
+    // is broken at every worker hop.
+    const causation_id = options.causation_id || this._event?.event_id || null;
     // Preserve confidence from the triggering event unless the downstream
     // producer explicitly supplies a new one. Workers re-evaluate at their
     // hop but the spine carries the source confidence forward.
@@ -57,6 +62,7 @@ class BaseWorker {
       ...options,
       namespace,
       correlation_id,
+      causation_id,
       metadata: emitMetadata,
     });
     if (result.status !== 'ok') {
