@@ -32,7 +32,7 @@ class UnifiedEventRuntime {
     this._eventGovernance = options.eventGovernance || null;
     this._integrationManager = options.integrationManager || null;
     this._handlers = new Map();
-    this._stats = { emitted: 0, persisted: 0, dispatched: 0, failed: 0 };
+    this._stats = { emitted: 0, persisted: 0, deduplicated: 0, dispatched: 0, failed: 0 };
   }
 
   /**
@@ -142,13 +142,18 @@ class UnifiedEventRuntime {
     // 5. Persist
     if (this._pool) {
       try {
-        await this._pool.query(
+        const result = await this._pool.query(
           `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace)
            VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (event_id) DO NOTHING`,
           [event.event_id, event.event_type, event.source, event.timestamp,
            JSON.stringify(event.payload), JSON.stringify(event.metadata), event.namespace]
         );
-        this._stats.persisted++;
+        // Only count actual inserts, not ON CONFLICT DO NOTHING no-ops
+        if ((result.rowCount || 0) > 0) {
+          this._stats.persisted++;
+        } else {
+          this._stats.deduplicated++;
+        }
       } catch (err) {
         this._stats.failed++;
         return { status: 'error', error: `Persist failed: ${err.message}`, eventId };

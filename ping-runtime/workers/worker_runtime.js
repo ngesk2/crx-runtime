@@ -77,6 +77,7 @@ class WorkerRuntime {
       // which meant a dormant worker would silently process all dispatched events.
       if (entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType)) {
         if (entry.running < entry.maxConcurrent) {
+          this._stats.dispatched++;
           entry.running++;
           entry.status = 'processing';
           try {
