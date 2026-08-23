@@ -6,7 +6,7 @@
  * Weights: Replay determinism 25%, Canonical identity 20%, Capability isolation 15%, Security 15%, Replay witness integrity 10%, Migration compatibility 5%, Operational simplicity 5%, Performance 3%, Developer ergonomics 2%
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConstitutionalAuthority {
   constructor() {
@@ -329,8 +329,8 @@ class ConstitutionalAuthority {
    * @returns {string} Proposal ID
    */
   _generateProposalId() {
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-    const { deterministicIdAuthority } = require('./deterministic_id_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+    const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
     const timestamp = constitutionalTimeAuthority.nowAsMillis();
     const randomPart = deterministicIdAuthority.generateId({ timestamp });
     return `proposal_${timestamp}_${randomPart.substring(0, 7)}`;

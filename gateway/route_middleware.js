@@ -7,7 +7,7 @@
  * - Response formatting
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 /**
  * Async route handler wrapper with logging and error handling

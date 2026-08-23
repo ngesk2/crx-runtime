@@ -28,7 +28,7 @@ const replayVisiblePaths = [
   'replay_certificate_authority.js',
   'reducer_authority.js',
   'event_repository.js',
-  'standard_event_schema.js',
+  '../ping-runtime/events/standard_event_schema.js',
   'execution_graph_authority.js',
   'worker_registry.js',
   'canonical_authority.js',

@@ -28,10 +28,10 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalBytes, CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalBytes, CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalAuthority: PersistentAuthority } = require('./constitutional_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 
 class WitnessBlock {
   constructor(data, previousHash = null, blockNumber = 0, authority = 'WitnessAuthority') {

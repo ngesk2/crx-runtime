@@ -208,7 +208,7 @@ class ConstructNodeExecutor extends BaseNodeExecutor {
 class GenerateNodeExecutor extends BaseNodeExecutor {
   async execute(node, results, context) {
     const { completionAuthority } = require('./completion_authority');
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     const productionRuntime = this.getDependency('productionRuntime');
     const ollamaRuntime = this.getDependency('ollamaRuntime');
@@ -281,7 +281,7 @@ class TestNodeExecutor extends BaseNodeExecutor {
  */
 class ReplayNodeExecutor extends BaseNodeExecutor {
   async execute(node, results, context) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     const missionExecution = this.getDependency('missionExecution');
     
     const executionId = context.execution_id || results.invoke_ollama?.data?.completion_id;
@@ -335,7 +335,7 @@ class ApproveNodeExecutor extends BaseNodeExecutor {
  */
 class CommitNodeExecutor extends BaseNodeExecutor {
   async execute(node, results, context) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     const commitAuthority = this.getDependency('commitAuthority');
     const approval = results.request_approval;
     
@@ -394,7 +394,7 @@ class WitnessNodeExecutor extends BaseNodeExecutor {
  */
 class CheckpointNodeExecutor extends BaseNodeExecutor {
   async execute(node, results, context) {
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const checkpointAuthority = this.getDependency('checkpointAuthority');
     
     const checkpointData = {

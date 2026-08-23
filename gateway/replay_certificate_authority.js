@@ -28,11 +28,11 @@
  * with the same state as the original execution.
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 const { witnessAuthority } = require('./witness_authority');
 const { runtimeIdentityAuthority } = require('./runtime_identity_authority');
 const { reducerAuthority } = require('./reducer_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ReplayCertificateAuthority {
   constructor() {

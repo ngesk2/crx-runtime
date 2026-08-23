@@ -29,8 +29,8 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class PersistentOllamaAnalyst {
   constructor(postgresPool, objectRegistry, gatewayClient, qdrantClient) {
@@ -309,7 +309,7 @@ Your response will be persisted as a Constitutional Object with full model execu
     responseHash,
     retrievalHash
   ) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     // Compute analysis root (Merkle root of all analysis fields)
     const analysisRoot = this._computeAnalysisRoot({
@@ -396,7 +396,7 @@ Your response will be persisted as a Constitutional Object with full model execu
    * Compute analysis root (Merkle root of analysis fields)
    */
   _computeAnalysisRoot(fields) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     // Sort keys for canonical ordering
     const sortedKeys = Object.keys(fields).sort();

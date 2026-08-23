@@ -32,8 +32,8 @@
  *   - Canonical Violations
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 const { ConstitutionalKnowledgeAcquisition } = require('./constitutional_knowledge_acquisition');
 const { ConstitutionalCompatibilityScorer } = require('./constitutional_compatibility_scorer');
 const { ConstitutionalOllamaIntegration } = require('./constitutional_ollama_integration');

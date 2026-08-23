@@ -118,7 +118,7 @@ class PersistStage extends LifecycleStage {
 
   async execute(context) {
     const client = await context.beginTransaction();
-    const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+    const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
     for (const obj of context.objects) {
       await client.query(`
         INSERT INTO events (event_id, event_type, timestamp, aggregate_id, aggregate_type, event_data)

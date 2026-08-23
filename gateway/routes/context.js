@@ -8,7 +8,7 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
-const { constitutionalTimeAuthority } = require('../constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 function createContextRoutes(eventReadAuthority) {
   router.get('/recent-events', asyncHandler('/context/recent-events', async (req) => {

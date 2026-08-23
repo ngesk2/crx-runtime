@@ -10,8 +10,8 @@
  * Only Constitutional Objects.
  */
 
-const { identityAuthority } = require('./identity_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class StructuralIndexAdapter {
   constructor(postgresPool) {
@@ -167,7 +167,7 @@ class StructuralIndexAdapter {
   }
 
   _computeSnapshotHash(snapshot) {
-    const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+    const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
     const canonical = CanonicalBytes.serialize({
       repo: snapshot.repo?.full_name,
       commits: snapshot.commits?.map(c => c.sha),
@@ -176,7 +176,7 @@ class StructuralIndexAdapter {
   }
 
   async _persistIndex(index) {
-    const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+    const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
     await this._postgres.query(`
       INSERT INTO structural_indices (id, lifecycle_id, repository, files, structure, dependencies, metadata, created_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())

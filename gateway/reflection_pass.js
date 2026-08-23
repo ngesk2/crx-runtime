@@ -14,8 +14,8 @@
  * Constitutional Constraint: Reflection is a pure function of replay events.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ReflectionPass {
   constructor(eventBus, objectRegistry) {

@@ -4,9 +4,8 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY gateway/package*.json ./
 RUN npm install
-
 RUN npm install pg express
 
 COPY . .
@@ -15,4 +14,4 @@ EXPOSE 8080
 
 ENV NODE_ENV=production
 
-CMD ["node", "server.js"]
+CMD ["node", "gateway/server.js"]

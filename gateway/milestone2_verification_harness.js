@@ -26,8 +26,8 @@
  */
 
 const { GitHubConstitutionalPipeline } = require('./github_constitutional_pipeline');
-const { RepositoryStore } = require('./repository_store');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class Milestone2VerificationHarness {
   constructor(config) {

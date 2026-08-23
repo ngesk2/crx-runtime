@@ -68,7 +68,7 @@ class EventReadAuthority {
    */
   async getRecentEvents(minutes = 60, limit = 100) {
     try {
-      const recentTimestamp = constitutionalTimeAuthority.now() - (minutes * 60 * 1000);
+      const recentTimestamp = new Date(constitutionalTimeAuthority.nowAsMillis() - (minutes * 60 * 1000)).toISOString();
       const result = await this._postgres.query(`
         SELECT event_id, event_type, timestamp, object_id as stream, aggregate_type, payload
         FROM repository_events
@@ -159,7 +159,7 @@ class EventReadAuthority {
     try {
       const result = await this._postgres.query(`
         SELECT event_id, event_type, payload, correlation_id, created_at
-        FROM events
+        FROM repository_events
         WHERE event_type = $1
         ORDER BY created_at DESC
         LIMIT $2 OFFSET $3
@@ -188,7 +188,7 @@ class EventReadAuthority {
     try {
       const result = await this._postgres.query(`
         SELECT event_id, event_type, payload, correlation_id, created_at
-        FROM events
+        FROM repository_events
         WHERE correlation_id = $1
         ORDER BY created_at ASC
       `, [correlationId]);
@@ -334,7 +334,7 @@ class EventReadAuthority {
   async getUnprocessedEvents(limit) {
     try {
       const result = await this._postgres.query(`
-        SELECT e.event_id, e.event_type, e.aggregate_id, e.aggregate_type,
+        SELECT e.event_id, e.event_type, e.object_id AS aggregate_id, e.aggregate_type,
                e.payload, e.timestamp, e.causation_id, e.correlation_id,
                e.authority, e.authority_version
         FROM repository_events e

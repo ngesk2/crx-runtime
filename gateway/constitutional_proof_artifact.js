@@ -24,7 +24,7 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class ConstitutionalProofArtifact {
   constructor(postgresPool, validationHarness, objectRegistry, witnessChain) {
@@ -39,7 +39,7 @@ class ConstitutionalProofArtifact {
    * Generate proof Constitutional Object from validation result
    */
   async generateProofObject(proofData) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     // Compute Merkle root over all subsystem roots
     const proofRoot = this._computeMerkleRoot({
@@ -175,7 +175,7 @@ class ConstitutionalProofArtifact {
    * Compute Merkle root over subsystem roots
    */
   _computeMerkleRoot(roots) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     // Sort keys for canonical ordering
     const sortedKeys = Object.keys(roots).sort();

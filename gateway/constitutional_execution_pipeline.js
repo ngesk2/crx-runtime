@@ -1,11 +1,11 @@
-const { StandardEventSchema } = require('./standard_event_schema');
+const { StandardEventSchema } = require('../ping-runtime/events/standard_event_schema');
 const { EventRepository } = require('./event_repository');
 const { ConstitutionalDispatcher } = require('./constitutional_dispatcher');
 const { ReducerExecutor } = require('./reducer_executor');
 const { ProjectionExecutor } = require('./projection_executor');
 const { VerificationPipeline } = require('./verification_pipeline');
 const { ReplayScheduler } = require('./replay_scheduler');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConstitutionalExecutionPipeline {
   constructor(eventRepository, dispatcher, reducerExecutor, projectionExecutor, verificationPipeline, replayScheduler) {

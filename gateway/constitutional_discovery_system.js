@@ -21,8 +21,8 @@
  * - AI relevance
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 
 class ConstitutionalDiscoverySystem {
   constructor(postgresPool, githubAdapter) {
@@ -334,7 +334,7 @@ class ConstitutionalDiscoverySystem {
 
     // Release freshness
     if (discovery.release) {
-      const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+      const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
       const releaseAge = constitutionalTimeAuthority.nowAsMillis() - new Date(discovery.release.published_at).getTime();
       const freshnessScore = Math.max(0, 1 - (releaseAge / (30 * 24 * 60 * 60 * 1000))); // Decay over 30 days
       score += freshnessScore * 0.3;

@@ -10,8 +10,8 @@
  * - Run regression tests
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { deterministicIdAuthority } = require('./deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 const { ConstitutionalValidationHarness } = require('./constitutional_validation_harness');
 const { EmbeddingAuthority } = require('./embedding_authority');
 const { QdrantClient } = require('./qdrant_client');

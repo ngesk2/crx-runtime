@@ -13,7 +13,7 @@
  * - No stack traces
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class DeterministicFailureEnvelope {
   constructor(failureCode, phase, metadata = {}) {

@@ -1,0 +1,17 @@
+{
+  "event_id": "940b563596f5f052",
+  "type": "artifact_produced",
+  "schema_version": "3.0.0",
+  "data": {
+    "authority_owner": "ArtifactStore"
+  },
+  "mission_id": null,
+  "worker_id": null,
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "f8a29a5b6c33",
+  "parent_event_id": null,
+  "global_sequence": 19
+}

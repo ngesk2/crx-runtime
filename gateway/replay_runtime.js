@@ -19,8 +19,8 @@
  */
 
 const { ReplayAuthority } = require('./replay_authority');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
-const { RepositoryStore } = require('./repository_store');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
+const { RepositoryStore } = require('../ping-runtime/events/repository_store');
 const { ConstitutionalParser } = require('./constitutional_parser');
 const { KnowledgeRuntime } = require('./knowledge_runtime');
 const { RelationshipRuntime } = require('./relationship_runtime');

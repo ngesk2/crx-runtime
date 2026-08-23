@@ -24,7 +24,7 @@ const { authoritySigningService } = require('./authority_signing_service');
 const { authorityVerificationService } = require('./authority_verification_service');
 const { authorityRepository } = require('./authority_repository');
 const { deterministicKeyAuthority } = require('./deterministic_key_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConstitutionalAuthority {
   constructor() {

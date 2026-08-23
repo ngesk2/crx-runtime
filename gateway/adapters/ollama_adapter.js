@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { InfrastructureAdapterInterface } = require('../infrastructure_adapter_interface');
 const { serializerAuthority } = require('../serializer_authority');
-const { constitutionalTimeAuthority } = require('../constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 /**
  * Ollama Adapter

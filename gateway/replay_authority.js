@@ -20,13 +20,13 @@
  * - Replay never executes invalid artifacts
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 const { reducerAuthority } = require('./reducer_authority');
 const { witnessAuthority } = require('./witness_authority');
 const { replayCertificateAuthority } = require('./replay_certificate_authority');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class ReplayAuthority {
   constructor(ports) {

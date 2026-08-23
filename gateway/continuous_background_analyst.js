@@ -46,7 +46,7 @@
 
 const crypto = require('crypto');
 const { PersistentOllamaAnalyst } = require('./persistent_ollama_analyst');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class ContinuousBackgroundAnalyst {
   constructor(postgresPool, ollamaAnalyst, objectRegistry, witnessChain) {

@@ -9,7 +9,7 @@
  * Pipeline only coordinates authorities.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalObjectFactory, OperationalEnvelope, OperationalMetadataCollector } = require('./operational_envelope');
 
 class ParserAuthority {

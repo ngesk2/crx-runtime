@@ -24,7 +24,7 @@
  * Constitutional Constraint: These weights must come from configuration rather than code.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class MissionPlanner {
   constructor(postgresPool, config = {}) {
@@ -291,7 +291,7 @@ class MissionPlanner {
    * No timestamps, no randomness
    */
   _generateMissionId(obj) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     const missionInput = {
       object_id: obj.id,
       object_hash: obj.canonical_hash,
@@ -307,7 +307,7 @@ class MissionPlanner {
    * Constitutional Constraint: Deterministic from object hash
    */
   _generateReplayId(obj) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     return CanonicalAuthority.hash(obj.canonical_hash);
   }
 

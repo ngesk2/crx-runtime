@@ -12,7 +12,7 @@
 
 const { QdrantClient } = require('./qdrant_client');
 const { ObjectRegistry } = require('./object_registry');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class QdrantBootstrap {
   constructor(postgresPool, qdrantUrl = null) {

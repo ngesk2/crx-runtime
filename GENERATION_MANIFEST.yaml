@@ -1,0 +1,57 @@
+# Generation Manifest
+# P022: The master manifest for all compiler-generated runtime artifacts.
+#
+# This file is the single source of truth for what the compiler produces.
+# Runtime loads this manifest and validates all generated artifacts against it.
+#
+# Constitutional Constraint:
+# - This manifest is immutable runtime input
+# - Changes require re-compilation
+# - Hash is deterministic across identical inputs
+
+schema_version: "1.0.0"
+compiler_version: "1.0.0"
+generation_timestamp: "2026-07-25T00:00:00Z"
+
+# Source directories (where the compiler reads from)
+sources:
+  authorities: "authorities/registry.yaml"
+  capabilities: "capabilities/registry.yaml"
+  intents: "intents/"
+  constitutional_authorities: "constitutional-compiler/constitutional-authorities.yaml"
+  constitutional_capabilities: "constitutional-compiler/constitutional-capabilities.yaml"
+
+# Generated artifacts (what the compiler produces)
+artifacts:
+  workflow_registry:
+    path: "gateway/generated/workflow_registry.json"
+    description: "Workflow definitions derived from intent manifests"
+    generator: "WorkflowGenerator"
+    
+  event_registry:
+    path: "gateway/generated/event_registry.json"
+    description: "Event types derived from authorities and intents"
+    generator: "EventGenerator"
+    
+  capability_registry:
+    path: "gateway/generated/capability_registry.json"
+    description: "Capability definitions from capabilities registry"
+    generator: "CapabilityGenerator"
+    
+  deployment_manifest:
+    path: "gateway/generated/deployment_manifest.json"
+    description: "Deployment configuration from intents and authorities"
+    generator: "DeploymentGenerator"
+    
+  state_machine_registry:
+    path: "gateway/generated/state_machine_registry.json"
+    description: "State machine definitions from authority lifecycle"
+    generator: "StateMachineGenerator"
+
+# Invariants
+invariants:
+  - "All artifacts are deterministic given identical sources"
+  - "Hash changes iff source content changes"
+  - "Runtime rejects artifacts with version mismatches"
+  - "No handwritten registries — all generated"
+  - "Startup fails if any artifact is missing or invalid"

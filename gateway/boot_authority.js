@@ -1,4 +1,4 @@
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { authorityRepository } = require('./authority_repository');
 const { bootGraphRepository } = require('./boot_graph_repository');
 

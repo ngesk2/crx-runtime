@@ -9,8 +9,8 @@
  * - Verify deterministic ID generation
  */
 
-const { deterministicIdAuthority } = require('../../gateway/deterministic_id_authority');
-const { constitutionalTimeAuthority } = require('../../gateway/constitutional_time_authority');
+const { deterministicIdAuthority } = require('../../ping-runtime/authorities/deterministic_id_authority');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 /**
  * Test replay determinism

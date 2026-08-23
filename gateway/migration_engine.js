@@ -81,7 +81,13 @@ class MigrationEngine {
       up: this._migration010.bind(this),
     });
 
-    this._currentMigrationVersion = 10;
+    // Migration 11: Backfill event_processing columns
+    this._migrations.set(11, {
+      description: 'Backfill event_processing columns for worker ack durability',
+      up: this._migration011.bind(this),
+    });
+
+    this._currentMigrationVersion = 11;
   }
 
   /**
@@ -212,11 +218,23 @@ class MigrationEngine {
         event_id TEXT PRIMARY KEY,
         object_id TEXT NOT NULL,
         event_type TEXT NOT NULL,
+        aggregate_type TEXT NOT NULL DEFAULT 'unknown',
         sequence INTEGER NOT NULL,
         payload JSONB NOT NULL DEFAULT '{}',
         witness JSONB,
         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        RuntimeID TEXT
+        authority TEXT NOT NULL DEFAULT 'system',
+        authority_version TEXT NOT NULL DEFAULT '1.0.0',
+        causation_id TEXT,
+        correlation_id TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        RuntimeID TEXT NOT NULL DEFAULT 'unknown',
+        PreviousEventHash TEXT,
+        CanonicalEventHash TEXT,
+        ReducerHash TEXT,
+        WitnessHash TEXT,
+        ReplayHash TEXT,
+        chain_root TEXT
       )
     `);
 
@@ -226,6 +244,9 @@ class MigrationEngine {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_timestamp ON repository_events(timestamp)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_runtime ON repository_events(RuntimeID)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_chain ON repository_events(object_id, sequence, CanonicalEventHash)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_aggregate ON repository_events(aggregate_type)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_causation ON repository_events(causation_id)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_repo_events_correlation ON repository_events(correlation_id)`);
   }
 
   /**
@@ -236,13 +257,36 @@ class MigrationEngine {
       CREATE TABLE IF NOT EXISTS event_processing (
         event_id TEXT PRIMARY KEY,
         processed BOOLEAN NOT NULL DEFAULT FALSE,
-        worker TEXT,
-        processed_at TIMESTAMPTZ
+        processed_at TIMESTAMPTZ,
+        worker TEXT NOT NULL DEFAULT 'unknown',
+        retries INTEGER NOT NULL DEFAULT 0,
+        last_error TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_event_processing_processed ON event_processing(processed)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_event_processing_worker ON event_processing(worker)`);
+  }
+
+  /**
+   * Migration 011: Backfill event_processing columns for existing deployments
+   *
+   * Migration 004 originally created event_processing without retries/last_error/created_at,
+   * but EventReadAuthority.markProcessed/markFailed (runtime/kernel/event_read_authority.js)
+   * write against those columns, so marking a worker-processed event silently failed and the
+   * event was re-dispatched on every poll. ADD COLUMN IF NOT EXISTS is idempotent for both
+   * fresh installs (004 already corrected) and existing deployments (004 already applied).
+   */
+  async _migration011(client) {
+    await client.query(`
+      ALTER TABLE event_processing
+        ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS worker TEXT NOT NULL DEFAULT 'unknown',
+        ADD COLUMN IF NOT EXISTS retries INTEGER NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS last_error TEXT,
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    `);
   }
 
   /**

@@ -51,8 +51,8 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class RepositoryFingerprinting {
   constructor(postgresPool, objectRegistry, witnessChain, symbolGraph, callGraph, importGraph, typeGraph, buildGraph) {
@@ -658,7 +658,7 @@ class RepositoryFingerprinting {
    * Compute fingerprint hash
    */
   _computeFingerprintHash(fingerprint) {
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     
     const fingerprintData = {
       architectural_style: fingerprint.architectural_style,

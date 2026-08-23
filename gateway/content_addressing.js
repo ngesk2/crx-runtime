@@ -16,7 +16,7 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class ContentAddress {
   constructor(content, algorithm = 'sha256') {

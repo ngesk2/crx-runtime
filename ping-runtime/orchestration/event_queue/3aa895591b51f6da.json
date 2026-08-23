@@ -1,0 +1,17 @@
+{
+  "event_id": "3aa895591b51f6da",
+  "type": "COMPLETELY_UNKNOWN_TYPE",
+  "schema_version": "3.0.0",
+  "data": {
+    "test": true
+  },
+  "mission_id": null,
+  "worker_id": null,
+  "artifact_id": null,
+  "witness_id": null,
+  "replay_certificate_id": null,
+  "causation_id": null,
+  "correlation_id": "d83a4a410cfd",
+  "parent_event_id": null,
+  "global_sequence": 18
+}

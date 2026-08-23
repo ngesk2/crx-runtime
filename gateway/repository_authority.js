@@ -10,7 +10,7 @@
  * RepositoryRoot consumes graph roots, does not compute them manually.
  */
 
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 const { ConstitutionalObjectFactory, OperationalEnvelope, OperationalMetadataCollector } = require('./operational_envelope');
 
 class RepositoryAuthority {
@@ -126,7 +126,7 @@ class RepositoryAuthority {
       return null;
     }
 
-    const { CanonicalAuthority } = require('./canonical_authority');
+    const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
     const hashes = wrappedObjects.map(obj => obj.constitutional_object.canonical_hash);
     return CanonicalAuthority.hash(hashes);
   }

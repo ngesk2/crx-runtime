@@ -18,9 +18,9 @@
  * Infrastructure (NATS/JetStream) should be handled by ExecutionRuntime.
  */
 
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { identityAuthority } = require('./identity_authority');
-const { CanonicalBytes } = require('./canonical_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+const { CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class EventWriteAuthority {
   constructor(postgresPool) {

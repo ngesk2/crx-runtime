@@ -26,7 +26,7 @@
  * Constitutional Constraint: All graphs emit identical constitutional nodes through single compiler.
  */
 
-const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
+const { CanonicalAuthority, CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class CanonicalGraphCompiler {
   constructor(postgresPool, objectRegistry, witnessChain) {

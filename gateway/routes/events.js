@@ -8,24 +8,51 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
+const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
-function createEventRoutes(eventReadAuthority, executeEvent) {
+function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
   router.get('/', asyncHandler('/events', async (req) => {
     const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
-    const events = await eventReadAuthority.getAllEvents(limit, offset);
+    let events = await eventReadAuthority.getAllEvents(limit, offset);
+    if ((!events || events.length === 0) && pool) {
+      const result = await pool.query('SELECT * FROM ping_events ORDER BY timestamp DESC LIMIT $1 OFFSET $2', [limit, offset]);
+      events = result.rows;
+    }
     return { events, count: events.length, limit, offset };
   }));
 
   router.get('/recent', asyncHandler('/events/recent', async (req) => {
     const minutes = parseInt(req.query.minutes) || 60;
     const limit = parseInt(req.query.limit) || 100;
-    const events = await eventReadAuthority.getRecentEvents(minutes, limit);
+    let events = [];
+    try {
+      events = await eventReadAuthority.getRecentEvents(minutes, limit);
+    } catch (e) {}
+    if ((!events || events.length === 0) && pool) {
+      const since = new Date(constitutionalTimeAuthority.nowAsMillis() - minutes * 60 * 1000).toISOString();
+      const result = await pool.query('SELECT * FROM ping_events WHERE timestamp >= $1 ORDER BY timestamp DESC LIMIT $2', [since, limit]);
+      events = result.rows;
+    }
     return { events, count: events.length, minutes, limit };
   }));
 
   router.get('/stats', asyncHandler('/events/stats', async (req) => {
-    const stats = await eventReadAuthority.getEventStats();
+    let stats;
+    try {
+      stats = await eventReadAuthority.getEventStats();
+    } catch (e) {}
+    if ((!stats || !stats.total_events || stats.total_events === '0') && pool) {
+      const result = await pool.query(`SELECT COUNT(*) as total_events, COUNT(DISTINCT event_type) as event_types, MIN(timestamp) as oldest_event, MAX(timestamp) as newest_event FROM ping_events`);
+      const row = result.rows[0];
+      stats = {
+        total_events: row.total_events,
+        streams: row.total_events,
+        event_types: row.event_types,
+        oldest_event: row.oldest_event,
+        newest_event: row.newest_event
+      };
+    }
     return { stats };
   }));
 
@@ -33,7 +60,11 @@ function createEventRoutes(eventReadAuthority, executeEvent) {
     const stream = req.params.stream;
     const limit = parseInt(req.query.limit) || 100;
     const offset = parseInt(req.query.offset) || 0;
-    const events = await eventReadAuthority.getEventsByStream(stream, limit, offset);
+    let events = await eventReadAuthority.getEventsByStream(stream, limit, offset);
+    if ((!events || events.length === 0) && pool) {
+      const result = await pool.query('SELECT * FROM ping_events WHERE event_type = $1 ORDER BY timestamp DESC LIMIT $2 OFFSET $3', [stream, limit, offset]);
+      events = result.rows;
+    }
     return { events, stream, count: events.length, limit, offset };
   }));
 
@@ -42,26 +73,31 @@ function createEventRoutes(eventReadAuthority, executeEvent) {
     if (!event_type || !aggregate_id || !aggregate_type || !event_data) {
       throw new Error('event_type, aggregate_id, aggregate_type, and event_data are required');
     }
-    const artifact = await executeEvent({
-      event_type, aggregate_id, aggregate_type, event_data, authority: 'api', sequence: 1
+    // Canonical spine: emit directly through UnifiedEventRuntime (ping_events),
+    // not through the kernel pipeline (repository_events). The kernel's reducer/projection
+    // registries are empty and EventBridge adds a 5s delay for no benefit.
+    const result = await eventRuntime.emit(event_type, 'api', event_data, {
+      metadata: { aggregate_id, aggregate_type }
     });
-    if (artifact.failed) {
-      throw new Error(artifact.error.message);
+    if (result.status !== 'ok') {
+      throw new Error(result.error || 'Event rejected');
     }
-    return artifact.toResponse();
+    return { event_id: result.eventId, event_type, status: 'ok' };
   }));
 
   router.post('/processed', asyncHandler('/events/processed', async (req) => {
     const { event_id, worker } = req.body;
     if (!event_id) throw new Error('event_id is required');
-    await eventReadAuthority.markProcessed(event_id, worker || 'worker_runtime');
+    const ok = await eventReadAuthority.markProcessed(event_id, worker || 'worker_runtime');
+    if (!ok) throw new Error(`Failed to mark event processed: ${event_id}`);
     return { processed: true, event_id };
   }));
 
   router.post('/failed', asyncHandler('/events/failed', async (req) => {
     const { event_id, worker, error } = req.body;
     if (!event_id) throw new Error('event_id is required');
-    await eventReadAuthority.markFailed(event_id, worker || 'worker_runtime', error || 'unknown');
+    const ok = await eventReadAuthority.markFailed(event_id, worker || 'worker_runtime', error || 'unknown');
+    if (!ok) throw new Error(`Failed to mark event failed: ${event_id}`);
     return { failed: true, event_id };
   }));
 
@@ -69,6 +105,38 @@ function createEventRoutes(eventReadAuthority, executeEvent) {
     const limit = parseInt(req.query.limit) || 100;
     const events = await eventReadAuthority.getUnprocessedEvents(limit);
     return { events, count: events.length };
+  }));
+
+  // Causal traversal endpoints — query the causal tree in ping_events
+  // via UnifiedEventRuntime's indexed traversal methods.
+
+  router.get('/:eventId/children', asyncHandler('/events/:eventId/children', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const limit = parseInt(req.query.limit) || 50;
+    return await eventRuntime.getChildren(eventId, limit);
+  }));
+
+  router.get('/:eventId/descendants', asyncHandler('/events/:eventId/descendants', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const maxDepth = parseInt(req.query.maxDepth) || 10;
+    const limit = parseInt(req.query.limit) || 200;
+    return await eventRuntime.getDescendants(eventId, maxDepth, limit);
+  }));
+
+  router.get('/:eventId/ancestors', asyncHandler('/events/:eventId/ancestors', async (req) => {
+    const { eventId } = req.params;
+    if (!eventId) throw new Error('eventId is required');
+    const maxDepth = parseInt(req.query.maxDepth) || 20;
+    return await eventRuntime.getAncestors(eventId, maxDepth);
+  }));
+
+  router.get('/correlation/:correlationId', asyncHandler('/events/correlation/:correlationId', async (req) => {
+    const { correlationId } = req.params;
+    if (!correlationId) throw new Error('correlationId is required');
+    const limit = parseInt(req.query.limit) || 200;
+    return await eventRuntime.getCorrelationGroup(correlationId, limit);
   }));
 
   return router;

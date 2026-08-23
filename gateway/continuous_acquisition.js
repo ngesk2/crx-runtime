@@ -22,8 +22,8 @@
 
 const crypto = require('crypto');
 const { GitTransport } = require('./git_transport');
-const { CanonicalAuthority } = require('./canonical_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 const { semanticAuthority } = require('./semantic_authority');
 const { snapshotAuthority } = require('./snapshot_authority');
 const { AcquisitionAuthority } = require('./acquisition_authority');

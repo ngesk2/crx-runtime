@@ -29,7 +29,7 @@
  */
 
 const crypto = require('crypto');
-const { CanonicalAuthority } = require('./canonical_authority');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class ConstitutionalCodeRetrieval {
   constructor(postgresPool, objectRegistry, witnessChain, symbolGraph, callGraph, typeGraph, patternDatabase, ollamaAnalyst) {
@@ -60,7 +60,7 @@ class ConstitutionalCodeRetrieval {
   async retrieveCode(query, options = {}) {
     console.log(`[ConstitutionalCodeRetrieval] Retrieving code for query: ${query}`);
 
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const queryId = `retrieval-${CanonicalAuthority.hash({ query, options, timestamp: constitutionalTimeAuthority.nowAsMillis() })}`;
 
     const retrieval = {

@@ -6,8 +6,8 @@
  * Handles repository_snapshots table for aggregate state snapshots.
  */
 
-const { CanonicalBytes } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { CanonicalBytes } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class SnapshotRepository {
   constructor(pool) {

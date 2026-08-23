@@ -39,7 +39,7 @@ const {
   CallGraphObject,
   TypeGraphObject,
 } = require('./constitutional_parser_objects');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class ConstitutionalParser {
   constructor() {

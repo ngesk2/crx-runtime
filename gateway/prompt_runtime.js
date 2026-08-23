@@ -26,7 +26,7 @@
  */
 
 const { PromptObject, ReflectionObject } = require('./prompt_objects');
-const { constitutionalVerificationAuthority } = require('./constitutional_verification_authority');
+const { constitutionalVerificationAuthority } = require('../ping-runtime/evidence/constitutional_verification_authority');
 
 class PromptRuntime {
   constructor() {

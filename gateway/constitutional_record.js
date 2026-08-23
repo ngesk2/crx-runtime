@@ -24,7 +24,7 @@ class ConstitutionalRecord {
     this.adapter_witness_hash = params.adapter_witness_hash;
     this.constitutional_evaluation_hash = params.constitutional_evaluation_hash;
     this.root_constitutional_hash = params.root_constitutional_hash;
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     this.created_at = params.created_at || constitutionalTimeAuthority.nowAsMillis();
     this.frozen = true;
 

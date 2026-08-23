@@ -13,7 +13,7 @@
 
 const crypto = require('crypto');
 const { OperationalEnvelope, ConstitutionalObjectFactory } = require('./operational_envelope');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ProposalAdmission {
   constructor(postgresPool) {
@@ -69,8 +69,8 @@ class ProposalAdmission {
    * @returns {Object} Admission result
    */
   async submit(proposal) {
-    const { identityAuthority } = require('./identity_authority');
-    const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
+    const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
+    const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
     const proposalId = proposal.proposal_id || identityAuthority.generateId('proposal', { type: 'proposal' });
     const now = constitutionalTimeAuthority.now();
 

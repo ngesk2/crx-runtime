@@ -7,7 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { SystemAuthority } = require('../system_authority');
+const { SystemAuthority } = require('../../ping-runtime/runtime/system_authority');
 const { asyncHandler } = require('../route_middleware');
 const path = require('path');
 const fs = require('fs');

@@ -12,9 +12,9 @@
 const { GitTransport } = require('./git_transport');
 const { snapshotAuthority } = require('./snapshot_authority');
 const { semanticAuthority } = require('./semantic_authority');
-const { constitutionalTimeAuthority } = require('./constitutional_time_authority');
-const { CanonicalAuthority } = require('./canonical_authority');
-const { identityAuthority } = require('./identity_authority');
+const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
+const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
+const { identityAuthority } = require('../ping-runtime/authorities/identity_authority.js');
 
 class AcquisitionAuthority {
   constructor(postgresPool, objectRegistry, eventBus) {

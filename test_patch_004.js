@@ -31,13 +31,13 @@ try {
 // Test 2: Load gateway shims
 console.log('\nTest 2: Loading gateway shims...');
 try {
-  const { IdentityAuthority: GatewayIdentityAuthority } = require('./gateway/identity_authority');
+  const { IdentityAuthority: GatewayIdentityAuthority } = require('./ping-runtime/authorities/identity_authority.js');
   console.log('✓ Gateway Identity Authority shim loaded');
   
-  const { CanonicalBytes: GatewayCanonicalBytes, CanonicalAuthority: GatewayCanonicalAuthority } = require('./gateway/canonical_authority');
+  const { CanonicalBytes: GatewayCanonicalBytes, CanonicalAuthority: GatewayCanonicalAuthority } = require('./ping-runtime/authorities/canonical_authority.js');
   console.log('✓ Gateway Canonical Authority shim loaded');
   
-  const { ConstitutionalTimeAuthority: GatewayConstitutionalTimeAuthority } = require('./gateway/constitutional_time_authority');
+  const { ConstitutionalTimeAuthority: GatewayConstitutionalTimeAuthority } = require('./ping-runtime/authorities/constitutional_time_authority.js');
   console.log('✓ Gateway Constitutional Time Authority shim loaded');
   
   const { VerificationAuthority: GatewayVerificationAuthority } = require('./gateway/verification_authority');
@@ -86,13 +86,13 @@ try {
 console.log('\nTest 4: Verifying gateway shims delegate correctly to kernel implementations...');
 try {
   const { IdentityAuthority: KernelIdentityAuthority } = require('./runtime/kernel/authorities/identity_authority');
-  const { IdentityAuthority: GatewayIdentityAuthority } = require('./gateway/identity_authority');
+  const { IdentityAuthority: GatewayIdentityAuthority } = require('./ping-runtime/authorities/identity_authority.js');
   
   const { CanonicalAuthority: KernelCanonicalAuthority } = require('./runtime/kernel/authorities/canonical_authority');
-  const { CanonicalAuthority: GatewayCanonicalAuthority } = require('./gateway/canonical_authority');
+  const { CanonicalAuthority: GatewayCanonicalAuthority } = require('./ping-runtime/authorities/canonical_authority.js');
   
   const { ConstitutionalTimeAuthority: KernelConstitutionalTimeAuthority, constitutionalTimeAuthority: kernelTimeInstance } = require('./runtime/kernel/authorities/constitutional_time_authority');
-  const { ConstitutionalTimeAuthority: GatewayConstitutionalTimeAuthority, constitutionalTimeAuthority: gatewayTimeInstance } = require('./gateway/constitutional_time_authority');
+  const { ConstitutionalTimeAuthority: GatewayConstitutionalTimeAuthority, constitutionalTimeAuthority: gatewayTimeInstance } = require('./ping-runtime/authorities/constitutional_time_authority.js');
   
   const { VerificationAuthority: KernelVerificationAuthority } = require('./runtime/kernel/authorities/verification_authority');
   const { VerificationAuthority: GatewayVerificationAuthority } = require('./gateway/verification_authority');
@@ -146,7 +146,7 @@ try {
 console.log('\nTest 5: Verifying replay identity equivalence...');
 try {
   const { CanonicalAuthority: KernelCanonicalAuthority } = require('./runtime/kernel/authorities/canonical_authority');
-  const { CanonicalAuthority: GatewayCanonicalAuthority } = require('./gateway/canonical_authority');
+  const { CanonicalAuthority: GatewayCanonicalAuthority } = require('./ping-runtime/authorities/canonical_authority.js');
   
   const testObj = { foo: 'bar', baz: 123, nested: { deep: 'value' } };
   

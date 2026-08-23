@@ -6,7 +6,7 @@
  * This is the foundational test before building higher-level abstractions.
  */
 
-const { getInferenceAdapter } = require('../inference_adapter');
+const { getInferenceAdapter } = require('../../ping-runtime/ai/inference_adapter');
 
 async function runTest() {
   console.log('=== Integration Test: Embedding Adapter ===\n');
