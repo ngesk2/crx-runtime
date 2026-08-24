@@ -1,8 +1,8 @@
 # Branch Convergence Report
 
-> **Status:** Routing convergence + priority boundary COMPLETE — 24/24 LIVE routes, 0 BROKEN, 0 ORPHANED
+> **Status:** Documentation corpus integrated, canonical_event_envelope M3 blocker resolved
 > **Date:** 2026-08-24
-> **Local trunk HEAD:** `acb9cd15` (constitutional-trunk)
+> **Local trunk HEAD:** `15422985` (constitutional-trunk)
 > **Origin remote:** `https://github.com/ngesk2/crx-runtime.git`
 
 ---
@@ -101,14 +101,14 @@ so hardening is NOT a remaining divergent stream. The three remaining streams ar
 
 ## Commit-Level Preservation Accounting
 
-### Accounting Summary (post-cleanup, `5c6c0e0c`)
+### Accounting Summary (post-cleanup, `15422985`)
 
 | Classification | Count | Notes |
 |----------------|-------|-------|
-| INTEGRATED | **8** | Cherry-picked + cleanup commits on constitutional-trunk |
+| INTEGRATED | **10** | Cherry-picked + cleanup + 22 docs + canonical_event_envelope fix |
 | PATCH_EQUIVALENT | **10** | Same semantic effect as trunk, different SHA |
 | SUPERSEDED_WITH_PROOF | **4** | Superseded by trunk's own implementation |
-| NOT_YET_REPRESENTED | **31** | Unique work not yet on convergence branch |
+| NOT_YET_REPRESENTED | **29** | Unique work not yet on convergence branch |
 | MANUAL_RECONCILIATION | **6** | Mixed content requiring manual merge |
 | GENERATED_OR_DERIVABLE | **5** | Merge commits, audits, trivial cleanups |
 | **TOTAL (all branches)** | **66** | 6 diverged branches + stashes |
@@ -125,6 +125,8 @@ so hardening is NOT a remaining divergent stream. The three remaining streams ar
 | 6 | `44e98568` | trunk | convergence report update |
 | 7 | `166ba314` | trunk | close 7 pre-existing P7/P8 test failures |
 | 8 | `5c6c0e0c` | promotion `1e4e3896`+`beb9aff5`+`1a7d7639` | untrack generated artifacts (5,702 files) |
+| 9 | `d4c18858` | origin/trunk + main | integrate 22 read-only audit/planning documents |
+| 10 | `15422985` | trunk | inject repoRoot into CanonicalEventEnvelope (M3 unblock) |
 
 ### Lineage 1: `constitutional-trunk-promotion` (12 commits)
 
@@ -179,73 +181,61 @@ so hardening is NOT a remaining divergent stream. The three remaining streams ar
 |---|-----|---------|----------------|----------|
 | 1 | (at `dd57cec7`) | audit-hardening checkpoint | **MANUAL_RECONCILIATION** | Same as origin/audit-hardening #1 — identical checkpoint |
 
+### Lineage 6: `origin/constitutional-trunk` documentation (20 commits, integrated)
+
+| # | SHA | Subject | Classification |
+|---|-----|---------|----------------|
+| 1 | `ce29ecaa` | Sprint 1 planning + SPRINT4 audit + next-phase review | **INTEGRATED** |
+| 2 | `f0a312b8` | PING as Operational Control Plane audit | **INTEGRATED** |
+| 3 | `a62cecdc` | PING v2 Constitutional Operational Plane spec | **INTEGRATED** |
+| 4 | `4afdc8a1` | PING becomes TenantOS analysis | **INTEGRATED** |
+| 5 | `db9753c7` | Runtime system inventory | **INTEGRATED** |
+| 6 | `c9e175a2` | WAVE 3A.5 runtime authority audit | **INTEGRATED** |
+| 7 | `1a5f238d` | WAVE 3A.6 business intelligence boundary audit | **INTEGRATED** |
+| 8 | `dfb769f0` | WAVE 3B generator gap closure plan | **INTEGRATED** |
+| 9 | `b1d79bd6` | Constitutional freeze verification capstone | **INTEGRATED** |
+| 10 | `a0efb372` | WAVE 3C constitutional operations dashboard spec | **INTEGRATED** |
+| 11 | `6f24cdca` | WAVE 3D growth intelligence spec | **INTEGRATED** |
+| 12 | `a7896bb8` | WAVE 3E Oracle hosting architecture audit | **INTEGRATED** |
+| 13 | `d060675a` | WAVE 3A.7 dead/duplicate/orphan consolidation | **INTEGRATED** |
+| 14 | `cfe9d172` | WAVE 3F operational recovery and replay audit | **INTEGRATED** |
+| 15 | `ca658c2a` | WAVE 3G AI operations and diagnostics audit | **INTEGRATED** |
+| 16 | `0a28176b` | WAVE 3H notification and observability subsystem audit | **INTEGRATED** |
+| 17 | `f5ba38ec` | Constitutional audit index (navigable corpus) | **INTEGRATED** |
+| 18 | `d0a52b63` | WAVE 3I compiler/IR audit (HPP meaning-tier) | **INTEGRATED** |
+| 19 | `cd933ef1` | WAVE 3J knowledge layer audit | **INTEGRATED** |
+| 20 | `9520b338` | WAVE 3K Hermes runtime audit | **INTEGRATED** |
+
+### Lineage 7: `main` documentation (2 commits, integrated)
+
+| # | SHA | Subject | Classification |
+|---|-----|---------|----------------|
+| 1 | `6c4b5317` | Constitutional object model (7 definitions, 454 lines) | **INTEGRATED** |
+| 2 | `47642f93` | Deployment readiness decision (Phase 13, 194 lines) | **INTEGRATED** |
+
 ---
 
 ## Stash Preservation Forensics
 
-### Stash@{0} — "pre-merge cleanup" (735 files, 6226+/2905003-)
+> Full stash analysis: [`docs/STASH-PRESERVATION-001.md`](STASH-PRESERVATION-001.md)
 
-**Classification: MIXED — contains genuinely unique work alongside noise**
+### Summary
 
-Key findings:
-- All 8 Python workers EXIST in trunk (not missing) — stash has NEWER remediation versions (PATCH-022 series)
-- 2 genuine live-bug fixes in `runtime/kernel/authorities/canonical_authority.js` (UTF-8 comma join, set dedup) and `identity_authority.js` (event-ID collision)
-- Constitution law sections are additive and unique
-- 3 corrupted brainos files (IndentationError/SyntaxError)
-- `repository_client.py` has blocked dependency (imports nonexistent `canonical_bytes`)
+| Ref | Classification | Unique Items |
+|-----|----------------|--------------|
+| `stash@{0}` | MIXED — kernel bugs + noise | canonical_authority.js UTF-8 fix, identity_authority.js collision fix, 6 Python worker remediation versions, constitution law sections |
+| `stash@{1}` | EMPTY | None |
+| `stash@{2}` | MIXED — ~60% discardable | `ir/node-types.ts` (clean cherry-pick), 23 compiler TS files (blocked on phantom dep), CockpitDashboard expansion, filesystem_worker.py Assets subsystem |
+| `stash@{3}` | SUBSET of stash@{2} | None additional |
+| `stash@{4}` | GENERATED_OR_DERIVABLE | Superseded compose file |
 
-| File | Trunk state | Classification | Action |
-|------|-------------|----------------|--------|
-| `canonical_authority.js` (kernel) | LIVE BUGS: array join no commas, UTF-16 sort | **UNIQUE_WORK** | Extract 3 fixes behind golden-hash tests |
-| `identity_authority.js` (kernel) | Event-ID collision for same type+aggregate | **UNIQUE_WORK** | Extract optional canonicalPayloadHash param |
-| `claim_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Harvest pattern, don't blind-apply |
-| `observation_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Same |
-| `lineage_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Same |
-| `replay_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Same |
-| `witness_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Authority refactor pattern |
-| `filesystem_worker.py` (Python) | EXISTS in trunk (older version) | UNIQUE_NEWER_REMEDIATION | Removes phantom `payload_hash` |
-| `worker_runtime.py` (Python) | EXISTS in trunk (111 lines) | UNIQUE_HARDENING | Health server, HTTP timeouts, verify_canonical_event |
-| `repository_client.py` (Python) | EXISTS in trunk (51 lines) | BLOCKED_DEP | Harvest AFTER creating canonical_bytes.py |
-| `constitution/TRUTH_LAW.md` | 171 lines | ADDITIVE_UNIQUE | Apply (trivial merge) |
-| `constitution/witness_law.md` | 179 lines | ADDITIVE_UNIQUE | Apply (trivial merge) |
-| `constitution/CONTINUITY.md` | 217 lines | SUPPRESSED_BY_SPEC | Safe with SPEC v2.0 update |
-| `constitution/authority_model.md` | 205 lines | SUPPRESSED_BY_SPEC | Accept or archive per policy |
-| `compose.yaml` (+50) | Trunk lacks Redis/Temporal | UNIQUE_ADDITIVE | Review before P8/P9 backlog |
-| `.env.base` | **LIVE QDRANT_API_KEY JWT** | SECURITY_VALUABLE | Apply secret-strip + rotate key |
+### Hard Rules
 
-### Stash@{2} — "WIP on constitutional-boundary-reconstruction" (159 files, 5131+/1900-)
-
-**Classification: ~60% discardable, ~10% genuinely unique, 1 security fix**
-
-| File(s) | Trunk state | Classification | Action |
-|---------|-------------|----------------|--------|
-| `.next/**` (86 files) | All exist | GENERATED_OR_DERIVABLE | None — regenerate via `next build` |
-| `ir/node-types.ts` (+62 lines) | Trunk lacks additions | **UNIQUE_WORK** | Cherry-pick cleanly — zero imports needed |
-| 23 compiler TS files (serializers) | Trunk uses plain JSON | BLOCKED_ON_PHANTOM_DEP | Do NOT merge — imports `@ping/constitutional` (never committed) |
-| `coverage/rule-coverage.ts` | Trunk has working version | REWRITE_BLOCKED | Discard — keep trunk engine |
-| 8 kernel identity files | Pre-migration versions | BLOCKED_ON_PHANTOM_DEP | Valuable as spec for future `@ping/constitutional` |
-| `runtime/adapters/postgres_event_store.ts` (+46) | BIGSERIAL ordering | UNIQUE_SCHEMA_IDEA | Extract sequence-counter concept |
-| `gateway/server.js` (retry loop) | Trunk: 19L clean bootstrap | **UNIQUE_SMALL** | Port `waitForPostgres()` retry loop |
-| `ui-next/.../CockpitDashboard.tsx` (239→477L) | Smaller version | **UNIQUE_UI_WORK** | Preserve — needs backend audit first |
-| `filesystem_worker.py` (+18) | Trunk lacks Assets subsystem | **UNIQUE_WORK** | Cherry-pick after event type verification |
-| `workers/worker_runtime.py` (+1) | Trunk lacks fallback | UNIQUE_SMALL | Cherry-pick object_id fallback |
-| `AGENTS.md` | Trunk structurally newer | **UNIQUE_HISTORY** | Manual merge of 215 log lines |
-| `.env.base` (secret strip) | **LIVE LEAKED JWT** | SECURITY_VALUABLE | Apply + rotate |
-| `compose.yaml` (GitHub connector) | Trunk lacks env vars | PARTIAL_UNIQUE | Review before GitHub connector work |
-
-### Stash@{3} — "wip: save before rebase/push" (68 files, 3929+/954-)
-
-**Classification: SUBSET of stash@{2} — all content included in stash@{2} analysis above**
-
-Stash@{3} is fully contained within stash@{2}. No additional preservation analysis needed.
-
-### Stash@{1} — "WIP on main" (0 files)
-
-**Classification: EMPTY — no preservation needed**
-
-### Stash@{4} — "WIP on main" (1 file — docker-compose.yml)
-
-**Classification: GENERATED_OR_DERIVABLE — single file, superseded by current compose.yaml**
+1. **Do NOT `git stash pop`** — stashes are forensic preservation sources
+2. **Do NOT `git stash drop`** — evidence must be retained
+3. **Kernel bug fixes require golden-hash tests** — never blind-apply
+4. **Python worker remediation = harvest patterns** — never blind-apply
+5. **Compiler work blocked by phantom dep** = PRESERVED_PENDING_ARCHITECTURAL_UNBLOCK
 
 ---
 
