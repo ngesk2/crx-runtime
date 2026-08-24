@@ -16,12 +16,14 @@
  */
 
 const crypto = require('crypto');
+const path = require('path');
 const { computeCanonicalHash } = require('../ping-runtime/authorities/constitutional_validation');
 const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class CanonicalEventEnvelope {
-  constructor(storage) {
+  constructor(storage, options = {}) {
     this._storage = storage;
+    this._repoRoot = options.repoRoot || path.resolve(__dirname, '..');
     this._sequences = new Map();
     this._dependencies = ['storage'];
     this._authorityVersion = '1.0.0';
@@ -41,8 +43,7 @@ class CanonicalEventEnvelope {
    */
   async initialize() {
     const fs = require('fs');
-    const path = require('path');
-    const schemaPath = path.join(__dirname, '..', 'database', 'canonical_events.sql');
+    const schemaPath = path.join(this._repoRoot, 'database', 'canonical_events.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     await this._storage.query(schema);
     console.log('[CanonicalEventEnvelope] Tables initialized');

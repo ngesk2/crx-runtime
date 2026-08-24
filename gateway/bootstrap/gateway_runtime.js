@@ -385,7 +385,7 @@ class GatewayRuntime {
         });
         await this._storage.initialize();
 
-        canonicalEventEnvelope = new CanonicalEventEnvelope(this._storage);
+        canonicalEventEnvelope = new CanonicalEventEnvelope(this._storage, { repoRoot });
         await canonicalEventEnvelope.initialize();
 
         tenantRegistry = new TenantRegistry(this._storage);
@@ -494,7 +494,7 @@ class GatewayRuntime {
           console.error(`[GatewayRuntime] Embedding Service init failed — async Qdrant projection disabled (pipeline continues): ${err.message}`);
         }
 
-        // Register 9 canonical workers with WorkerRuntime (including IntelligenceWorker)
+        // Register 8 canonical workers with WorkerRuntime (IntelligenceWorker is dormant)
         registerCanonicalWorkers(workerRuntime, {
           eventRuntime: unifiedEventRuntime,
           pool: this._pool,
@@ -591,10 +591,11 @@ class GatewayRuntime {
                 // Namespace comes from the spine event (always resolved); the
                 // 'core::system' default is owned by UnifiedEventRuntime.emit() only.
                 namespace: event.namespace,
-                // Read confidence delivered by the spine producer. Fallback 0.5
-                // only when genuinely absent (legacy events before confidence
-                // propagation was wired).
-                confidence: event.metadata?.confidence != null ? event.metadata.confidence : 0.5,
+                // Read confidence delivered by the spine producer. Null when
+                // genuinely absent (legacy events before confidence propagation
+                // was wired). Knowledge graph nodes with null confidence are
+                // explicitly "not yet assessed" — correct for candidates.
+                confidence: event.metadata?.confidence != null ? event.metadata.confidence : null,
                 status: 'candidate',
                 sourceEventId: event.event_id,
               });

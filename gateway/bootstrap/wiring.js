@@ -160,7 +160,7 @@ function wireContainer(config = {}) {
   // P001: Canonical Event Envelope (depends on storage)
   container.register('canonicalEventEnvelope', (c) => {
     const storage = c.resolve('storage');
-    return new CanonicalEventEnvelope(storage);
+    return new CanonicalEventEnvelope(storage, { repoRoot: config.repoRoot || path.resolve(__dirname, '..') });
   });
 
   // P003: Tenant Registry (depends on storage)
