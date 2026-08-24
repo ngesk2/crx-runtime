@@ -1,16 +1,15 @@
 /**
  * Regression test: mission_runtime.js mission_id generation must not use
- * raw Date.now().
+ * raw Date.now() for identity.
  *
  * Prior defect: create() built mission_id via
  * `sha256(missionType:Date.now():payload)` — a raw wall-clock bypass in a
- * replay-visible identity. Full deterministic content-addressing is a
- * documented P0 deferral; the minimal constitutional-compliant fix routes
- * the time through constitutionalTimeAuthority.nowAsMillis(), preserving
- * uniqueness semantics.
+ * replay-visible identity. The code was further migrated to full
+ * deterministic content-addressing: sha256(missionType:event_id). This is
+ * strictly superior — same event always produces the same mission.
  *
- * Note: duration_ms (elapsed-time) at line ~138 is intentionally left as
- * Date.now() — it measures a mission duration, not a timestamp decision.
+ * Date.now() is permitted for elapsed-time calculations only (duration_ms,
+ * retry backoff) — it measures elapsed time, not identity.
  */
 
 const assert = require('assert');
@@ -27,24 +26,37 @@ const file = path.join(__dirname, '..', 'ping-runtime', 'orchestration', 'missio
 const source = fs.readFileSync(file, 'utf8');
 
 function main() {
-  console.log('=== mission_runtime.js mission_id uses constitutional time authority ===');
+  console.log('=== mission_runtime.js mission_id uses deterministic content-addressing ===');
 
   test('no Date.now() in mission_id generation', () => {
     assert.ok(!source.includes('${missionType}:${Date.now()}:'), 'mission_id no longer uses Date.now()');
   });
 
-  test('imports constitutional time authority', () => {
-    assert.ok(source.includes("require('../authorities/constitutional_time_authority.js')"), 'time authority import present');
+  test('mission_id uses deterministic SHA-256 of event_id', () => {
+    assert.ok(source.includes("crypto.createHash('sha256')"), 'mission_id uses SHA-256');
+    assert.ok(source.includes('payload.event_id'), 'mission_id derives from event_id for idempotency');
   });
 
-  test('mission_id uses nowAsMillis()', () => {
-    assert.ok(source.includes('${missionType}:${constitutionalTimeAuthority.nowAsMillis()}'), 'mission_id uses nowAsMillis()');
+  test('mission_id does not use nowAsMillis() for identity', () => {
+    assert.ok(!source.includes('${missionType}:${constitutionalTimeAuthority.nowAsMillis()}'),
+      'mission_id is fully deterministic, no time-based identity');
   });
 
-  test('only remaining Date.now() is the elapsed-time duration_ms', () => {
+  test('no Date.now() in identity paths (idempotency key and mission_id)', () => {
+    // Extract the create() method body to verify no Date.now() in idempotency key
+    const createMatch = source.match(/async create\(missionType[\s\S]*?return missionId;/);
+    assert.ok(createMatch, 'create() method found');
+    const createBody = createMatch[0];
+    assert.ok(!createBody.includes('Date.now()'), 'no Date.now() in create() method (identity path)');
+  });
+
+  test('elapsed-time Date.now() sites are non-identity (duration and backoff)', () => {
     const sites = source.match(/Date\.now\(\)/g) || [];
-    assert.ok(sites.length <= 1, `at most one Date.now() site (found ${sites.length})`);
-    assert.ok(source.includes('duration_ms = Date.now() - new Date(row.rows[0].started_at).getTime()'), 'remaining site is elapsed-time duration');
+    // duration_ms = Date.now() - started_at  (elapsed measurement)
+    // retryAt = new Date(Date.now() + backoffMs)  (retry delay calculation)
+    assert.ok(sites.length <= 2, `at most two Date.now() sites for elapsed-time (found ${sites.length})`);
+    assert.ok(source.includes('duration_ms = Date.now()'), 'duration_ms site present');
+    assert.ok(source.includes('Date.now() + backoffMs'), 'retry backoff site present');
   });
 
   test('module loads without error', () => {
