@@ -50,10 +50,21 @@ wheels/
 ehthumbs.db
 Thumbs.db
 
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+
 # Temporary files
 .tmp.driveupload/
 *.tmp
 Desktop.ini
+
+# Generated classification artifacts
+orchestration/dormant_classifications/
 
 # Logs
 logs/
@@ -125,6 +136,3 @@ docs/.doctrees/
 # Misc
 *.bak
 *.backup
-*.tmp
-.env.base
-.env.example
