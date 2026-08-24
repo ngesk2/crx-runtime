@@ -335,13 +335,15 @@ class ClassificationWorker extends BaseWorker {
 
     console.log(`[ClassificationWorker] Classifying ${event.event_type}`);
 
+    const upstreamConfidence = event.metadata?.confidence;
     const classification = {
       documentId: observation.documentId,
       eventType: event.event_type,
       timestamp: constitutionalTimeAuthority.nowAsISOString(),
       category: this._categorize(event.event_type),
       priority: this._prioritize(event.event_type, payload),
-      confidence: 0.85,
+      confidence: upstreamConfidence ?? null,
+      confidence_source: upstreamConfidence != null ? 'inherited' : null,
       source: event.source,
     };
 
@@ -405,7 +407,8 @@ class RecommendationWorker extends BaseWorker {
       action: this._recommendAction(classification),
       reason: this._recommendReason(classification),
       priority: classification.priority || 'normal',
-      confidence: classification.confidence || 0.7,
+      confidence: classification.confidence ?? null,
+      confidence_source: classification.confidence != null ? 'inherited' : null,
       evidence: [event.event_id],
     };
 
