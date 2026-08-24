@@ -12,10 +12,14 @@
  * The bridge does NOT modify state — it only creates missions.
  */
 
+const { canonicalPriority } = require('../boundaries/priority_boundary.js');
+
 // Business event → mission type mapping
 // Worker identity is resolved by MissionScheduler via MISSION_WORKER_MAP —
 // this map declares mission type and priority only. The 'worker' field was
 // historically present but never read; removed to eliminate dead data.
+// Priority values in this map are ANY valid scale (0-3, 1-10, string).
+// canonicalPriority() normalizes them at the single ingress boundary.
 const EVENT_MISSION_MAP = {
   // Customer events
   CUSTOMER_CREATED: { missionType: 'CUSTOMER_ONBOARD', priority: 2 },
@@ -46,6 +50,9 @@ const EVENT_MISSION_MAP = {
 
   // Connector events
   EMAIL_RECEIVED: { missionType: 'EMAIL_PROCESS', priority: 2 },
+  EMAIL_SENT: { missionType: 'EMAIL_PROCESS', priority: 1 },
+  SMS_SENT: { missionType: 'EMAIL_PROCESS', priority: 1 },
+  GITHUB_COMMIT_SYNCED: { missionType: 'DOCUMENT_IMPORT', priority: 1 },
   GOOGLE_REVIEW_RECEIVED: { missionType: 'REVIEW_RESPONSE', priority: 3 },
 
   // Worker events (downstream pipeline)
@@ -124,7 +131,7 @@ class EventToMissionBridge {
         confidence: (event.metadata && event.metadata.confidence != null) ? event.metadata.confidence : null,
         payload: event.payload,
       }, {
-        priority: mapping.priority,
+        priority: canonicalPriority(mapping.priority),
         createdBy: 'event-to-mission-bridge',
       });
 

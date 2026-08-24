@@ -43,9 +43,11 @@ const MISSION_WORKER_MAP = {
   KNOWLEDGE_EXTRACT: 'observation',
   KNOWLEDGE_INDEX: 'projection',
 
-  // System missions
+  // System missions — SYSTEM_HEALTH_CHECK is dispatched as the event_type by the
+  // bridge (payload.event_type || mission.mission_type), so the worker must
+  // include it in its eventTypes. Observation is the universal entry point.
   SYSTEM_HEALTH_CHECK: 'observation',
-  SYSTEM_AUDIT: 'claim',
+  SYSTEM_AUDIT: 'observation',
 
   // Business missions (from EventToMissionBridge)
   CUSTOMER_ONBOARD: 'observation',

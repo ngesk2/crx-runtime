@@ -475,6 +475,7 @@ function registerCanonicalWorkers(workerRuntime, options = {}) {
     'SMS_SENT',
     'GITHUB_COMMIT_SYNCED', 'GOOGLE_REVIEW_RECEIVED',
     'DOCUMENT_IMPORT',
+    'SYSTEM_HEALTH_CHECK',
   ];
 
   const workers = [
