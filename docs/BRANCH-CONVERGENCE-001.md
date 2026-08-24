@@ -7,6 +7,29 @@
 
 ---
 
+## LIVE POSTGRES GATE: PENDING — INFRASTRUCTURE BLOCKED
+
+**Reason:** Docker daemon npipe unavailable.
+
+**Code status before live verification:**
+- 25 suites, 638 assertions, 0 failures
+- Priority boundary adapter: verified idempotent, deterministic
+- SYSTEM_HEALTH_CHECK route: verified via mock chain
+- Orphaned events: verified wired into EVENT_MISSION_MAP
+
+**Required before final promotion:**
+
+| Run | Description | Status |
+|-----|-------------|--------|
+| A | Explicit-confidence E2E — inject event with confidence, verify every hop preserves it | PENDING_LIVE_E2E |
+| B | Omitted-confidence E2E — confidence stays null, no inflation at any hop | PENDING_LIVE_E2E |
+| C | SYSTEM_HEALTH_CHECK — real event through live observation→claim→…→projection chain | PENDING_LIVE_E2E |
+| D | Degradation — EmbeddingService unavailable → ProjectionWorker status: skipped, no false completed | PENDING_LIVE_E2E |
+| E | Mission lifecycle — lease, retry, DLQ, reap, renew against real Postgres | PENDING_LIVE_E2E |
+| F | Pipeline blocker SQL — schema migration against clean Postgres | PENDING_LIVE_E2E |
+
+---
+
 ## Phase 1B Corrected Graph Truth
 
 > **SUPERSEDES** the three-stream model previously documented. The old model is preserved
@@ -78,17 +101,30 @@ so hardening is NOT a remaining divergent stream. The three remaining streams ar
 
 ## Commit-Level Preservation Accounting
 
-### Accounting Summary
+### Accounting Summary (post-cleanup, `5c6c0e0c`)
 
-| Classification | Count | Commits |
-|----------------|-------|---------|
-| EXACTLY_PRESERVED | **1** | `50669a04` (vacuous deletion, end-state equivalence) |
-| PATCH_EQUIVALENT | **7** | Promotion: `0f868def`, `b9140599`, `9e7e341f`, `ea49122a`, `0ac0f863`, `284134ee`, `cccd7ded` |
-| SUPERSEDED_WITH_PROOF | **3** | Promotion: `d4463ef5`; Main: `6e359a26`; Main: `b833d914` |
-| UNIQUE_WORK_TO_INTEGRATE | **42** | See tables below |
-| MANUAL_RECONCILIATION_REQUIRED | **5** | `a01b7582`, `35e0e0b2`, `63a07847`, `59795121`, `5e6c82e7` |
-| GENERATED_OR_DERIVABLE | **3** | `4ccc5560` (merge), `9bd2cb30` (merge), `10353c81`, `f4f9e962` |
-| **TOTAL** | **60** | + 3 significant stashes |
+| Classification | Count | Notes |
+|----------------|-------|-------|
+| INTEGRATED | **8** | Cherry-picked + cleanup commits on constitutional-trunk |
+| PATCH_EQUIVALENT | **10** | Same semantic effect as trunk, different SHA |
+| SUPERSEDED_WITH_PROOF | **4** | Superseded by trunk's own implementation |
+| NOT_YET_REPRESENTED | **31** | Unique work not yet on convergence branch |
+| MANUAL_RECONCILIATION | **6** | Mixed content requiring manual merge |
+| GENERATED_OR_DERIVABLE | **5** | Merge commits, audits, trivial cleanups |
+| **TOTAL (all branches)** | **66** | 6 diverged branches + stashes |
+
+### Integrated Commits (on constitutional-trunk)
+
+| # | SHA | Source | Subject |
+|---|-----|--------|---------|
+| 1 | `c066a948` | trunk | restore lifecycle and confidence semantic invariants |
+| 2 | `bc50ca08` | trunk | update mission_id test to match deterministic SHA-256 |
+| 3 | `787e0382` | promotion `7a93b80c` | EventBridge cursor advancement fix |
+| 4 | `787e0382` | trunk | eliminate confidence fabrication in workers |
+| 5 | `acb9cd15` | trunk | enforce canonical priority at mission ingress |
+| 6 | `44e98568` | trunk | convergence report update |
+| 7 | `166ba314` | trunk | close 7 pre-existing P7/P8 test failures |
+| 8 | `5c6c0e0c` | promotion `1e4e3896`+`beb9aff5`+`1a7d7639` | untrack generated artifacts (5,702 files) |
 
 ### Lineage 1: `constitutional-trunk-promotion` (12 commits)
 
@@ -101,9 +137,9 @@ so hardening is NOT a remaining divergent stream. The three remaining streams ar
 | 5 | `0ac0f863` | Slice 3A convergence | PATCH_EQUIVALENT | Original `964a3465` IS in trunk |
 | 6 | `284134ee` | orchestration → ping-runtime/orchestration | PATCH_EQUIVALENT | Covered by trunk M3 series |
 | 7 | `cccd7ded` | M3 gateway relocation | PATCH_EQUIVALENT | Trunk M3 series covers it |
-| 8 | `1e4e3896` | remove generated artifacts | **UNIQUE_WORK** | Trunk still tracks node_modules |
-| 9 | `beb9aff5` | remove ui-next/compiler node_modules | **UNIQUE_WORK** | Not applied in trunk |
-| 10 | `1a7d7639` | remove webui.db | **UNIQUE_WORK** | Trunk still tracks webui.db |
+| 8 | `1e4e3896` | remove generated artifacts | **INTEGRATED** `5c6c0e0c` | Trunk still tracks node_modules |
+| 9 | `beb9aff5` | remove ui-next/compiler node_modules | **INTEGRATED** `5c6c0e0c` | Not applied in trunk |
+| 10 | `1a7d7639` | remove webui.db | **INTEGRATED** `5c6c0e0c` | Trunk still tracks webui.db |
 | 11 | `d4463ef5` | prevent phantom mission completion | SUPERSEDED | Trunk implements via P0-2/P0-3 |
 | 12 | `7a93b80c` | EventBridge cursor advancement fix | **UNIQUE_WORK** ⚠️ | **LIVE BUG IN TRUNK** — cursor advances unconditionally |
 
