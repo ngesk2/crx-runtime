@@ -50,14 +50,25 @@ class BaseWorker {
     // Without this, the spine defaults causation_id to null and the chain
     // is broken at every worker hop.
     const causation_id = options.causation_id || this._event?.event_id || null;
-    // Preserve confidence from the triggering event unless the downstream
-    // producer explicitly supplies a new one. Workers re-evaluate at their
-    // hop but the spine carries the source confidence forward.
-    const confidence = options.confidence != null
+    // Confidence semantics: distinguish explicit null from missing.
+    // Object.hasOwn(options, 'confidence') is the canonical check.
+    // Explicit value → preserve exactly, no provenance tag.
+    // No explicit + inherited non-null → emit inherited + set confidence_source.
+    // Neither explicit nor inherited → null/unknown. Preserve as null.
+    const hasExplicitConfidence = Object.prototype.hasOwnProperty.call(options, 'confidence');
+    const inheritedConfidence = this._event?.metadata?.confidence;
+    const confidence = hasExplicitConfidence
       ? options.confidence
-      : this._event?.metadata?.confidence;
+      : (inheritedConfidence ?? null);
     const emitMetadata = { ...(options.metadata || {}) };
-    if (confidence != null) emitMetadata.confidence = confidence;
+    if (hasExplicitConfidence) {
+      emitMetadata.confidence = options.confidence;
+    } else if (inheritedConfidence != null) {
+      emitMetadata.confidence = inheritedConfidence;
+      emitMetadata.confidence_source = 'inherited';
+    } else {
+      emitMetadata.confidence = null;
+    }
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
       ...options,
       namespace,

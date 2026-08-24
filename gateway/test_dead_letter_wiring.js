@@ -178,7 +178,7 @@ async function testDLQRecordContainsCorrectPayload() {
   const record = deadLetterAuthority._recordCalls[0];
   assert.strictEqual(record.job.job_id, 'm_test_004');
   assert.strictEqual(record.job.job_type, 'LINEAGE');
-  assert.deepStrictEqual(record.job.original_event, { event_type: 'WITNESS_CREATED', documentId: 'doc_123' });
+  assert.deepStrictEqual(record.job.payload, { event_type: 'WITNESS_CREATED', documentId: 'doc_123' });
   console.log('  PASS: DLQ record contains correct job payload');
 }
 

@@ -184,14 +184,14 @@ async function testRenewalCalledForProcessingMissions() {
   });
 
   // Create first mission and dispatch it (enters _processing)
-  const m1 = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const m1 = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await scheduler._poll();
   assert.strictEqual(runtime._renewCalls.length, 0, 'No renewals on first poll (nothing in _processing)');
 
   // The mission completed synchronously, so _processing is empty now.
   // Instead, test with a mission that stays running (worker doesn't complete).
   // Simulate: assign a mission directly, put it in _processing manually.
-  const m2 = await runtime.create('OBSERVATION', { event_type: 'CUSTOMER_CREATED' });
+  const m2 = await runtime.create('OBSERVATION_CREATE', { event_type: 'CUSTOMER_CREATED' });
   await runtime.assign(m2.mission_id, 'observation');
   await runtime.start(m2.mission_id);
   // Inject into scheduler's _processing set (simulates a slow worker)
@@ -226,7 +226,7 @@ async function testRenewedMissionNotReaped() {
   });
 
   // Create and start a mission
-  const mission = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const mission = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(mission.mission_id, 'observation');
   await runtime.start(mission.mission_id);
 
@@ -267,7 +267,7 @@ async function testOrphanedMissionStillReaped() {
   });
 
   // Create orphaned mission (assigned+started, but NOT in scheduler _processing)
-  const orphan = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const orphan = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(orphan.mission_id, 'observation');
   await runtime.start(orphan.mission_id);
   // Set expired lease — this is an orphan (crashed scheduler, no renewal)
@@ -300,7 +300,7 @@ async function testRenewalFailureNonFatal() {
   });
 
   // Inject a mission into _processing
-  const m = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const m = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(m.mission_id, 'observation');
   await runtime.start(m.mission_id);
   scheduler._processing.add(m.mission_id);
@@ -310,7 +310,7 @@ async function testRenewalFailureNonFatal() {
   runtime.renewLease = async () => { throw new Error('PG connection lost'); };
 
   // Create a fresh pending mission
-  const fresh = await runtime.create('OBSERVATION', { event_type: 'CUSTOMER_CREATED' });
+  const fresh = await runtime.create('OBSERVATION_CREATE', { event_type: 'CUSTOMER_CREATED' });
 
   // Poll should NOT throw — renewal failure is non-fatal
   let threw = false;
@@ -346,12 +346,12 @@ async function testRenewalStatsTracking() {
   });
 
   // Create 2 missions and inject into _processing
-  const m1 = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const m1 = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(m1.mission_id, 'observation');
   await runtime.start(m1.mission_id);
   scheduler._processing.add(m1.mission_id);
 
-  const m2 = await runtime.create('OBSERVATION', { event_type: 'CUSTOMER_CREATED' });
+  const m2 = await runtime.create('OBSERVATION_CREATE', { event_type: 'CUSTOMER_CREATED' });
   await runtime.assign(m2.mission_id, 'observation');
   await runtime.start(m2.mission_id);
   scheduler._processing.add(m2.mission_id);
@@ -399,7 +399,7 @@ async function testRenewalRescuesExpiredLease() {
   });
 
   // Create mission with deeply expired lease
-  const mission = await runtime.create('OBSERVATION', { event_type: 'REVIEW_RECEIVED' });
+  const mission = await runtime.create('OBSERVATION_CREATE', { event_type: 'REVIEW_RECEIVED' });
   await runtime.assign(mission.mission_id, 'observation');
   await runtime.start(mission.mission_id);
   mission.lease_until = new Date(Date.now() - 60000).toISOString(); // expired 60s ago

@@ -35,7 +35,24 @@ class BaseWorker {
       || this._event?.metadata?.correlation_id
       || this._event?.event_id
       || options.causation_id;
-    const result = await this._eventRuntime.emit(eventType, this._name, payload, { ...options, namespace, correlation_id });
+    // Confidence semantics: mirror canonical_workers.js BaseWorker._emit.
+    const hasExplicitConfidence = Object.prototype.hasOwnProperty.call(options, 'confidence');
+    const inheritedConfidence = this._event?.metadata?.confidence;
+    const confidence = hasExplicitConfidence
+      ? options.confidence
+      : (inheritedConfidence ?? null);
+    const emitMetadata = { ...(options.metadata || {}) };
+    if (hasExplicitConfidence) {
+      emitMetadata.confidence = options.confidence;
+    } else if (inheritedConfidence != null) {
+      emitMetadata.confidence = inheritedConfidence;
+      emitMetadata.confidence_source = 'inherited';
+    } else {
+      emitMetadata.confidence = null;
+    }
+    const result = await this._eventRuntime.emit(eventType, this._name, payload, {
+      ...options, namespace, correlation_id, metadata: emitMetadata,
+    });
     if (result.status !== 'ok') throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
     return result;
   }
@@ -93,13 +110,21 @@ class IntelligenceWorker extends BaseWorker {
 
     // Step 3: Merge AI analysis with rule-based defaults
     const ruleBased = BUSINESS_EVENT_CATEGORIES[eventType] || { category: 'general', priority: 'normal', action: 'Review event', reason: 'Unclassified business event' };
+
+    // Confidence: if the AI model returned a numeric confidence, that IS a
+    // legitimate model-derived recomputation. Otherwise inherit from the
+    // triggering event rather than fabricating 0.85.
+    const aiConfidence = typeof aiAnalysis?.confidence === 'number' ? aiAnalysis.confidence : null;
+    const confidence = aiConfidence != null ? aiConfidence : (event.metadata?.confidence ?? null);
+    const confidenceSource = aiConfidence != null ? 'model' : 'inherited';
+
     const classification = {
       documentId: payload._object_id || payload.documentId || payload.review_id || payload.lead_id || payload.estimate_id || payload.invoice_id || payload.project_id || payload.customer_id,
       eventType,
       timestamp: constitutionalTimeAuthority.nowAsISOString(),
       category: aiAnalysis?.category || ruleBased.category,
       priority: aiAnalysis?.priority || ruleBased.priority,
-      confidence: aiAnalysis?.confidence || 0.85,
+      confidence,
       source: event.source,
       aiAnalyzed: !!aiAnalysis,
     };
@@ -120,14 +145,22 @@ class IntelligenceWorker extends BaseWorker {
       documentId: classification.documentId,
       classification,
       upstreamEventId: event.event_id,
-    }, { causation_id: event.event_id });
+    }, {
+      causation_id: event.event_id,
+      confidence,
+      metadata: { confidence_source: confidenceSource },
+    });
 
     // Step 5: Emit RECOMMENDATION_CREATED
     await this._emit('RECOMMENDATION_CREATED', {
       documentId: recommendation.documentId,
       recommendation,
       upstreamEventId: event.event_id,
-    }, { causation_id: event.event_id });
+    }, {
+      causation_id: event.event_id,
+      confidence: classification.confidence,
+      metadata: { confidence_source: confidenceSource },
+    });
 
     return { status: 'ok', classification, recommendation, aiAnalyzed: !!aiAnalysis };
   }

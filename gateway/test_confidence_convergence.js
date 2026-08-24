@@ -249,8 +249,9 @@ async function waitFor(fn, ms = 5000, interval = 100) {
   });
 
   await t('T9b: RecommendationWorker records confidence_source: inherited', async () => {
+    pool._events.length = 0;
     const recs = await waitFor(() =>
-      pool._events.find(e => e.event_type === 'RECOMMENDATION_CREATED'), 8000);
+      pool._events.find(e => e.event_type === 'RECOMMENDATION_CREATED' && pm(e).confidence === 0.6), 8000);
     assert.strictEqual(pm(recs).confidence_source, 'inherited',
       'T9b: RecommendationWorker records inherited provenance');
   });

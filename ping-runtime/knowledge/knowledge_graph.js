@@ -73,7 +73,7 @@ class KnowledgeGraph {
        ON CONFLICT (node_id) DO UPDATE SET data = $6, namespace = $8, status = $10, updated_at = NOW()`,
       [nodeId, nodeType, options.entityType || null, options.entityId || null,
        label, JSON.stringify(data), options.sourceEventId || null,
-       options.namespace || 'core::system', options.confidence || 1.0,
+       options.namespace || 'core::system', options.confidence != null ? options.confidence : null,
        options.status || 'candidate']
     );
     return nodeId;

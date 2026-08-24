@@ -148,7 +148,7 @@ class EvidenceAuthority {
    */
   rank(results) {
     const scored = (results || []).map((result) => {
-      const confidence = typeof result.confidence === 'number' ? result.confidence : 1.0;
+      const confidence = typeof result.confidence === 'number' ? result.confidence : null;
       const provenance = typeof result.provenance === 'number' ? result.provenance : 0.5;
       const approved = !!result.approved;
       const rejected = !!result.rejected;
@@ -156,7 +156,10 @@ class EvidenceAuthority {
         result.embedding === 'fallback' ||
         (result.payload && result.payload.embedding === 'fallback');
 
-      let rankScore = confidence * provenance * (approved ? 1.2 : 1.0);
+      // null confidence → 0.5 (neutral: below any explicit assessment but
+      // above rejected). NOT 1.0 — that would rank unknown higher than moderate.
+      const effectiveConfidence = confidence != null ? confidence : 0.5;
+      let rankScore = effectiveConfidence * provenance * (approved ? 1.2 : 1.0);
       if (fallback) rankScore *= 0.5;
       if (rejected) rankScore *= 0.2;
 
