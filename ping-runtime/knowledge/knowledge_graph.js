@@ -42,6 +42,9 @@ class KnowledgeGraph {
       CREATE INDEX IF NOT EXISTS idx_kn_entity ON knowledge_nodes(entity_type, entity_id);
       CREATE INDEX IF NOT EXISTS idx_kn_namespace ON knowledge_nodes(namespace);
       CREATE INDEX IF NOT EXISTS idx_kn_status ON knowledge_nodes(status);
+      ALTER TABLE knowledge_nodes ADD COLUMN IF NOT EXISTS correlation_id VARCHAR(64);
+      ALTER TABLE knowledge_nodes ADD COLUMN IF NOT EXISTS confidence_provenance VARCHAR(50);
+      CREATE INDEX IF NOT EXISTS idx_kn_correlation ON knowledge_nodes(correlation_id);
 
       CREATE TABLE IF NOT EXISTS knowledge_edges (
         edge_id VARCHAR(255) PRIMARY KEY,
@@ -68,13 +71,14 @@ class KnowledgeGraph {
       .digest('hex').slice(0, 16);
 
     await this._pool.query(
-      `INSERT INTO knowledge_nodes (node_id, node_type, entity_type, entity_id, label, data, source_event_id, namespace, confidence, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       ON CONFLICT (node_id) DO UPDATE SET data = $6, namespace = $8, status = $10, updated_at = NOW()`,
+      `INSERT INTO knowledge_nodes (node_id, node_type, entity_type, entity_id, label, data, source_event_id, namespace, confidence, status, correlation_id, confidence_provenance)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       ON CONFLICT (node_id) DO UPDATE SET data = $6, namespace = $8, status = $10, correlation_id = $11, confidence_provenance = $12, updated_at = NOW()`,
       [nodeId, nodeType, options.entityType || null, options.entityId || null,
        label, JSON.stringify(data), options.sourceEventId || null,
        options.namespace || 'core::system', options.confidence != null ? options.confidence : null,
-       options.status || 'candidate']
+       options.status || 'candidate', options.correlationId || null,
+       options.confidenceProvenance || null]
     );
     return nodeId;
   }

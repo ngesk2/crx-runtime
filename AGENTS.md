@@ -2524,3 +2524,44 @@ The platform is mature enough that the largest remaining gains come from making 
 - **Fast scheduler (100ms) is the correct test pattern** — The production scheduler polls every 5s. Tests need faster feedback. Setting `pollIntervalMs: 100` on the scheduler constructor makes the chain complete in <2s instead of >10s.
 - **polling waitFor beats fixed sleep** — Fixed sleeps are unreliable across environments. Polling until a condition is met (up to timeout) is deterministic.
 - **All 12 tests prove confidence propagates correctly** — The 5 drop points closed in commit `754cd77a` are verified end-to-end: BaseWorker._emit inheritance, IntelligenceWorker transport, KnowledgeGraph null preservation, EvidenceAuthority null ranking, ClassificationWorker/RecommendationWorker provenance recording.
+
+### 2026-08-21 Session — Trace Propagation Tests (10/10 PASS) + Full Regression (59/59) + Replay Authority Map
+
+**14:00** | Started trace propagation tests. Rewrote `gateway/test_trace_propagation.js` with correct API signatures. First run: 4 failures. | Fix.
+
+**14:05** | Fix round 1: MockPool stored metadata as JSON string — tests accessed properties on string. Fixed by parsing `JSON.parse(params[5])` in MockPool for `INSERT INTO ping_events`. | Fix remaining.
+
+**14:10** | Fix round 2: TR-10 failed — bridge started AFTER event emitted, so bridge missed the event. Fixed by starting bridge+scheduler BEFORE emitting. | Fix remaining.
+
+**14:15** | Fix round 3: TR-1/TR-4 — lifecycle events (MISSION_CREATED, etc.) have default namespace `core::system`. Fixed by excluding lifecycle events from namespace checks. TR-3 — event_id is raw SHA-256 hex (64 chars), not `evt-` prefixed. Fixed assertion. | Verify.
+
+**14:20** | **10/10 trace propagation tests PASS.** TR-1 through TR-10 all proven end-to-end. | Run regression.
+
+**14:25** | **Full regression GREEN: 59/59 test files PASS (exit-code based).** Zero failures. Verified after all trace test fixes. | Write replay authority map.
+
+**14:30** | Replay authority map: 3 subagent exploration tasks completed. 4 implementations identified. **Critical finding: NO implementation performs actual replay.** The live JS ReplayWorker (canonical_workers.js:226-247) always returns `verified: true` — it is a pass-through stub. TS kernel replay engine (15 files) is complete but test-only (zero production imports). Python implementations are dormant stubs or dead code. | Write REPLAY_AUTHORITY_MAP.md.
+
+**14:35** | `REPLAY_AUTHORITY_MAP.md` written: 4 implementations classified with evidence, cross-cutting analysis, recommended path forward. | Update AGENTS.md.
+
+## Session — Key Decisions
+- **Mock pool must parse metadata JSON**: Spine stores metadata as `JSON.stringify(event.metadata)`. Mock pool must `JSON.parse()` it back to object for property access in tests.
+- **Bridge must start before event emission**: If event is emitted before bridge+scheduler start, the bridge misses it entirely (no catch-up). Tests must start bridge+scheduler FIRST, THEN emit.
+- **Lifecycle events have default namespace**: Mission lifecycle events (MISSION_CREATED, etc.) are emitted by MissionRuntime without business event's namespace/correlation context. Default namespace is `core::system`. Must be excluded from trace propagation assertions.
+- **Event ID is raw SHA-256 hex**: Spine event_id = SHA-256 hex (64 chars). The `evt-` prefix is only used by `identityAuthority.generateFromCanonicalHash()` in kernel replay bridge — NOT on the production spine.
+- **Replay is a no-op**: The 8-worker chain fires through ReplayWorker successfully, but it does NO actual verification. Every REPLAY_COMPLETED carries `replay.verified: true` unconditionally. This is the highest-priority gap in the trace propagation chain.
+- **All 4 replay implementations are stubs or dead**: JS ReplayWorker (live stub), Python workers/replay_worker.py (dormant stub), Python root replay_worker.py (dead), TS kernel replay engine (test-only, zero production imports).
+
+## Session — Completed
+- ✅ `gateway/test_trace_propagation.js`: 10 tests (TR-1 through TR-10), all PASS
+- ✅ Full regression: 59/59 test files PASS
+- ✅ `REPLAY_AUTHORITY_MAP.md`: 4 implementations classified with evidence
+- ✅ AGENTS.md updated with session log
+
+## Session — Remaining
+1. **Preservation accounting**: Reclassify 8 PARTIALLY_SUPERSEDED commits with capability-level evidence
+2. **Update BRANCH-CONVERGENCE-001.md** only after evidence established
+3. **B7 migration** (5 agent file moves) — DEFERRED until trace integrity complete
+4. **Replay authority decision**: Decide replay semantics (re-execute / verify ordering / Merkle witness) and wire real implementation into JS ReplayWorker
+5. **Priority 4 — dormant/disconnected implementation audits** — Verify no other broken arrows in live pipeline
+6. **Fix remaining priority scales** — Unify 4 incompatible scales
+7. **Confidence on spine** — 8+ hardcoded values recomputed at every hop, never persisted

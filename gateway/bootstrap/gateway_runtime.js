@@ -598,6 +598,11 @@ class GatewayRuntime {
                 confidence: event.metadata?.confidence != null ? event.metadata.confidence : null,
                 status: 'candidate',
                 sourceEventId: event.event_id,
+                // Trace fields: correlation_id links all events from the same
+                // originating observation. confidence_provenance records whether
+                // confidence was inherited from a parent or computed fresh.
+                correlationId: event.metadata?.correlation_id || event.correlation_id || null,
+                confidenceProvenance: event.metadata?.confidence_source || null,
               });
             } catch (err) {
               console.error(`[GatewayRuntime] Graph projection failed for ${event.event_type}:`, err.message);

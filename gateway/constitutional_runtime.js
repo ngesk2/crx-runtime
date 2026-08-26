@@ -27,6 +27,7 @@ const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 const { ReflectionGenerator } = require('./reflection_generator');
 const { MissionGenerator } = require('./mission_generator');
 const { ReplayAuthority } = require('./replay_authority');
+const { KernelReplayExecutionProvider } = require('./kernel_replay_execution_provider');
 const { WitnessRecorder } = require('./witness_recorder');
 const { QdrantClient } = require('./qdrant_client');
 const { LifecycleContext } = require('./lifecycle_context');
@@ -41,7 +42,7 @@ class ConstitutionalRuntime {
     this._reflectionGenerator = new ReflectionGenerator();
     this._missionGenerator = new MissionGenerator();
     this._replayAuthority = new ReplayAuthority({
-      executionPort: null,
+      executionPort: new KernelReplayExecutionProvider(),
       persistencePort: null,
       verificationPort: null,
       transcriptPort: null

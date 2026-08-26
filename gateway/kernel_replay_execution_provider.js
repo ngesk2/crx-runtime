@@ -39,8 +39,15 @@ class KernelReplayExecutionProvider {
       };
     }
 
-    const maxEvents = options.maxEvents || 10000;
+    const maxEvents = options.maxEvents != null ? options.maxEvents : 10000;
     const eventsToReplay = replayEvents.slice(0, maxEvents);
+
+    if (eventsToReplay.length === 0) {
+      return {
+        status: 'no_events',
+        message: 'No events after applying maxEvents limit'
+      };
+    }
 
     // Convert PING events → kernel CanonicalEventEnvelope instances
     const envelopes = [];
@@ -85,7 +92,19 @@ class KernelReplayExecutionProvider {
           artifact_hash: artifactHash,
           event_type: eventType,
           payload: event.payload || event.event_data || {},
-          metadata: event.metadata || {}
+          metadata: {
+            ...(event.metadata || {}),
+            // Propagate trace fields explicitly — the kernel engine does not
+            // re-emit individual events with their metadata, so these must be
+            // carried in the envelope payload for downstream reconstruction.
+            // Only set when present; never fabricate absent values.
+            ...(event.correlation_id ? { correlation_id: event.correlation_id } : {}),
+            ...(event.metadata?.correlation_id ? { correlation_id: event.metadata.correlation_id } : {}),
+            ...(event.namespace ? { namespace: event.namespace } : {}),
+            ...(event.metadata?.namespace ? { namespace: event.metadata.namespace } : {}),
+            ...(event.metadata?.confidence != null ? { confidence: event.metadata.confidence } : {}),
+            ...(event.metadata?.confidence_source ? { confidence_provenance: event.metadata.confidence_source } : {}),
+          },
         },
         lineage
       };
@@ -120,7 +139,7 @@ class KernelReplayExecutionProvider {
       // Kernel returns nested objects — flatten for PING consumers
       const uniqueTypes = [...eventTypes];
       return {
-        replay_id: transcript?.transcript_id || `replay-${Date.now()}`,
+        replay_id: transcript?.transcript_id || `replay-${this._hashId(JSON.stringify(eventsToReplay))}`,
         status: 'ok',
         event_count: envelopes.length,
         event_types: uniqueTypes,
@@ -190,16 +209,11 @@ class KernelReplayExecutionProvider {
 
   /**
    * Deterministic short hash for generating evt- IDs from arbitrary strings.
+   * Uses SHA-256 for collision resistance (djb2 was 32-bit, collision-prone).
    */
   _hashId(input) {
-    const str = String(input);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const ch = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + ch;
-      hash = hash & hash; // Convert to 32-bit int
-    }
-    return Math.abs(hash).toString(36).substring(0, 12);
+    const { createHash } = require('crypto');
+    return createHash('sha256').update(String(input)).digest('hex').substring(0, 12);
   }
 
   /**

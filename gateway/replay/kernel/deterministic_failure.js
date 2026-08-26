@@ -54,12 +54,12 @@ class DeterministicFailureFactory {
     /**
      * Create deterministic failure envelope
      */
-    static create(code, replayPhase, context) {
+    static create(code, replayPhase, context, timestamp) {
         return {
             code,
             replay_phase: replayPhase,
             context,
-            timestamp: new Date().toISOString()
+            timestamp: timestamp || 'REPLAY_DETERMINISTIC_TIMESTAMP'
         };
     }
     /**

@@ -290,6 +290,91 @@ await test('no replay_events returns no_events', async () => {
 });
 
 // ============================================================
+// Negative / failure-path tests
+// ============================================================
+
+await test('parent-not-found: causation_id references non-existent event', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  const events = [
+    {
+      event_id: 'evt-orphan-001',
+      event_type: 'OBSERVATION_CREATED',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      causation_id: 'evt-nonexistent-root',
+      payload: { observation: 'orphan event' }
+    }
+  ];
+  const result = await provider.executeReplay(makeTranscript(events));
+  // Should succeed — causation_id is stored but kernel only validates
+  // parent_event_ids lineage (which is built from the chain, not raw causation_id)
+  assert.equal(result.status, 'ok');
+  assert.equal(result.event_count, 1);
+});
+
+await test('duplicate event IDs: two events with same evt- prefix', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  const events = [
+    {
+      event_id: 'evt-dup-001',
+      event_type: 'REVIEW_RECEIVED',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      payload: { text: 'first' }
+    },
+    {
+      event_id: 'evt-dup-001',
+      event_type: 'REVIEW_RECEIVED',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      payload: { text: 'second (duplicate ID)' }
+    }
+  ];
+  const result = await provider.executeReplay(makeTranscript(events));
+  // Second event has same evt- prefix — bridge keeps it (no re-hashing).
+  // Kernel may detect duplicate internally or accept it.
+  // The important thing: no crash.
+  assert.ok(result.status === 'ok' || result.status === 'kernel_error',
+    `should not crash: got ${result.status}`);
+  assert.ok(result.event_count >= 1, 'at least one event processed');
+});
+
+await test('all-null events: transcript with only null/undefined entries', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  const events = [null, undefined, null];
+  const result = await provider.executeReplay(makeTranscript(events));
+  // All events are null — should get conversion_failed
+  assert.equal(result.status, 'conversion_failed');
+});
+
+await test('maxEvents: 0 returns no events', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  const events = makePingEventChain();
+  const result = await provider.executeReplay(makeTranscript(events), { maxEvents: 0 });
+  // slice(0, 0) = empty array → no_events
+  assert.equal(result.status, 'no_events');
+});
+
+await test('all-null events still tracked in stats', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  await provider.executeReplay(makeTranscript([null, null]));
+  const stats = provider.getStats();
+  assert.equal(stats.replays, 1);
+  assert.equal(stats.failures, 2, '2 null events counted as failures');
+});
+
+await test('mixed valid and invalid events partially succeed', async () => {
+  const provider = new KernelReplayExecutionProvider();
+  const events = [
+    { event_id: 'evt-ok-001', event_type: 'REVIEW_RECEIVED', timestamp: '2026-01-01T00:00:00.000Z', payload: { text: 'valid' } },
+    null,
+    { event_id: 'evt-ok-002', event_type: 'OBSERVATION_CREATED', timestamp: '2026-01-01T00:00:01.000Z', payload: { obs: 'also valid' } },
+    undefined,
+    { event_id: 'evt-ok-003', event_type: 'CLAIM_CREATED', timestamp: '2026-01-01T00:00:02.000Z', payload: { claim: 'third valid' } }
+  ];
+  const result = await provider.executeReplay(makeTranscript(events));
+  assert.equal(result.status, 'ok');
+  assert.equal(result.event_count, 3, '3 valid events processed, 2 null/undefined skipped');
+});
+
+// ============================================================
 // Integration: Corpus replay tests
 // ============================================================
 

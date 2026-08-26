@@ -198,7 +198,7 @@ test('D1: addNode stores namespace/status/confidence; defaults applied', async (
   const stored2 = pool._nodes[1];
   assert.strictEqual(stored2.namespace, 'core::system', 'default namespace applied');
   assert.strictEqual(stored2.status, 'candidate', 'default status applied');
-  assert.strictEqual(stored2.confidence, 1.0, 'default confidence applied');
+  assert.strictEqual(stored2.confidence, null, 'null confidence preserved — no truth inflation');
 });
 
 test('D1: queryNodes filters by namespace and status', async () => {
