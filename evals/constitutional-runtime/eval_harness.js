@@ -20,6 +20,7 @@ const SCENARIOS = [
   'EVAL-006_double_completion_prevention',
   'EVAL-007_worker_failure_propagation',
   'EVAL-008_knowledge_promotion_approval',
+  'EVAL-009_replay_convergence',
 ];
 
 async function run() {

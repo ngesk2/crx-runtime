@@ -215,36 +215,232 @@ class ProjectionWorker extends BaseWorker {
 
 /**
  * ReplayWorker — processes REPLAY_VERIFY events.
- * Verifies event replay integrity.
+ * Verifies event replay integrity via the deterministic kernel engine.
+ *
+ * Authority chain:
+ *   ReplayWorker → ReplayAuthority → KernelReplayExecutionProvider → DeterministicReplayEngine
+ *
+ * verified: true ONLY when the kernel engine reports violations.length === 0.
+ * The old stub returned verified: true unconditionally — that was wrong.
  */
 class ReplayWorker extends BaseWorker {
   constructor(options = {}) {
     super(options);
     this._name = 'replay';
+    // The kernel replay execution provider — injected by registerCanonicalWorkers
+    // or by test harness. When absent, replay is a no-op (verified: false).
+    this._replayProvider = options.replayProvider || null;
   }
 
   async handle(event) {
+    // Preserve the triggering event so the constitutional trace contract
+    // (namespace / correlation_id / confidence inheritance) functions even when
+    // invoked directly — WorkerRuntime.dispatch also sets worker._event, but
+    // direct unit-test invocation must behave identically.
+    this._event = event;
     const payload = event.payload || {};
     const documentId = payload.documentId || payload._object_id;
 
     console.log(`[ReplayWorker] Processing ${event.event_type} for ${documentId || 'unknown'}`);
 
+    // Build a transcript from the event chain for the kernel engine.
+    // The transcript contains replay_events[] — the events to re-execute.
+    const replayEvents = await this._buildReplayEvents(event);
+
+    // If no provider is available, replay is a structural no-op.
+    if (!this._replayProvider) {
+      const replay = {
+        documentId,
+        eventType: event.event_type,
+        timestamp: constitutionalTimeAuthority.nowAsISOString(),
+        verified: false,
+        reason: 'no_replay_provider',
+        fingerprint: null,
+        witness_root: null,
+        violations: [],
+      };
+
+      const authority = this._buildAuthorityEvidence(event, replay);
+
+      await this._emit('REPLAY_COMPLETED', {
+        documentId,
+        replay,
+        authority,
+        upstreamEventId: event.event_id || event.mission_id,
+      }, {
+        causation_id: event.event_id,
+      });
+
+      return { status: 'ok', replay };
+    }
+
+    // Build transcript for the kernel engine
+    const transcript = {
+      state: {
+        replay_events: replayEvents,
+      },
+    };
+
+    // Execute replay through the deterministic kernel engine
+    let kernelResult;
+    try {
+      kernelResult = await this._replayProvider.executeReplay(transcript);
+    } catch (err) {
+      // Kernel threw — replay failed deterministically
+      const replay = {
+        documentId,
+        eventType: event.event_type,
+        timestamp: constitutionalTimeAuthority.nowAsISOString(),
+        verified: false,
+        reason: 'kernel_error',
+        error: err.message,
+        fingerprint: null,
+        witness_root: null,
+        violations: [],
+      };
+
+      const authority = this._buildAuthorityEvidence(event, replay, {
+        failure_reason: err.message,
+        failure_code: 'kernel_error',
+      });
+
+      await this._emit('REPLAY_COMPLETED', {
+        documentId,
+        replay,
+        authority,
+        upstreamEventId: event.event_id || event.mission_id,
+      }, {
+        causation_id: event.event_id,
+      });
+
+      return { status: 'ok', replay };
+    }
+
+    // Kernel result → replay verdict
+    // verified: true ONLY when status === 'ok' AND violations.length === 0
+    const violations = kernelResult.violations || [];
+    const isVerified = kernelResult.status === 'ok' && violations.length === 0;
+
     const replay = {
       documentId,
       eventType: event.event_type,
       timestamp: constitutionalTimeAuthority.nowAsISOString(),
-      verified: true,
+      verified: isVerified,
+      reason: isVerified ? 'kernel_verified' : (kernelResult.status || 'kernel_failed'),
+      fingerprint: kernelResult.fingerprint || null,
+      witness_root: kernelResult.witness_root || null,
+      violations,
+      event_count: kernelResult.event_count || 0,
+      artifact_count: kernelResult.artifact_count || 0,
+      state_version: kernelResult.state_version || null,
     };
+
+    // Structured constitutional evidence at the replay boundary. Every field is
+    // derived from an actual value — the triggering event's trace fields, the
+    // kernel provider's deterministic result, and fixed authority identities.
+    // Nothing is fabricated; absent values are omitted (never defaulted).
+    const authority = this._buildAuthorityEvidence(event, replay, {
+      replay_id: kernelResult.replay_id,
+      event_count: kernelResult.event_count,
+      artifact_count: kernelResult.artifact_count,
+      state_version: kernelResult.state_version,
+      leaf_count: kernelResult.leaf_count,
+      tree_height: kernelResult.tree_height,
+    });
 
     await this._emit('REPLAY_COMPLETED', {
       documentId,
       replay,
+      authority,
       upstreamEventId: event.event_id || event.mission_id,
     }, {
       causation_id: event.event_id,
     });
 
     return { status: 'ok', replay };
+  }
+
+  /**
+   * Build structured constitutional evidence at the replay authority boundary.
+   *
+   * Preserve, never fabricate. Every field is derived from an actual value:
+   *  - authority/provider identities are fixed constants (the genuine actors)
+   *  - source_event_id / correlation_id / namespace are read from the triggering
+   *    event (never invented; absent → omitted)
+   *  - replay verdict fields (verified, reason, violations) are the result's verdict
+   *  - deterministic_execution_identity is the kernel fingerprint when produced
+   *  - canonical input identity is the deterministic transcript hash when produced
+   *
+   * @param {Object} event - the triggering event (REPLAY_VERIFY / PROJECTION_CREATED)
+   * @param {Object} replay - the replay verdict object
+   * @param {Object} extra - additional optional evidence (replay_id, event_count, ...)
+   */
+  _buildAuthorityEvidence(event, replay, extra = {}) {
+    const evidence = {
+      authority: 'ReplayWorker',
+      provider: 'KernelReplayExecutionProvider',
+    };
+
+    const srcId = event.event_id || event.mission_id;
+    if (srcId != null) evidence.source_event_id = srcId;
+
+    const corr = event.metadata?.correlation_id || event.correlation_id;
+    if (corr != null) evidence.correlation_id = corr;
+
+    const ns = event.metadata?.namespace || event.namespace;
+    if (ns != null) evidence.namespace = ns;
+
+    if (replay != null) {
+      if (replay.verified != null) evidence.verified = replay.verified;
+      if (replay.reason != null) evidence.reason = replay.reason;
+      if (Array.isArray(replay.violations)) {
+        evidence.violation_count = replay.violations.length;
+        if (replay.violations.length > 0) evidence.violations = replay.violations;
+      }
+    }
+
+    if (extra.failure_code) evidence.failure_code = extra.failure_code;
+    if (extra.failure_reason) evidence.failure_reason = extra.failure_reason;
+
+    // Deterministic execution identity = the kernel fingerprint when actually
+    // produced by the engine. Never invented by the observer.
+    if (replay && replay.fingerprint) evidence.deterministic_execution_identity = replay.fingerprint;
+
+    // Canonical input/transcript identity = the deterministic hash the provider
+    // derives from the transcript when it actually produces one.
+    if (extra.replay_id) evidence.canonical_input_hash = extra.replay_id;
+
+    return evidence;
+  }
+
+  /**
+   * Build replay events from the event chain.
+   * In production, this loads correlated events from Postgres.
+   * In tests, this constructs events directly.
+   *
+   * Events must be in causal order (ancestor → descendant) for the kernel
+   * state machine to process them correctly.
+   */
+  async _buildReplayEvents(event) {
+    const payload = event.payload || {};
+    const correlationId = event.metadata?.correlation_id || event.correlation_id || event.event_id;
+
+    // If events are provided in payload (test mode), use them directly
+    if (Array.isArray(payload.replay_events) && payload.replay_events.length > 0) {
+      return payload.replay_events;
+    }
+
+    // In production, this would query Postgres for the correlation group:
+    // SELECT * FROM ping_events WHERE metadata->>'correlation_id' = $1
+    // For now, return the triggering event as a single-event replay.
+    // This is correct: a single observation can be replayed independently.
+    return [{
+      event_id: event.event_id,
+      event_type: event.event_type,
+      payload: payload,
+      metadata: event.metadata || {},
+      timestamp: event.timestamp,
+    }];
   }
 }
 
@@ -484,7 +680,10 @@ function registerCanonicalWorkers(workerRuntime, options = {}) {
     { name: 'classification', Worker: ClassificationWorker, eventTypes: ['CLAIM_CREATED', 'CLASSIFICATION_CREATE'] },
     { name: 'recommendation', Worker: RecommendationWorker, eventTypes: ['CLASSIFICATION_CREATED', 'RECOMMENDATION_CREATE'] },
     { name: 'projection', Worker: ProjectionWorker, eventTypes: ['KNOWLEDGE_INDEX', 'PROJECTION_CREATE', 'RECOMMENDATION_CREATED', 'LINEAGE_CREATED'] },
-    { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY', 'PROJECTION_CREATED'] },
+    // ReplayWorker is wired to the deterministic kernel replay engine via
+    // options.replayProvider (injected by the caller, e.g. gateway_runtime.js).
+    // When absent, replay performs a structural no-op (verified: false).
+    { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY', 'PROJECTION_CREATED'], options: { replayProvider: options.replayProvider } },
     { name: 'witness', Worker: WitnessWorker, eventTypes: ['WITNESS_CREATE', 'REPLAY_COMPLETED'] },
     { name: 'lineage', Worker: LineageWorker, eventTypes: ['LINEAGE_CREATE', 'WITNESS_CREATED'] },
     // IntelligenceWorker is registered but dormant — it duplicates the

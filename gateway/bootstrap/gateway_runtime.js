@@ -100,6 +100,7 @@ const { EvidenceAuthority } = require('../../ping-runtime/evidence/evidence_auth
 const { HybridSearch } = require('../../ping-runtime/search/hybrid_search');
 const { verifyCanonicalObject } = require('../../ping-runtime/canonicalization/canonical_object');
 const createIngestRoutes = require('../routes/ingest');
+const { KernelReplayExecutionProvider } = require('../kernel_replay_execution_provider');
 
 class GatewayRuntime {
   constructor(pool) {
@@ -495,12 +496,17 @@ class GatewayRuntime {
         }
 
         // Register 8 canonical workers with WorkerRuntime (IntelligenceWorker is dormant)
+        // ReplayWorker is wired to the deterministic kernel replay engine via
+        // replayProvider. This is the LIVE arrow: REPLAY_VERIFY / PROJECTION_CREATED
+        // events dispatch to ReplayWorker → kernel provider → verified result.
+        const replayProvider = new KernelReplayExecutionProvider();
         registerCanonicalWorkers(workerRuntime, {
           eventRuntime: unifiedEventRuntime,
           pool: this._pool,
           aiRuntime,
           embeddingService, // ProjectionWorker consumes options.embeddingService (C3)
           knowledgeGraph,   // KnowledgePromoter consumes options.knowledgeGraph (Phase F)
+          replayProvider,   // ReplayWorker consumes options.replayProvider (kernel replay)
         });
 
         // ─── Evidence Authority + Hybrid Search (Phase E) ─────────
