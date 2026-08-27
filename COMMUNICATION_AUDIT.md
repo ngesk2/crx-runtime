@@ -22,7 +22,7 @@ There is **no SMTP configuration** anywhere in the codebase. No `SMTP_HOST`, `SM
 The `.env` at `brainos/newsletter/.env` contains:
 ```
 YAHOO_EMAIL=nolan.geske@yahoo.com
-YAHOO_APP_PASSWORD=tfqlflnfrfdhvhbq
+YAHOO_APP_PASSWORD=<REDACTED_YAHOO_APP_PASSWORD>
 ```
 
 These are **IMAP credentials** (inbound retrieval), not SMTP (outbound sending).
@@ -179,7 +179,7 @@ self.app_password = os.getenv("YAHOO_APP_PASSWORD")
 | `brainos/orchestration/src/mission_control/app.py` | 316-317 | `os.getenv()` | MEDIUM — health check only |
 | `app_container.py` | 299-300 | `os.getenv()` | MEDIUM — health check only |
 
-The actual password value (`tfqlflnfrfdhvhbq`) is stored in plaintext in `brainos/newsletter/.env`, which is checked into the repository (not in `.gitignore`).
+The actual password value (`<REDACTED_YAHOO_APP_PASSWORD>`) is stored in plaintext in `brainos/newsletter/.env`, which is checked into the repository (not in `.gitignore`).
 
 ---
 

@@ -2664,3 +2664,67 @@ The platform is mature enough that the largest remaining gains come from making 
 **Full regression (pre-final doc edits)**: gateway 61/61 test files PASS (only test_pg_init excluded); eval harness 9/9 (85/85); WIT-NEG 8/8; P7 32/32. Code sweep re-run expected green post-doc-edits (md-only changes).
 
 **Next steps**: (1) Commit the coherent W7/docs unit (message `w7 witness failure-honesty fix`, explicit paths: canonical_workers.js, event_generator.js, event_registry.json, test_witness_negpath.js, test_wave3b_p7_governance.js, docs/LIVE_ARROW_AUDIT.md, docs/CONFIDENCE_PRIORITY_SEMANTIC_MATRIX.md, AGENTS.md). Do NOT absorb unrelated dirty files. (2) B7 (5 agent files) may proceed after commit, with written follow-up list (centralize direct-invocation `_event` in BaseWorker/dispatch; explicit failure-event schemas if ever justified; full live string-priority normalization proof if boundary ever reads payload). (3) Live E2E (S4 race proof, full initialize() path) still Docker-blocked.
+
+### 2026-08-21 Session - EVAL-010 Witness Failure-Honesty Eval Scenario (W7 extension)
+
+**Objective (mandate continuation)**: extend the constitutional eval harness with a witness failure-honesty scenario (EVAL-010) that exercises the W7 fix end-to-end at the eval level, complementing the gateway-level WIT-NEG suite. Also resolve the direct-invocation `_event` centralization follow-up (inventory + decide). No production code changes; eval-only addition.
+
+**EVAL-010 created** (`evals/constitutional-runtime/EVAL-010_witness_failure_honesty.js`, 27 assertions, 6 sections):
+- (a) Attest: REPLAY_COMPLETED with `payload.replay.verified === true` → WITNESS_CREATED (valid attestation), never WITNESS_REJECTED; witness.documentId/upstreamEventId/eventType carried.
+- (b) Refuse-on-unverified: replay present but NOT verified → WITNESS_REJECTED with honest `unverified_replay:<reason>`, NEVER WITNESS_CREATED (failure-honesty: cannot produce valid attestation for unverified replay).
+- (c) Violations vs kernel_error vs no_replay_provider: all three funnel into the same refusal (verified !== true).
+- (d) Trace preservation: causation_id preserved from triggering event on WITNESS_REJECTED.
+- (e) Composition: registerCanonicalWorkers wires WitnessWorker with eventTypes exactly `['WITNESS_CREATE','REPLAY_COMPLETED']` + capabilities exactly `['witness']` (capabilities: [name] per registerCanonicalWorkers :734).
+- (f) Governed event: WITNESS_REJECTED present in event_registry.json (authority_owner WitnessWorker, event_class system) — verified registry total 233.
+
+**Harness registered**: `eval_harness.js` SCENARIOS += EVAL-010_witness_failure_honesty (9→10 scenarios).
+
+**Results**: EVAL-010 standalone 27/27; full harness **112 pass, 0 fail, 10 scenarios** (was 85/9 pre-addition); W7/replay gateway suites re-verified green post-addition — witness_negpath 8/8, replay_wiring 17/17, replay_composition 8/8. Zero regressions.
+
+**Direct-invocation `_event` centralization — DECISION: KEEP, do not centralize**. Inventory (verified first-hand): only 2 per-worker `this._event = event` lines exist (ReplayWorker canonical_workers.js:240, WitnessWorker:461); sole production call site worker_runtime.js:87 (sets :86, clears :88/:92); direct invocation is TEST-ONLY. The two per-worker lines are INTENTIONAL EXCEPTIONS — ReplayWorker + WitnessWorker are the only workers exercised via direct invocation AND the only ones whose `_emit` trace preservation (correlation_id/namespace/causation) is correctness-critical at the replay-tail. A BaseWorker.execute() wrapper would change the handling contract in dispatch + all direct-invocation tests (WIT-NEG, replay wiring, EVAL-009/010), adding regression risk to a fully-green, correctness-critical chain for pure DRY benefit. Per surgical discipline: keep the 2 lines, documented; no new work item.
+
+**Files**: +EVAL-010_witness_failure_honesty.js (new), eval_harness.js (SCENARIOS +1). No production code touched.
+
+**Next steps**: (1) Commit the eval unit when directed (message e.g. `test(constitution): EVAL-010 witness failure-honesty scenario`, explicit paths: evals/constitutional-runtime/EVAL-010_witness_failure_honesty.js + evals/constitutional-runtime/eval_harness.js). Do NOT absorb unrelated dirty files. (2) Live E2E (S4 race proof, full initialize() path) still Docker-blocked. (3) M3 remaining: canonical_event_envelope duplicate at gateway/replay/canonical_event_envelope.js (uninvestigated) + 5 M3-C never-batched knowledge candidates (low value, deps already rewired, leave in gateway per M3-F). (4) google cluster deferred (dependency resolution).
+
+### 2026-08-27 Session — SECURITY SWEEP (Committed Secrets Audit, READ-ONLY)
+
+**14:00** | Repository-wide security sweep on `constitutional-convergence-v2` @ `b716f66d`. Goal: verify no keys/credentials/secrets committed. READ-ONLY — report only, no fixes/commits/history rewrite. Inventory: 2695 tracked / 3182 untracked; gitlinks knowledge + vos. Full regex credential sweep over all tracked files + `git log -S` history archaeology. | Write report.
+
+**14:10** | **CRITICAL CONFIRMED — 4 classes of LIVE production credentials committed to the ACTIVE branch:**
+1. **Qdrant Cloud API key (JWT, subject `api-key:a208360b-68f5-47df-a49f-a3b2bb59b361`, cluster `67ee96e2-...sa-east-1-0.aws.cloud.qdrant.io`)** — 5 tracked files: `.env.base`, `.env.example`, `brainos/orchestration/config/environments/{.env.example,.env.mission-control,.env.qdrant}` (mission-control has a line-corruption: key duplicated back-to-back).
+2. **Google OAuth client secret** `GOCSPX-BXuHL...` in `credentials/client_secret.json` (client_id `230394088332-...`, project `high-gecko-498903-j7`).
+3. **Live Google OAuth access + refresh token** in `token.json` (drive.readonly scope).
+4. **Live Yahoo app password** `<REDACTED_YAHOO_APP_PASSWORD>` + `nolan.geske@yahoo.com` in `brainos/newsletter/.env.example` AND reproduced in `COMMUNICATION_AUDIT.md` (2×).
+
+**14:20** | **ROOT CAUSE = branch divergence, not new leak.** Prior remediation `563a4113` "security: strip leaked secrets..." (replaced Qdrant keys with placeholder, removed client_secret from tracking, added `credentials/` to gitignore) exists on branch **`constitutional-convergence`** but is **NOT an ancestor of HEAD** (`git merge-base --is-ancestor` exit=1). Active branch `constitutional-convergence-v2` never received the fix. Even the strip branch still tracks `token.json` (incomplete there).
+
+**14:30** | Full pattern scan (Qdrant JWT / Google GOCSPX / Yahoo pw / GitHub PAT / AWS AKIA / private-key blocks / OpenAI / Anthropic / Slack / Stripe / AIza / AWS secret / connection strings): zero hits beyond the 4 confirmed classes. `AWS_ACCESS_KEY` "hits" in 5 `ping-runtime/orchestration/*.json` = **false positive** (inline `(?i)` flag invalid in .NET regex, `.Count`=0). `docs/security/SECRET_MANAGEMENT.md` private-key strings = documentation examples (OK). `vault/SECRET_AUDIT_REPORT.json` = prior `os.getenv` compliance audit, not hardcoded secrets (INFO). `oauth_output.txt` = committed PowerShell 401 traceback (WARN noise, no secret). Connection strings in `CLEANUP_COMMANDS.sh`/`REBRAND_AUDIT_PROCESSED.txt` use dev `crx:crx`@localhost (LOW). | Write SECURITY_SWEEP.md.
+
+**14:40** | `SECURITY_SWEEP.md` written (root): CRITICAL 4 classes w/ per-file evidence + history, WARN/OK tables, false-positive correction, 6 recommendations (rotate Qdrant/Google/Yahoo, converge 563a4113 onto active branch, remove token.json from tracking all branches, history scrub via filter-repo/BFG — NOT without explicit direction, stop committing `.env.*`, stop per-branch secret divergence). | Append AGENTS.md.
+
+**14:45** | AGENTS.md session log updated. **NO code changes, NO commits, NO staging** — READ-ONLY held. Only artifacts: `SECURITY_SWEEP.md` (new, untracked) + this AGENTS.md log. | Awaiting user direction on remediation (rotate + converge + history scrub are the actions; all require explicit approval).
+
+## SECURITY SWEEP — Key Decisions
+- **Verification-standard in this sweep**: every CRITICAL/WARN finding surfaced from reading the file's full contents first-hand + `git log -S` history confirmation. `AWS_ACCESS_KEY` false positives explicitly retracted, not inherited.
+- **Active branch carries ALL live secrets; the fix lives on another branch**: `563a4113` proves the remediation was authored but never converged. This is the single most actionable finding — converging the existing strip commit + finishing what it missed (token.json, newsletter env.example, mission-control, .env.qdrant, COMMUNICATION_AUDIT.md) resolves HEAD without a from-scratch rewrite.
+- **History scrub is REQUIRED, not optional**: plain removal commits do NOT un-leak committed history for the live Qdrant key / Google secret+tokens / Yahoo password (present across `1a7a30ef`, `59795121`, `3c4c2dcd`, `aaec592b`, `77d830c9`). `git-filter-repo`/BFG needed. Hard rule: NO force ops / NO history rewrite without explicit user direction.
+- **token.json is tracked on BOTH branches** — even the strip branch missed it. Any remediation plan must cover all branches.
+- **Falsification-complete scope**: the 4 live-secret classes across the tracked tree + history. NOT covered: untracked files (3182, out of scope), non-text binaries, submodule contents (`knowledge`, `vos`).
+
+### 2026-08-27 Session - SECURITY REMEDIATION (Committed, READ-ONLY lifted)
+
+**15:00** | User directed: act on SECURITY_SWEEP findings - remediate committed credentials, converge existing strip commit, close gaps, verify, then continue through incomplete capability/integration ledger. READ-ONLY phase OVER. | Apply remediation.
+
+**15:10** | Remediation edits applied on active branch (constitutional-convergence-v2 @ b716f66d):
+- Qdrant key removed from 5 tracked env files -> your_qdrant_api_key_here: .env.base, .env.example, brainos/orchestration/config/environments/{.env.example,.env.mission-control,.env.qdrant}. Repaired mission-control dup-line corruption (key duplicated back-to-back on one line -> collapsed to single placeholder).
+- Google client_secret + token removed from tracking via git rm --cached (working copies KEPT for runtime - consumed by config.yaml, drive_provider.py, google_drive_oauth.py, brainos/orchestration/src/google_drive_backup.py). Added credentials/ + token.json to .gitignore.
+- Yahoo app password scrubbed from brainos/newsletter/.env.example + COMMUNICATION_AUDIT.md + AGENTS.md session log -> placeholders.
+- .gitignore: removed !.env.example/!.env.base whitelist (uniform .env.* ignore), added credentials/ + token.json to Secrets block.
+
+**15:20** | Verified: git grep of tracked index = CLEAN for all 5 live fragments (NxvVTHcDck, GOCSPX-BXuHLk, tfqlflnfrfd, ya29.a0AT3, 1//04SWs). Only '-(removed)' diff lines carry secrets (legit deletion). All added lines clean. .constitutional_snapshot.json + .constitutional_filelist.txt confirmed benign (path/sha metadata only, no embedded values).
+
+## Remaining (SECURITY)
+1. **History scrub REQUIRED** - plain removal commits do NOT un-leak committed history (live values in 1a7a30ef, 59795121, 3c4c2dcd, aaec592b, 77d830c9). git-filter-repo/BFG. NOT done - requires explicit user direction (hard rule: no force ops/history rewrite).
+2. **Rotation REQUIRED** - Qdrant key + Google OAuth (secret + token) + Yahoo pw are live in real services; placeholder values everywhere mean integrations fail until re-credentialed locally (gitignored .env / env vars).
+3. **NO push** - push remains blocked by 129MB blob in history (documented, not rewritten).

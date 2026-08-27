@@ -26,8 +26,6 @@ wheels/
 # Environment
 .env
 .env.*
-!.env.example
-!.env.base
 
 # IDE
 .vscode/
@@ -108,6 +106,8 @@ reports/tmp/
 
 # Secrets
 secrets/
+credentials/
+token.json
 keys/
 *.pem
 *.key
