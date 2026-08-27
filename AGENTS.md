@@ -2565,3 +2565,102 @@ The platform is mature enough that the largest remaining gains come from making 
 5. **Priority 4 — dormant/disconnected implementation audits** — Verify no other broken arrows in live pipeline
 6. **Fix remaining priority scales** — Unify 4 incompatible scales
 7. **Confidence on spine** — 8+ hardcoded values recomputed at every hop, never persisted
+
+### 2026-08-21 Session - ReplayWorker WIRED to Kernel Engine (14/14 -> 15/15 PASS) + gateway injection
+
+**07:00** | Started ReplayWorker wiring verification. Goal: prove ReplayWorker reaches the deterministic kernel engine and wire replayProvider through registerCanonicalWorkers + gateway_runtime. (Continuation of previous replay-semantics work.) | Execute test run.
+
+**07:05** | test_replay_worker_wiring.js initial run 11/14 (RW-4, RW-5, RW-7 failed). Three expectations did not match actual kernel provider behavior.
+
+**07:10** | RW-4 corrected: provider's _buildLineage SANITIZES lineage by construction - only parents referencing an EXISTING envelope (or the prior chain event) are added. A dangling artifact_lineage:['art-missing'] is NEVER emitted to the kernel, so the event replays clean and verified: true (kernel_verified). This is a positive defensive property, not a failure path. The kernel parent-not-found path is only reachable via raw envelope input (exercised in test_kernel_replay.js). Test now asserts verified: true + reason: kernel_verified + 0 violations.
+
+**07:12** | RW-5 corrected: worker's _buildReplayEvents treats empty replay_events:[] as 'no transcript provided' and falls back to a single-event replay of the triggering observation. verified: true (kernel_verified), event_count: 1. The provider's true no_events path (verified: false) is unreachable through the worker by design; exercised at provider level in test_kernel_replay.js.
+
+**07:15** | MockEventRuntime FIXED to mirror production spine folding semantics: correlation_id/namespace/causation_id are folded into event.metadata (matching UnifiedEventRuntime.emit which stores correlation_id at metadata.correlation_id). RW-7 then progressed.
+
+**07:20** | RW-7 (trace propagation) still failed on namespace - worker's _emit reads namespace from this._event?.namespace (top-level) but test input only carried metadata.namespace. Root cause: ReplayWorker.handle never set this._event = event, so _emit fell back to event_id for correlation (this._event undefined) and options.causation_id gave evt-trace-1. FIXED in production code: added 	his._event = event at top of ReplayWorker.handle - the trace contract (namespace/correlation_id/confidence inheritance) now functions on direct unit invocation, not just via WorkerRuntime.dispatch. RW-7 input also updated to carry top-level namespace (mirroring real spine event shape).
+
+**07:25** | 14/14 PASS. Used 	his._event = event fix (constitutional correctness on direct invocation). All RW-1..RW-14 green.
+
+**07:30** | WIRED replayProvider through registration: registerCanonicalWorkers replay row now passes options: { replayProvider: options.replayProvider } (canonical_workers.js). gateway_runtime.js requires KernelReplayExecutionProvider, constructs it, and passes replayProvider into registerCanonicalWorkers. Boot-load gate: gateway_runtime LOADS OK.
+
+**07:35** | Added RW-15: registerCanonicalWorkers wires replayProvider into the registered ReplayWorker (asserts _replayProvider === provided instance + eventTypes). 15/15 PASS. Updated test header to document corrected RW-4/RW-5 realities.
+
+**07:40** | Full regression: 60/60 gateway test files PASS by exit code. node --check clean on canonical_workers.js + gateway_runtime.js + test file. Zero regressions.
+
+## Recent Session - Key Decisions
+- Provider lineage is defensive-by-construction: _buildLineage never emits a dangling parent, so the worker cannot produce kernel missing-parent failures from PING-shaped input. Lineage integrity is guaranteed at the provider, not verified-and-failed.
+- The worker single-event fallback means the provider's no_events path is unreachable via the worker (verified: false/no_events only when a caller explicitly sends an empty transcript past the fallback).
+- ReplayWorker.handle must set this._event = event (trace contract for direct invocation). WorkerRuntime.dispatch also sets it in production; the direct unit surface must behave identically.
+- MockEventRuntime must fold correlation_id/namespace/causation_id into metadata to mirror the production spine (UnifiedEventRuntime stores correlation_id at metadata.correlation_id).
+
+## Recent Session - Remaining
+1. Replay observability - structured authority evidence at boundary (replay_id, source event identity, correlation_id, namespace, canonical input hash, verification result, failure reason/code, deterministic execution identity, authority/provider name) + eval scenarios in existing constitutional eval harness.
+2. LIVE-arrow audit - upgrade all 24 LIVE arrows to the stricter definition (reachable + correct worker + non-stub semantics + observable output + negative-path test). ReplayWorker is now non-stub (wired to kernel).
+3. Confidence/priority spine-level contracts - trace first authoritative producer to canonical event metadata to chain.
+4. B7 migration (5 agent files) - still DEFERRED until trace integrity complete.
+5. Live E2E still blocked on Docker daemon (npipe down) - verify real PG/Qdrant chain when available.
+
+### 2026-08-21 Session - Replay Convergence COMMITTED (852fee10)
+
+**Objective (mandate)**: prove the replay path (ReplayWorker ? KernelReplayExecutionProvider ? DeterministicReplayEngine) is TRULY LIVE in production composition, observable, deterministic, failure-honest � then commit atomically, run full regression, audit LIVE arrows, build confidence/priority matrix, revisit B7.
+
+**Steps 1-6 COMPLETE and committed as `852fee10`** (7 files, +1550/-3, no unrelated dirty state absorbed):
+
+| Step | Deliverable | Result |
+|------|-------------|--------|
+| 1 | Production replay wiring | gateway_runtime.js imports+constructs exactly ONE KernelReplayExecutionProvider, injects replayProvider into registerCanonicalWorkers (~:503-511). Boot-load gate passes. |
+| 2 | Registration?production proof | test_replay_composition.js RC-1..8 (8/8): real gateway_runtime.js loads, source has import/construction/passing, one construction, registerCanonicalWorkers maps options.replayProvider?_replayProvider, full REPLAY_VERIFY dispatch?kernel_verified, trace fields survive, authority evidence emitted. |
+| 3 | Replay observability | ReplayWorker._buildAuthorityEvidence wired into all 3 REPLAY_COMPLETED emissions: authority=ReplayWorker, provider, source_event_id, correlation_id, namespace, verified, reason, violation_count, deterministic_execution_identity (=kernel fingerprint), canonical_input_hash. Absent omitted � never fabricated. RW-16/17 added (17/17 total). |
+| 4 | Eval harness replay scenario | EVAL-009_replay_convergence.js (24/24) registered in eval_harness. Harness now 85/85 across 9 scenarios. |
+| 5 | Atomic commit | `852fee10`, exactly 7 staged files (canonical_workers.js, gateway_runtime.js, eval_harness.js, test_replay_worker_wiring.js, test_replay_composition.js, EVAL-009, REPLAY_SEMANTICS_CONTRACT.md). Explicit paths only; event_queue deletions/generated registries/AGENTS.md/reports NOT absorbed. |
+| 6 | Full regression | 61/61 gateway test files PASS by exit code; eval harness 85/85. |
+
+**Key decisions (replay convergence)**:
+- ReplayWorker no longer returns verified:true unconditionally � delegates to the deterministic kernel engine (KernelReplayExecutionProvider). Old stub semantics are gone.
+- _buildAuthorityEvidence is championship-honest: verified:false + reason no_replay_provider on no-provider path; no fabricated fingerprint/input-hash on no-op; deterministic_execution_identity = kernel fingerprint only when actually produced.
+- Production composition = the ONLY construction site of KernelReplayExecutionProvider; registration injection via registerCanonicalWorkers options.replayProvider.
+- Eval harness extended (not replaced): 9 scenarios, 85 assertions, all deterministic, no Docker dependency.
+
+**Steps 7+ (in progress / pending)**:
+- Step 7: re-audit 24 LIVE arrows against stronger definition (reachable + correct worker + non-stub semantics + observable output + negative-path test). ReplayWorker now non-stub. Do NOT repeat old 24/5/2 numbers � produce fresh evidence.
+- Step 8: spine-level confidence/priority semantic matrix FIRST (canonical authority ? adapters ? recomputation/fabrication ? persistence boundaries ? incompatible scales ? preserved/transformed/incorrectly-recreated), before any boundary fixes. No silent normalization.
+- Step 9: B7 only after correctness proven.
+- Live E2E still Docker-blocked.
+
+### 2026-08-21 Session - Correctness Pass: LIVE_ARROW_AUDIT + CONFIDENCE_PRIORITY_SEMANTIC_MATRIX corrections
+
+**Objective (mandate)**: apply the user-mandated correctness corrections to both audit docs (3-tier arrows, priority mapping table proof, confidence 3-class statement, WitnessWorker failure-honesty gap, `canonical_input_hash` semantics, string-priority dormant-debt trace), then re-run non-Docker replay/eval regression. Doc-only corrections; no code changes; no commit.
+
+**Corrections APPLIED (both docs now evidence-tiered and honest)**:
+1. **LIVE_ARROW_AUDIT.md**: 3-tier legend (TIER-1 LIVE-PROVEN / TIER-2 LIVE-WIRED / TIER-3 PENDING-GAPPED). 13-arrow table with per-column check; counts: 13/13 REACHABLE+CORRECT+NON-STUB; **TIER-1 = 1 (W6 structural)**, **TIER-2 = 10**, **TIER-3 = 2 (S4 PENDING live-PG race, W7 GAPPED WitnessWorker)**. W6 structural caveat documented (no `Initialize()` call; boot-load+source-inspection+registration-contract+worker neg-path+EVAL-009 proof). NEW first-hand W7 finding: WitnessWorker.handle (canonical_workers.js:457-479) never reads `payload.replay.verified`; all 3 ReplayWorker emit paths always emit REPLAY_COMPLETED regardless of verified; no witness-level failure-disposal test exists (all verified:false assertions are ReplayWorker-boundary-only). W7 fix direction documented (read replay.verified, refuse/unhonestly attest, add neg-path test) - NOT implemented (requires approval).
+2. **CONFIDENCE_PRIORITY_SEMANTIC_MATRIX.md**: 3-class confidence statement applied verbatim (transport carry/inherit/null-preserving; creation/default/recompute at exactly 3 boundaries: canonicalization_service.js:134,155 default 0.5, canonical_object.js:86 envelope 1.0 fallback, evidence_authority.js:161 local rank 0.5, KnowledgePromoter recompute 1.0/0.2 - the only recompute). Verdict narrowed from "no fabrication repository-wide" to the 3 named boundaries. String-priority residual gap rewritten to full 8-answer trace (BOTH producers live, string in canonical payloads, but execution-order-INERT - insulated by static EVENT_MISSION_MAP canonicalPriority int).
+3. **NEW explicit priority scale table** (mandate point 2): per-scale ordering-preserved (identity/partial-collapse), tie behavior (created_at ASC only), missing/invalid (silent default 1 routine; case-folded; `?? 1`), dormant-producer live risk (LOW/none - Orca/IntelligenceWorker/mission_compiler all dormant; live path exercises ONLY the int 0-3 identity branch priority_boundary.js:69-71). Session-verified `canonicalPriority()` full semantics from priority_boundary.js:67-91.
+4. **canonical_input_hash semantics pinned** (source-verified): `= kernelResult.replay_id` (canonical_workers.js:343,:411); provider sets `transcript.transcript_id || replay-<sha256>` (kernel_replay_execution_provider.js:142). NOT a hash of the triggering event; deterministic replay-transcript identity. undefined on no-provider path.
+5. **Fan-out mechanical proof** (live WorkerRuntime): registrations confirmed; ZERO multi-owner overlaps (incl. 20-type check); IntelligenceWorker dormant ("Skipped dormant worker 'intelligence' (no eventTypes)"); knowledge-promotion registers only with options.knowledgeGraph, no type overlap.
+
+**Regression after edits**: test_replay_worker_wiring 17/17, test_replay_composition 8/8, EVAL-009 24/24 (exit 0). All green. (Full 61/61 + 85/85 already green pre-edit; replay/eval trio re-confirmed post-edit.)
+
+**Next steps**: (1) W7 WitnessWorker failure-honesty gap = highest-priority correctness defect; requires approval to implement fix (read replay.verified, refuse/unhonestly attest, witness neg-path test). (2) Commit the two corrected docs (+ untracked audit unit docs) as a coherent verified unit when directed - no code change accompanies them. (3) B7 (5 agent files) STILL DEFERRED until correctness pass complete (now hinges on W7 decision). (4) Live E2E (S4 race proof, full initialize() path) still Docker-blocked.
+
+### 2026-08-21 Session - `w7` Witness Failure-Honesty Implemented (W7 FIXED) + Docs finalized
+
+**Objective (mandate)**: deliver the W7 WitnessWorker failure-honesty fix as a coherent verified unit: refuse to attest unverified replays (emit WITNESS_REJECTED), add the 8-test neg-path suite, make governance assertions non-brittle, correct docs to reflect W7 FIXED and string-priority live-but-execution-inert, commit the coherent W7/docs unit (B7 deferred until then). No separate direct-invocation/schema patches in this commit; record them as explicit architectural follow-ups.
+
+**W7 production fix DONE** in `ping-runtime/workers/canonical_workers.js` WitnessWorker.handle:
+- `this._event = event;` at top of handle (mirrors ReplayWorker at :240; WitnessWorker at :461) — makes `_emit` namespace/correlation/causation inheritance work on direct invocation.
+- Failure-honesty gate: on `REPLAY_COMPLETED` where `payload.replay?.verified !== true`, emits `WITNESS_REJECTED` (payload `{documentId, upstreamEventId, replay, reason: 'unverified_replay:<reason>'}`) and returns `{status:'rejected', reason}`; NEVER fabricates WITNESS_CREATED. Non-replay `WITNESS_CREATE` still attests.
+- WITNESS_REJECTED registered in `gateway/generated/event_generator.js` (authority_owner WitnessWorker, event_class system); registry regenerated 232→233 events, hash `32b532129ec7...`. Byte-verified delta contains ONLY the WITNESS_REJECTED block (the `graph.*` "shape-changed" flags were PowerShell console em-dash decode artifacts, NOT semantic deltas).
+- **P7 made registry-derived (non-brittle)**: `event_governance.js:84,89,97-100` `_buildOwnershipPolicy()` iterates `registry.events`; both `=== 232` asserts in test_wave3b_p7_governance.js replaced with `=== registryEventCount()` (helper reading registry `events.length`; fs/path required at helper scope). P7 passes 32/32.
+
+**WIT-NEG suite 8/8 PASS** (`gateway/test_witness_negpath.js`, exit 0): WIT-NEG-1 verified→WITNESS_CREATED ok; WIT-NEG-2 no_replay_provider→rejected no WITNESS_CREATED; WIT-NEG-3 kernel_error→rejected; WIT-NEG-4 missing replay→`unverified_replay:replay_not_verified`; WIT-NEG-5 WITNESS_CREATE direct→normal attestation; WIT-NEG-6 WITNESS_REJECTED in event_registry.json; WIT-NEG-7 trace fields preserved on WITNESS_REJECTED; WIT-NEG-8 witness registered with REPLAY_COMPLETED. Every rejection path asserts WITNESS_REJECTED present + WITNESS_CREATED absent (failure-honesty: cannot produce valid attestation).
+
+**Direct-handle inventory COMPLETE**: only production call site = worker_runtime.js:87, sets `entry.worker._event = event` at :86 (cleared :88/:92). Only the 2 per-worker `this._event = event` lines exist (ReplayWorker :240, WitnessWorker :461). Direct invocation is TEST-ONLY, not a supported production surface. Per-worker fix correct for this commit; centralizing in BaseWorker/dispatch = separate follow-up (user directive: do not copy per-worker; inventory + decide).
+
+**String-priority trace CONCLUSIVE** (resolves prior retraction): string priority is **LIVE (producers)** but **EXECUTION-INERT (never normalized)**. ClassificationWorker `_prioritize` (canonical_workers.js:600-606) emits `'urgent'|'high'|'medium'|'normal'`; RecommendationWorker reads `classification.priority || 'normal'` (:632) carries into RECOMMENDATION_CREATED payload (:638). **EventToMissionBridge `_handleEvent` (event_to_mission_bridge.js:106-136) computes `priority: canonicalPriority(mapping.priority)` (:134) from the STATIC EVENT_MISSION_MAP (int-only :25-69); event payload passed as mission payload (:132) but NEVER consulted for priority.** `ping_missions.priority` persists the static-map int; scheduler (mission_scheduler.js:229) reads the DB column, never payload. Verdict: string NEVER reaches `canonicalPriority()` on the live path; zero semantic divergence in `ping_missions.priority`/scheduler. Old "dormant string-priority debt" label was wrong about producer liveness.
+
+**Docs edits applied** to `docs/LIVE_ARROW_AUDIT.md` (Point 8 W7 FIXED, W7 row TIER-2 with refusal/WITNESS_REJECTED, counts → 14/14 reachable+correct+non-stub, TIER-1=2 W6+W7, TIER-2=11, TIER-3=1 S4, key-change + priority gaps + next-step W7 fixed) and `docs/CONFIDENCE_PRIORITY_SEMANTIC_MATRIX.md` (§3 string-priority row/summary/Q8 → LIVE producers, execution-inert; priority_boundary path corrected to `ping-runtime/boundaries/priority_boundary.js`). Docs live at repo root `docs/` (NOT `docs/constitutional/`).
+
+**Full regression (pre-final doc edits)**: gateway 61/61 test files PASS (only test_pg_init excluded); eval harness 9/9 (85/85); WIT-NEG 8/8; P7 32/32. Code sweep re-run expected green post-doc-edits (md-only changes).
+
+**Next steps**: (1) Commit the coherent W7/docs unit (message `w7 witness failure-honesty fix`, explicit paths: canonical_workers.js, event_generator.js, event_registry.json, test_witness_negpath.js, test_wave3b_p7_governance.js, docs/LIVE_ARROW_AUDIT.md, docs/CONFIDENCE_PRIORITY_SEMANTIC_MATRIX.md, AGENTS.md). Do NOT absorb unrelated dirty files. (2) B7 (5 agent files) may proceed after commit, with written follow-up list (centralize direct-invocation `_event` in BaseWorker/dispatch; explicit failure-event schemas if ever justified; full live string-priority normalization proof if boundary ever reads payload). (3) Live E2E (S4 race proof, full initialize() path) still Docker-blocked.

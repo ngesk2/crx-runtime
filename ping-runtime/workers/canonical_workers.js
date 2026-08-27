@@ -455,10 +455,37 @@ class WitnessWorker extends BaseWorker {
   }
 
   async handle(event) {
+    // Set the triggering event so _emit's trace contract (namespace,
+    // correlation_id, causation_id inheritance) works on direct invocation —
+    // identical to WorkerRuntime.dispatch, which sets this._event first.
+    this._event = event;
     const payload = event.payload || {};
     const documentId = payload.documentId || payload._object_id;
 
     console.log(`[WitnessWorker] Processing ${event.event_type} for ${documentId || 'unknown'}`);
+
+    // Failure-honesty gate (W7): on REPLAY_COMPLETED the witness must ONLY
+    // attest a replay that actually verified. If verification is absent or
+    // false, the witness refuses to attest (never fabricates an attestation
+    // for an unverified replay) and records an observable WITNESS_REJECTED.
+    const isReplayAttestation = event.event_type === 'REPLAY_COMPLETED';
+    const replayVerified = payload.replay && payload.replay.verified === true;
+
+    if (isReplayAttestation && !replayVerified) {
+      const reason = payload.replay?.reason || 'replay_not_verified';
+      console.log(`[WitnessWorker] REFUSING to attest unverified replay for ${documentId || 'unknown'} (reason: ${reason})`);
+
+      await this._emit('WITNESS_REJECTED', {
+        documentId,
+        upstreamEventId: event.event_id || event.mission_id,
+        replay: payload.replay || null,
+        reason: `unverified_replay:${reason}`,
+      }, {
+        causation_id: event.event_id,
+      });
+
+      return { status: 'rejected', reason: `unverified_replay:${reason}` };
+    }
 
     const witness = {
       documentId,

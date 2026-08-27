@@ -18,13 +18,24 @@ function assert(condition, message) {
   }
 }
 
+function registryEventCount() {
+  const fs = require('fs');
+  const registryPath = path.join(__dirname, '..', 'gateway', 'generated', 'event_registry.json');
+  const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+  return registry.events.length;
+}
+
 function testLoading() {
   console.log('\n=== P7: Event Governance Loading ===');
   const gov = new EventGovernance(path.join(__dirname, '..'));
   gov.load();
 
+  // The ownership policy is DERIVED from event_registry.json (one rule per
+  // registered event). Assert governance/registry consistency, not a fixed
+  // historical count, so registry growth does not require a brittle update.
+  const expectedRules = registryEventCount();
   const policy = gov.getOwnershipPolicy();
-  assert(policy.length === 232, `Loaded 232 ownership rules (got ${policy.length})`);
+  assert(policy.length === expectedRules, `Ownership rules == registry events (${expectedRules}): got ${policy.length}`);
 
   const namespaces = gov.getNamespacePolicy();
   assert(namespaces.length > 0, `Loaded ${namespaces.length} namespace rules`);
@@ -129,7 +140,7 @@ function testEventQueueGovernance() {
   const governance = queue.getGovernance();
 
   assert(governance !== null, 'EventQueue has governance');
-  assert(governance.getOwnershipPolicy().length === 232, 'Governance loaded 232 rules');
+  assert(governance.getOwnershipPolicy().length === registryEventCount(), 'EventQueue governance rules == registry events');
 
   const result = queue.emit('COMPLETELY_UNKNOWN_EVENT', {});
   assert(result === null, 'Unknown event is rejected by queue (returns null)');
