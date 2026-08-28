@@ -768,3 +768,48 @@ in §24 (single live site + one test-only site at constitutional_runtime.js:45).
 - P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT
   part of this commit.
 
+## 26. Boundary/Authority Single-Construction Falsification - multi-site classes all resolve dormant (2026-08-28) [STAT]
+
+Falsification sweep over the authority-bearing boundary classes (those carrying runtime decision
+logic) beyond the 12 core authorities of the 25. Several have MULTIPLE `new X()` construction sites
+in the tree; each non-`gateway_runtime` site was traced to reachability and ALL resolve to already-
+documented dormant/kernel/layered categories. No reachable competing authority exists.
+
+### Multi-site classes and resolution [STAT]
+
+| Class | gateway_runtime (LIVE) | Other construction site(s) | Reachability of other site(s) |
+|-------|------------------------|----------------------------|-------------------------------|
+| EventGovernance | single | ping-runtime/orchestration/execution/event_queue.js | Orca fabric EventQueue, only imported by tests (`test_wave3b_p7`, `test_p040`) + a comment in event_generator.js:257. DORMANT (fabric 15). Not reachable from server.js. |
+| OllamaProvider | single | ping-runtime/orchestration/execution/engine.js | Orca ExecutionEngine fabric, discoverOllama:false -> zero models, KEEP-DISABLED (ledger 15). DORMANT parallel fabric. |
+| CanonicalEventEnvelope | single | gateway/bootstrap/wiring.js (non-production DI path per CAPABILITY_LEDGER method), gateway/kernel_replay_execution_provider.js (KERNEL twin envelope for replay validation, ledger 16) | Both DORMANT (non-prod entrypoint; kernel twin). Live spine uses the gateway envelope only. |
+| RepositoryStore | single | gateway/authority_registry.js:265 (DEAD file), gateway/github_constitutional_pipeline.js (only imported by 3 dormant harnesses), gateway/replay_runtime.js (only imported by repository_reset_harness.js) | ALL DORMANT. `authority_registry.js` has ZERO importers (distinct from constitutional_bootstrap.js -> constitutional_authority_registry, a different file). |
+| EventReadAuthority | single | runtime/kernel/gateway_adapter.js | Kernel twin, intentional (M3 B4 rule: kernel twins authoritative for dormant kernel). DORMANT. |
+| KnowledgePromoter | built inside canonical_workers.js (single site) | - | Clean single owner. |
+| CanonicalizationService / EventToMissionBridge / EventBridge / KnowledgeGraph | single each | - | Clean single owners. |
+
+### Falsification method
+
+- `rg "new <Class>\("` whole tree; classified production vs test/eval; for every multi-site class,
+  traced each non-gateway_runtime site to its file's importers via grep and labeled reachable vs dormant.
+- `gateway_runtime.js` construction enumeration (select-output of every `new X(`) confirmed exactly one
+  line per service and the full production sync service graph (12 spine + registries + adapters + emitters).
+
+### Verdict
+
+- **No reachable competing construction site** for ANY authority-bearing boundary class. Every second
+  construction collapses to: Orca fabric (disconnected, ledger 15), kernel twin (ledger 16),
+  non-production DI (wiring.js), or dead/harness-only file (`authority_registry.js`, github pipeline,
+  replay_runtime). Consistent with ledger 25 (12 core) and ledger 19 (families layered-not-duplicate).
+- `authority_registry.js` is a DEAD file (zero importers) constructing a dormant RepositoryStore;
+  `github_constitutional_pipeline.js` + `replay_runtime.js` are harness-only. All are archive-candidates,
+  NOT live competitors.
+- No consolidation warranted.
+
+### Gates
+
+- `require('./bootstrap/gateway_runtime')` -> `gateway_runtime LOADS OK`.
+- Regression exit-0: replay_composition, replay_worker_wiring, replay_observability, pipeline_bridge,
+  knowledge_search, ingest_boundary, wave3b_p7_governance (governance exercises EventGovernance). All green.
+- P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT part
+  of this commit.
+
