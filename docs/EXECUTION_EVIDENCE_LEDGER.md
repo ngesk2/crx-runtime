@@ -634,3 +634,72 @@ verified on disk, commit when directed"). Empirically inspected, not assumed.
 - Corrective note for future handoffs: stale summaries are NOT authoritative over fresh
   [EMPR] inspection. Point to THIS section + canonical sources before acting on B7.
 
+## 24. Deep Verification - Single-construction replay provider + live-container parity (2026-08-28) [EMPR]/[STAT]
+
+Live production-composition deep verification of `GatewayRuntime.initialize()` /
+`services.replayProvider`: one construction site, one assignment, one observer, running
+container carries the working-tree P0-1 code. Falsification-first: every alternative
+hypothesis (second construction, replacement assignment, shadow provider, duplicate worker
+runtime, divergent route observer) was tested and refuted.
+
+### Static falsification scan [STAT] (whole production tree, excl. node_modules/dormant/archive/workspace)
+
+- **Constructors of `KernelReplayExecutionProvider`** throughout all `*.js`:
+  - `gateway/bootstrap/gateway_runtime.js:512` `replayProvider = new KernelReplayExecutionProvider();`
+    -> THE single LIVE production construction site (P0-1 hoist).
+  - `gateway/constitutional_runtime.js:45` `executionPort: new KernelReplayExecutionProvider()`
+    -> SECOND construction, but reachable from EXACTLY ONE importer: `gateway/test_kernel_replay.js:422`
+    (a test file). NOT on the live import graph. DORMANT/test-only. Falsified as a live competitor.
+  - All other `new KernelReplayExecutionProvider()` sites are in `test_*.js` / `evals/` / the
+    provider's own definition file. Zero production-reachable extras.
+- `gateway/bootstrap/constitutional_runtime.js` (42-line class) is a DIFFERENT class built on
+  `ConstitutionalExecutionPipeline`/`EventRepository`/`Dispatcher`/registries - it constructs NO
+  kernel replay provider. Not a competing owner.
+- **Assignments to `replayProvider`** in production: exactly ONE (`gateway_runtime.js:512`; declaration
+  `let replayProvider = null` at :378, services exposure `replayProvider,` at :519 and :665). NO
+  replacement reassignment anywhere in production. Falsified: no shadow provider, no second assignment.
+- **Duplicate worker runtime**: `ping-runtime/workers/canonical_workers.js:713` registers exactly ONE
+  ReplayWorker and injects `options.replayProvider` (single instance target). No second worker runtime
+  constructs or consumes a provider.
+- **Divergent route observer**: the only production HTTP reader is
+  `gateway/routes/mission_control.js:510` `const provider = replayProvider ? replayProvider.getStats() : null;`
+  where `replayProvider` is destructured from `services` (:17) - i.e. the SAME hoisted singleton.
+  No other production route references a different provider instance.
+
+### Live-container parity [EMPR]
+
+- `docker inspect ping-gateway`: image `ping-gateway:latest`, created `2026-08-27T21:48:55Z`,
+  started `2026-08-28T12:07:36Z` (up 9h at capture), restarts=0. Built from the working tree that
+  carries the P0-1 hoist.
+- Live probe `GET /mc/replay/stats` returns the `provider` block
+  `{engine_version: v1, replays_processed: 3, events_replayed: 3, failures: 0}` - the P0-1
+  observability feature. This is unobservable on pre-P0-1 containers, PROVING the running container
+  carries the working-tree P0-1 code incl. `services.replayProvider` reachable at the full
+  initialize() path (not just boot-load static).
+
+### Restart-vs-durable projection semantics [EMPR]
+
+- Current process: `provider.replays_processed = 3` (process-lifetime kernel-replay executions) vs
+  durable event-derived `total_replays = 37`, of which `kernel_verified = 6` / `unknown = 31`,
+  `witness_rejected = 0`. The delta (34) is historical replays from PRIOR process lifetimes - visible
+  ONLY in the durable ping_events projection, not in the current provider's process-scoped counters.
+- This confirms the documented distinction: provider counters are process-lifetime; durable replay
+  metrics are event-derived. Both are surfaced together at `/mc/replay/stats` (provider block omitted
+  when not injected - never fabricated).
+
+### Boot-load + regression gates
+
+- `require('./bootstrap/gateway_runtime')` -> `gateway_runtime LOADS OK`, `GatewayRuntime` type:
+  `function`. P0-1 hoist present and functional.
+- test_replay_composition 8/8, test_replay_worker_wiring 17/17, test_witness_negpath 8/8,
+  test_replay_observability 8/8 - ALL PASS. Zero regressions.
+
+### Verdict
+
+- **Exactly ONE live replay provider construction, ONE assignment, ONE route observer, ONE worker
+  injection target.** The second source-site (`gateway/constitutional_runtime.js:45`) is
+  test-reachable-only and not on any live path. No consolidation warranted.
+- Running ping-gateway container empirically matches the working-tree P0-1 code (provider block live).
+- P0-1 hoist in `gateway/bootstrap/gateway_runtime.js` remains working-tree-only and UNSTAGED per the
+  explicit-allowlist rule (not part of this commit).
+
