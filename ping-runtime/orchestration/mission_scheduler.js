@@ -27,6 +27,17 @@ const { constitutionalTimeAuthority } = require('../authorities/constitutional_t
 
 // Map mission_type → worker name
 // Workers register with WorkerRuntime using these names
+//
+// [DOC-CONTRACT] This map is LABELING / ASSIGNMENT metadata ONLY. It is NOT an
+// execution-routing decider. The SINGLE canonical execution decider is
+// WorkerRuntime.dispatch() (worker_runtime.js): a worker is selected iff
+// entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType). This map
+// is consumed only for (a) the `assigned_to` label (below) and (b) the
+// registered-worker guard. The scheduler dispatches on the ORIGINAL business
+// event_type (mission.payload.event_type), never mission_type, so a mission
+// whose label-worker does not match the event type yields dispatch() = null →
+// the mission is skipped/failed (phantom-complete prevention), not misrouted.
+// Reference: docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md (audit A).
 const MISSION_WORKER_MAP = {
   // Event pipeline missions
   DOCUMENT_IMPORT: 'observation',

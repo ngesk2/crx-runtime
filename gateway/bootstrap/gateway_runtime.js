@@ -323,6 +323,16 @@ class GatewayRuntime {
     console.log(`[GatewayRuntime] Capability Registry: ${capabilityRegistry.getStats().total} capability categories`);
 
     // Orca — Constitutional Execution Engine (no PG dependency)
+    // [DOC-CONTRACT / KEEP-DISABLED] discoverOllama stays false INTENTIONALLY.
+    // discoverWorkers() is PROVEN functional against the live ollama container
+    // (4 workers, qwen2.5-coder:14b/7b + llama3 + nomic-embed-text; Step 5 proof,
+    // docs/EXECUTION_EVIDENCE_LEDGER.md §15). But Orca is a parallel execution
+    // authority, NOT the production spine: the live spine's single inference owner is
+    // AIRuntime + ping-runtime/ai/ollama_provider.js (default localhost:11434), and
+    // the single worker-identity decider is WorkerRuntime.dispatch (P3 audit A).
+    // Enabling this here would register a second, unconsumed Ollama worker pool —
+    // contradicting single-owner convergence. Keep DISABLED until an explicit
+    // Orca-vs-live-spine convergence decision is made.
     let executionEngine = null;
     try {
       executionEngine = new ExecutionEngine();

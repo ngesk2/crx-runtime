@@ -4,6 +4,23 @@
  * Normalizes all incoming priority representations to the canonical int 0-3
  * scale used by the production execution spine (bridge → scheduler → missions).
  *
+ * [DOC-CONTRACT] Canonical live priority contract:
+ *   - Single scale: int 0-3, HIGHER = MORE URGENT (0=system, 3=revenue-critical).
+ *   - Single ingress: canonicalPriority() — applied ONLY at the bridge
+ *     (event_to_mission_bridge.js, mapping.priority → mission payload priority).
+ *   - Persisted as ping_missions.priority INT, ordered `priority DESC`
+ *     (mission_runtime.getPending) — consistent with higher=more urgent.
+ *   - The scheduler reads the persisted int column; it NEVER recomputes priority
+ *     from payload at dispatch time. Downstream (workers, scheduler) never read
+ *     a payload string/number priority — payload string priority is
+ *     LIVE-PRODUCED but EXECUTION-INERT (Classification/Recommendation emit
+ *     'urgent'|'high'|... strings that are carried in payload but never consulted
+ *     for ping_missions.priority nor scheduler ordering).
+ *   - Harmless legacy/default note (zero behavior change): mission_runtime.js
+ *     column `DEFAULT 0` (routine) vs canonicalPriority(null)=1. The bridge
+ *     NEVER passes null (it always has an EVENT_MISSION_MAP int), so the
+ *     `DEFAULT 0` and the `?? 1` fallback never diverge on the live path.
+ *
  * Canonical scale:
  *   0 = system maintenance (health checks, audit)
  *   1 = routine updates (emails sent, invoices paid, review acknowledgements)
@@ -16,6 +33,8 @@
  * mission_runtime. The adapter is the single conversion point.
  *
  * RULE: No new business logic in this module. It maps values, nothing else.
+ *
+ * Reference: docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md (audit B).
  */
 
 // ─── Conversion tables ───────────────────────────────────────────

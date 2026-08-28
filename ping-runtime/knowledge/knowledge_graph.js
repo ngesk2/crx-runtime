@@ -5,6 +5,26 @@
  * generates knowledge. Queries flow through here, not raw SQL.
  * 
  * This replaces 5+ dead knowledge implementations with one production store.
+ *
+ * [DOC-CONTRACT] Confidence semantics (mirrors spine contract — see
+ * docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md audit C):
+ *   - addNode's confidence column (`REAL DEFAULT 1.0`, line 34) is UNREACHABLE
+ *     on the live path: every addNode INSERT provides confidence explicitly
+ *     (`options.confidence != null ? options.confidence : null`), so the DB
+ *     DEFAULT is never applied. The column default is therefore NOT a competing
+ *     spine semantic.
+ *   - NULL is preserved, not fabricated: an observation with no producer
+ *     confidence stores NULL in the graph (null-preserving), matching the spine
+ *     carry-verbatim contract. `confidence_provenance` records where the value
+ *     came from.
+ *   - The ONLY authorized recompute is human approval (KnowledgePromoter:
+ *     SNIPPET_APPROVED/AI_RESPONSE_ACCEPTED → 1.0, rejected → 0.2) via
+ *     updateNodeBySourceEvent — a lifecycle transition, never a data mutation.
+ *   - Distinguish INFERENCE/MODEL provenance from canonical producer confidence:
+ *     e.g. inference_adapter.js hardcodes `0.8` for AI/inference results — that
+ *     is a model-provenance value (the model output's own confidence), NOT a
+ *     canonical spine confidence. It must be tagged as such, never conflated
+ *     with the producer-authored spine confidence.
  */
 
 class KnowledgeGraph {

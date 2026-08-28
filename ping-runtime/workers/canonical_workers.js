@@ -713,11 +713,18 @@ function registerCanonicalWorkers(workerRuntime, options = {}) {
     { name: 'replay', Worker: ReplayWorker, eventTypes: ['REPLAY_VERIFY', 'PROJECTION_CREATED'], options: { replayProvider: options.replayProvider } },
     { name: 'witness', Worker: WitnessWorker, eventTypes: ['WITNESS_CREATE', 'REPLAY_COMPLETED'] },
     { name: 'lineage', Worker: LineageWorker, eventTypes: ['LINEAGE_CREATE', 'WITNESS_CREATED'] },
-    // IntelligenceWorker is registered but dormant — it duplicates the
+    // [DOC-CONTRACT / KEEP-DORMANT] IntelligenceWorker duplicates the
     // ClassificationWorker + RecommendationWorker pair (both produce
     // CLASSIFICATION_CREATED / RECOMMENDATION_CREATED from the same inputs).
-    // Re-enable with targeted eventTypes (e.g. ['OBSERVATION_CREATED']) when
-    // Ollama is wired for AI-enhanced classification.
+    // It is structurally dormant: eventTypes:[] means the registration loop
+    // below (:727) never registers it into WorkerRuntime, so it processes ZERO
+    // events on the live path — no dual fan-out is possible. Namespace /
+    // correlation_id / confidence inheritance are already correct in its inline
+    // BaseWorker._emit (intelligence_worker.js:25-59), so re-enablement would
+    // not leak the privacy boundary. Do NOT re-enable without (a) Ollama wired
+    // for AI-enhanced classification AND (b) an explicit ruling resolving the
+    // duplication with the canonical pair. Ref docs/P3_CONTRADICTION_CONVERGENCE
+    // _LEDGER.md + docs/EXECUTION_EVIDENCE_LEDGER.md (Step 4 audit).
     { name: 'intelligence', Worker: IntelligenceWorker, eventTypes: [], options: { aiRuntime: options.aiRuntime } },
   ];
 

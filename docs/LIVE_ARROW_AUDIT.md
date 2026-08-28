@@ -179,13 +179,21 @@ command/verification gate rather than a stateful compute arrow like W6).
    exhaustion, DLQ, reaper), `test_lease_reaping.js`, `test_lease_renewal.js`,
    `EVAL-007` (failure propagation), `test_dormant_worker_gate.js`.
 
-**Verdict: LIVE (5/5) at boundary level.** S4 is a **distinct TIER-3 (PENDING)** arrow: the
-READ_ONLY_PATCH_PLAN execution gate (G1 live PG + G2 schema + G3 migration order + G4
-baseline + G5 golden test first + G6 approval) governs the atomic-claim correctness
-evidence; unit-level mock coverage of the unconditional-update race is in the durable
-lifecycle tests (`test_durable_mission_lifecycle.js`), but the SELECT-for-update race
-against a real Postgres is **not proven** (Docker-blocked). S4 is NOT claimed strict-
-LIVE; it is TIER-3 PENDING until the live-PG race proof lands.
+**Verdict: LIVE, ATOMIC-CLAIM RACE PROVEN (2026-08-28, real Postgres).** S4 was a
+TIER-3 PENDING arrow pending the live-PG race proof (gated by READ_ONLY_PATCH_PLAN
+G1–G6). The race proof has since **landed against live infrastructure**: 10 rounds ×
+20 independent concurrent DB connections, each an independent `pg` Pool + its own
+`MissionRuntime` instance, all racing `getPending()`→`assign()` on the SAME `created`
+mission → **exactly 1 winner every round (10/10), 0 double-claims, 0 unexpected
+rowCounts**. The production `MissionRuntime.assign()` (mission_runtime.js:106-121)
+guarantees atomicity because the single UPDATE `WHERE ... AND status='created'`
+acquires the row lock and re-evaluates `WHERE` after the first commit → a second
+claim on an already-claimed mission matches 0 rows and is rejected (rowCount 0). The
+`getPending()` SELECT lacks `SKIP LOCKED`, but that is benign: it may return the same
+mission to multiple claimers, yet the conditional UPDATE makes the claim itself
+mutually exclusive. Full proof script + methodology in `docs/EXECUTION_EVIDENCE_LEDGER.md`
+[EMPR]. S4 is now **TIER-2 LIVE-WIRED**. (Unit-level mock coverage of the same race
+remains in `test_durable_mission_lifecycle.js`.)
 
 ## Summary (fresh, not the old 24/5/2) — 3 distinct proof tiers
 
@@ -203,7 +211,7 @@ LIVE; it is TIER-3 PENDING until the live-PG race proof lands.
 | S1 /ingest | ✅ | ✅ | ✅ | ✅ | ✅ | TIER-2 LIVE-WIRED |
 | S2 persist | ✅ | ✅ | ✅ | ✅ | ✅ | TIER-2 LIVE-WIRED |
 | S3 bridge | ✅ | ✅ | ✅ | ✅ | ✅ | TIER-2 LIVE-WIRED |
-| S4 atomic claim | ✅ | ✅ | ✅ | ✅ | ⚠️ (race proof needs PG) | **TIER-3 PENDING** (distinct) |
+| S4 atomic claim | ✅ | ✅ | ✅ | ✅ | ✅ (live-PG race proven) | **TIER-2 LIVE-WIRED** |
 | S5 dispatch | ✅ | ✅ | ✅ | ✅ | ✅ | TIER-2 LIVE-WIRED |
 | W1 observation | ✅ | ✅ | ✅ | ✅ | ⚠️(boundary) | TIER-2 LIVE-WIRED |
 | W2 claim | ✅ | ✅ | ✅ | ✅ | ⚠️(boundary) | TIER-2 LIVE-WIRED |
@@ -215,9 +223,10 @@ LIVE; it is TIER-3 PENDING until the live-PG race proof lands.
 | W8 lineage | ✅ | ✅ | ✅ | ✅ | ⚠️(boundary) | TIER-2 LIVE-WIRED |
 
 **Count under 3-tier stronger definition:** 14/14 arrows REACHABLE + CORRECT +
-NON-STUB. Full 5/5 with **worker-bounded** negative-path test = **2 (W6, W7)**.
-TIER-2 LIVE-WIRED = **11** (S1,S2,S3,S5,W1,W2,W3,W4,W5,W7,W8). TIER-3 = **1**
-(S4 = PENDING live-PG race proof).
+NON-STUB. **Zero TIER-3 arrows remaining** — S4 upgraded from TIER-3 to LIVE-WIRED
+(2026-08-28 live-PG race proof). Full 5/5 with **worker-bounded** negative-path test =
+**2 (W6, W7)**. TIER-2 LIVE-WIRED = **12** (S1,S2,S3,S4,S5,W1,W2,W3,W4,W5,W7,W8).
+TIER-1 = **2** (W6 replay, W7 witness).
 
 **Key change vs prior audit**: the replay arrow (W6) is one of two TIER-1 arrows,
 upgraded from stub to kernel-wired by `852fee10`. This pass additionally **closed
@@ -225,7 +234,11 @@ the W7 witness failure-honesty gap** (previously the sole structural defect on t
 live chain): `WitnessWorker` now reads `replay.verified`, emits `WITNESS_REJECTED`
 on any unverified/failed/no-provider replay, and never fabricates a valid
 attestation — proven by `test_witness_negpath.js` (8/8). "No arrow is currently a
-pass-through stub" is now true for both W6 and W7.
+pass-through stub" is now true for both W6 and W7. **This pass (2026-08-28) closed
+the final TIER-3 gap, S4**: the atomic-claim race was proven against real Postgres —
+10/10 rounds, 20 concurrent independent DB connections per round, exactly 1 winner
+every round (see verdict above). All 14 arrows are now TIER-1 or TIER-2; no arrow is
+PENDING or GAPPED.
 
 ## Priority gaps (deliberate, not "dead")
 1. **✅ W7 witness failure-honesty — FIXED** (this pass). `WitnessWorker` now
@@ -236,9 +249,9 @@ pass-through stub" is now true for both W6 and W7.
    replay surfaces as a canonical event and the witness refuses to attest it.)
 2. **Per-worker negative-path tests** for W1–W5/W8 — malformed-input → `failed`
    (not fabricated success), mirroring the replay RW negative-path suite.
-3. **S4 atomic-claim race proof** — requires live Postgres (G-gate); mock
-   coverage exists but the SELECT-for-update race is the one correctness
-   boundary not yet proven against a real DB.
+3. **✅ S4 atomic-claim race proof — DONE (2026-08-28, live Postgres).** 10 rounds ×
+   20 independent concurrent DB connections, exactly 1 winner every round. S4
+   upgraded TIER-3 → TIER-2 LIVE-WIRED. No TIER-3 arrows remain.
 4. **Live E2E** (Docker-blocked) — the full chain S1→W8 against real Postgres;
    all unit/eval levels green, integration-level still PENDING_LIVE_E2E.
 

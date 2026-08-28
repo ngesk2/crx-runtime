@@ -2728,3 +2728,132 @@ The platform is mature enough that the largest remaining gains come from making 
 1. **History scrub REQUIRED** - plain removal commits do NOT un-leak committed history (live values in 1a7a30ef, 59795121, 3c4c2dcd, aaec592b, 77d830c9). git-filter-repo/BFG. NOT done - requires explicit user direction (hard rule: no force ops/history rewrite).
 2. **Rotation REQUIRED** - Qdrant key + Google OAuth (secret + token) + Yahoo pw are live in real services; placeholder values everywhere mean integrations fail until re-credentialed locally (gitignored .env / env vars).
 3. **NO push** - push remains blocked by 129MB blob in history (documented, not rewritten).
+
+### 2026-08-27 Session - CAPABILITY & INTEGRATION LEDGER (READ-ONLY audit, deliverable)
+
+**Objective (mandate)**: after the committed security remediation, "continue through the incomplete capability/integration ledger." User selected (via question) "Audit & produce prioritized ledger first, then stop for approval before implementing." Docker DOWN. Ledger is READ-ONLY - no wiring/consolidation executed.
+
+**Deliverable**: docs/CAPABILITY_LEDGER.md (branch constitutional-convergence-v2 @ 828520ea). Method: static require-graph BFS from gateway/server.js -> gateway/bootstrap/gateway_runtime.js (NOT bootstrap/index.js/wiring.js, the non-production DI path). 570 scanned .js -> 182 LIVE / 388 STRANDED.
+
+**Key live-surface ground truth**: PING Core v1 spine fully live - UnifiedEventRuntime, CanonicalizationService(+canonical_object), KnowledgeGraph, MissionRuntime/Scheduler, WorkerRuntime+8 canonical workers (ReplayWorker->KernelReplayExecutionProvider, knowledge-promotion), EmbeddingService->QdrantAdapter, EvidenceAuthority, HybridSearch(/knowledge/search), EventBridge+EventToMissionBridge, AIRuntime+OllamaProvider, CapabilityRegistry+OAuth+ConnectorRegistry, DeadLetterAuthority(/mc/dead-letters - LIVE, NOT stranded as prior audits claimed), 5 business authorities. Zero static broken requires on live path.
+
+**Duplicate families (single LIVE winner)**: event persistence (unified_event_runtime wins; gateway event_bus/event_repository/event_outbox/mission_event_bus stranded); worker (worker_runtime+canonical_workers wins; gateway worker_registry/background_workers + ping-runtime/agents + Orca execution stranded); scheduler (mission_scheduler wins; replay_scheduler/scheduler_port/temporal_scheduler_provider/dependency_scheduler + kernel scheduler stranded); replay (ReplayWorker+kernel provider live; agents/replay_worker + replay_scheduler + TS kernel test-only); repository (knowledge_graph wins); connector (connector_registry+capability_registry+oauth wins; integration_manager wired but 0 emissions).
+
+**STRANDED P0 candidates (value)**: S1 event_outbox (table created via migration_engine 002 but NO runtime publisher; migration_engine not invoked at boot), S2 Orca /orchestration (LIVE but discoverOllama:false -> zero models -> no business traffic), S3 replay/witness observability endpoints (evidence emitted but zero HTTP surface), S4 IntelligenceWorker (registered empty eventTypes, skipped; known duplicate path - do NOT wire as-is), S5 knowledge_retrieval/conversation_memory/document_ingestion (overlap w/ HybridSearch+KnowledgeGraph).
+
+**Archive candidates (no live reader)**: orchestration/dormant_classifications/ (429 JSON, ~2.88M lines), ping-runtime/orchestration/*.json (463 metadata JSON). Both non-live, pure archive.
+
+**Prior remaining**: B7 agent moves (5 staged renames) DEFERRED; canonical_event_envelope BLOCKED + duplicate at gateway/replay/canonical_event_envelope.js uninvestigated.
+
+**Recommended priority (NOT executed - awaiting approval)**: P0-1 replay/witness observability endpoints (LOW effort, HIGH value, pure addition on existing data) -> P0-2 outbox publish path or deprecate (LOW) -> P0-3 Orca execution wiring (MED, gated Docker) -> consolidation (single worker-identity decider, one priority scale, confidence on spine - MED, highest leverage) -> archive metadata blobs (no code impact).
+
+**Exit criteria**: no new subsystems, no deletions without wired+tested replacement, wiring-first golden test gate, zero regressions, no history rewrite. Awaiting user direction on which P0 items to implement.
+
+### 2026-08-27 Session - P0-1 COMPLETE (Replay/Witness Observability, statically verified)
+
+**Objective (mandate)**: implement P0-1 from the CAPABILITY_LEDGER priority - replay/witness observability as a thin projection over the LIVE spine only (no stranded-system touch, no new subsystem/worker/DI bootstrapping). Approved by user ("Yes, execute P0-1 (Recommended)").
+
+**Production changes (2 files, node --check OK)**:
+- gateway/bootstrap/gateway_runtime.js: hoisted `let replayProvider = null;` (after hybridSearch/prior deadLetterAuthority; ~:366) so the LIVE KernelReplayExecutionProvider singleton is reachable by the services object for observability consumers; assigned `replayProvider = new KernelReplayExecutionProvider();` inside the pgAvailable try block (~:502); added `deadLetterAuthority, replayProvider,` to the services object (~:655). Still exactly ONE construction site. mission_control mounted at :798 `/mc`.
+- gateway/routes/mission_control.js: destructure adds `replayProvider` (line 15-17). `GET /mc/replay/stats` now reads `const provider = replayProvider ? replayProvider.getStats() : null;` surfacing `provider.{engine_version: replayProvider._engineVersion||'v1', replays_processed, events_replayed, failures}` in addition to the event-derived projection (REPLAY_COMPLETED verified/unverified by_reason + WITNESS_REJECTED count). Provider block is OMITTED (never fabricated) when provider not injected (e.g. PG-down degraded boot). NEW `GET /mc/witness/stats` (event-derived: Promise.all WITNESS_CREATED + WITNESS_REJECTED -> attestations/refusals/total + cap note). `/mc/replay/trace/:correlationId` kept (project replay+witness tail via getCorrelationGroup; 404 when no REPLAY_COMPLETED in chain).
+
+**Golden test**: gateway/test_replay_observability.js (new) - 8/8 PASS (OB-1..OB-8). **Harness = the REAL production composition surface, NOT a mock router**: it does `const createMissionControlRoutes = require('./routes/mission_control'); const app = express(); app.use('/mc', createMissionControlRoutes(services));` + native `http.createServer(app)` + `http.get` against `app.listen(0,'127.0.0.1')`, with `try{...}finally{await close(srv)}` server cleanup. It does NOT pass a second router argument (mission_control.js constructs/returns its own router and ignores any injected one - the mock-router assumption was a test-infra bug, now corrected). Uses the PRE-EXISTING production `express` dependency (`express": "^4.18.2"` in gateway/package.json `dependencies`; package.json + package-lock.json UNTOUCHED by P0-1 - zero deps added). Covers: provider counters + event-derived projection, provider-absent hide, empty-state zero counts, replay/trace tail + 404, witness/stats attestations+refusals (no invented witnessAuthority counters), workers guard intact, gateway_runtime services wiring (regex). Uses live KernelReplayExecutionProvider.getStats() contract {replays,events,failures}, UnifiedEventRuntime.query/getCorrelationGroup contracts, real witness linkage via payload.upstreamEventId === e.event_id.
+
+**Composition contract update**: 	est_replay_composition.js RC-3 previously asserted the literal `const replayProvider = new ...` string. P0-1 hoisted it (`let ... = null` + reassignment) so services can reference it. RC-3 updated to assert the hoisted+single-construction form; RC-4 (single construction) still guards no-duplication. RC-1..RC-8 now pass.
+
+**Regression (all exit-code green)**: replay_observability 8/8, replay_composition 8/8, replay_worker_wiring 17/17, witness_negpath 8/8, mission_trace, correlation_chain, pipeline_bridge, ingest_boundary 24/24, slice3a 8/8, phase_d 7/7, phase0 8/8, knowledge_search 10/10, trace_propagation 10/10, mc_event_mission_bridge. Eval harness 112/112 (10 scenarios). Evidence 12/12. Zero failures. Docker DOWN -> static/contract verification only (no live E2E).
+
+**Key decisions (P0-1)**:
+- replayProvider is now LIVE-shared, not local: moving it into services (1-line) enables observability without a second provider instance or any stranded-system touch. Single construction preserved.
+- Provider block is honest: present only when replayProvider injected (PG-up normal boot); hidden entirely otherwise. Absent fields never fabricated.
+- Witness status is event-derived ONLY: WitnessAuthority is a pure createWitness hashing function with NO runtime counters; the honest status surface is the emitted attestation stream (WITNESS_CREATED / WITNESS_REJECTED from ping_events).
+- No new replay subsystem / event bus / worker runtime / DI bootstrap; /mc/replay/trace is a thin projection on the confirmed LIVE data, not a new engine.
+
+**Next steps**:
+1. **P0-2** (event_outbox): classify - either wire a publish path or document deprecation. User leans documented deprecation unless a concrete live transactional-event requirement exists. NO auto-implement.
+2. Still pending user direction: B7 agent moves (DEFERRED), canonical_event_envelope (BLOCKED + duplicate uninvestigated), google cluster (deferred dependency resolution).
+3. Live E2E (S4 race proof, full initialize() path incl. services.replayProvider) still Docker-blocked.
+
+### 2026-08-28 Session — P0-2 DEPRECATE decision + Docker recovery + P3 3-audit ledger
+
+**14:00** | P0-2 final decision FROZEN: **B — DEPRECATE `event_outbox`** (KEEP-DORMANT, archive-candidate). No publisher/consumer/migration/retry-shim/mission_event_bus revival. Corroborated by real traffic (event_outbox=0). `docs/P0_2_EVENT_OUTBOX_DECISION.md`. | Freeze ledger + recover Docker.
+
+**14:15** | **Canonical evidence ledger WRITTEN** `docs/EXECUTION_EVIDENCE_LEDGER.md` (canonical handoff source): 2026-08-27 empirical window; 3 real POST /ingest events (201) → full 9-event causal chain; correlation/causation preservation; namespace tenant::hpp at every hop; durable ping_events 1050→1091→1132→1173 (+41/event); replay provider current-process counters vs durable historical projections (resolved semantics); real witness event-derived evidence; P0-2 live-traffic corroboration (event_outbox=0, mission_events=0); 3 evidence classes `[EMPR]/[STAT]/[INFE]` throughout; §12 handoff directives. | Recover Docker.
+
+**14:30** | **Docker recovered** (was down with npipe/dockerDesktopLinuxEngine unavailable, com.docker.service Stopped). `Start-Service` failed ("Cannot open"), but launching `"$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"` recovered daemon within ~90s poll (29.5.3). `ping-gateway` was Exited(255), needed `docker start ping-gateway` (healthy again); `ping-postgres` Up(healthy). qdrant/embedding remain external-dependency-limited (503 on /health recorded). | Revalidate event-4.
+
+**14:45** | **Real-runtime revalidation (event 4, current process)** after restart — provider counter re-proven live: `/mc/replay/stats` baseline `replays_processed:0` with durable `total_replays:34` (exactly the historical-vs-process-lifetime distinction) → after chain `replays_processed:1, events_replayed:1, failures:0`; durable `total_replays:35`. Witness 34→35 attestations, refusals 0. Trace `/mc/replay/trace/690ffe140a…`: groupSize 9, single replay `reason:kernel_verified, verified:true, fingerprint:sha256:ece0fe46…, witness_root:07135bf1…`, authority block complete, witness `[{WITNESS_CREATED 916b8bc0…}]`. PG 9-event chain ordered by `metadata->>'correlation_id'='690ffe14…'`: REVIEW_RECEIVED→OBSERVATION_CREATED→CLAIM_CREATED→CLASSIFICATION_CREATED→RECOMMENDATION_CREATED→PROJECTION_CREATED→REPLAY_COMPLETED→WITNESS_CREATED→LINEAGE_CREATED, each causation_id = prev event_id, namespace tenant::hpp at every hop. DB counts post-event-4: `ping_events`=1214, `event_outbox`=0, `mission_events`=0, `ping_bridge_cursors`=0. `[EMPR]` | Start P3 static audit.
+
+**15:00** | **P3 audit A (worker-identity decider)** COMPLETE (read-only): `EVENT_MISSION_MAP` (bridge:23-70) has NO worker field (removed, bridge:18-22); `MISSION_WORKER_MAP` (scheduler:30-69) maps mission_type→worker NAME used ONLY for `assigned_to` labeling (:230) + registered-guard (:191); **ACTUAL decider = `WorkerRuntime.dispatch` (worker_runtime.js:78): `entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType)`** — verified first-hand this session. Scheduler reconstructs `event.event_type = payload.event_type || mission.mission_type` (:220) so dispatch runs on the ORIGINAL business event type, never mission_type. A mission whose label-worker doesn't match the event type → dispatch returns null → scheduler skips+fails (:249-256), never phantom-completes. Single execution decider confirmed; MISSION_WORKER_MAP is labeling-only. | P3 audit B.
+
+**15:15** | **P3 audit B (priority scale)** COMPLETE: single canonical scale int 0-3, higher=more urgent (0=system, 3=revenue-critical). Single ingress `canonicalPriority()` (priority_boundary.js:67-91) applied ONLY at bridge:134. Persisted `ping_missions.priority INT` (mission_runtime.js:82 `|| 0`), ordered `priority DESC` (getPending :311 — consistent high=urgent). Scheduler reads the int column (:229), never payload. Orca 1-10 / IntelligenceWorker strings / mission_compiler float all map through the same boundary, all dormant producers. **No live contradiction; single scale, single meaning.** | P3 audit C.
+
+**15:30** | **P3 audit C (confidence semantics)** COMPLETE: producer-authored at spine (canonicalization_service.js:134,155 `=== undefined ? 0.5`), carried verbatim through spine (unified_event_runtime.js:123-138, carries not computes) → bridge (event_to_mission_bridge.js:131) → workers (`BaseWorker._emit` canonical_workers.js:53-71: explicit wins / inherited + `confidence_source:'inherited'` / null) → classification (:561,568) → recommendation (:633,634) → projection (knowledge_graph.js:79 null-preserving + `confidence_provenance` :46). **Only recompute = human approval** KnowledgePromoter 1.0/0.2 (:51). Retrieval rank fallback null→0.5 local-only (evidence_authority.js:159-161). AI inference hardcodes 0.8 (inference_adapter.js:140,156, model provenance). No fabrication on live spine. Static harmless notes: knowledge_graph:34 DEFAULT 1.0 unreachable; mission_runtime:34 DEFAULT 0 vs canonicalPriority(null)=1 (bridge never passes null). | Write ledger.
+
+**15:45** | **P3 deliverable WRITTEN** `docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md`: 3-audit ledger (worker-identity / priority / confidence), all first-hand file:line, 3-class evidence. **Verdict: NO active contradiction on the live execution path — worker-identity, priority, confidence each already converge to exactly ONE canonical owner.** MISSION_WORKER_MAP + IntelligenceWorker + Orca scale are labeling-only or dormant, not live deciders. Only recommend doc-contract annotations, NO code changes. FROZEN — await user direction to implement. | Handoff complete.
+
+## Session - Key Decisions (P0-2 + P3)
+- **event_outbox = P0-2 B (DEPRECATE, KEEP-DORMANT)**: frozen. Zero publisher/consumer/migration/retry-shim/mission_event_bus revival; corroborated by live event_outbox=0.
+- **LIVE PING runtime reached new empirical peak**: full 9-event causal chain incl. REAL replay (kernel_verified, fingerprint, witness_root, artifact_count) + REAL witness attestation re-proven against real Postgres after a restart, proving provider counters are process-lifetime and durable replay metrics are event-derived.
+- **ONE worker-identity decider**: WorkerRuntime.dispatch eventType→eventTypes match (worker_runtime.js:78). MISSION_WORKER_MAP = labeling-only. Empty eventTypes = dormant, not catch-all.
+- **ONE priority scale**: priority_boundary.canonicalPriority int 0-3 (higher=urgent), single ingress at bridge. No payload priority read downstream.
+- **ONE confidence semantic**: spine metadata.confidence, carried verbatim, provenance via confidence_source, null-preserving, human-approval-only recompute.
+- **No P3 code changes this pass** — read-only audit; ledger is the deliverable. A/B/C doc-contracts wait on user direction.
+
+## Session - Next Steps (awaiting user direction)
+1. **P3 follow-up**: decide whether to apply the 3 doc-contract annotations (MISSION_WORKER_MAP labeling-only; ping_missions.priority default static-note; knowledge_graph confidence DEFAULT unreachable-note). No code change required for correctness.
+2. **Deferred P3-adjacent**: IntelligenceWorker duplicate-path merge; Orca execution wiring (discoverOllama:false); confidence-on-spine persistence column (union already in metadata; no new column needed for single-owner reality).
+3. **M3 remaining**: B7 agent moves (5 staged renames, DEFERRED until correctness set), canonical_event_envelope (BLOCKED + duplicate uninvestigated), google cluster (deferred dependency resolution).
+4. **Live E2E**: Docker currently UP + gateway healthy — S4 race proof + full initialize() path incl. services.replayProvider now runnable when directed.
+
+### 2026-08-28 Session — SENIOR-DEV EXECUTION MODE: P3 annotations + S4 live race proof (Step 1-2)
+
+User directive: continue convergence in dependency order, senior-dev mode, use real runtime, canonical source-of-truth = the three handoff docs + gateway boot path. Do not reopen P0-1/P0-2; P3 semantics settled.
+
+**Step 1 — P3 doc-contract annotations APPLIED (zero behavior change, comment-only):**
+- `ping-runtime/orchestration/mission_scheduler.js` (MISSION_WORKER_MAP header): [DOC-CONTRACT] — labeling/assignment metadata ONLY, NOT an execution-routing decider. Single decider = WorkerRuntime.dispatch (worker_runtime.js:78, eventTypes match). Dispatch runs on original business event_type, never mission_type. Ref docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md audit A.
+- `ping-runtime/boundaries/priority_boundary.js` (header): [DOC-CONTRACT] — single scale int 0-3 higher=more urgent, single ingress canonicalPriority() at bridge:134, persisted ping_missions.priority INT ordered DESC, scheduler never recomputes. Payload-string priority is LIVE-PRODUCED but EXECUTION-INERT. Harmless legacy note: column DEFAULT 0 vs canonicalPriority(null)=1 — bridge never passes null. Ref ledger audit B.
+- `ping-runtime/knowledge/knowledge_graph.js` (header): [DOC-CONTRACT] — confidence column DEFAULT 1.0 UNREACHABLE (every addNode INSERT provides it); NULL preserved not fabricated; ONLY approved recompute = human approval (KnowledgePromoter); distinguish INFERENCE/model provenance (inference_adapter 0.8) from canonical producer confidence. Ref ledger audit C.
+- Verification: node --check clean on all 3 files. priority_boundary 33, priority_bridge_integration 49, slice3a 8, phase_d 7, phase0 8, commissioning 14 scenarios 0 failed. Zero behavior change.
+
+**Step 2 in progress** — S4 race proof + full initialize() live E2E (real Docker). See AGENTS.md below for the canonical-doc pointer rule. | Step 3 (B7) after S4.
+
+### 2026-08-28 Session — S4 ATOMIC-CLAIM RACE PROOF + FULL initialize() LIVE E2E (Step 2 COMPLETE)
+
+Senior-dev execution mode (dependency order). Step 2 of the convergence program COMPLETE on REAL Docker (up ~14 min: ping-gateway :8080, ping-postgres healthy :5433, ollama :11434, brain-qdrant :6333, brain-postgres :5432). Search for no new subsystem; scalar audit-first, smallest justified change. P0-2 remains frozen B, P3 semantics settled (no reopening).
+
+**S4 atomic-claim race prove (closes last TIER-3 arrow in LIVE_ARROW_AUDIT) [EMPR]:**
+- Real live ping-postgres (127.0.0.1:5433 postgres/postgres ping_runtime), ACTUAL production MissionRuntime.assign() (mission_runtime.js:106-121) with 20 independent pg Pools/MissionRuntime instances per round (independent connections → genuine row-lock contention) all racing getPending()→assign() on the same created mission; 10 rounds.
+- Result: exactly 1 winner every round (10/10), 0 double-claims, 0 unexpected rowCounts.
+- Why atomic: single conditional UPDATE WHERE mission_id AND status='created' takes row lock; concurrent 2nd UPDATE blocks till commit, re-evaluates WHERE (now 'assigned') → 0 rows → rejected. getPending() lacking SKIP LOCKED is benign (may return same mission to many, but claim itself mutually exclusive).
+- S4 upgraded TIER-3 → TIER-2 LIVE-WIRED. No TIER-3 arrows remain (14/14 all TIER-1/TIER-2).
+
+**Full initialize() / live spine E2E (event 4b) [EMPR]:**
+- Baseline ping_events=1214, provider replays_processed:1/events_replayed:1, durable total_replays:35/kernel_verified:4.
+- Live POST /ingest REVIEW_RECEIVED (tenant::hpp) → 200 eventId 1b33ccc77be5...
+- 35s later: ping_events=1255 (+41 exact ledger figure); durable total_replays:36/kernel_verified:5; provider replays_processed:2/events_replayed:2/failures:0 (singleton identity proven — one ingest → +1 provider exactly).
+- Scheduler dispatched 8→16, completed 8→16, failed 0, skipped 31.
+- Full 9-event causal chain proven (REVIEW_RECEIVED→OBSERVATION→CLAIM→CLASSIFICATION→RECOMMENDATION→PROJECTION→REPLAY→WITNESS→LINEAGE), tenant::hpp every hop, causation_id=prev event_id, correlation_id 1b33ccc77be5...; exactly 1 of each event type (dedup/ON CONFLICT integrity).
+- Replay evidence block complete (KernelReplayExecutionProvider, verified:true, kernel_verified, fingerprint sha256:3c5cce50..., witness_root 73a74073..., artifact_count:1, canonical_input_hash, deterministic_execution_identity). Witness attestation WITNESS_CREATED, refusals 0. Trace groupSize:9.
+
+**State/repo care:** S4_RACE test artifacts (10 missions) created against live DB and DELETED (clean). Race script lives ONLY in %TEMP% (s4_race_proof.js), zero repo code changes. Only repo edits = docs/LIVE_ARROW_AUDIT.md (S4 rows/verdict/counts + key-change) + docs/EXECUTION_EVIDENCE_LEDGER.md (new section 13). All other dirty entries pre-existing (event_queue DDL-persistence, generated registries, gateway_runtime/mission_control/replay_composition from prior P0-1). No commit this step (senior-dev mode: commit units when Step 3 B7 moves land together).
+
+**Next Steps (dependency order):**
+1. Step 3 — B7 agent moves (5 staged renames: agent_memory_authority, base_worker, distributed_desktop_agents, replay_worker, worker_port → ping-runtime/agents/) one-at-a-time with real composition test (gateway_runtime boot-load) after each. Rewire 4 stale agent refs (../../gateway/{witness_authority,constitution_version_authority}) + 2 gateway/tests wrong-depth refs (../../ping-runtime). 
+2. Step 4 — IntelligenceWorker audit (duplicate path, namespace drop).
+3. Step 5 — Orca model discovery/execution against ollama container (discoverOllama:false).
+4. Step 6 — M3 remaining (canonical_event_envelope BLOCKED, google cluster deferred).
+
+### 2026-08-28 Session — Steps 3-6 COMPLETE (B7 verified, IntelligenceWorker audited, Orca proven, envelope resolved) + Step 5 doc-contract
+
+**Step 3 — B7 agent moves (VERIFIED COMPLETE, no rework)**: 5 staged renames (agent_memory_authority, base_worker, distributed_desktop_agents, replay_worker, worker_port -> ping-runtime/agents/) already tracked+clean at ping-runtime/agents/; 4 stale refs already corrected to require('../../gateway/{witness_authority,constitution_version_authority}') (resolvable); 2 gateway/tests refs already require('../../ping-runtime/ai/inference_adapter') (correct depth); gateway_runtime boot-load OK; all 5 agent modules require.resolve OK.
+
+**Step 4 — IntelligenceWorker audit RESOLVED (comment-only)**: intelligence registered with eventTypes: [] (canonical_workers.js:721) -> structurally dormant, skipped by WorkerRuntime registration loop (:724-738, empty eventTypes), ZERO live events, dual fan-out unreachable. Namespace drop already fixed (inline BaseWorker._emit preserves this._event?.namespace/correlation_id/confidence). Appended [DOC-CONTRACT / KEEP-DORMANT] at :716-724. node --check clean; commissioning 14 scenarios 0 failed. Ledger §14.
+
+**Step 5 — Orca discovery EMPIRICALLY PROVEN + KEEP-DISABLED decision**: s5_orca_discovery.js (real ping-runtime/orchestration/execution/ollama_provider.js vs live ollama container) discoverWorkers() -> 4 workers (ollama:qwen2.5-coder:14b, :7b, llama3:latest, nomic-embed-text:latest), all capability/context/replay-mapped. discoverOllama:false is an INTENTIONAL gate (proven working, but Orca is a parallel execution authority not the production spine; single inference owner = AIRuntime + ping-runtime/ai/ollama_provider.js; single decider = WorkerRuntime.dispatch). Added [DOC-CONTRACT / KEEP-DISABLED] comment at gateway_runtime.js:325-337 (replayProvider hoist from prior P0-1 still present in working tree); node --check + boot-load PASS. Ledger §15.
+
+**Step 6 — canonical_event_envelope duplicate-path INVESTIGATION RESOLVED**: two files are LAYERED, not conflicting duplicates — PRIMARY gateway/canonical_event_envelope.js (11.5KB, live spine event authority, DI by gateway_runtime/wiring + gateway-root tests) vs KERNEL gateway/replay/kernel/canonical_event_envelope.js (2.9KB, compiled-TS pure validation, replay-path only via kernel_replay_execution_provider -> replay_event_stream + kernel index). No execution path imports both; neither dead/shadowed. B4 BLOCK disposal complete via commit 15422985 (repoRoot injection). No consolidation warranted. Ledger §16.
+
+**PRE-EXISTING FAILURE (not a regression)**: test_canonical_object_generator.js FAILS 14/21 at HEAD on constitutional-convergence-v2 @ 828520ea — 7 failures (provenance payload undefined, filename determinism, class heritage). Generator + test both UNMODIFIED since M3 refactor (a9d9aeee); test imports neither gateway_runtime nor anything from P0-1/Steps 1-6; tree-sitter + grammars all resolve. Root cause = baseline code behavior on this branch; NOT caused by this session. All other key suites PASS (replay_composition, replay_worker_wiring, witness_negpath, replay_observability, priority_boundary, priority_bridge_integration, pipeline_bridge, ingest_boundary, slice3a, phase_d, phase0, knowledge_search, canonical_object all exit-0).
+
+**Session edits (code): ONLY the gateway_runtime.js discoverOllama doc-contract comment.** Ledger §15+§16 appended; AGENTS.md this log. No commit this session (senior-dev mode: commit units with Step 5 doc-contract + ledger + AGENTS as one coherent unit when directed).
