@@ -332,19 +332,19 @@ Two files exist, serving DIFFERENT layers (NOT conflicting duplicates):
 - The standalone analysis scripts live in %TEMP% (s6_scan.js / s6_scan2.js), zero repo code
   changes for this step. No commit needed from Step 6 alone (evidence only).
 
-## 17. IntelligenceWorker Final Verdict — Consumer-Side Confirmation (2026-08-28) [STAT]
+## 17. IntelligenceWorker Final Verdict ï¿½ Consumer-Side Confirmation (2026-08-28) [STAT]
 
 **Objective:** close the IntelligenceWorker KEEP-DORMANT verdict (section 14) with the
 decisive consumer-side evidence: is there any LIVE consumer that needs content-grounded
 (AI) classification the deterministic _categorize/_prioritize pair cannot provide?
 
 ### Three live consumers of CLASSIFICATION_CREATED / RECOMMENDATION_CREATED [STAT, first-hand]
-1. `ping-runtime/orchestration/event_to_mission_bridge.js:61-62` — routes
+1. `ping-runtime/orchestration/event_to_mission_bridge.js:61-62` ï¿½ routes
    CLASSIFICATION_CREATED -> RECOMMENDATION_CREATE mission (priority 2) and
    RECOMMENDATION_CREATED -> PROJECTION_CREATE mission (priority 1).
-2. `ping-runtime/embeddings/embedding_service.js:28` — `RECOMMENDATION_CREATED` in
+2. `ping-runtime/embeddings/embedding_service.js:28` ï¿½ `RECOMMENDATION_CREATED` in
    INDEXABLE_TYPES -> projected to Qdrant knowledge.
-3. `gateway/bootstrap/gateway_runtime.js:594` — `RECOMMENDATION_CREATED` in the
+3. `gateway/bootstrap/gateway_runtime.js:594` ï¿½ `RECOMMENDATION_CREATED` in the
    graph-projection indexable set.
 
 ### Critical finding: ZERO consumers read classification/recommendation CONTENT [STAT]
@@ -377,7 +377,7 @@ decisive consumer-side evidence: is there any LIVE consumer that needs content-g
 ## 18. M3 Google Cluster + googleapis Audit RESOLVED: NO ACTIVE FAILURE, KEEP IN PLACE (2026-08-28) [EMPR/STAT]
 
 **Objective:** audit the 7-file Google cluster + `googleapis` dependency resolution (the
-M3 "google cluster deferred" item) — locate files, live-boot reachability, real import
+M3 "google cluster deferred" item) ï¿½ locate files, live-boot reachability, real import
 graph, dependency resolution, configured-vs-present, failure class. NO broad dep changes.
 
 ### Ground truth: only 5 files actually require('googleapis') [STAT]
@@ -385,7 +385,7 @@ graph, dependency resolution, configured-vs-present, failure class. NO broad dep
   business_profile, people_adapter, gmail_adapter, calendar_adapter}.js` (5 files).
 - `ping-runtime/connectors/{google_connector,oauth_provider}.js` were in the `rg -l
   "googleapis"` list ONLY because they contain `https://www.googleapis.com/...` URL
-  strings (OAuth scopes/token/revoke endpoints) — they do NOT import the npm package.
+  strings (OAuth scopes/token/revoke endpoints) ï¿½ they do NOT import the npm package.
   Zero npm-package dependency in those 2.
 
 ### Dependency class: PASS [EMPR]
@@ -430,8 +430,8 @@ twins; ZERO live competing authorities warrant consolidation.
 - LAYERED (delegate, NOT duplicate):
   - `gateway/canonical_object_authority.js:26,60` requires+invokes `createCanonicalObject`.
   - `gateway/constitutional_object_factory.js:17,44` requires+invokes `createCanonicalObject`.
-- LAYERED KERNEL TWIN (ledger §16): `gateway/replay/kernel/canonical_event_envelope.js` (replay-path validation only).
-- LIVE SPINE AUTHORITY (ledger §16): `gateway/canonical_event_envelope.js` (DI: gateway_runtime/wiring).
+- LAYERED KERNEL TWIN (ledger ï¿½16): `gateway/replay/kernel/canonical_event_envelope.js` (replay-path validation only).
+- LIVE SPINE AUTHORITY (ledger ï¿½16): `gateway/canonical_event_envelope.js` (DI: gateway_runtime/wiring).
 - DORMANT hand-builder: `gateway/github_constitutional_objects.js` hand-constructs
   `constitutionalObject = {...}` shapes (lines 113/209/298/...), does NOT call
   createCanonicalObject. BUT reachable ONLY via `github_normalizer.js`
@@ -450,7 +450,7 @@ twins; ZERO live competing authorities warrant consolidation.
   `mission_runtime.js:344-390` (getTrace), `knowledge_graph.js:65-96` (stores col),
   `unified_event_runtime.js:322-333` (getCorrelationGroup). `ping-runtime/agents/*`
   use correlation_id as a distinct domain label (memory_id/runtime_id) on dormant emit
-  paths — not a competing definition of the spine causal root.
+  paths ï¿½ not a competing definition of the spine causal root.
 
 ### C. Worker-identity/priority/confidence/replay families (already resolved, re-affirmed) [STAT]
 - Worker identity: ONE decider = WorkerRuntime.dispatch (eventTypes match, worker_runtime.js:78).
@@ -458,7 +458,7 @@ twins; ZERO live competing authorities warrant consolidation.
 - Priority: ONE scale int 0-3 via canonicalPriority (priority_boundary.js). (P3 audit B)
 - Confidence: spine metadata.confidence carried verbatim, human-approval-only recompute. (P3 audit C)
 - Replay: ReplayWorker -> KernelReplayExecutionProvider (single live engine); kernel
-  twin = layered replay-validation. (ledger §16, replay convergence commit 852fee10)
+  twin = layered replay-validation. (ledger ï¿½16, replay convergence commit 852fee10)
 
 ### Verdict [INFE]
 - NO two reachable competing authorities for the same runtime decision in any of the six
@@ -468,7 +468,7 @@ twins; ZERO live competing authorities warrant consolidation.
 ## 20. Live E2E Deep-Verification (Docker UP, full initialize() path incl. services.replayProvider) (2026-08-28) [EMPR]
 
 Docker UP: ping-gateway (2h), ollama (2h), ping-postgres healthy, brain-qdrant. Gateway
-/health returns 503 (known degraded-async embedding/Qdrant — NOT a product failure).
+/health returns 503 (known degraded-async embedding/Qdrant ï¿½ NOT a product failure).
 POST /ingest is the canonical production boundary.
 
 ### A. Running container carries P0-1 code (replayProvider reachable in deployment) [EMPR]
@@ -476,7 +476,7 @@ POST /ingest is the canonical production boundary.
   `provider:{engine_version:v1, replays_processed:2, events_replayed:2, failures:0}`
   + durable `total_replays:36, verified:36, kernel_verified:5, witness_rejected:0`.
 - The provider block presence proves the P0-1 observability + services.replayProvider
-  singleton are live in the deployed runtime — full initialize() path incl.
+  singleton are live in the deployed runtime ï¿½ full initialize() path incl.
   services.replayProvider is EMPIRICALLY reachable (not just boot-load static).
 
 ### B. Fresh live E2E through production boundary [EMPR]
@@ -494,7 +494,7 @@ POST /ingest is the canonical production boundary.
   KernelReplayExecutionProvider, namespace tenant::hpp (preserved), correlation_id
   preserved (2db71cee...), source_event_id 20661f7e..., violation_count 0,
   canonical_input_hash "replay-3dde97b3b0c3" (= deterministic replay-transcript
-  identity, matches ledger §17 semantics; not a hash of the triggering event).
+  identity, matches ledger ï¿½17 semantics; not a hash of the triggering event).
 - witness[0] = WITNESS_CREATED d9dbe3dd... attestation "witness-e269b7358b685933".
 
 ### C. Counter semantics re-proven (process-lifetime vs durable-derived) [EMPR]
@@ -508,3 +508,62 @@ POST /ingest is the canonical production boundary.
   real kernel replay verification + witness attestation, namespace preserved end-to-end,
   all on real Postgres (durable). No regressions. /mc/scheduler/stats 404 = endpoint
   name mismatch, not product failure. LIVE_ARROW_AUDIT TIER-2 arrows re-confirmed live.
+
+## 21. Repository History Bloat Inventory - PUSH BLOCKER CHARACTERIZATION (2026-08-28) [EMPR]
+
+Deterministic enumeration of the repository's history bloat driving the long-standing
+"push blocked by 129MB blob" constraint. Conducted on the MAIN repo object store
+(C:\Users\nolan\PING/.git, ~1,814.7 MB total; largest pack pack-f0c58953... = 1,748.6 MB).
+Method: `git rev-list --objects --all` + `git cat-file --batch-check` (Python 3.11), i.e.
+blob reachability + real object sizes, NOT pack-delta guesses.
+
+### A. Largest blobs reachable from --all (top 10) [EMPR]
+```
+221,945,344  crx-ui-next.tar
+168,239,020  crx-ui-next-extracted/blobs/sha256/6859025b8a8f...
+156,809,432  crx-ui-next-extracted/layer3/app/node_modules/@next/swc-linux-x64-musl/...
+136,142,477  .tmp.driveupload/387785
+135,864,320  CascadeProjects/infra/ui-next/node_modules/@next/swc-win32-x64-msvc/next-swc.win32-x64-msvc.node
+131,406,240  crx-ui-next-extracted/layer3/app/node_modules/@next/swc-linux-x64-gnu/...
+103,311,167  .tmp.driveupload/241607
+102,879,927  .tmp.driveupload/402423
+ 78,655,280  .tmp.driveupload/399614
+ 64,086,941  CascadeProjects/infra/ui-next/.next/cache/webpack/client-production/0.pack
+```
+Plus 30-35MB files: ping-runtime/orchestration/CrossReferenceMatrix.json (35.9MB),
+SymbolRouter.json (32.6MB), more .next/cache/webpack packs, many more .tmp.driveupload.
+Total reachable blob bytes: 3,248.2 MB (26,409 reachable blobs); on-disk store smaller
+(~1.8GB) due to delta compression + midx dedup.
+
+### B. Dominant bloat classes (all reachable: UI tarballs/extracted layers +
+node_modules + .next webpack cache + .tmp.driveupload temp uploads + orchestration JSON) [EMPR]
+1. UI build artifacts: crx-ui-next.tar + crx-ui-next-extracted/ + CascadeProjects/infra/ui-next/node_modules/ + .next/cache/webpack/*.  (hundreds of MB)
+2. .tmp.driveupload/* temp files (187 blob objects) - committed-then-deleted drift chunks.
+
+### C. What the ACTIVE branch (constitutional-convergence-v2 @ c7c6946c) ACTUALLY reaches [EMPR]
+- rev-list --objects branch: CONTAINS next-swc.win32-x64-msvc.node (1) + .tmp.driveupload (187)
+  + CrossReferenceMatrix.json (1).
+- **CURRENT TIP TREE (/ls-tree -r c7c6946c): .tmp.driveupload = 0, next-swc = 0** (pure
+  historical, committed-then-deleted; NOT in the live snapshot). CrossReferenceMatrix.json = 1
+  (still tracked in current tree, 35.9MB, but zero live readers - ledger archive candidate).
+- The 129MB "next-swc.win32-x64-msvc.node" blob is on the ACTIVE branch's HISTORY (not tip).
+
+### D. Decision-relevant classification [INFE]
+- **History bloat (blocks push, needs REWRITE - destructive, direction-gated):**
+  .tmp.driveupload/* (187 blobs), next-swc.win32-x64-msvc.node (135.9MB), crx-ui-next.tar +
+  extracted layers + .next/cache webpack + CascadeProjects node_modules. Remove via
+  git-filter-repo/BFG + force-push. HARD RULE: no force ops / no history rewrite without
+  explicit user direction. Also overlaps with the SECURITY_SWEEP history scrub (Qdrant/
+  Google/Yahoo secrets in 1a7a30ef, 59795121, 3c4c2dcd, aaec592b, 77d830c9).
+- **Live-tree dead weight (normal commit, NON-destructive):** CrossReferenceMatrix.json (35.9MB)
+  + SymbolRouter.json (32.6MB) - tracked in current tree, zero live readers (CAPABILITY_LEDGER
+  archive candidates). Removable via ordinary commit, no rewrite required.
+- Remote tracking is sparse: origin only tracks main (6c4b5317), audit-hardening (defdede6),
+  constitutional-trunk (ffc2b4d6). constitutional-convergence-v2 is local-only (never pushed).
+
+### Verdict
+- The push blocker is REAL for the active branch (history bloat present on branch-v2 path).
+- Highest-confidence NON-destructive action = commit live-tree archive-blob removals
+  (CrossReferenceMatrix.json/SymbolRouter.json family) as a normal commit.
+- Full unblock requires the history rewrite (destructive) - awaiting explicit user direction.
+
