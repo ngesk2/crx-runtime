@@ -602,3 +602,35 @@ weight"). Audit-first verification completed first.
   the removal. History bloat (ledger 21) is NOT touched here - that remains the
   direction-gated destructive rewrite step.
 
+## 23. B7 Agent Moves - Empirical Status Resolution (2026-08-28) [EMPR]
+
+Resolves a stale-status contradiction between prior handoffs (one claimed the 5 B7 agent
+moves were "already committed at a9d9aeee"; another claimed "5 staged renames, already
+verified on disk, commit when directed"). Empirically inspected, not assumed.
+
+### Empirical evidence [EMPR]
+- `git diff --cached` = EMPTY -> zero staged changes. There is NO pending rename allowlist.
+- Tracked files under `ping-runtime/agents/` = ALL 5 B7 files present:
+  agent_memory_authority.js / base_worker.js / distributed_desktop_agents.js /
+  replay_worker.js / worker_port.js.
+- OLD paths absent from index (git ls-files --error-unmatch fails) for all 5:
+  gateway/{agent_memory_authority,base_worker,distributed_desktop_agents,replay_worker,worker_port}.js
+- Last commit touching each new path = `a9d9aeee "refactor(gateway): M3 migration -
+  relocate gateway modules to ping-runtime families"` for all 5.
+- `git merge-base --is-ancestor a9d9aeee HEAD` -> exit 0 (a9d9aeee IS in HEAD history).
+- `git show --name-status a9d9aeee` shows 5 R rename records:
+  gateway/agent_memory_authority.js -> ping-runtime/agents/ (R097),
+  gateway/base_worker.js -> ping-runtime/agents/ (R100),
+  gateway/distributed_desktop_agents.js -> ping-runtime/agents/ (R097),
+  gateway/replay_worker.js -> ping-runtime/agents/ (R091),
+  gateway/worker_port.js -> ping-runtime/agents/ (R100).
+
+### Verdict
+- **B7 is COMMITTED at a9d9aeee** and inherited by the current branch (HEAD). The "5 staged
+  renames" claim was STALE. There is NO clean rename allowlist to commit. B7 is CLOSED.
+- No commit fabricated for already-landed work. Working tree (incl. P0-1 hoist in
+  gateway_runtime.js, docked event_queue DDL files, generated registries) intentionally left
+  unstaged and untouched.
+- Corrective note for future handoffs: stale summaries are NOT authoritative over fresh
+  [EMPR] inspection. Point to THIS section + canonical sources before acting on B7.
+
