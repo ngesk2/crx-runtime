@@ -2876,3 +2876,15 @@ Ledger section 17 appended (read-only, no code edit).
 reachability from gateway_runtime.js googleConnector :659, real import graph, npm ls googleapis, configured-vs-present,
 classify failure class WITHOUT broad dep changes), then canonicalization families audit (layered-not-duplicate rule).
 Commit earned edits as explicit allowlist units, preserving unstaged P0-1 hoist in gateway_runtime.js.
+
+### 2026-08-28 Session -- M3 Google cluster + googleapis audit RESOLVED (ledger 18, no code change)
+
+**Verdict: NO ACTIVE FAILURE of any class; KEEP in gateway/google/. Item CLOSED.**
+- Only 5 files actually `require('googleapis')` (gateway/google/{google_auth,business_profile,people_adapter,gmail_adapter,calendar_adapter}.js). The other 2 in the earlier rg list
+  (ping-runtime/connectors/{google_connector,oauth_provider}.js) matched ONLY via `https://www.googleapis.com/...` URL strings -- zero npm dependency, REST/URL OAuth only.
+- Dependency PASS [EMPR]: googleapis ^173.0.0 declared (gateway/package.json:32), installed 173.0.0, resolves from all 5 gateway/google files (gateway/node_modules).
+- Reachability LIVE [STAT]: all 5 required at gateway_runtime.js:55-61 + constructed unconditionally :237-249 wrapped into GoogleConnector, registered in ConnectorRegistry :255-259. Boot-load gate = GATEWAY RUNTIME LOADS OK.
+- Config NO boot failure [STAT]: google_auth.js:16-19 lazy config/process.env reads w/ localhost redirect fallback; no file/cred access at construction.
+- Architectural KEEP-correct [INFE]: B2 move-to-ping-runtime broke googleapis resolution (only gateway/node_modules carries it). Gateway is the sole construction site; moving has no benefit. Keep at gateway/google/. No move, no broad dep change.
+
+**Next** (audit-first, dependency order): canonicalization families audit (apply Step 6 layered-not-duplicate rule across event-envelope/worker-identity/priority/confidence/replay/correlation families; only consolidate TWO reachable competing authorities for ONE runtime decision). Commit units as explicit allowlist, preserving unstaged P0-1 hoist in gateway_runtime.js.

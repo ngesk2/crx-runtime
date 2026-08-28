@@ -373,3 +373,46 @@ decisive consumer-side evidence: is there any LIVE consumer that needs content-g
   never emit the canonical pair's outputs). None currently satisfied.
 - No code change warranted. `[DOC-CONTRACT / KEEP-DORMANT]` annotation at
   canonical_workers.js:716-724 already records this contract.
+
+## 18. M3 Google Cluster + googleapis Audit RESOLVED: NO ACTIVE FAILURE, KEEP IN PLACE (2026-08-28) [EMPR/STAT]
+
+**Objective:** audit the 7-file Google cluster + `googleapis` dependency resolution (the
+M3 "google cluster deferred" item) — locate files, live-boot reachability, real import
+graph, dependency resolution, configured-vs-present, failure class. NO broad dep changes.
+
+### Ground truth: only 5 files actually require('googleapis') [STAT]
+- Actual `require('googleapis')` exists ONLY in `gateway/google/{google_auth,
+  business_profile, people_adapter, gmail_adapter, calendar_adapter}.js` (5 files).
+- `ping-runtime/connectors/{google_connector,oauth_provider}.js` were in the `rg -l
+  "googleapis"` list ONLY because they contain `https://www.googleapis.com/...` URL
+  strings (OAuth scopes/token/revoke endpoints) — they do NOT import the npm package.
+  Zero npm-package dependency in those 2.
+
+### Dependency class: PASS [EMPR]
+- `googleapis` declared `gateway/package.json:32` (`^173.0.0`), installed = 173.0.0.
+- `require.resolve('googleapis', {paths:[gateway/google]})` -> resolves to
+  `gateway/node_modules/googleapis/build/src/index.js`. All 5 gateway/google files resolve.
+
+### Reachability class: LIVE [STAT]
+- All 5 REQUIRED at gateway_runtime.js:55-61, constructed UNCONDITIONALLY at :237-249
+  (labeled "no PG dependency"), wrapped into `GoogleConnector` (:243), registered in
+  ConnectorRegistry (:255-259) with capabilities reviews/contacts/email/calendar/drive.
+- Boot-load gate first-hand: `require('./gateway/bootstrap/gateway_runtime.js')` ->
+  "GATEWAY RUNTIME LOADS OK".
+
+### Config class: NO boot failure [STAT]
+- `google_auth.js:16-19` lazy-reads credentials from `config.* || process.env.*` with a
+  safe localhost redirect fallback; NO file/credential access at construction. Absent
+  credentials -> adapters construct fine, only fail on actual authenticated calls.
+
+### Architectural class: KEEP in gateway/google/ is CORRECT, not deferred [INFE]
+- The B2 abort (documented session) occurred when the 5 files were MOVED to
+  `ping-runtime/connectors/google/` -> `googleapis` unresolvable from there (only
+  `gateway/node_modules` carries it; root/`ping-runtime` node_modules have no googleapis).
+- Since gateway is the ONLY construction/consumption site of these adapters, and moving
+  breaks dependency resolution with no functional benefit, keeping them at
+  `gateway/google/` is the correct stable location. No move warranted; item resolved.
+
+### Verdict [INFE]
+- NO active failure of any class (dependency/reachability/config/architectural). Zero
+  code changes, zero broad dependency changes made. M3 "google cluster deferred" CLOSED.
