@@ -567,3 +567,38 @@ node_modules + .next webpack cache + .tmp.driveupload temp uploads + orchestrati
   (CrossReferenceMatrix.json/SymbolRouter.json family) as a normal commit.
 - Full unblock requires the history rewrite (destructive) - awaiting explicit user direction.
 
+## 22. Part 1 DONE - Live-Tree Archive-Blob Removal (CrossReferenceMatrix.json + SymbolRouter.json) (2026-08-28) [STAT]
+
+Authorized non-destructive disposition of the two tracked archive-only orchestration JSON
+blobs (CAPABILITY_LEDGER archive-candidate class; ledger 21 D section "live-tree dead
+weight"). Audit-first verification completed first.
+
+### Zero-reachable-reader audit (falsification-complete) [STAT]
+- Filename references repo-wide (*.js/*.ts/*.py/*.md/*.json/etc.) resolve to ONLY:
+  (a) the 2 tracked files themselves, (b) the ledger (this doc), (c) two descriptive
+  RepositoryKnowledgeIndex/*.json metadata entries + one hermes historical audit note
+  (all NON-functional text references).
+- The ONLY code readers/writers = 4 DORMANT generation/analysis scripts
+  (generate_symbol_router / generate_routing_cache / ConstitutionalQueryAPI /
+  generate_cross_reference_matrix), all of which reference a HARDCODED ABSOLUTE PATH to a
+  DIFFERENT root-level dir `c:\Users\nolan\PING\orchestration\SymbolRouter.json` (NOT the
+  tracked `ping-runtime/orchestration/`). Even running those scripts would not touch the
+  tracked files.
+- ZERO importers of those 4 scripts repo-wide (ConstitutionalQueryAPI matches only its own
+  class def + self-instantiation). The live `ping-runtime/orchestration/` imports from
+  gateway_runtime.js (engine / mission_runtime / mission_scheduler / event_to_mission_bridge)
+  are .js MODULE imports, never these JSON data blobs.
+- No test, Dockerfile, compose, or other build/run file reads either JSON.
+
+### Disposition (non-destructive commit) [STAT]
+- Removed both tracked blobs from the live tree:
+  - ping-runtime/orchestration/CrossReferenceMatrix.json (36,694,913 bytes = 35.9MB)
+  - ping-runtime/orchestration/SymbolRouter.json (32,737,689 bytes = 32.6MB)
+- Combined ~68.4MB of live-tree dead weight removed via `git rm` (ordinary commit, NO
+  history rewrite). Reduces current-branch tree size + the pushed delta.
+
+### Outcome
+- Zero live readers -> zero behavior impact. Only the ledger (this doc) + this commit record
+  the removal. History bloat (ledger 21) is NOT touched here - that remains the
+  direction-gated destructive rewrite step.
+
