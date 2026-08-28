@@ -813,3 +813,59 @@ documented dormant/kernel/layered categories. No reachable competing authority e
 - P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT part
   of this commit.
 
+## 27. SearchAuthority / Evidence-Verification Authority Falsification - no reachable competing authority (2026-08-28) [STAT]
+
+Falsification of the search / evidence-verification decision domain. Verify no two reachable competing
+production authorities govern the same search/evidence decision.
+
+### Candidate authority surfaces [STAT]
+
+| Class | File | Construction site(s) | Live? |
+|-------|------|----------------------|-------|
+| HybridSearch | ping-runtime/search/hybrid_search.js | gateway_runtime.js:532 (single) | LIVE - sole composition point |
+| EvidenceAuthority | ping-runtime/evidence/evidence_authority.js | gateway_runtime.js:527 (single) | LIVE - sole verification point |
+| KnowledgeRetrieval | gateway/knowledge_retrieval.js | gateway/bootstrap/wiring.js:111 (only) | DORMANT (non-prod DI) |
+| SearchAuthority | (no such class exists) | - | ABSENT |
+
+### Evidence
+
+- **Production entrypoint is `server.js`** [STAT]: package.json `main: server.js`, `scripts.start: node server.js`,
+  Dockerfile CMD `["node","gateway/server.js"]`. server.js requires `GatewayRuntime` from
+  `./bootstrap/gateway_runtime`. 
+- **`bootstrap/index.js` is NOT on the live path** [STAT]: nothing imports `bootstrap/index`; its
+  `wireContainer()` (which constructs KnowledgeRetrieval at wiring.js:111) is never invoked in
+  production. On the live graph, `wiring.js` is used only for `buildDependencyGraph`/`validateWiring`
+  (lifecycle.js:16, routes/constitution.js:20, runtime_hash.js:16) - NOT `wireContainer`. Consistent
+  with CAPABILITY_LEDGER method (production = server.js -> gateway_runtime.js; wiring.js/index.js =
+  non-production DI path).
+- **`knowledge.activity.js` is dormant** [STAT]: reachable only via wiring.js:141 `activitiesPath`
+  string + dormant `activities/index.js`; zero production importers.
+- **EvidenceAuthority + HybridSearch single construction + single route observer** [STAT]:
+  constructed once each (gateway_runtime.js:527, :532); added to services (:664); the ONLY route
+  consuming them is `POST /knowledge/search` via `hybridSearch: services.hybridSearch` at
+  gateway_runtime.js:797 -> routes/knowledge.js:22 (`options.hybridSearch`). HybridSearch composes
+  EvidenceAuthority (verification is a sub-step), not competes with it.
+- **Other `/search` surface is a different domain** [STAT]: routes/connectors.js:123 is
+  `GET /:name/search` (connector search, not evidence retrieval); routes/customers.js:9 +
+  routes/projects.js:8 are comments only. No route bypasses evidence verification on the live path.
+- **No `SearchAuthority` class exists anywhere** [STAT] (class grep across all *.js: zero hits).
+
+### Verdict
+
+- **No active contradiction** in the search/evidence-verification decision domain. Exactly ONE live
+  authority pair (HybridSearch + EvidenceAuthority), single construction, single route consumer, no
+  path bypasses verification. The only second authority (KnowledgeRetrieval via bootstrap/index.js +
+  activities) is on the non-production DI path, unreachable from `node server.js`. No consolidation
+  warranted.
+- Evidence is `[STAT]` (construction + reachability via source/config/entrypoint analysis). NOT promoted
+  to `[EMPR]` - no fabricated E2E.
+
+### Gates
+
+- `require('./bootstrap/gateway_runtime')` -> `gateway_runtime LOADS OK`.
+- Regression exit-0: knowledge_search (exercises HybridSearch+EvidenceAuthority end-to-end at unit
+  level), evidence_authority 12/12, replay_composition, replay_worker_wiring, replay_observability,
+  pipeline_bridge, ingest_boundary, wave3b_p7_governance.
+- P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT part
+  of this commit.
+
