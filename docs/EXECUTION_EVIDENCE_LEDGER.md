@@ -464,3 +464,47 @@ twins; ZERO live competing authorities warrant consolidation.
 - NO two reachable competing authorities for the same runtime decision in any of the six
   families. All competitors are layered (delegate/twin) or dormant. No consolidation
   warranted. Canonicalization families audit COMPLETE.
+
+## 20. Live E2E Deep-Verification (Docker UP, full initialize() path incl. services.replayProvider) (2026-08-28) [EMPR]
+
+Docker UP: ping-gateway (2h), ollama (2h), ping-postgres healthy, brain-qdrant. Gateway
+/health returns 503 (known degraded-async embedding/Qdrant — NOT a product failure).
+POST /ingest is the canonical production boundary.
+
+### A. Running container carries P0-1 code (replayProvider reachable in deployment) [EMPR]
+- GET /mc/replay/stats BEFORE this E2E:
+  `provider:{engine_version:v1, replays_processed:2, events_replayed:2, failures:0}`
+  + durable `total_replays:36, verified:36, kernel_verified:5, witness_rejected:0`.
+- The provider block presence proves the P0-1 observability + services.replayProvider
+  singleton are live in the deployed runtime — full initialize() path incl.
+  services.replayProvider is EMPIRICALLY reachable (not just boot-load static).
+
+### B. Fresh live E2E through production boundary [EMPR]
+- POST /ingest `REVIEW_RECEIVED` (source `sweep-verify`, namespace `tenant::hpp`) -> HTTP 201.
+  eventId `2db71ceec34f...`, objectId `REVIEW_RECEIVED_746dff1b...`,
+  canonicalHash `746dff1b...`, namespace `tenant::hpp`.
+- GET /mc/replay/trace/2db71cee... -> groupSize 9 (full causal chain:
+  REVIEW_RECEIVED->OBSERVATION->CLAIM->CLASSIFICATION->RECOMMENDATION->PROJECTION->
+  REPLAY->WITNESS->LINEAGE).
+- replays[0] REAL kernel replay (not stub):
+  reason kernel_verified, verified:true, fingerprint sha256:dbcf1ab6...,
+  witness_root b64da83ed1..., artifact_count:1, state_version:"1.0",
+  deterministic_execution_identity = sha256:dbcf1ab6... (== fingerprint).
+- authority block complete: authority ReplayWorker, provider
+  KernelReplayExecutionProvider, namespace tenant::hpp (preserved), correlation_id
+  preserved (2db71cee...), source_event_id 20661f7e..., violation_count 0,
+  canonical_input_hash "replay-3dde97b3b0c3" (= deterministic replay-transcript
+  identity, matches ledger §17 semantics; not a hash of the triggering event).
+- witness[0] = WITNESS_CREATED d9dbe3dd... attestation "witness-e269b7358b685933".
+
+### C. Counter semantics re-proven (process-lifetime vs durable-derived) [EMPR]
+- AFTER this E2E: provider replays_processed 2->3, events_replayed 2->3, failures 0.
+  Durable total_replays 36->37, kernel_verified 5->6, witness_rejected 0.
+- Witness stats: attestations 37, refusals 0 (W7 gate produced zero refusals; all
+  replays verified). Singleton provider identity: one ingest -> +1 provider exactly.
+
+### Verdict
+- Full initialize() path incl. services.replayProvider + fresh live 9-event chain with
+  real kernel replay verification + witness attestation, namespace preserved end-to-end,
+  all on real Postgres (durable). No regressions. /mc/scheduler/stats 404 = endpoint
+  name mismatch, not product failure. LIVE_ARROW_AUDIT TIER-2 arrows re-confirmed live.
