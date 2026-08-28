@@ -416,3 +416,51 @@ graph, dependency resolution, configured-vs-present, failure class. NO broad dep
 ### Verdict [INFE]
 - NO active failure of any class (dependency/reachability/config/architectural). Zero
   code changes, zero broad dependency changes made. M3 "google cluster deferred" CLOSED.
+
+## 19. Canonicalization Families Audit RESOLVED: LAYERED, NOT DUPLICATE (2026-08-28) [STAT]
+
+**Objective:** apply the Phase 6 layered-not-duplicate rule across the event-envelope,
+worker-identity, priority, confidence, replay, and correlation families. Consolidate ONLY
+if TWO reachable competing authorities exist for the SAME runtime decision. Verdict:
+ALL SIX families collapse to a single canonical owner with layered facades / dormant
+twins; ZERO live competing authorities warrant consolidation.
+
+### A. Event-envelope family: single live owner + layered facades + dormant hand-builder [STAT]
+- SINGLE LIVE OWNER: `ping-runtime/canonicalization/canonical_object.js` (`createCanonicalObject`).
+- LAYERED (delegate, NOT duplicate):
+  - `gateway/canonical_object_authority.js:26,60` requires+invokes `createCanonicalObject`.
+  - `gateway/constitutional_object_factory.js:17,44` requires+invokes `createCanonicalObject`.
+- LAYERED KERNEL TWIN (ledger §16): `gateway/replay/kernel/canonical_event_envelope.js` (replay-path validation only).
+- LIVE SPINE AUTHORITY (ledger §16): `gateway/canonical_event_envelope.js` (DI: gateway_runtime/wiring).
+- DORMANT hand-builder: `gateway/github_constitutional_objects.js` hand-constructs
+  `constitutionalObject = {...}` shapes (lines 113/209/298/...), does NOT call
+  createCanonicalObject. BUT reachable ONLY via `github_normalizer.js`
+  -> `github_constitutional_pipeline.js` -> the 3 dormant harnesses
+  (milestone2_verification_harness / multi_repository_harness / repository_reset_harness).
+  Zero references from `gateway/bootstrap/` (verified). NOT a production competing owner.
+
+### B. Correlation family: single origin owner + layered preservation + read consumers [STAT]
+- ORIGIN OWNER: `unified_event_runtime.js:136` spine sets
+  `correlation_id = options.correlation_id || eventId` (rooting event_id becomes the
+  causal root).
+- PRESERVATION (layered): `BaseWorker._emit` (canonical_workers.js:40-45,75) preserves
+  root; `event_to_mission_bridge.js:121-129` threads it; `intelligence_worker.js:31-35`
+  mirrors it (dormant worker).
+- READ CONSUMERS (never re-invent semantics): `mission_scheduler.js:244,308`,
+  `mission_runtime.js:344-390` (getTrace), `knowledge_graph.js:65-96` (stores col),
+  `unified_event_runtime.js:322-333` (getCorrelationGroup). `ping-runtime/agents/*`
+  use correlation_id as a distinct domain label (memory_id/runtime_id) on dormant emit
+  paths — not a competing definition of the spine causal root.
+
+### C. Worker-identity/priority/confidence/replay families (already resolved, re-affirmed) [STAT]
+- Worker identity: ONE decider = WorkerRuntime.dispatch (eventTypes match, worker_runtime.js:78).
+  MISSION_WORKER_MAP = labeling only. (P3 audit A)
+- Priority: ONE scale int 0-3 via canonicalPriority (priority_boundary.js). (P3 audit B)
+- Confidence: spine metadata.confidence carried verbatim, human-approval-only recompute. (P3 audit C)
+- Replay: ReplayWorker -> KernelReplayExecutionProvider (single live engine); kernel
+  twin = layered replay-validation. (ledger §16, replay convergence commit 852fee10)
+
+### Verdict [INFE]
+- NO two reachable competing authorities for the same runtime decision in any of the six
+  families. All competitors are layered (delegate/twin) or dormant. No consolidation
+  warranted. Canonicalization families audit COMPLETE.
