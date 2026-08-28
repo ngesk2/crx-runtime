@@ -703,3 +703,68 @@ runtime, divergent route observer) was tested and refuted.
 - P0-1 hoist in `gateway/bootstrap/gateway_runtime.js` remains working-tree-only and UNSTAGED per the
   explicit-allowlist rule (not part of this commit).
 
+## 25. Broad Single-Construction Falsification - All 12 Core Live Authorities (2026-08-28) [STAT]
+
+Extends §24's replay-provider falsification to the ENTIRE core live authority set: for every
+one of the 12 production authorities that back the canonical spine, there is EXACTLY ONE
+construction site in the whole tree, located in `gateway/bootstrap/gateway_runtime.js`. No
+reachable competing construction/ownership site exists for any of them.
+
+### Authorities swept [STAT]
+
+`UnifiedEventRuntime, MissionRuntime, MissionScheduler, WorkerRuntime, KnowledgeGraph,
+HybridSearch, EvidenceAuthority, EmbeddingService, QdrantAdapter, AIRuntime,
+CanonicalizationService, DeadLetterAuthority`.
+
+### Method (falsification-first)
+
+- `rg "new <Class>\("` across the WHOLE tree (excl. node_modules/archive/dormant_classifications/workspace).
+- Classify every hit as production vs test/eval.
+- Count production construction sites; count construction lines INSIDE `gateway_runtime.js`.
+
+### Result - production construction sites per authority
+
+| Authority | Production sites (non-test) | In gateway_runtime.js |
+|-----------|------------------------------|------------------------|
+| UnifiedEventRuntime | 1 | 1 |
+| MissionRuntime | 1 | 1 |
+| MissionScheduler | 1 | 1 |
+| WorkerRuntime | 1 | 1 |
+| KnowledgeGraph | 1 | 1 |
+| HybridSearch | 1 | 1 |
+| EvidenceAuthority | 1 | 1 |
+| EmbeddingService | 1 | 1 |
+| QdrantAdapter | 1 | 1 |
+| AIRuntime | 1 | 1 |
+| CanonicalizationService | 1 | 1 |
+| DeadLetterAuthority | 1 | 1 |
+
+For all 12, the ONE production construction site is `gateway/bootstrap/gateway_runtime.js`, and it is
+a single construction line each. `KernelReplayExecutionProvider` (the 13th) is documented separately
+in §24 (single live site + one test-only site at constitutional_runtime.js:45).
+
+### Classification of non-production hits (all test/eval)
+
+- `gateway/test_*.js` (unit/integration harnesses) and
+  `evals/constitutional-runtime/EVAL-*.js` (eval scenarios: EVAL-001/002/003 UnifiedEventRuntime,
+  EVAL-006 MissionRuntime, EVAL-007 WorkerRuntime, EVAL-008 KnowledgeGraph).
+- NO build/bootstrap/wiring/server/routes file constructs any of these 12 except gateway_runtime.js.
+
+### Verdict
+
+- **Zero reachable competing construction sites** for all 12 core authorities. Each collapses to
+  exactly one canonical owner, one wiring point (`gateway_runtime.js`), injected as a single
+  services-object instance. This is the falsification-strong counterpart to §19's
+  layered-not-duplicate family audit at the CONSTRUCTION level (not just type-level).
+- No consolidation warranted for any of the 12. No shadow authorities, no duplicate worker runtime,
+  no parallel service instance anywhere on the live path.
+
+### Gates
+
+- `require('./bootstrap/gateway_runtime')` -> `gateway_runtime LOADS OK`.
+- Regression exit-0: pipeline_bridge, slice3a_convergence, phase_d_namespace, phase0_fixes,
+  ingest_boundary, knowledge_search, confidence_convergence, trace_propagation, mission_trace,
+  dead_letter_wiring (10 suites). Additionally §24's replay/witness suites already green.
+- P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT
+  part of this commit.
+
