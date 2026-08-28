@@ -2857,3 +2857,22 @@ Senior-dev execution mode (dependency order). Step 2 of the convergence program 
 **PRE-EXISTING FAILURE (not a regression)**: test_canonical_object_generator.js FAILS 14/21 at HEAD on constitutional-convergence-v2 @ 828520ea — 7 failures (provenance payload undefined, filename determinism, class heritage). Generator + test both UNMODIFIED since M3 refactor (a9d9aeee); test imports neither gateway_runtime nor anything from P0-1/Steps 1-6; tree-sitter + grammars all resolve. Root cause = baseline code behavior on this branch; NOT caused by this session. All other key suites PASS (replay_composition, replay_worker_wiring, witness_negpath, replay_observability, priority_boundary, priority_bridge_integration, pipeline_bridge, ingest_boundary, slice3a, phase_d, phase0, knowledge_search, canonical_object all exit-0).
 
 **Session edits (code): ONLY the gateway_runtime.js discoverOllama doc-contract comment.** Ledger §15+§16 appended; AGENTS.md this log. No commit this session (senior-dev mode: commit units with Step 5 doc-contract + ledger + AGENTS as one coherent unit when directed).
+
+### 2026-08-28 Session -- IntelligenceWorker final verdict (consumer-side confirmation) + ledger section 17
+
+**IntelligenceWorker audit FINALIZED (KEEP-DORMANT, confirmed with consumer-side evidence)**: section 14's
+verdict confirmed via direct consumer inspection. The 3 live consumers of CLASSIFICATION_CREATED /
+RECOMMENDATION_CREATED (event_to_mission_bridge.js:61-62 routing, embedding_service.js:28 INDEXABLE_TYPES,
+gateway_runtime.js:594 graph-projection indexable) ALL route/project by EVENT TYPE ONLY -- zero read
+payload.category / payload.priority / payload.aiAnalysis. Repository-wide rg for content readers returns
+only unrelated `category` semantics. aiRuntime is already consumed LIVE as non-competing ENRICHMENT by
+EmbeddingService (gateway_runtime.js:495,:516), not as a classification decider. Wiring intelligence as-is
+would emit the SAME CLASSIFICATION_CREATED + RECOMMENDATION_CREATED types as the canonical chain -> double
+fan-out -> genuinely COMPETING authority. No business requirement for AI classification exists. No code change
+warranted; `[DOC-CONTRACT / KEEP-DORMANT]` at canonical_workers.js:716-724 already records the re-enable gate.
+Ledger section 17 appended (read-only, no code edit).
+
+**Next** (audit-first, dependency order): M3 Google cluster + googleapis audit (locate 7-file cluster, live-boot
+reachability from gateway_runtime.js googleConnector :659, real import graph, npm ls googleapis, configured-vs-present,
+classify failure class WITHOUT broad dep changes), then canonicalization families audit (layered-not-duplicate rule).
+Commit earned edits as explicit allowlist units, preserving unstaged P0-1 hoist in gateway_runtime.js.

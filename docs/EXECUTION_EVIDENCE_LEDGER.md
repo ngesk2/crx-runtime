@@ -331,3 +331,45 @@ Two files exist, serving DIFFERENT layers (NOT conflicting duplicates):
 ### Side note
 - The standalone analysis scripts live in %TEMP% (s6_scan.js / s6_scan2.js), zero repo code
   changes for this step. No commit needed from Step 6 alone (evidence only).
+
+## 17. IntelligenceWorker Final Verdict — Consumer-Side Confirmation (2026-08-28) [STAT]
+
+**Objective:** close the IntelligenceWorker KEEP-DORMANT verdict (section 14) with the
+decisive consumer-side evidence: is there any LIVE consumer that needs content-grounded
+(AI) classification the deterministic _categorize/_prioritize pair cannot provide?
+
+### Three live consumers of CLASSIFICATION_CREATED / RECOMMENDATION_CREATED [STAT, first-hand]
+1. `ping-runtime/orchestration/event_to_mission_bridge.js:61-62` — routes
+   CLASSIFICATION_CREATED -> RECOMMENDATION_CREATE mission (priority 2) and
+   RECOMMENDATION_CREATED -> PROJECTION_CREATE mission (priority 1).
+2. `ping-runtime/embeddings/embedding_service.js:28` — `RECOMMENDATION_CREATED` in
+   INDEXABLE_TYPES -> projected to Qdrant knowledge.
+3. `gateway/bootstrap/gateway_runtime.js:594` — `RECOMMENDATION_CREATED` in the
+   graph-projection indexable set.
+
+### Critical finding: ZERO consumers read classification/recommendation CONTENT [STAT]
+- None of the three consumers inspect `payload.category`, `payload.priority`, or
+  `payload.aiAnalysis`. All three route/project by **event type only**.
+- Repository-wide `rg` for `aiAnalysis|payload.category|\.category` across live
+  ping-runtime + gateway returns ONLY unrelated `category` semantics (constitutional
+  patterns/discovery, capability_registry, CodeRetrieval, law matrix). No code reads the
+  ClassificationWorker/RecommendationWorker `category`/`aiAnalysis` payload fields.
+- Conclusion: the deterministic `_categorize` static map (canonical_workers.js:585-597) +
+  `_prioritize` fully satisfy every live consumer. The `rating <= 2` content heuristic is
+  the only content-dependent signal, and it is sufficient for the structural routing that
+  actually occurs.
+
+### Final verdict: KEEP-DORMANT, confirmed [INFE]
+- Wiring IntelligenceWorker as-is would emit the SAME CLASSIFICATION_CREATED +
+  RECOMMENDATION_CREATED event types as the canonical chain (dual emit, one handler,
+  bypassing the claim hop) -> double PROJECTION_CREATE / REPLAY_VERIFY / WITNESS_CREATE /
+  LINEAGE_CREATE fan-out -> genuinely COMPETING authority, not mere duplication.
+- There is NO live business requirement demanding AI classification: AI inference already
+  flows as ENRICHMENT (non-competing) via `aiRuntime` consumed LIVE by EmbeddingService
+  (knowledge projection, gateway_runtime.js:495, :516), not as a classification decider.
+- Re-enable gate (unchanged, from section 14 + canonical_workers.js:716-724):
+  Ollama wired for AI *classification* AND an explicit duplication ruling AND an
+  enrichment-type event wiring (consume a DIFFERENT event type or feed INTO the chain,
+  never emit the canonical pair's outputs). None currently satisfied.
+- No code change warranted. `[DOC-CONTRACT / KEEP-DORMANT]` annotation at
+  canonical_workers.js:716-724 already records this contract.
