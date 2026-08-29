@@ -1587,6 +1587,6 @@ Both injected into the SAME UnifiedEventRuntime singleton (gateway_runtime.js:43
 
 VERDICT (47): FALSIFIED - exactly one live spine write authority (UnifiedEventRuntime) executing exactly two injected validation sub-steps (EventValidator + EventGovernance), each constructed once on live bootstrap; /governance is read-only introspection; Orca/tests are dormant/test-only. No consolidation edit.
 
-COMMIT (47): ledger only (this block). d3f5c1d6 (auth) + b9286dcb hash-correction.
+COMMIT (47): d3f5c1d6 "docs(evidence): event governance/validation authority falsification - single live spine write authority composing two validation sub-steps (ledger 47)" - 1 file, 23 insertions. P0-1 hoist preserved unstaged.
 
 Canonical validation ruling (inherit - don't reopen): canonical event_type validation = EventValidator (gateway_runtime.js:177); canonical namespace/ownership validation = EventGovernance (gateway_runtime.js:224); both composed inside UnifiedEventRuntime (gateway_runtime.js:433). /governance = read-only introspection surface. Never construct a second validator/governance authority, never wire Orca event_queue (event_queue.js:18,:21) or any stranded validation gate onto the live write path.
