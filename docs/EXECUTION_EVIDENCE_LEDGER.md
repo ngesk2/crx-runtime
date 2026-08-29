@@ -1667,3 +1667,8 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 - Verdict: FALSIFIED - exactly one live integration-emission-routing authority (IntegrationManager, one construction + one spine call site) and exactly one live capability catalog (ConnectorRegistry, read-only). No consolidation edit.
 
 **Commit**: 52 ledger authored above.
+
+
+### 2026-08-28 Session - Ledger 52 hash-correction (COMMITTED)
+
+**Record real commit hash for solver52**: main commit `94fe121d` "docs(evidence): integration/capability/connector emission-routing falsification - single live integration authority over spine (ledger 52)" - 1 file, 14 insertions, ledger-only. Direct parent of the hash-correction commit.
