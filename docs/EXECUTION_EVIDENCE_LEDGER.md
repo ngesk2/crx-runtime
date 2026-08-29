@@ -1435,7 +1435,7 @@ ew AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelop
 - context_compression_authority.js + context_retrieval_authority.js (gateway root) = DEAD files. Distinct classes (compression/retrieval heritage), NOT ContextAuthority. ZERO require sites anywhere (loose `require.*context` scan = only lifecycle_context, routes/context, Orca ./context_authority - none reference these). NEVER imported.
 - Verdict: FALSIFIED - no live competing context/activity authority. The only ContextAuthority governs an Orca decision that never executes on the spine (DORMANT); activities/ stranded; compression/retrieval authorities dead. No consolidation edit.
 
-**Commit**: 40884607 "docs(evidence): context/activity authority falsification - no live competing authority (ledger 41)" (nominal; true hash = 408846075fc6132a9c4a50f620adbc8f6d2f0791).
+**Commit**: 40884607 "docs(evidence): context/activity authority falsification - no live competing authority (ledger 41)" (nominal; true hash = db2e0a7ee006ff1b4717e42bc4bd2fc17074d9f5).
 
 **Gates**: gateway_runtime LOADS OK; node --check clean engine.js + context_authority.js + routes/orchestration.js; commissioning 14 scenarios / 53 missions / 0 failed; rg `new ContextAuthority` = engine.js:76 only; rg buildContext/buildPrompt callers on live spine = none; rg activities require = zero; rg require of context_compression_authority/context_retrieval_authority = zero. No code change.
 
