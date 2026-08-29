@@ -1525,3 +1525,26 @@ Falsification findings [STAT]:
 **Canonical ai-workspace ruling (inherit - don't reopen)**: canonical ai-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js), constructed once gateway_runtime.js:411, sole /ai-workspace route gateway_runtime.js:779, sole ai_workspace_results writer :80. Never construct a second AIWorkspaceAuthority; never wire a workspace-parallel implementation. Business-rule model consumer = huggingfaceAdapter (not a competing spine inference authority - section 33).
 
 **Commit**: 77b47942
+## 46 Event-Read/Query Authority Falsification (2026-08-28) [STAT]
+
+**Ruling: FALSIFIED - TWO DISTINCT read surfaces, each EXACTLY ONE live owner, over DISJOINT tables (NOT competing); one documented READ/WRITE asymmetry (no consolidation edit).**
+
+Two distinct event-read authorities, each single-construction on the live bootstrap, NON-overlapping table scope:
+1. **EventReadAuthority** (ping-runtime/events/event_read_authority.js:17,20 PATCH_003 shim -> kernel base runtime/kernel/event_read_authority.js) = reads **repository_events** EXCLUSIVELY (:43,:74,:108,:130,:162,:191,:340 + context stored-procs). Constructed EXACTLY ONCE gateway_runtime.js:382.
+2. **UnifiedEventRuntime** (spine, ping-runtime/events/unified_event_runtime.js:21) = reads **ping_events** EXCLUSIVELY via query() :207, getChildren :248, getDescendants :271/:276, getAncestors :303/:308, getCorrelationGroup :332. Constructed ONCE gateway_runtime.js:433.
+
+Route consumers (all single existing routes):
+- /events GET list/recent/stats/by-stream -> EventReadAuthority (getAllEvents/getRecentEvents/getEventStats/getEventsByStream, events.js:17,30,43,63) reading repository_events, with RAW pool.query ping_events FALLBACK (events.js:19,34,46,65).
+- /events/:eventId/children|descendants|ancestors + /correlation/:id -> eventRuntime (events.js:117,125,132,139) reading ping_events (P0-A d03271dd).
+- /mc/* -> unifiedEventRuntime.query/getCorrelationGroup (mission_control.js:28-567).
+
+Complementary readers (COMPOSE, not compete - shared injected pool, single spine):
+- EvidenceAuthority (ping-runtime/evidence/evidence_authority.js:54,:95) resolves supporting events from ping_events by event_id (section 27).
+- MissionRuntime.getTrace (ping-runtime/orchestration/mission_runtime.js:370,:384) reads ping_events correlation group (section 38).
+- EventBridge (ping-runtime/events/event_bridge.js:61,:143,:156,:258) reads repository_events + canonical_events as part of external-store -> spine re-emission (section 44).
+
+POST /events write target = ping_events via eventRuntime.emit (events.js:79, subsection 29). 
+
+**DOCUMENTED ASYMMETRY (not a contradiction):** GET /events list reads repository_events (EventReadAuthority kernel shim) with ping_events fallback, while POST /events writes ping_events (spine); causal traversal reads route through the spine. Per-table single-owner holds; asymmetry is a known layering artifact, not a competing authority. No consolidation edit.
+
+**Canonical event-read ruling** (inherit - don't reopen): canonical repository_events reader = EventReadAuthority (kernel singleton via shim, gateway_runtime.js:382); canonical ping_events reader = UnifiedEventRuntime traversal methods (spine, gateway_runtime.js:433). Future read changes through the existing authorities; never a second reader per table, never wire stranded readers (EventRepository kernel twin, gateway event_repository) onto live path.
