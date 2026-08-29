@@ -1457,7 +1457,7 @@ ew IdentityAuthority/
 ew ConstitutionalTimeAuthority - it composes via canonicalization_service + canonical_object (identity) and unified_event_runtime (time).
 - Verdict: FALSIFIED - exactly one reachable IdentityAuthority (kernel singleton via shim, canonical-object consumer) and exactly one reachable ConstitutionalTimeAuthority (kernel singleton via shim, spine timestamp). No second construction, no direct bypass, no divergent live consumer. No consolidation edit. Kanonical identity/time ruling (inherit - don't reopen): canonical identity = kernel IdentityAuthority singleton (via ping-runtime shim), consumed by canonical_object.generateFromCanonicalHash (envelope identity); canonical time = kernel ConstitutionalTimeAuthority singleton (via ping-runtime shim), consumed by unified_event_runtime.nowAsISOString (spine timestamp). Persisted event durability id = unified_event_runtime.js:83 raw unit-proof hash (accepted section 40 lane). Never construct a second identity/time authority; never wire the ~80 dormant/stranded/kernel-twin identity files or wall-clock bypass onto the live path.
 
-**Commit**: 40884607 (nominal placeholder; TRUE hash captured post-commit via git rev-parse HEAD).
+**Commit**: 57b500909b2276bd2c6423f293d11e700b81ccda.
 
 **Gates**: node --check clean on identity_authority shim + constitutional_time_authority shim + unified_event_runtime + canonical_object (exit 0 all 4); rg 
 ew IdentityAuthority/
