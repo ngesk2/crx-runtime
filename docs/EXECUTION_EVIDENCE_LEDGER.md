@@ -1232,3 +1232,66 @@ gateway_runtime.js:228-229, sole providers for /api/v1/ollama + /ai + EmbeddingS
 Any future inference change goes through the existing AIRuntime singleton; never construct a second
 AIRuntime/OllamaProvider, never wire inference_adapter/inference_service/ollama_adapter (stranded)
 onto the live spine, never re-enable Orca ollama auto-discovery (ledger 15).
+
+## 34. Connector/Capability/OAuth/Integration Authority Falsification
+
+**Question the audit resolves**: is there a SINGLE live authority each for the connector catalog,
+capability introspection, OAuth token management, and integration emission — or do ConnectorRegistry /
+CapabilityRegistry / OAuthFlowManager / IntegrationManager compete with a reachable duplicate?
+
+**Live single-construction authorities (each EXACTLY ONCE on the live bootstrap, gateway_runtime.js)**:
+- ConnectorRegistry (ping-runtime/connectors/connector_registry.js): new at :253, registered
+  google/ConnectorEmitter github/posthog/email/sms (:255-275). Live connector catalog.
+- CapabilityRegistry (ping-runtime/connectors/capability_registry.js): new at :294, composed with
+  { oauthManager, connectorRegistry }, provider registration :313. Live capability-introspection
+  surface (connectors.py? no - /connectors capability endpoints).
+- OAuthFlowManager (ping-runtime/connectors/oauth_provider.js): new :287 + TokenStore dynamic
+  single-construction :286. Live OAuth token framework.
+- IntegrationManager (ping-runtime/runtime/integration_manager.js): new :218, registered
+  posthog/email/sms :219-221, is a LIVE subscriber wired into the event spine (its emit path is
+  referenced by ping-runtime/events/unified_event_runtime.js as the integration observer), 0
+  emissions because no live integration traffic (no real credentials / no sending). Live-but-idle,
+  single-construction, not competing.
+
+**Competing constructions all STRANDED/DORMANT/TEST (no live reach)**:
+- 
+ew CapabilityRegistry() at ping-runtime/orchestration/execution/engine.js:61 = the ORCA fabric's
+  capability_registry (ping-runtime/orchestration/execution/capability_registry.js) - a DIFFERENT path/
+  class than the live connectors one, DORMANT (ledger 15, discoverOllama:false). Not the production spine.
+- 
+ew IntegrationManager at test_wave3a_integrations.js:28,:172 + test_wave3b_p8_analytics.js:146 =
+  TEST-ONLY.
+- ping-runtime/orchestration/generate_capability_registry.js = generator script, not live.
+- No other ConnectorRegistry / OAuthFlowManager / TokenStore construction anywhere non-test.
+
+**Distinct class families, not duplicates**: connectors/capability_registry.js (live) vs
+orchestration/execution/capability_registry.js (Orca, dormant) are separate modules at separate paths
+with separate owners; they are not two live authorities competing for one decision - only the
+connectors one is live.
+
+**Verdict**: FALSIFIED. Exactly one live owner per connector-domain decision (ConnectorRegistry,
+CapabilityRegistry, OAuthFlowManager+TokenStore, IntegrationManager), each constructed once on the
+live spine and composing (CapabilityRegistry consumes oauthManager+connectorRegistry; IntegrationManager
+is a spine-integration subscriber). Orca capability_registry = dormant. No reachable competing
+authority. No consolidation edit.
+
+**Class**: [STAT] static construction/importer scan + composition-read. Not [EMPR] (IntegrationManager
+live-but-idle: 0 emissions confirmed by absence of live integration traffic, not by E2E).
+
+**Gates**: gateway_runtime LOADS OK; rg 
+ew ConnectorRegistry/
+ew CapabilityRegistry/
+ew
+OAuthFlowManager/
+ew IntegrationManager = each single live site + dormant/test only; connector/
+oauth/capability routes green (wave3a connectors + capability framework 28/28 + oauth). No code
+change; no consolidation edit (falsification-complete).
+
+**Canonical connector/capability/OAuth ruling** (inherit - do not reopen): canonical connector catalog
+= ConnectorRegistry (gateway_runtime.js:253); canonical capability introspection = CapabilityRegistry
+(connectors/capability_registry.js, gateway_runtime.js:294, composed with oauthManager+connectorRegistry);
+canonical OAuth = OAuthFlowManager + TokenStore (oauth_provider.js, :287/:286); canonical integration
+emission = IntegrationManager (runtime/integration_manager.js, :218, spine-integration subscriber).
+Any future connector/capability/OAuth/integration change goes through these existing singletons; never
+construct a second of any, never wire the Orca capability_registry (orchestration/execution) or any
+other stranded connector onto the spine.
