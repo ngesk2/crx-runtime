@@ -1503,3 +1503,25 @@ Falsification findings [STAT]:
 **Canonical bridge ruling (inherit - don't reopen)**: canonical external-store re-emitter = EventBridge singleton (gateway_runtime.js:462, eventRuntime target); canonical spine->mission creator = EventToMissionBridge singleton (gateway_runtime.js:575, MissionRuntime.create :124). Never construct a second of either; never wire mission_event_bus or a comparable kernel bridge onto the live spine. Both compose into the single MissionRuntime (section 38) + single MissionScheduler (section 28) + single WorkerRuntime dispatch (section 43).
 
 **Commit**: 8a17cac7
+
+## 45. AIWorkspace Authority Falsification (single live ai-workspace authority)
+
+**Objective**: falsify no two reachable competing production authorities govern the same ai-workspace decision (next unresolved production-spine business authority per section 44 next-notes). Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+> Section 45. **AUTHORITY: FALSIFIED.**
+
+Falsification findings [STAT]:
+- SINGLE live ai-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js:36, exports :280). Constructed EXACTLY ONCE gateway_runtime.js:411 (`new AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelope)`), initialize :412.
+- SOLE route consumer = /ai-workspace (gateway_runtime.js:779 `createAiWorkspaceRoutes(services.aiWorkspaceAuthority)` -> gateway/routes/ai_workspace.js). All 7 routes delegate to a SINGLE authority instance: POST /sentiment (:27 executeAnalyzeSentiment), /tag (:43 executeTagContent), /parse (:56 executeParseDocument), /translate (:69 executeTranslate), /summarize (:82 executeSummarize), GET /project/:projectId (:93 executeGetProjectResults), /project/:projectId/stats (:107 executeGetWorkspaceStats). Zero other route touches ai-workspace.
+- SOLE database writer to ai_workspace_results table = ai_workspace_authority.js:80 (`INSERT INTO ${AI_WORKSPACE_TABLE}`, AI_WORKSPACE_TABLE='ai_workspace_results' :19; CREATE INDEX idx_ai_workspace_project/idx_ai_workspace_operation :32-33). Repo-wide rg of `INSERT INTO ai_workspace_results` matches ONLY that one site. No other file creates workspace objects or writes that table.
+- Sole production requirer of the authority = gateway_runtime.js:53 (require). routes/ai_workspace.js:7 comment-only (not a require). No second `new AIWorkspaceAuthority` non-test.
+- No competing workspace-named class anywhere: rg `class .*[Ww]orkspace|WorkspaceAuthority` = only AIWorkspaceAuthority itself (+ gateway_runtime declaration :355). No stranded/dormant ai-workspace implementation.
+- Dependencies (composition, not competition): huggingfaceAdapter = model inference (section 33 AI owner AIRuntime+OllamaProvider is the spine inference owner; HuggingFaceAdapter is this authority's business-rule model consumer, not a competing inference authority on the spine), canonicalEventEnvelope (section 16 kernel-layered / 26 envelope). Persistence flows strictly through storage adapter per routes/ai_workspace.js:7 comment.
+
+> **Verdict**: FALSIFIED - exactly one live ai-workspace authority, one construction, one route surface, one table writer. No consolidation edit.
+
+**Gates**: gateway_runtime LOADS OK (boot-load gate); node --check clean ai_workspace_authority.js + routes/ai_workspace.js; rg construction + requirer + table-write sweeps = single live site each. No code change.
+
+**Canonical ai-workspace ruling (inherit - don't reopen)**: canonical ai-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js), constructed once gateway_runtime.js:411, sole /ai-workspace route gateway_runtime.js:779, sole ai_workspace_results writer :80. Never construct a second AIWorkspaceAuthority; never wire a workspace-parallel implementation. Business-rule model consumer = huggingfaceAdapter (not a competing spine inference authority - section 33).
+
+**Commit**: (placeholder; true hash captured post-commit)
