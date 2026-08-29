@@ -1481,3 +1481,25 @@ Falsification findings [STAT]:
 **Canonical execution-host ruling (inherit - don't reopen)**: canonical worker-execution host = WorkerRuntime singleton (gateway_runtime.js:480), sole dispatch path mission_scheduler.js:250 (single live scheduler, section 28). Worker identity decider = WorkerRuntime.dispatch eventType->eventTypes match (P3 audit A). Never construct a second WorkerRuntime; never re-enable _poll(), WorkerRegistry, background_workers, or Orca WorkerPort onto the live spine; never wire IntelligenceWorker (dormant, competing authority, sections 14/17).
 
 **Commit**: 5cc1fc05
+
+## 44. Event-Bridge / EventToMissionBridge Falsification (two distinct non-competing bridges)
+
+**Objective**: falsify no two reachable competing production bridges govern the same event-routing decision (complement to section 28 scheduler + section 38 mission-runtime + section 43 worker-run). Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+> Section 44. **AUTHORITY: FALSIFIED.**
+
+Falsification findings [STAT]:
+- TWO DISTINCT bridge authorities, each EXACTLY ONE live production construction, NON-overlapping purpose (NOT competing — they sit at different edges of the spine):
+  1. **EventBridge** (ping-runtime/events/event_bridge.js:20) = EXTERNAL-STORE -> SPINE re-emitter. Polls `repository_events` + `canonical_events` (bridge:108-123) and re-emits into `ping_events` via eventRuntime.emit (bridged repo :222 / canonical :330), with persistent cursor tracking (restore :65/:72, update processed :300). Constructed EXACTLY ONCE gateway_runtime.js:462, initialize :468, start :469. Sole production requirer = gateway_runtime.js. Its emit target is eventRuntime (spine), NEVER MissionRuntime.
+  2. **EventToMissionBridge** (ping-runtime/orchestration/event_to_mission_bridge.js:72) = SPINE -> MISSION creator. Listens to EVENT_MISSION_MAP business event types (:100) and on each calls _missionRuntime.create(mapping.missionType, ...) (:124) - the sole bridge call into MissionRuntime.create (section 38 two-ingress-door ruling: bridge + HTTP /missions route onto the same singleton). Constructed EXACTLY ONCE gateway_runtime.js:575, start :579. Sole production requirer = gateway_runtime.js. Its sink is MissionRuntime (missions), never the spine output path.
+- Both injected into the SAME services object gateway_runtime.js:660 (eventBridge, missionScheduler, eventToMissionBridge) - two bridges, one composition, no overlap.
+- Falsified competitors: mission_event_bus / MissionEventBus = ZERO require references on production path (rg gateway/bootstrap + gateway/runtime + ping-runtime non-test) -> DORMANT. No other `new EventBridge` / `new EventToMissionBridge` on live bootstrap (all hits are test_* / EVAL-* = TEST-ONLY).
+- No overlap of decision: EventBridge decides WHICH external event to re-emit into the spine; EventToMissionBridge decides WHICH business event becomes a mission. Disjoint inputs (external tables vs spine events), disjoint outputs (spine events vs missions).
+
+> **Verdict**: FALSIFIED - two distinct live bridge authorities, each one construction, disjoint purpose and data edges. NOT competing. No consolidation edit.
+
+**Gates**: gateway_runtime LOADS OK (boot-load gate); node --check clean event_bridge.js + event_to_mission_bridge.js; rg construction + requirer sweeps = single live site each (sole requirer gateway_runtime.js); python/kernel bridge not on JS live bootstrap. No code change.
+
+**Canonical bridge ruling (inherit - don't reopen)**: canonical external-store re-emitter = EventBridge singleton (gateway_runtime.js:462, eventRuntime target); canonical spine->mission creator = EventToMissionBridge singleton (gateway_runtime.js:575, MissionRuntime.create :124). Never construct a second of either; never wire mission_event_bus or a comparable kernel bridge onto the live spine. Both compose into the single MissionRuntime (section 38) + single MissionScheduler (section 28) + single WorkerRuntime dispatch (section 43).
+
+**Commit**: (placeholder; true hash captured post-commit)
