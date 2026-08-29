@@ -1354,7 +1354,7 @@ ew AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelop
 **Gates**: gateway_runtime LOADS OK (two-source probe); rg new AIWorkspaceAuthority = gateway_runtime.js:411 only; rg ai_workspace_results non-test code = ai_workspace_authority.js only; /ai-workspace mount guarded :778-779. No code change.
 
 **Canonical AI-workspace ruling** (inherit - don't reopen): canonical AI-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js), constructed once gateway_runtime.js:411, guarded /ai-workspace route, sole ai_workspace_results writer. Any future AI-workspace change goes through this singleton; never construct a second AI-workspace authority, never add a competing workspace/session generator onto the live path.
-### 37 Witness Authority Falsification (COMMITTED e2f4185a)
+### 37 Witness Authority Falsification (COMMITTED 15ebed46)
 
 **Objective**: falsify no two reachable competing live witnesses govern a single witness decision on the production spine (do NOT reopen P0-1 witness determinism / WIT-NEG / Eval-010 - those are frozen rulings).
 
