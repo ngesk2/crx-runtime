@@ -1405,6 +1405,6 @@ ew AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelop
 - No other JS/Python execution host on live bootstrap: gateway_runtime.js requires no worker_registry/background_workers/python worker module (rg empty). base_worker.js/worker_port.js/WorkerPortRegistry = ping-runtime/agents + orchestration/execution = none required by gateway_runtime.js (rg empty), STRANDED.
 - Verdict: FALSIFIED - exactly one live executing worker: WorkerRuntime (single construction gateway_runtime.js:480, single dispatch caller MissionScheduler:250, single dispatch decider :78). Orca = reachable-but-disconnected parallel dormant universe (never autonomously driven; no_executor); worker_registry/background_workers/agents WorkerPort = stranded. No consolidation edit.
 
-**Commit**: (pending - fill after commit)
+**Commit**: c7d1b5ae "docs(evidence): WorkerRuntime execution-host falsification - no reachable competing live worker-execution authority (ledger 39)" - 1 file. Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js).
 
 **Gates**: gateway_runtime LOADS OK; rg new WorkerRuntime = gateway_runtime.js:480 only; rg require ('../../ping-runtime/workers/worker_runtime') = gateway_runtime.js:85 production + tests/evals only; rg executionEngine.dispatch/startAutonomousLoop/emitGitDiff/compileMissions in gateway_runtime.js = EMPTY; Orca execution/* rg ping_missions/ping_events/repository_events/canonical_workers/WorkerRuntime = EMPTY. No code change.
