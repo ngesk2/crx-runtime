@@ -869,3 +869,66 @@ production authorities govern the same search/evidence decision.
 - P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT part
   of this commit.
 
+
+## 28. Scheduler Falsification - no reachable competing production scheduler (2026-08-28) [STAT]
+
+Falsification of the runtime-execution scheduler decision domain. Verify no two reachable competing
+production schedulers govern "which scheduler dispatches missions/workers at runtime." Resume point of
+the audit-first program (Hermes Desktop PHASE 0-1 completed in parallel).
+
+### Scheduler classes and construction sites [STAT]
+
+| Class | File | Construction site(s) | Live? |
+|-------|------|----------------------|-------|
+| MissionScheduler | ping-runtime/orchestration/mission_scheduler.js:82 | gateway_runtime.js:552 (single) + :560 start | **LIVE - sole production scheduler** |
+| SchedulerPort | gateway/scheduler_port.js:26 | bootstrap/wiring.js:155-157 (inside wireContainer) | DORMANT (non-prod DI) |
+| TemporalSchedulerProvider | gateway/temporal_scheduler_provider.js:27 | bootstrap/wiring.js:146-149 (inside wireContainer) | DORMANT (non-prod DI) |
+| ReplayScheduler | gateway/replay_scheduler.js:3 | gateway/constitutional_execution_pipeline.js:7 (require) | STRANDED (pipeline unreachable) |
+| DependencyScheduler | gateway/dependency_scheduler.js:21 | gateway/execution_planner.js:17 (require) | STRANDED (planner zero importers) |
+
+### Evidence
+
+- **MissionScheduler is the SINGLE live production scheduler** [STAT]: imported at gateway_runtime.js:74
+  (require('../../ping-runtime/orchestration/mission_scheduler')); constructed exactly ONCE at :552
+  (new MissionScheduler({...})); started :560 (missionScheduler.start()); hoisted to the services object
+  at :660. This is the only scheduler in the production bootstrap import graph (node server.js ->
+  bootstrap/gateway_runtime.js). Consistent with ledger 25 (MissionScheduler: 1 site / 1 live).
+- **SchedulerPort + TemporalSchedulerProvider are non-production DI only** [STAT]: constructed solely
+  inside wireContainer() (wiring.js:146-158). wireContainer is exported (wiring.js:256) but its only
+  reachability is bootstrap/index.js, which has ZERO production importers (ledger 27). Production use of
+  wiring.js is buildDependencyGraph/validateWiring ONLY (routes/constitution.js:20, runtime_hash.js:16) -
+  rendering the SchedulerPort/TemporalSchedulerProvider registrations inert.
+- **ReplayScheduler is stranded via the dormant kernel pipeline** [STAT]: gateway/replay_scheduler.js is
+  required only by gateway/constitutional_execution_pipeline.js:7. That pipeline's only importer is
+  gateway/constitutional_runtime.js:3, which is reachable ONLY from test_kernel_replay.js:422 (a test),
+  NOT production. No production path constructs ReplayScheduler or invokes the kernel pipeline
+  (registries empty - ledger 16/19).
+- **DependencyScheduler is fully stranded** [STAT]: gateway/execution_planner.js:17 requires
+  dependencyScheduler from dependency_scheduler.js. execution_planner.js has ZERO importers anywhere.
+  constitutional_execution_planner (its sibling) is imported only by constitutional_automatic_pipeline.js:19,
+  which itself has ZERO importers. No production path, no runtime reachability.
+- **No other Scheduler-class constructors exist on the live path** [STAT]: tree-wide class-definition
+  sweep (excl. node_modules/dormant_classifications/archive/tests) yields exactly the 5 classes above;
+  only MissionScheduler is constructed from gateway_runtime.js.
+
+### Verdict
+
+- **No active contradiction** in the scheduler decision domain. EXACTLY ONE live production scheduler
+  (MissionScheduler) - single construction, single start, single dispatch path (WorkerRuntime.dispatch,
+  ledger 19/P3A). The four other scheduler classes collapse to either the non-production DI graph
+  (SchedulerPort, TemporalSchedulerProvider behind wireContainer), the dormant kernel pipeline
+  (ReplayScheduler behind a zero-producer reactor), or a zero-importer stranded planner
+  (DependencyScheduler behind execution_planner). No two reachable schedulers compete for the same
+  runtime decision. No consolidation warranted.
+- Evidence is [STAT] (construction + reachability via source/config/entrypoint analysis). NOT promoted
+  to [EMPR] - no fabricated E2E; the live single-scheduler dispatch is already exercised by
+  commissioning (14 scenarios, 51 missions, 0 failed) + the 2026-08-21/28 real-runtime E2E traces.
+
+### Gates
+
+- require('./bootstrap/gateway_runtime') -> gateway_runtime LOADS OK (from gateway/ workdir).
+- Regression exit-0: commissioning (14 scenarios / 51 missions / 0 failed - exercises MissionScheduler
+  end-to-end), pipeline_bridge 10, phase_d_namespace 7, slice3a_convergence 8, knowledge_search 10,
+  replay_composition 8, witness_negpath 8. Zero failures.
+- P0-1 hoist (gateway/bootstrap/gateway_runtime.js) remains working-tree-only and unstaged; NOT part
+  of this commit.
