@@ -1653,3 +1653,17 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 ### 2026-08-28 Session - Ledger 51 hash-correction (COMMITTED)
 
 **Record real commit hash for solver51**: main commit `4b6d7385` "docs(evidence): event-emitter/business-event-production falsification - single live emitter surface over canonicalizationService (ledger 51)" - 1 file, 15 insertions, ledger-only. Direct parent of the hash-correction commit.
+
+### 2026-08-28 Session - Integration/Capability/Connector Emission-Routing Authority Falsification (LEDGER 52)
+
+**Continue audit-first program at the next unresolved production-spine boundary (integration/capability/connector emission-routing; prioritized over dormant archaeology per mandate).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**52 Integration/Connector Falsification COMPLETE** [STAT]:
+- TWO DISTINCT LIVE surfaces, each EXACTLY ONE production construction at gateway_runtime.js, NON-overlapping purpose (NOT competing - disjoint responsibilities over the same single spine):
+  1. **IntegrationManager** (ping-runtime/runtime/integration_manager.js:9) = the EXTERNAL EMISSION-ROUTING authority. Constructed ONCE gateway_runtime.js:218; 3 providers via registerIntegration gateway_runtime.js:219-221 (new PostHogIntegration/EmailIntegration/SmsIntegration - each a distinct class with async send(eventType,payload)/health()). Its emit() fans out to all registered integrations applying the analytics policy (isAllowedEventForIntegration + redactPayload, integration_manager.js:42-68). **SOLE live call site = unified_event_runtime.js:179** (spine emit() step 7: "Route to integrations" - whole-tree rg integrationManager.emit( = EXACTLY 1 site, unified_event_runtime.js:179). Sole live requirer = gateway_runtime.js. Injection: integrationManager passed into UnifiedEventRuntime constructor gateway_runtime.js:437 (spine holds it for step-7 routing).
+  2. **ConnectorRegistry** (ping-runtime/connectors/connector_registry.js:22) = the CAPABILITY/INTROSPECTION CATALOG (read-only). Constructed ONCE gateway_runtime.js:253; 5 providers registered gateway_runtime.js:255-275 (google github posthog email sms). NO emission/send method (async send/emit/notify = ABSENT from class; public surface = register/list/getStats only). Composed into CapabilityRegistry (:294) + exposed read-only via /connectors routes (:806). The *Connector classes (google/github/posthog/email/sms) implement a standardized capability interface (authenticate/discover/health/sync/events/objects/search/permissions) - NONE reach the spine emission path.
+- Business external events (emailSent/smsSent/google events) flow via §51 ConnectorEmitter -> spine emit -> step7 -> IntegrationManager.emit. ConnectorRegistry is queried for capability/introspection only, never used to send.
+- Distinct production lanes (NOT competing): IntegrationManager+*Integration = emission dispatch edge; ConnectorRegistry+*Connector = capability catalog edge; both composed over the single UnifiedEventRuntime spine (§29 write authority). Neither shadows the other's decision.
+- Verdict: FALSIFIED - exactly one live integration-emission-routing authority (IntegrationManager, one construction + one spine call site) and exactly one live capability catalog (ConnectorRegistry, read-only). No consolidation edit.
+
+**Commit**: 52 ledger authored above.
