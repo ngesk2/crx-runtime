@@ -1,4 +1,4 @@
-# Execution/Evidence Ledger — Live Spine Validation
+# Execution/Evidence Ledger â€” Live Spine Validation
 
 **Status:** CANONICAL HANDOFF SOURCE
 **Branch:** `constitutional-convergence-v2` @ `828520ea` (no commits made during this window)
@@ -20,9 +20,9 @@ reports. The following are true as of this window:
 | Historical replay/witness metrics | event-derived projections over `ping_events` | live `/mc/replay/stats`, `/mc/witness/stats` |
 | Witness authority itself | pure `createWitness` hashing function, NO counters | source + live |
 | Live event persistence winner | `unified_event_runtime` + bridge path | live + source |
-| `event_outbox` | **P0-2 recommendation B — DEPRECATE** | corroborated by real traffic (0 rows) |
-| Production event entry point | `POST /ingest` → CanonicalizationService → UnifiedEventRuntime | live |
-| Production bootstrap | `node gateway/server.js` → `GatewayRuntime` → `gateway_runtime.js` (single process) | live |
+| `event_outbox` | **P0-2 recommendation B â€” DEPRECATE** | corroborated by real traffic (0 rows) |
+| Production event entry point | `POST /ingest` â†’ CanonicalizationService â†’ UnifiedEventRuntime | live |
+| Production bootstrap | `node gateway/server.js` â†’ `GatewayRuntime` â†’ `gateway_runtime.js` (single process) | live |
 
 **Three evidence classes used throughout:**
 - **[EMPR]** = Empirically proven live behavior (observed HTTP/DB/log output during the window)
@@ -33,7 +33,7 @@ reports. The following are true as of this window:
 
 ## 1. Evidence Window & Environment
 
-- **Window:** 2026-08-27, events with timestamps ~21:50–22:01 UTC.
+- **Window:** 2026-08-27, events with timestamps ~21:50â€“22:01 UTC.
 - **Docker availability:** **Docker daemon WAS available during the actual execution window**
   and all live evidence below was captured before it failed. The daemon went down **after** the
   evidence window (npipe `dockerDesktopLinuxEngine` unavailable); this does NOT invalidate the
@@ -46,9 +46,9 @@ reports. The following are true as of this window:
 
 ## 2. Real Production Event Entry Point
 
-Boundary proven: `POST /ingest` → `gateway/routes/ingest.js` → `canonicalization_service.js`
-→ `unified_event_runtime.js`. Three REAL events driven through it (NOT mocks, NOT direct DB
-inserts — each produced a 201 from the HTTP boundary). **[EMPR]**
+Boundary proven: `POST /ingest` â†’ `gateway/routes/ingest.js` â†’ `canonicalization_service.js`
+â†’ `unified_event_runtime.js`. Three REAL events driven through it (NOT mocks, NOT direct DB
+inserts â€” each produced a 201 from the HTTP boundary). **[EMPR]**
 
 | # | eventId | objectId | canonicalHash | HTTP |
 |---|---------|----------|---------------|------|
@@ -60,14 +60,14 @@ All: `source=customer`, `eventType=REVIEW_RECEIVED`, `namespace=tenant::hpp`, `c
 
 ## 3. Full Live Causal Chain (event 3, current process)
 
-9 events, correct causal tree — each downstream `causation_id` = previous event's `event_id`;
-single root `correlation_id = 39fe52fa1abc…`; `namespace=tenant::hpp` preserved at every hop.
+9 events, correct causal tree â€” each downstream `causation_id` = previous event's `event_id`;
+single root `correlation_id = 39fe52fa1abcâ€¦`; `namespace=tenant::hpp` preserved at every hop.
 **[EMPR]** (verified via direct Postgres query by correlation_id)
 
 ```
-REVIEW_RECEIVED → OBSERVATION_CREATED → CLAIM_CREATED → CLASSIFICATION_CREATED
-→ RECOMMENDATION_CREATED → PROJECTION_CREATED → REPLAY_COMPLETED
-→ WITNESS_CREATED → LINEAGE_CREATED
+REVIEW_RECEIVED â†’ OBSERVATION_CREATED â†’ CLAIM_CREATED â†’ CLASSIFICATION_CREATED
+â†’ RECOMMENDATION_CREATED â†’ PROJECTION_CREATED â†’ REPLAY_COMPLETED
+â†’ WITNESS_CREATED â†’ LINEAGE_CREATED
 ```
 
 | hop | event_type | event_id (8) | causation_id (8) | correlation_id (8) | namespace |
@@ -84,13 +84,13 @@ REVIEW_RECEIVED → OBSERVATION_CREATED → CLAIM_CREATED → CLASSIFICATION_CRE
 
 ## 4. Durable ping_events Growth
 
-`ping_events` grew monotonically across the live events: **1050 → 1091 (+41) → 1132 (+41)
-→ 1173 (+41)**. Each `REVIEW_RECEIVED` event produced 1 ingest event + ~32 MISSION_* lifecycle
+`ping_events` grew monotonically across the live events: **1050 â†’ 1091 (+41) â†’ 1132 (+41)
+â†’ 1173 (+41)**. Each `REVIEW_RECEIVED` event produced 1 ingest event + ~32 MISSION_* lifecycle
 events + 8 worker-chain output events. **[EMPR]**
 
 ## 5. Replay Provider: Current-Process Counters vs Durable Historical Projections
 
-This was the key investigation. Resolution — **[EMPR] + [STAT]**:
+This was the key investigation. Resolution â€” **[EMPR] + [STAT]**:
 
 **The provider counter logic is CORRECT and the observability IS live.** The earlier
 "provider counter 0 despite kernel_verified" was the **historical-versus-current-process**
@@ -98,14 +98,14 @@ semantics, confirmed:
 
 - `KernelReplayExecutionProvider` is a single in-memory instance shared by the ReplayWorker
   and `services.replayProvider` (constructed once at `gateway_runtime.js:502`, passed to
-  `registerCanonicalWorkers` :509 → ReplayWorker `options.replayProvider`, AND to `services`
+  `registerCanonicalWorkers` :509 â†’ ReplayWorker `options.replayProvider`, AND to `services`
   :655 read by `/mc/replay/stats`). `canonical_workers.js` does **not** construct its own
-  provider (no require of the provider module — only comment/string references). **[STAT]**
+  provider (no require of the provider module â€” only comment/string references). **[STAT]**
 - A container diagnostic log proved the shared object executed: `[REPLAY-DIAG] executeReplay
   CALLED replays=1 caller=at ReplayWorker.handle (canonical_workers.js:287)`. (Diagnostic
   removed after evidence; original provider restored.) **[EMPR]**
 - After a gateway restart (counter reset to 0), driving a fresh event produced
-  `replays_processed: 0 → 1`, `events_replayed: 0 → 1`, and the DB chronologically reflects
+  `replays_processed: 0 â†’ 1`, `events_replayed: 0 â†’ 1`, and the DB chronologically reflects
   the fresh `kernel_verified`. The pre-restart `kernel_verified` events are durable historical
   recordings NOT attributed to the current process's in-memory counter. **[EMPR]**
 
@@ -119,20 +119,20 @@ semantics, confirmed:
 
 Witness authority is a pure `createWitness` hashing function with NO runtime counters; the
 honest status surface is the emitted attestation stream. **[STAT]** Live:
-`/mc/witness/stats` attestations **31→32→33→34**, refusals **0**, total following the live chain.
-Trace for event 3 returned a real attestation `witness-e0f88db9…`. **[EMPR]**
+`/mc/witness/stats` attestations **31â†’32â†’33â†’34**, refusals **0**, total following the live chain.
+Trace for event 3 returned a real attestation `witness-e0f88db9â€¦`. **[EMPR]**
 
 ## 7. Real Trace / Kernel Verification Evidence
 
-`/mc/replay/trace/39fe52fa…` returned `groupSize: 9` with:
+`/mc/replay/trace/39fe52faâ€¦` returned `groupSize: 9` with:
 `reason: kernel_verified`, `verified: true`, `violations: []`,
-`fingerprint: sha256:a753084a79d0…`, `witness_root: da24c4a6c6a4…`,
+`fingerprint: sha256:a753084a79d0â€¦`, `witness_root: da24c4a6c6a4â€¦`,
 `canonical_input_hash: replay-37abde1f6ce5`,
-`deterministic_execution_identity: sha256:a753084a…`,
+`deterministic_execution_identity: sha256:a753084aâ€¦`,
 provider `KernelReplayExecutionProvider`. These fields only originate from the deterministic
 kernel engine inside `executeReplay`. **[EMPR]**
 
-## 8. P0-2 Corroboration by Real Traffic (B — DEPRECATE)
+## 8. P0-2 Corroboration by Real Traffic (B â€” DEPRECATE)
 
 Throughout the live window, `event_outbox` = **0 rows** and `mission_events` = **0 rows**, while
 the live winner (ping_events + EventToMissionBridge/EventBridge) handled all traffic. Real
@@ -141,8 +141,8 @@ traffic **strengthens** the frozen P0-2 decision B (DEPRECATE). **[EMPR]**
 ## 9. /health Degradation Classification
 
 `/health` returned **503** with `status: unhealthy`, degraded **only** on:
-- `qdrant: {status: "error", error: "fetch failed"}` — `ping-qdrant` container never running. **[EMPR]**
-- `embedding: {status: "not_initialized"}` — dependent on Qdrant path. **[EMPR]**
+- `qdrant: {status: "error", error: "fetch failed"}` â€” `ping-qdrant` container never running. **[EMPR]**
+- `embedding: {status: "not_initialized"}` â€” dependent on Qdrant path. **[EMPR]**
 
 All other components healthy: gateway, generated_artifacts (5), integrations (3 healthy),
 event_governance (33 passed/0 rejected), event_runtime (33 emitted/33 persisted/0 dedup/12
@@ -154,7 +154,7 @@ NOT a live-spine failure**. No code was changed merely to force health green. `[
 `ping_bridge_cursors` = **0 rows** throughout the window while the EventToMissionBridge clearly
 covered delivery (the 9-event chain executed with no cursor rows). **[EMPR]**
 
-Why is stated narrowly: cursor rows are only written on the bridge's own poll→re-delivery path.
+Why is stated narrowly: cursor rows are only written on the bridge's own pollâ†’re-delivery path.
 That the EventToMissionBridge covered delivery without writing cursors is consistent with the
 dedup/`ON CONFLICT` ingestion path, but the exact mechanism is **[INFE]** unless source/runtime
 evidence proves otherwise. Do not overclaim why cursor rows stay 0.
@@ -163,17 +163,17 @@ evidence proves otherwise. Do not overclaim why cursor rows stay 0.
 
 | Item | Class | Verdict |
 |------|-------|---------|
-| Provider counter 0 vs durable kernel_verified | [EMPR]+[STAT] | RESOLVED — historical vs current-process semantics (see §5) |
+| Provider counter 0 vs durable kernel_verified | [EMPR]+[STAT] | RESOLVED â€” historical vs current-process semantics (see Â§5) |
 | `/health` 503 | [EMPR] | EXTERNAL DEPENDENCY (Qdrant/embedding), not live-spine |
 | `ping-qdrant` never running | [EMPR] | EXTERNAL DEPENDENCY limitation |
-| Event outbox / mission_events empty | [EMPR] | BY DESIGN — P0-2 B, validated by real traffic |
+| Event outbox / mission_events empty | [EMPR] | BY DESIGN â€” P0-2 B, validated by real traffic |
 
 ## 12. Handoff Directives
 
-1. Future live-spine testing uses `POST /ingest` (real HTTP) → real PG → real worker →
-   real mission-control endpoint → causal/semantic verification. No mock substitution.
+1. Future live-spine testing uses `POST /ingest` (real HTTP) â†’ real PG â†’ real worker â†’
+   real mission-control endpoint â†’ causal/semantic verification. No mock substitution.
 2. When the daemon returns AFTER this window, the in-memory provider counter resets; DO NOT
-   treat a 0 as a defect — re-drive a fresh event and verify it increments.
+   treat a 0 as a defect â€” re-drive a fresh event and verify it increments.
 3. Do not reopen P0-1 (complete/frozen).
 4. Do not implement P3 during the audit pass; produce the contradiction/convergence ledger first.
 
@@ -189,19 +189,19 @@ identity on the live spine after the S4 proof.
   (`ping-runtime/orchestration/mission_runtime.js`) against real live
   ping-postgres (host `127.0.0.1:5433`, `postgres/postgres`, `ping_runtime`).
   20 concurrent setters per round, each with an **independent `pg` Pool + its own
-  `MissionRuntime` instance** (independent connections → genuine row-lock
-  contention), all racing `getPending()`→`assign()` on the SAME `created` mission.
+  `MissionRuntime` instance** (independent connections â†’ genuine row-lock
+  contention), all racing `getPending()`â†’`assign()` on the SAME `created` mission.
   10 rounds. Script: `C:\Users\nolan\AppData\Local\Temp\opencode\s4_race_proof.js`.
 - **Result:** **exactly 1 winner every round (10/10 PASS), 0 double-claims, 0
   unexpected rowCounts.** Final state always `assigned/<single racer>`.
 - **Why atomic:** `MissionRuntime.assign()` (mission_runtime.js:106-121) is a single
   conditional `UPDATE ... WHERE mission_id=$2 AND status='created'`. Postgres takes a
   row lock on the target row; a concurrent second UPDATE blocks until the first
-  commits, then re-evaluates `WHERE` → status is now `'assigned'` → matches 0 rows →
-  `rowCount 0` → claim rejected. `getPending()` (no SKIP LOCKED) may return the same
+  commits, then re-evaluates `WHERE` â†’ status is now `'assigned'` â†’ matches 0 rows â†’
+  `rowCount 0` â†’ claim rejected. `getPending()` (no SKIP LOCKED) may return the same
   mission to multiple claimers, but the conditional UPDATE makes the claim itself
   mutually exclusive.
-- **Verdict:** S4 atomic-claim race **PROVEN**. S4 upgraded TIER-3 → TIER-2
+- **Verdict:** S4 atomic-claim race **PROVEN**. S4 upgraded TIER-3 â†’ TIER-2
   LIVE-WIRED. No TIER-3 arrows remain in `LIVE_ARROW_AUDIT.md`.
 
 ### 13.2 Full initialize() / Live Spine E2E Re-validation (event 4b) [EMPR]
@@ -210,27 +210,27 @@ identity on the live spine after the S4 proof.
   `replays_processed:1, events_replayed:1, failures:0`; durable `total_replays:35`,
   `kernel_verified:4`.
 - **Live POST /ingest** `REVIEW_RECEIVED` (source `s4-live-e2e`, namespace
-  `tenant::hpp`): HTTP 200, `eventId 1b33ccc77be5…`, canonicalized.
-- **After (35s, scheduler poll):** `ping_events` = **1255 (+41)** — exact ledger
+  `tenant::hpp`): HTTP 200, `eventId 1b33ccc77be5â€¦`, canonicalized.
+- **After (35s, scheduler poll):** `ping_events` = **1255 (+41)** â€” exact ledger
   `+41/event` figure. Durable `total_replays:36`, `kernel_verified:5` (one new).
-  Provider counters `replays_processed:2, events_replayed:2, failures:0` — the
+  Provider counters `replays_processed:2, events_replayed:2, failures:0` â€” the
   single live `/ingest` incremented the **singleton** provider exactly once
   (problems-proof of singleton identity, no second replay).
-- **Scheduler:** dispatched 8→16, completed 8→16, failed 0; `skipped:31` (history +
-  S4_RACE missions with no matching worker — tracked, never phantom-completed).
-- **Full 9-event causal chain** (same correlation_id `1b33ccc77be5…`, namespace
+- **Scheduler:** dispatched 8â†’16, completed 8â†’16, failed 0; `skipped:31` (history +
+  S4_RACE missions with no matching worker â€” tracked, never phantom-completed).
+- **Full 9-event causal chain** (same correlation_id `1b33ccc77be5â€¦`, namespace
   `tenant::hpp` at every hop, each causation_id = prev event_id):
-  REVIEW_RECEIVED→OBSERVATION_CREATED→CLAIM_CREATED→CLASSIFICATION_CREATED→
-  RECOMMENDATION_CREATED→PROJECTION_CREATED→REPLAY_COMPLETED→WITNESS_CREATED→
+  REVIEW_RECEIVEDâ†’OBSERVATION_CREATEDâ†’CLAIM_CREATEDâ†’CLASSIFICATION_CREATEDâ†’
+  RECOMMENDATION_CREATEDâ†’PROJECTION_CREATEDâ†’REPLAY_COMPLETEDâ†’WITNESS_CREATEDâ†’
   LINEAGE_CREATED.
-- **Dedup integrity:** exactly **1 of each** of the 9 event types in the chain — zero
+- **Dedup integrity:** exactly **1 of each** of the 9 event types in the chain â€” zero
   duplicate events.
 - **Replay authority evidence block complete:** provider
   `KernelReplayExecutionProvider`, authority `ReplayWorker`, `verified:true`,
   `reason:kernel_verified`, `violations:[]`, `violation_count:0`, real `fingerprint
-  sha256:3c5cce50…`, `witness_root 73a74073…`, `artifact_count:1`,
-  `canonical_input_hash replay-77c1a1e7…`, `deterministic_execution_identity`.
-- **Witness attestation** `WITNESS_CREATED` linked (witness event `0bc6e555…`); refusals 0.
+  sha256:3c5cce50â€¦`, `witness_root 73a74073â€¦`, `artifact_count:1`,
+  `canonical_input_hash replay-77c1a1e7â€¦`, `deterministic_execution_identity`.
+- **Witness attestation** `WITNESS_CREATED` linked (witness event `0bc6e555â€¦`); refusals 0.
 - Trace `/mc/replay/trace/<corr>`: `groupSize:9`, full replay block + witness array.
 - **Duplication-of-initialization:** gateway boot is single-initialize by design;
   the +41/+1-provider-increment evidence confirms no duplicate mission/worker/provider
@@ -240,7 +240,7 @@ identity on the live spine after the S4 proof.
 (atomic-claim race) and the full `initialize()` live E2E are empirically proven
 against the real runtime. [EMPR] throughout.
 
-## 14. Step 4 — IntelligenceWorker Audit (2026-08-28) [STAT/INFE]
+## 14. Step 4 â€” IntelligenceWorker Audit (2026-08-28) [STAT/INFE]
 
 **Objective:** audit the long-flagged IntelligenceWorker "duplicate path + namespace
 drop" against the current committed state (post Slice 3A-3 + P3 settled semantics).
@@ -253,7 +253,7 @@ drop" against the current committed state (post Slice 3A-3 + P3 settled semantic
    never registers it into WorkerRuntime. WorkerRuntime.dispatch requires
    `eventTypes.length > 0 && includes(eventType)` (worker_runtime.js:78), so
    intelligence processes ZERO live events. The historical "25 vs 14 recommendation
-   dispatch" dual fan-out concern is NO LONGER REACHABLE — it was predicated on a broad
+   dispatch" dual fan-out concern is NO LONGER REACHABLE â€” it was predicated on a broad
    eventTypes wiring that was never re-enabled.
 2. **Namespace drop already fixed** [STAT]: the inline `BaseWorker._emit`
    (intelligence_worker.js:25-59) preserves `this._event?.namespace` (:30),
@@ -268,7 +268,7 @@ drop" against the current committed state (post Slice 3A-3 + P3 settled semantic
 - `node --check` clean on canonical_workers.js; commissioning 14 scenarios / 0 failed.
 - do NOT wire IntelligenceWorker as-is; it intentionally shadows the canonical pair.
 
-## 15. Step 5 — Orca Model Discovery Proof + KEEP-DISABLED Decision (2026-08-28) [EMPR]
+## 15. Step 5 â€” Orca Model Discovery Proof + KEEP-DISABLED Decision (2026-08-28) [EMPR]
 
 **Objective:** prove Orca's model discovery works against the real ollama container
 (discoverOllama=false was the noted reason /orchestration sees zero business traffic),
@@ -277,21 +277,21 @@ then decide whether to enable.
 ### Empirical proof (standalone script, %TEMP%, zero repo changes) [EMPR]
 - Instantiated the ACTUAL production `ping-runtime/orchestration/execution/ollama_provider.js`
   `OllamaProvider` and called `discoverWorkers()` against live Ollama (localhost:11434).
-- **Result: PASS — 4 workers discovered + registered:**
-  - `ollama:qwen2.5-coder:14b` — code_audit, ctx 32768, replay:true, maxLoad 4
-  - `ollama:qwen2.5-coder:7b`  — code_audit, ctx 32768, replay:true, maxLoad 4
-  - `ollama:llama3:latest`    — general_purpose, ctx 4096, replay:false
-  - `ollama:nomic-embed-text:latest` — general_purpose, ctx 4096, replay:false
+- **Result: PASS â€” 4 workers discovered + registered:**
+  - `ollama:qwen2.5-coder:14b` â€” code_audit, ctx 32768, replay:true, maxLoad 4
+  - `ollama:qwen2.5-coder:7b`  â€” code_audit, ctx 32768, replay:true, maxLoad 4
+  - `ollama:llama3:latest`    â€” general_purpose, ctx 4096, replay:false
+  - `ollama:nomic-embed-text:latest` â€” general_purpose, ctx 4096, replay:false
 - Mapping to capabilities/specialization/context/replay via `capability_registry.json`
   model_mappings is fully functional. `discoverOllama:false` is NOT hiding a broken
-  implementation — it is an intentional gate and the implementation works end-to-end.
+  implementation â€” it is an intentional gate and the implementation works end-to-end.
 
 ### Decision: KEEP-DISABLED (doc-contract applied, no wiring) [INFE]
 - Orca is a PARALLEL execution authority, not the production spine. The live spine's
   single inference owner = AIRuntime + ping-runtime/ai/ollama_provider.js; the single
   worker-identity decider = WorkerRuntime.dispatch (P3 audit A).
 - Enabling discoverOllama would register a second, unconsumed Ollama worker pool in the
-  Orca fabric — observable but never routed to by production traffic — contradicting the
+  Orca fabric â€” observable but never routed to by production traffic â€” contradicting the
   settled single-owner convergence reality.
 - Added `[DOC-CONTRACT / KEEP-DISABLED]` comment at gateway_runtime.js:325-337 recording
   the proof + rationale + re-enable condition (explicit Orca-vs-live-spine decision).
@@ -299,21 +299,21 @@ then decide whether to enable.
 - Deferred: wiring Orca execution into the production path requires an explicit
   convergence decision; not part of this scoped Step.
 
-## 16. Step 6 — canonical_event_envelope duplicate-path investigation RESOLVED (2026-08-28) [STAT]
+## 16. Step 6 â€” canonical_event_envelope duplicate-path investigation RESOLVED (2026-08-28) [STAT]
 
 **Question (from Mock 3 ledger):** "canonical_event_envelope duplicate at
-gateway/replay/canonical_event_envelope.js uninvestigated" — were there conflicting
+gateway/replay/canonical_event_envelope.js uninvestigated" â€” were there conflicting
 duplicate envelope implementations needing consolidation?
 
 ### First-hand import-graph evidence (require.resolve + full tracked *.js scan) [STAT]
 Two files exist, serving DIFFERENT layers (NOT conflicting duplicates):
-- **PRIMARY** `gateway/canonical_event_envelope.js` (11,542 bytes) — the LIVE spine event
+- **PRIMARY** `gateway/canonical_event_envelope.js` (11,542 bytes) â€” the LIVE spine event
   ACTHORITY. Imported ONLY by the DI composition surface: `gateway/bootstrap/gateway_runtime.js`
   + `gateway/bootstrap/wiring.js` (both `../canonical_event_envelope`) and by gateway-root
   tests (`test_constitutional_validation`, `test_p001_p005`, `test_canonical_envelope_time_authority`).
-  Carries the repoRoot coupling — this was the B4-BLOCKED file, later UNBLOCKED by commit
+  Carries the repoRoot coupling â€” this was the B4-BLOCKED file, later UNBLOCKED by commit
   `15422985` "fix(runtime): inject repoRoot into CanonicalEventEnvelope to unblock M3 relocation".
-- **KERNEL** `gateway/replay/kernel/canonical_event_envelope.js` (2,928 bytes) — compiled
+- **KERNEL** `gateway/replay/kernel/canonical_event_envelope.js` (2,928 bytes) â€” compiled
   TypeScript pure validation class (no infra deps), used EXCLUSIVELY on the replay path:
   `gateway/kernel_replay_execution_provider.js` (the LIVE ReplayWorker backend) -> 
   `replay/kernel/replay_event_stream.js` + re-exported by `replay/kernel/index.js`.
@@ -332,19 +332,19 @@ Two files exist, serving DIFFERENT layers (NOT conflicting duplicates):
 - The standalone analysis scripts live in %TEMP% (s6_scan.js / s6_scan2.js), zero repo code
   changes for this step. No commit needed from Step 6 alone (evidence only).
 
-## 17. IntelligenceWorker Final Verdict � Consumer-Side Confirmation (2026-08-28) [STAT]
+## 17. IntelligenceWorker Final Verdict ï¿½ Consumer-Side Confirmation (2026-08-28) [STAT]
 
 **Objective:** close the IntelligenceWorker KEEP-DORMANT verdict (section 14) with the
 decisive consumer-side evidence: is there any LIVE consumer that needs content-grounded
 (AI) classification the deterministic _categorize/_prioritize pair cannot provide?
 
 ### Three live consumers of CLASSIFICATION_CREATED / RECOMMENDATION_CREATED [STAT, first-hand]
-1. `ping-runtime/orchestration/event_to_mission_bridge.js:61-62` � routes
+1. `ping-runtime/orchestration/event_to_mission_bridge.js:61-62` ï¿½ routes
    CLASSIFICATION_CREATED -> RECOMMENDATION_CREATE mission (priority 2) and
    RECOMMENDATION_CREATED -> PROJECTION_CREATE mission (priority 1).
-2. `ping-runtime/embeddings/embedding_service.js:28` � `RECOMMENDATION_CREATED` in
+2. `ping-runtime/embeddings/embedding_service.js:28` ï¿½ `RECOMMENDATION_CREATED` in
    INDEXABLE_TYPES -> projected to Qdrant knowledge.
-3. `gateway/bootstrap/gateway_runtime.js:594` � `RECOMMENDATION_CREATED` in the
+3. `gateway/bootstrap/gateway_runtime.js:594` ï¿½ `RECOMMENDATION_CREATED` in the
    graph-projection indexable set.
 
 ### Critical finding: ZERO consumers read classification/recommendation CONTENT [STAT]
@@ -377,7 +377,7 @@ decisive consumer-side evidence: is there any LIVE consumer that needs content-g
 ## 18. M3 Google Cluster + googleapis Audit RESOLVED: NO ACTIVE FAILURE, KEEP IN PLACE (2026-08-28) [EMPR/STAT]
 
 **Objective:** audit the 7-file Google cluster + `googleapis` dependency resolution (the
-M3 "google cluster deferred" item) � locate files, live-boot reachability, real import
+M3 "google cluster deferred" item) ï¿½ locate files, live-boot reachability, real import
 graph, dependency resolution, configured-vs-present, failure class. NO broad dep changes.
 
 ### Ground truth: only 5 files actually require('googleapis') [STAT]
@@ -385,7 +385,7 @@ graph, dependency resolution, configured-vs-present, failure class. NO broad dep
   business_profile, people_adapter, gmail_adapter, calendar_adapter}.js` (5 files).
 - `ping-runtime/connectors/{google_connector,oauth_provider}.js` were in the `rg -l
   "googleapis"` list ONLY because they contain `https://www.googleapis.com/...` URL
-  strings (OAuth scopes/token/revoke endpoints) � they do NOT import the npm package.
+  strings (OAuth scopes/token/revoke endpoints) ï¿½ they do NOT import the npm package.
   Zero npm-package dependency in those 2.
 
 ### Dependency class: PASS [EMPR]
@@ -430,8 +430,8 @@ twins; ZERO live competing authorities warrant consolidation.
 - LAYERED (delegate, NOT duplicate):
   - `gateway/canonical_object_authority.js:26,60` requires+invokes `createCanonicalObject`.
   - `gateway/constitutional_object_factory.js:17,44` requires+invokes `createCanonicalObject`.
-- LAYERED KERNEL TWIN (ledger �16): `gateway/replay/kernel/canonical_event_envelope.js` (replay-path validation only).
-- LIVE SPINE AUTHORITY (ledger �16): `gateway/canonical_event_envelope.js` (DI: gateway_runtime/wiring).
+- LAYERED KERNEL TWIN (ledger ï¿½16): `gateway/replay/kernel/canonical_event_envelope.js` (replay-path validation only).
+- LIVE SPINE AUTHORITY (ledger ï¿½16): `gateway/canonical_event_envelope.js` (DI: gateway_runtime/wiring).
 - DORMANT hand-builder: `gateway/github_constitutional_objects.js` hand-constructs
   `constitutionalObject = {...}` shapes (lines 113/209/298/...), does NOT call
   createCanonicalObject. BUT reachable ONLY via `github_normalizer.js`
@@ -450,7 +450,7 @@ twins; ZERO live competing authorities warrant consolidation.
   `mission_runtime.js:344-390` (getTrace), `knowledge_graph.js:65-96` (stores col),
   `unified_event_runtime.js:322-333` (getCorrelationGroup). `ping-runtime/agents/*`
   use correlation_id as a distinct domain label (memory_id/runtime_id) on dormant emit
-  paths � not a competing definition of the spine causal root.
+  paths ï¿½ not a competing definition of the spine causal root.
 
 ### C. Worker-identity/priority/confidence/replay families (already resolved, re-affirmed) [STAT]
 - Worker identity: ONE decider = WorkerRuntime.dispatch (eventTypes match, worker_runtime.js:78).
@@ -458,7 +458,7 @@ twins; ZERO live competing authorities warrant consolidation.
 - Priority: ONE scale int 0-3 via canonicalPriority (priority_boundary.js). (P3 audit B)
 - Confidence: spine metadata.confidence carried verbatim, human-approval-only recompute. (P3 audit C)
 - Replay: ReplayWorker -> KernelReplayExecutionProvider (single live engine); kernel
-  twin = layered replay-validation. (ledger �16, replay convergence commit 852fee10)
+  twin = layered replay-validation. (ledger ï¿½16, replay convergence commit 852fee10)
 
 ### Verdict [INFE]
 - NO two reachable competing authorities for the same runtime decision in any of the six
@@ -468,7 +468,7 @@ twins; ZERO live competing authorities warrant consolidation.
 ## 20. Live E2E Deep-Verification (Docker UP, full initialize() path incl. services.replayProvider) (2026-08-28) [EMPR]
 
 Docker UP: ping-gateway (2h), ollama (2h), ping-postgres healthy, brain-qdrant. Gateway
-/health returns 503 (known degraded-async embedding/Qdrant � NOT a product failure).
+/health returns 503 (known degraded-async embedding/Qdrant ï¿½ NOT a product failure).
 POST /ingest is the canonical production boundary.
 
 ### A. Running container carries P0-1 code (replayProvider reachable in deployment) [EMPR]
@@ -476,7 +476,7 @@ POST /ingest is the canonical production boundary.
   `provider:{engine_version:v1, replays_processed:2, events_replayed:2, failures:0}`
   + durable `total_replays:36, verified:36, kernel_verified:5, witness_rejected:0`.
 - The provider block presence proves the P0-1 observability + services.replayProvider
-  singleton are live in the deployed runtime � full initialize() path incl.
+  singleton are live in the deployed runtime ï¿½ full initialize() path incl.
   services.replayProvider is EMPIRICALLY reachable (not just boot-load static).
 
 ### B. Fresh live E2E through production boundary [EMPR]
@@ -494,7 +494,7 @@ POST /ingest is the canonical production boundary.
   KernelReplayExecutionProvider, namespace tenant::hpp (preserved), correlation_id
   preserved (2db71cee...), source_event_id 20661f7e..., violation_count 0,
   canonical_input_hash "replay-3dde97b3b0c3" (= deterministic replay-transcript
-  identity, matches ledger �17 semantics; not a hash of the triggering event).
+  identity, matches ledger ï¿½17 semantics; not a hash of the triggering event).
 - witness[0] = WITNESS_CREATED d9dbe3dd... attestation "witness-e269b7358b685933".
 
 ### C. Counter semantics re-proven (process-lifetime vs durable-derived) [EMPR]
@@ -705,7 +705,7 @@ runtime, divergent route observer) was tested and refuted.
 
 ## 25. Broad Single-Construction Falsification - All 12 Core Live Authorities (2026-08-28) [STAT]
 
-Extends §24's replay-provider falsification to the ENTIRE core live authority set: for every
+Extends Â§24's replay-provider falsification to the ENTIRE core live authority set: for every
 one of the 12 production authorities that back the canonical spine, there is EXACTLY ONE
 construction site in the whole tree, located in `gateway/bootstrap/gateway_runtime.js`. No
 reachable competing construction/ownership site exists for any of them.
@@ -741,7 +741,7 @@ CanonicalizationService, DeadLetterAuthority`.
 
 For all 12, the ONE production construction site is `gateway/bootstrap/gateway_runtime.js`, and it is
 a single construction line each. `KernelReplayExecutionProvider` (the 13th) is documented separately
-in §24 (single live site + one test-only site at constitutional_runtime.js:45).
+in Â§24 (single live site + one test-only site at constitutional_runtime.js:45).
 
 ### Classification of non-production hits (all test/eval)
 
@@ -754,7 +754,7 @@ in §24 (single live site + one test-only site at constitutional_runtime.js:45).
 
 - **Zero reachable competing construction sites** for all 12 core authorities. Each collapses to
   exactly one canonical owner, one wiring point (`gateway_runtime.js`), injected as a single
-  services-object instance. This is the falsification-strong counterpart to §19's
+  services-object instance. This is the falsification-strong counterpart to Â§19's
   layered-not-duplicate family audit at the CONSTRUCTION level (not just type-level).
 - No consolidation warranted for any of the 12. No shadow authorities, no duplicate worker runtime,
   no parallel service instance anywhere on the live path.
@@ -764,7 +764,7 @@ in §24 (single live site + one test-only site at constitutional_runtime.js:45).
 - `require('./bootstrap/gateway_runtime')` -> `gateway_runtime LOADS OK`.
 - Regression exit-0: pipeline_bridge, slice3a_convergence, phase_d_namespace, phase0_fixes,
   ingest_boundary, knowledge_search, confidence_convergence, trace_propagation, mission_trace,
-  dead_letter_wiring (10 suites). Additionally §24's replay/witness suites already green.
+  dead_letter_wiring (10 suites). Additionally Â§24's replay/witness suites already green.
 - P0-1 hoist (`gateway/bootstrap/gateway_runtime.js`) remains working-tree-only and unstaged; NOT
   part of this commit.
 
@@ -1130,7 +1130,7 @@ BOTH call the SAME singleton's same method with the SAME deterministic point id
 idempotent upsert (same point id overwrites same point). NOT two authorities; a redundant emit of
 one logical write. The Phase-0 "dual projection owner" is confirmed redundancy, not contradiction.
 
-**Overlap analysis**: EmbeddingService INDEXABLE_TYPES (20) ∩ ProjectionWorker eventTypes
+**Overlap analysis**: EmbeddingService INDEXABLE_TYPES (20) âˆ© ProjectionWorker eventTypes
 (canonical_workers.js:709: ['KNOWLEDGE_INDEX','PROJECTION_CREATE','RECOMMENDATION_CREATED',
 'LINEAGE_CREATED']) = { RECOMMENDATION_CREATED } only. PROJECTION_CREATE (worker) differs from
 PROJECTION_CREATED (indexable) - distinct spellings, distinct event types. LINEAGE_CREATED is
@@ -1236,7 +1236,7 @@ onto the live spine, never re-enable Orca ollama auto-discovery (ledger 15).
 ## 34. Connector/Capability/OAuth/Integration Authority Falsification
 
 **Question the audit resolves**: is there a SINGLE live authority each for the connector catalog,
-capability introspection, OAuth token management, and integration emission — or do ConnectorRegistry /
+capability introspection, OAuth token management, and integration emission â€” or do ConnectorRegistry /
 CapabilityRegistry / OAuthFlowManager / IntegrationManager compete with a reachable duplicate?
 
 **Live single-construction authorities (each EXACTLY ONCE on the live bootstrap, gateway_runtime.js)**:
@@ -1304,26 +1304,26 @@ other stranded connector onto the spine.
 
 **Method** [STAT]: enumerate every construction site of event-read authorities, every read method surface, and every non-test FROM ping_events reader; classify primary vs fallback vs distinct-domain; confirm reachability from production bootstrap (gateway_runtime.js).
 
-**1. Flat/stat read authority — EventReadAuthority**:
+**1. Flat/stat read authority â€” EventReadAuthority**:
 - Live class = ping-runtime/events/event_read_authority.js (:20), a PATCH_003 shim that extends and re-exports the KERNEL reader (runtime/kernel/event_read_authority.js:17). Methods (kernel, verified): getAllEvents, getRecentEvents, getEventStats, getEventsByStream, getEventsByType, getEventsByCorrelationId, getRecentEventsForContext, getWorkerStatusForContext, getDailyActivityForContext, getLatestSummariesForContext, getRecentFailuresForContext, getModelMetricsForContext, markProcessed, markFailed, getUnprocessedEvents.
 - Construction EXACTLY ONCE on live bootstrap: gateway_runtime.js:382 
-ew EventReadAuthority(this._pool) (initialize :383). Sole kernel-twin construction = runtime/kernel/gateway_adapter.js:30 (kernel DORMANT per 28/29 — not production). rg confirms no other non-test construction.
+ew EventReadAuthority(this._pool) (initialize :383). Sole kernel-twin construction = runtime/kernel/gateway_adapter.js:30 (kernel DORMANT per 28/29 â€” not production). rg confirms no other non-test construction.
 - Live consumers: SystemAuthority :407, /events routes :681 (createEventRoutes(eventReadAuthority, unifiedEventRuntime, pool)), /context routes :682, /system routes :684.
 
-**2. Causal traversal read authority — UnifiedEventRuntime (the spine)**:
+**2. Causal traversal read authority â€” UnifiedEventRuntime (the spine)**:
 - getChildren/getDescendants/getAncestors/getCorrelationGroup defined ONLY on unified_event_runtime.js:244/:265/:297/:328 (P0-A design: "traversal methods live on the spine, not on EventReadAuthority"). UnifiedEventRuntime is the canonical live event WRITER (29) AND the causal-query surface.
-- rg confirms the 4 traversal method definitions exist ONLY in unified_event_runtime.js (other hits are comment/doc/metadata/lineage in-memory doc strings — no competing class defines them).
+- rg confirms the 4 traversal method definitions exist ONLY in unified_event_runtime.js (other hits are comment/doc/metadata/lineage in-memory doc strings â€” no competing class defines them).
 
-**3. Degraded fallbacks — NOT competing authorities**:
-- routes/events.js:19/:34/:46/:65 issue direct pool.query ONLY when the EventReadAuthority result is empty (e.g. DB-down degraded boot) — same-semantics mirrors of the authority's get* methods, idempotent, not an independent decision owner. They are reachable but secondary-by-construction.
+**3. Degraded fallbacks â€” NOT competing authorities**:
+- routes/events.js:19/:34/:46/:65 issue direct pool.query ONLY when the EventReadAuthority result is empty (e.g. DB-down degraded boot) â€” same-semantics mirrors of the authority's get* methods, idempotent, not an independent decision owner. They are reachable but secondary-by-construction.
 
-**4. Other non-test FROM ping_events readers — distinct domains, not event-list query surfaces**:
-- mission_runtime.js:370/:384 — mission-domain correlation-group resolution for getTrace/getAllTraces (mission evidence bundle), not an operator event-query surface.
-- gateway_runtime.js:840 — health/live COUNT diagnostic.
-- evidence_authority.js:54/:95 — evidence backing-event back-resolve (§EvidenceAuthority domain, distinct from flat event query).
-- event_bridge.js:156/:258 — bridge cursor dedup (source='repository_events'/'canonical_events'), bridging concern.
-- canonical_workers.js:434 — COMMENT ONLY.
-- unified_event_runtime.js:207/:248/:271/:276/:303/:308/:332 — the spine's own read methods (same authority).
+**4. Other non-test FROM ping_events readers â€” distinct domains, not event-list query surfaces**:
+- mission_runtime.js:370/:384 â€” mission-domain correlation-group resolution for getTrace/getAllTraces (mission evidence bundle), not an operator event-query surface.
+- gateway_runtime.js:840 â€” health/live COUNT diagnostic.
+- evidence_authority.js:54/:95 â€” evidence backing-event back-resolve (Â§EvidenceAuthority domain, distinct from flat event query).
+- event_bridge.js:156/:258 â€” bridge cursor dedup (source='repository_events'/'canonical_events'), bridging concern.
+- canonical_workers.js:434 â€” COMMENT ONLY.
+- unified_event_runtime.js:207/:248/:271/:276/:303/:308/:332 â€” the spine's own read methods (same authority).
 
 **Verdict**: FALSIFIED. Exactly ONE live owner per event-read decision: flat/stat reads = EventReadAuthority (gateway_runtime.js:382); causal traversal = UnifiedEventRuntime (spine). routes/events fallbacks are degraded same-semantics mirrors, not competing. No reachable competing event-read authority. No consolidation edit (complementary read surfaces by design).
 
@@ -1489,7 +1489,7 @@ Falsification findings [STAT]:
 > Section 44. **AUTHORITY: FALSIFIED.**
 
 Falsification findings [STAT]:
-- TWO DISTINCT bridge authorities, each EXACTLY ONE live production construction, NON-overlapping purpose (NOT competing — they sit at different edges of the spine):
+- TWO DISTINCT bridge authorities, each EXACTLY ONE live production construction, NON-overlapping purpose (NOT competing â€” they sit at different edges of the spine):
   1. **EventBridge** (ping-runtime/events/event_bridge.js:20) = EXTERNAL-STORE -> SPINE re-emitter. Polls `repository_events` + `canonical_events` (bridge:108-123) and re-emits into `ping_events` via eventRuntime.emit (bridged repo :222 / canonical :330), with persistent cursor tracking (restore :65/:72, update processed :300). Constructed EXACTLY ONCE gateway_runtime.js:462, initialize :468, start :469. Sole production requirer = gateway_runtime.js. Its emit target is eventRuntime (spine), NEVER MissionRuntime.
   2. **EventToMissionBridge** (ping-runtime/orchestration/event_to_mission_bridge.js:72) = SPINE -> MISSION creator. Listens to EVENT_MISSION_MAP business event types (:100) and on each calls _missionRuntime.create(mapping.missionType, ...) (:124) - the sole bridge call into MissionRuntime.create (section 38 two-ingress-door ruling: bridge + HTTP /missions route onto the same singleton). Constructed EXACTLY ONCE gateway_runtime.js:575, start :579. Sole production requirer = gateway_runtime.js. Its sink is MissionRuntime (missions), never the spine output path.
 - Both injected into the SAME services object gateway_runtime.js:660 (eventBridge, missionScheduler, eventToMissionBridge) - two bridges, one composition, no overlap.
@@ -1630,7 +1630,22 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 - **CONSTRUCTION, EXACTLY ONCE each (whole-tree `new X(` sweep = only these 3 sites, all gateway_runtime.js):** ReviewAuthority :417, CustomerAuthority :421, ProjectAuthority :429 (each inside pgAvailable block starts :380; each followed by `.initialize()`). No second construction non-test anywhere (`rg new ReviewAuthority(/new CustomerAuthority(/new ProjectAuthority(` = exactly these 3 lines).
 - **ROUTE SURFACE, single mount each:** this._app.use('/reviews', createReviewRoutes(services.reviewAuthority)) gateway_runtime.js:782; '/customers' :785; '/projects' :788. Route modules gateway/routes/{reviews,customers,projects}.js all exist; each delegates to its single constructed authority instance. No competing route family.
 - **TABLE WRITERS, single live writer per business table (whole-tree INSERT rg):** `customers` -> ONLY customer_authority.js; `review_flags` -> ONLY review_authority.js:70 (INSERT..ON CONFLICT) + :103 DELETE (review RECORDS themselves stored via canonicalEventEnvelope event-spine, NOT a business table - consistent with 49 single-spine-writer); `hpp_projects` (project_authority.js:129, PROJECT_TABLE const) + `hpp_project_artifacts` (project_authority.js:290, PROJECT_ARTIFACTS_TABLE const) -> ONLY project_authority.js. No second writer to any business table on the live path.
-- **Similarly constituted:** AIWorkspaceAuthority already falsified (45, single construction gw:411); business emitters (ReviewEmitter/CustomerEmitter/ProjectEmitter gw:567-571) share the single canonicalizationService/UnifiedEventRuntime (§49/§29), NOT a competing write authority.
+- **Similarly constituted:** AIWorkspaceAuthority already falsified (45, single construction gw:411); business emitters (ReviewEmitter/CustomerEmitter/ProjectEmitter gw:567-571) share the single canonicalizationService/UnifiedEventRuntime (Â§49/Â§29), NOT a competing write authority.
 - Verdict: FALSIFIED - each business authority (Review/Customer/Project) has exactly one live construction, one route surface, one table-writer; events flow through the single spine (29/49); no two reachable competing business authorities govern any single business decision. No consolidation edit.
 
 **Commit**: 49f03048 "docs(evidence): business authority falsification - single live owner each for Review/Customer/Project (ledger 50)" - 1 file, 13 insertions.
+
+
+### 2026-08-28 Session - Ledger 51: Event Emitter / Business Event Production Falsification - single live owner each (COMMITTED)
+
+**51 Event-Emitter/Business-Event-Production Falsification COMPLETE** [STAT]:
+- Sole live event-PRODUCTION surface = ping-runtime/business/business_emitters.js: FIVE emitter classes (ReviewEmitter :11, CustomerEmitter :21, ProjectEmitter :37, ConnectorEmitter :68, SystemEmitter :87), module.exports :100.
+- EXACTLY 24 total `_er.emit(...)` call sites in the WHOLE tree (rg `_er\.emit\(` -g '*.js' -g '!node_modules') - ALL inside business_emitters.js, ZERO outside. No reachable competing business-event producer bypassing the emitters.
+- Each emitter constructed EXACTLY ONCE, all in gateway/bootstrap/gateway_runtime.js: reviewEmitter :567, customerEmitter :568, projectEmitter :569, connectorEmitter :570, systemEmitter :571 - EACH constructed with `(canonicalizationService)` (the single boundary, 49). Test-only constructions exist at gateway/test_business_emitters.js:22-26 (with `er` mock) - excluded as reachable live authorities.
+- Composition-not-competition (boundary routing): emitters duck-type `this._er.emit(eventType, source, payload)`; the CanonicalizationService boundary (canonicalization_service.js, SINGLE construction gateway_runtime.js:447) resolves source/eventType via `canonicalizeAndEmit` (:109) -> canonicalizeObject -> UnifiedEventRuntime.emit (single spine 29/49). The emitter comment (gateway_runtime.js:563-566) documents: "Producers route through the Canonicalization Service (the boundary), not the event runtime directly." So the 24 emit calls route THROUGH the boundary, never past it.
+- CanonicalizationService construction sweep: production = EXACTLY ONE (gateway_runtime.js:447); other `new CanonicalizationService(` = test files only (test_ingest_boundary:61, test_confidence_spine:28/:50/:191).
+- gateway_runtime.js has ZERO direct `.emit('` calls (rg empty) - the emitters are the sole event-production facade on the live bootstrap.
+- Distinct production lanes (NOT competing, disjoint producer classes): 5 business emitters (this section) vs worker downstream `_emit` (BaseWorker 43) vs 2 bridge doors (49/44) vs EventBridge external-store re-emitter (44). Each is a separate producer edge; none produces a competing business event outside its own class.
+- Verdict: FALSIFIED - exactly one live business-event production surface (the 5 emitters composed over the single canonicalizationService/spine); exactly 24 emit sites all owned by that surface. No consolidation edit.
+
+**Commit**: 51 ledger authored above; landed as 1-file/15-insertions "docs(evidence): event-emitter/business-event-production falsification - single live emitter surface over canonicalizationService (ledger 51)".
