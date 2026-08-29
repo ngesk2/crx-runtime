@@ -1462,3 +1462,22 @@ ew ConstitutionalTimeAuthority - it composes via canonicalization_service + cano
 **Gates**: node --check clean on identity_authority shim + constitutional_time_authority shim + unified_event_runtime + canonical_object (exit 0 all 4); rg 
 ew IdentityAuthority/
 ew ConstitutionalTimeAuthority = exactly 2 kernel sites; gateway_runtime.js source scan = zero direct identity/time construction + zero direct require strings; boot-load gate GATEWAY_RUNTIME LOADS OK. No code change.
+## 43. Worker/Execution-Host Authority Falsification (single dispatch path)
+
+**Objective**: falsify no two reachable competing production worker-execution hosts govern the same dispatch decision (complement to section 28 scheduler + section 38 mission-runtime). Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+> Section 43. **AUTHORITY: FALSIFIED.**
+
+Falsification findings [STAT]:
+- Sole live worker-execution host = **WorkerRuntime** (ping-runtime/workers/worker_runtime.js:14), the class that registers workers (register :30) and dispatches events to them (dispatch :69). Constructed EXACTLY ONCE at gateway_runtime.js:480 (`new WorkerRuntime({ pool: this._pool })`), 8 canonical workers via registerCanonicalWorkers :509/:513, injected MissionScheduler :554 (this._workerRuntime) + services :659. No second `new WorkerRuntime` on the production bootstrap (rg sweep: only EVAL-007 + test_* = TEST-ONLY).
+- Sole production dispatch call site: mission_scheduler.js:250 `await this._workerRuntime.dispatch(event)` - the single live scheduler (section 28). The only other `.dispatch(` is worker_runtime.js:157 inside `_poll()` - the loop is DISABLED by design (start() :53 never invokes it; comment :50-51 documents 'MissionScheduler is the single dispatch path', preventing dual input). dispatch's worker-identity decider (:78) = `entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType)`; empty-eventTypes workers are DORMANT, never catch-all (matches sections 28/42/17).
+- Falsified competing hosts (all non-reachable): WorkerRegistry / worker_registry = ZERO require importers in gateway/bootstrap + gateway/runtime + ping-runtime (non-test) -> DORMANT. background_workers = imported ONLY by wiring.js (non-production DI, unreachable, section 27) + verify/07_workers.js (verify script, non-production) -> STRANDED. WorkerPort (ping-runtime/agents/worker_port.js) = imported ONLY by orchestration/execution/engine.js:29 (Orca fabric ExecutionEngine, discoverOllama:false -> DORMANT sections 15/33/41). IntelligenceWorker = registered with empty eventTypes -> DORMANT (sections 14/17).
+- No direct-execution bypass: no path invokes a worker's handle() outside WorkerRuntime.dispatch on the live bootstrap (sole call site verified above).
+
+> **Verdict**: FALSIFIED - exactly ONE live worker-execution host (WorkerRuntime singleton), exactly ONE dispatch path (mission_scheduler.js:250). No second host, no dual input (poll loop disabled), no direct bypass. No consolidation edit.
+
+**Gates**: gateway_runtime LOADS OK (boot-load gate); node --check clean worker_runtime.js + canonical_workers.js + mission_scheduler.js; rg construction + dispatch + competing-host require sweeps = single live site each; commissioning 14 scenarios / no failures. No code change.
+
+**Canonical execution-host ruling (inherit - don't reopen)**: canonical worker-execution host = WorkerRuntime singleton (gateway_runtime.js:480), sole dispatch path mission_scheduler.js:250 (single live scheduler, section 28). Worker identity decider = WorkerRuntime.dispatch eventType->eventTypes match (P3 audit A). Never construct a second WorkerRuntime; never re-enable _poll(), WorkerRegistry, background_workers, or Orca WorkerPort onto the live spine; never wire IntelligenceWorker (dormant, competing authority, sections 14/17).
+
+**Commit**: (placeholder; true hash captured post-commit)
