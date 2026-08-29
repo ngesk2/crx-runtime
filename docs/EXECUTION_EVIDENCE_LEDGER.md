@@ -1548,3 +1548,22 @@ POST /events write target = ping_events via eventRuntime.emit (events.js:79, sub
 **DOCUMENTED ASYMMETRY (not a contradiction):** GET /events list reads repository_events (EventReadAuthority kernel shim) with ping_events fallback, while POST /events writes ping_events (spine); causal traversal reads route through the spine. Per-table single-owner holds; asymmetry is a known layering artifact, not a competing authority. No consolidation edit.
 
 **Canonical event-read ruling** (inherit - don't reopen): canonical repository_events reader = EventReadAuthority (kernel singleton via shim, gateway_runtime.js:382); canonical ping_events reader = UnifiedEventRuntime traversal methods (spine, gateway_runtime.js:433). Future read changes through the existing authorities; never a second reader per table, never wire stranded readers (EventRepository kernel twin, gateway event_repository) onto live path.
+
+### 46.1 Object-Identity Resolution + Read-Fallback Classification (2026-08-28) [STAT]
+
+Object identity of the two EventReadAuthority instances RESOLVED; GatewayToKernelAdapter's internal instance confirmed REACHABLE-NEVER (not a competing reader).
+
+- gateway_runtime.js:382 `new EventReadAuthority(this._pool)` = gateway shim (ping-runtime/events/event_read_authority.js, PATCH_003) which `extends` the kernel base (runtime/kernel/event_read_authority.js:17,:20). This is the SOLE reachable repository_events reader / route consumer: injected SystemAuthority (:407) + /events + /context + /system routes (:681,:682,:684).
+- gateway_runtime.js:387 `new GatewayToKernelAdapter(this._pool)`; adapter constructor (:30) internally builds its OWN `new EventReadAuthority(pool)` from the SAME kernel base. SAME family, SAME shared pool, but the adapter's instance is EXPOSED ONLY via getters getEventReadAuthority()/getEventRepository() (:139,:130).
+- Getter callers: rg getEventReadAuthority|getEventRepository across gateway/ + ping-runtime/ = ZERO hits.
+- kernelAdapter consumers: services.kernelAdapter (:648) referenced by ZERO consumers in gateway/ + ping-runtime/ (excluding bootstrap). No route file references kernelAdapter. kernelAdapter is used ONLY for initialize() (:388) + shutdown() (:826). POST /events routes through eventRuntime.emit (convergence 31620edc, events.js:79), NOT kernelAdapter.executeEvent.
+- CONCLUSION: GatewayToKernelAdapter is constructed-but-unwired on the live bootstrap. Its internal EventReadAuthority NEVER serves a read/write decision. NOT a competing reader. Single-family delegated hierarchy (gateway shim + adapter both instantiate the SAME kernel base class over the SAME pool); only the shim instance is reachable.
+
+Read-fallback classification (events.js) - the 4 raw pool.query('ping_events') sites are ERROR/EMPTY-FALLBACK-ONLY, NOT competing readers:
+- GET / (:17): getAllEvents (repository_events) PRIMARY; raw ping_events (:19) ONLY if (!events || events.length === 0).
+- GET /recent (:30): getRecentEvents wrapped in try/catch (:29-31); raw ping_events (:34) ONLY if throw OR empty.
+- GET /stats (:43): getEventStats wrapped in try/catch (:42-44); raw ping_events (:46) ONLY if error OR zero-total.
+- GET /:stream (:63): getEventsByStream PRIMARY; raw ping_events (:65) ONLY if empty.
+- Collorary: because POST /events writes ping_events while GET / list reads repository_events primarily, fresh POSTed events are only surfaced via the ping_events FALLBACK - enforces the section-46 DOCUMENTED ASYMMETRY (no new contradiction, no competing reader).
+
+VERDICT (46.1): Object identity RESOLVED - exactly one reachable reader per table (EventReadAuthority shim on repository_events, UnifiedEventRuntime on ping_events); GatewayToKernelAdapter's kernel-twin instance + raw pool fallbacks are unreachable/wrapped-fallback, never competing decisions. No consolidation edit.
