@@ -1480,4 +1480,4 @@ Falsification findings [STAT]:
 
 **Canonical execution-host ruling (inherit - don't reopen)**: canonical worker-execution host = WorkerRuntime singleton (gateway_runtime.js:480), sole dispatch path mission_scheduler.js:250 (single live scheduler, section 28). Worker identity decider = WorkerRuntime.dispatch eventType->eventTypes match (P3 audit A). Never construct a second WorkerRuntime; never re-enable _poll(), WorkerRegistry, background_workers, or Orca WorkerPort onto the live spine; never wire IntelligenceWorker (dormant, competing authority, sections 14/17).
 
-**Commit**: (placeholder; true hash captured post-commit)
+**Commit**: 5cc1fc05
