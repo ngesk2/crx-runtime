@@ -1047,3 +1047,62 @@ retry decision = MissionScheduler (single live scheduler, section 28) + MissionR
 .failWithRetry (ping_missions retries/retry_at/retry_pending). Any future DLQ/retry change must
 go through the EXISTING DeadLetterAuthority singleton + the live MissionScheduler path; never
 construct a second DLQ authority, never reintroduce RetryAuthority as a competing decider.
+
+## 31. Knowledge/Graph Write Boundary Falsification
+
+**Questions the audit resolves**: (a) is there a SINGLE reachable live writer to the
+knowledge_nodes table, or does the legacy gateway/knowledge_graph.js create a competing
+reachable writer? (b) is there a second live KnowledgeGraph class on the production spine?
+
+**Sole live KnowledgeGraph class**: ping-runtime/knowledge/knowledge_graph.js (single
+class KnowledgeGraph at :30, module.exports {KnowledgeGraph} :256). Constructed EXACTLY ONCE
+at gateway/bootstrap/gateway_runtime.js:472 (
+ew KnowledgeGraph({ pool: this._pool })),
+initialize() :473, single injection into services :658 -> /knowledge routes :796
+(createKnowledgeRoutes(services.knowledgeGraph, ...)) + KnowledgePromoter (:518) + graph-
+projection subscriber (:602-603) + EmbeddingService (:535).
+
+**Sole live writer to knowledge_nodes**: repository-wide rg of INSERT INTO knowledge_nodes
+(over non-test JS, gateway + ping-runtime + runtime) = ONLY ping-runtime/knowledge/
+knowledge_graph.js (addNode :87). The ONLY production caller of addNode =
+gateway_runtime.js:602 (the graph-projection subscriber, a subscriber on the same
+UnifiedEventRuntime spine). No other production file writes knowledge_nodes.
+
+**Legacy gateway/knowledge_graph.js is a DIFFERENT class family, NOT the KnowledgeGraph
+class, and does NOT write knowledge_nodes**: it declares KnowledgeGraphObject (Gate 27) +
+KnowledgeGraphRuntime (:183); rg of INSERT INTO|knowledge_nodes inside it = EMPTY. It was it
+not constructed by gateway_runtime.js (its only knowledge_graph require is
+../../ping-runtime/knowledge/knowledge_graph from :72 - a string-substring match in an
+earlier scan, not a real import of the legacy file). Its importers = ollama_runtime.js,
+prompt_runtime.js, replay_runtime.js, repository_reset_harness.js + 2 harnesses - NONE in the
+live bootstrap (rg of those requires under gateway/bootstrap = empty). STRANDED.
+
+**Verification detail**: the earlier importer scan reported gateway_runtime.js as an importer
+of gateway/knowledge_graph.js - FALSE POSITIVE caused by substring matching knowledge_graph
+against the require path ../../ping-runtime/knowledge/knowledge_graph. gateway_runtime.js
+never requires the legacy gateway/knowledge_graph.js file. Corrected by reading the literal
+require line :72.
+
+**Verdict**: FALSIFIED. Exactly ONE reachable live writer to knowledge_nodes
+(ping-runtime KnowledgeGraph.addNode via the graph-projection subscriber gateway_runtime.js:602),
+one construction of the KnowledgeGraph class (gateway_runtime.js:472). Legacy
+gateway/knowledge_graph.js (KnowledgeGraphObject/KnowledgeGraphRuntime) = stranded class
+family, different object model, zero live path to knowledge_nodes. No consolidation edit
+warranted.
+
+**Class**: [STAT] static require/construction/writer scan. Not promoted to [EMPR] - no live
+E2E this unit (knowledge_graph addNode path already exercised by existing green suites:
+knowledge_search 10/10, phase_d 7/7, trace_propagation 10/10).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean ping-runtime/knowledge/knowledge_graph.js;
+rg INSERT INTO knowledge_nodes = single live file; addNode production caller = gateway_runtime.js:602
+only; legacy importers all non-bootstrap (stranded). No code change; no consolidation edit
+(falsification-complete).
+
+**Canonical knowledge ruling (inherit - do not reopen)**: canonical knowledge-graph authority =
+KnowledgeGraph (ping-runtime/knowledge/knowledge_graph.js), constructed exactly once
+gateway_runtime.js:472, single addNode write path via gateway_runtime.js:602, exposed via
+/knowledge routes. Legacy gateway/knowledge_graph.js (KnowledgeGraphObject/KnowledgeGraphRuntime)
+= stranded and never a writer to knowledge_nodes. Any future knowledge-graph write must go
+through the live KnowledgeGraph singleton; never construct a second KnowledgeGraph, never
+wire the legacy class family onto the spine.
