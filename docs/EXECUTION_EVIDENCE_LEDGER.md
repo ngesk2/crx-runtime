@@ -1567,3 +1567,26 @@ Read-fallback classification (events.js) - the 4 raw pool.query('ping_events') s
 - Collorary: because POST /events writes ping_events while GET / list reads repository_events primarily, fresh POSTed events are only surfaced via the ping_events FALLBACK - enforces the section-46 DOCUMENTED ASYMMETRY (no new contradiction, no competing reader).
 
 VERDICT (46.1): Object identity RESOLVED - exactly one reachable reader per table (EventReadAuthority shim on repository_events, UnifiedEventRuntime on ping_events); GatewayToKernelAdapter's kernel-twin instance + raw pool fallbacks are unreachable/wrapped-fallback, never competing decisions. No consolidation edit.
+
+## 47 Event Governance / Validation Authority Falsification (2026-08-28) [STAT]
+
+Continue the audit-first program at the next unresolved production-spine boundary (event validation/gate on the spine write path, complement to 40 hash + 42 identity/time + 29 event-write). Falsified no two reachable competing live validation authorities.
+
+TWO DISTINCT validation concerns, each EXACTLY ONE live construction, COMPOSED INSIDE the single spine write authority (NOT competing - two validation steps of ONE emit path):
+
+1. EVENT-VALIDATOR (event_type registration check): EventValidator (ping-runtime/events/event_validator.js), validates event_type against generated event_registry.json (Wave 2). Constructed EXACTLY ONCE gateway_runtime.js:177 (eventValidator). Sole live consumer = UnifiedEventRuntime emit (via XOR: validateEventType (regenerated) OR isRegistered (fallback), unified_event_runtime.js:31,:86-98).
+
+2. EVENT-GOVERNANCE (namespace/ownership policy check): EventGovernance (ping-runtime/events/event_governance.js), validates canonical namespace (/^(core|tenant)::...$/) + NAMESPACE_OWNERS ownership policy. Constructed EXACTLY ONCE gateway_runtime.js:224 (+ load() :225). Sole live consumer = UnifiedEventRuntime emit (create-with-_skipGovernance guard :107-118) + /governance read routes (:775).
+
+Both injected into the SAME UnifiedEventRuntime singleton (gateway_runtime.js:433: {pool, eventValidator, eventGovernance, integrationManager}) - a single spine instance running both validation steps in sequence within emit() before persistence. NOT two write authorities; ONE authority (UnifiedEventRuntime) with two gating sub-steps.
+
+- /governance routes (gateway/routes/governance.js) = READ/INTROSPECTION ONLY: /policy, /policy/:eventType, /namespaces, /namespaces/:namespace, /violations, /stats, /validate/:eventType - all call read methods (getOwnershipPolicy/getNamespacePolicy/getPolicyForEvent/getEventsForNamespace/getViolations/getStats/validateEvent). No write endpoint. The write gate is the spine's internal emit-time call, NOT a route.
+- /governance/validate/:eventType is an introspection echo of validateEvent; it does not gate any write path (no event is validated through it before persistence).
+- Competing constructions: event_queue.js:18 (EventValidator) + event_queue.js:21 (EventGovernance) = Orca fabric EventQueue (DORMANT, section 15/33/41, discoverOllama:false). All other construction sites = TEST-ONLY (test_p040, test_wave2_5, test_slice3a, test_wave3b_p7).
+- No other live fail-closed gate on the spine write path: emit() validation = EventValidator + EventGovernance only (unified_event_runtime.js:86-118); no third authority (no spelling/policy/JSON-schema validator constructed on live bootstrap beyond these two).
+
+VERDICT (47): FALSIFIED - exactly one live spine write authority (UnifiedEventRuntime) executing exactly two injected validation sub-steps (EventValidator + EventGovernance), each constructed once on live bootstrap; /governance is read-only introspection; Orca/tests are dormant/test-only. No consolidation edit.
+
+COMMIT (47): ledger only (this block). 6a3cfa69 (auth) + hash-correction.
+
+Canonical validation ruling (inherit - don't reopen): canonical event_type validation = EventValidator (gateway_runtime.js:177); canonical namespace/ownership validation = EventGovernance (gateway_runtime.js:224); both composed inside UnifiedEventRuntime (gateway_runtime.js:433). /governance = read-only introspection surface. Never construct a second validator/governance authority, never wire Orca event_queue (event_queue.js:18,:21) or any stranded validation gate onto the live write path.
