@@ -1649,3 +1649,7 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 - Verdict: FALSIFIED - exactly one live business-event production surface (the 5 emitters composed over the single canonicalizationService/spine); exactly 24 emit sites all owned by that surface. No consolidation edit.
 
 **Commit**: 51 ledger authored above; landed as 1-file/15-insertions "docs(evidence): event-emitter/business-event-production falsification - single live emitter surface over canonicalizationService (ledger 51)".
+
+### 2026-08-28 Session - Ledger 51 hash-correction (COMMITTED)
+
+**Record real commit hash for solver51**: main commit `4b6d7385` "docs(evidence): event-emitter/business-event-production falsification - single live emitter surface over canonicalizationService (ledger 51)" - 1 file, 15 insertions, ledger-only. Direct parent of the hash-correction commit.
