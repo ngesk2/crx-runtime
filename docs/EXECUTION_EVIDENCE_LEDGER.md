@@ -932,3 +932,40 @@ the audit-first program (Hermes Desktop PHASE 0-1 completed in parallel).
   replay_composition 8, witness_negpath 8. Zero failures.
 - P0-1 hoist (gateway/bootstrap/gateway_runtime.js) remains working-tree-only and unstaged; NOT part
   of this commit.
+
+## 29. Event-Write Authority Falsification (no competing live write path)
+
+**Question falsified**: do multiple live event-write authorities contend on the production spine?
+Prior capability audit (CAPABILITY_LEDGER) listed EventWriteAuthority / EventRepository /
+UnifiedEventRuntime as a "duplicate" family. This unit proves exactly ONE live writer.
+
+**Findings (evidence-first)**:
+- LIVE write spine = `UnifiedEventRuntime` (ping-runtime/events/unified_event_runtime.js:21).
+  Constructed EXACTLY once at gateway_runtime.js:433; exposed as `services.eventRuntime` :448;
+  registered as the write target for POST /events route :681
+  `createEventRoutes(services.eventReadAuthority, services.unifiedEventRuntime, services.pool)`.
+  POST /events handler (gateway/routes/events.js:71-86) writes via `eventRuntime.emit()`
+  (convergence commit 31620edc). [EMPR] - proven by test_events_routes.js (8/8, incl. the
+  convergence assertion "POST /events routes through eventRuntime.emit, not kernel pipeline").
+- `EventWriteAuthority` (gateway/event_write_authority.js:25) = DEAD. ZERO production importers
+  (rg for `require(...event_write_authority)` -> no files). Only code references are comments
+  (events.js:5 comment, event_read_authority.js:11 comment). Consistent with
+  EVENT_MUTATION_SCHEMA_RECONCILIATION_AUDIT.md:79 which records it dead.
+- `EventRepository` (gateway/event_repository.js:15, extends KernelEventRepository) = STRANDED.
+  Importers = runtime/kernel/gateway_adapter.js:19 (kernel twin) + gateway/bootstrap/
+  constitutional_runtime.js:2 + gateway/constitutional_execution_pipeline.js:2, both proven
+  dormant/stranded in section 28 (kernel path reachable only from test_kernel_replay.js). Not
+  on the production write path.
+- `EventReadAuthority` (ping-runtime/events/event_read_authority.js:20) = LIVE for READS ONLY
+  (constructed gateway_runtime.js:382, injected into SystemAuthority + context/system routes).
+  It is a read authority, never the writer. Not a competing write path.
+
+**Verdict**: FALSIFIED. Exactly ONE live event-write authority on the production spine
+(UnifiedEventRuntime). EventWriteAuthority = dead; EventRepository = stranded; EventReadAuthority
+= read-only. No competing live write authority, no consolidation warranted.
+
+**Class**: [STAT] static require/import/reachability + [EMPR] live POST /events convergence test.
+
+**Gates**: gateway_runtime LOADS OK; UnifiedEventRuntime constructed exactly once; rg
+EventWriteAuthority importer scan = zero; test_events_routes.js 8/8 PASS. No code change; no
+consolidation edit (falsification-complete).
