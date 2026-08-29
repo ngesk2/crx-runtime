@@ -1169,3 +1169,66 @@ is idempotent-convergent by deterministic point id and accepted. Any future Qdra
 'knowledge' must go through the existing EmbeddingService singleton's projectToQdrant; never
 introduce a second 'knowledge' collection writer, never wire a stranded .upsert( site (checkpoints/
 context_compression/conversations/documents/constitutional_documents) onto the spine.
+
+## 33. AI/Inference Authority Falsification
+
+**Question the audit resolves**: is there a SINGLE live inference/completion authority on the
+production path, or do the LIVE AIRuntime + OllamaProvider pair compete with a reachable
+inference_adapter / inference_service / inference_authority trio or any other Ollama writer?
+
+**Single live inference owner (AIRuntime + OllamaProvider)**: ping-runtime/ai/ai_runtime.js
+(constructed EXACTLY ONCE gateway_runtime.js:228 
+ew AIRuntime({ defaultProvider: 'ollama' })),
+ping-runtime/ai/ollama_provider.js (:229 
+ew OllamaProvider(), registerProvider('ollama',...):230).
+Sole live importer of the pair = gateway/bootstrap/gateway_runtime.js (rg i/ollama_provider +
+i/ai_runtime = gateway_runtime.js ONLY). Consumed LIVE: EmbeddingService embedding enrichment
+(:495,:516), /api/v1/ollama route (:676 ollamaRoutes(services.aiRuntime, services.ollamaProvider)),
+/ai route (:804 createAIRoutes(same)). Production entrypoint confirmed server.js (package.json
+main: "server.js") -> gateway_runtime.js (ledger 27).
+
+**Competing inference implementations all STRANDED/DORMANT (no live reach)**:
+- 
+ew OllamaProvider at orchestration/execution/engine.js:99 = Orca ExecutionEngine fabric,
+  DORMANT (discoverOllama:false, ledger 15) - not the production spine.
+- 
+ew OllamaProviderAdapter at ping-runtime/ai/inference_adapter.js:42 = inside the STRANDED
+  inference_adapter classes (different class than OllamaProvider) - not on live path.
+- InferenceService (ping-runtime/ai/inference_service.js, required only gateway/bootstrap/wiring.js:27)
+  + getInferenceAdapter (ping-runtime/ai/inference_adapter.js, required by gateway/
+  constitutional_runtime.js:26, conversation_memory.js:12, embedding_batcher.js:16,
+  document_ingestion.js:14, knowledge_retrieval.js:12). ALL FIVE consumers are NON-PRODUCTION:
+  wiring.js = non-prod DI (wireContainer never invoked, ledger 27); constitutional_runtime +
+  document_ingestion + conversation_memory + knowledge_retrieval + embedding_batcher = STRANDED,
+  reachable only from wiring.js (non-prod), gateway/verify/10_pipeline.js + 11_ollama.js (verification
+  scripts), gateway/activities/knowledge.activity.js (dormant), test_wiring_path_time_authority.js
+  (test). None in the live bootstrap graph.
+- No other reachable Ollama HTTP/chat/completion writer on the live path; all ollama/ai traffic
+  routes through the constructed AIRuntime singleton.
+
+**FALSE-POSITIVE CORRECTED**: rg listing of inference_adapter/inference_service matched
+ping-runtime/knowledge/knowledge_graph.js:24 + ping-runtime/ai/ollama_provider.js:4 - both are
+COMMENT-ONLY mentions (knowledge_graph doc comment about hardcoded 0.8 confidence; ollama_provider
+header comment), NOT requires. Read the literal require lines.
+
+**Verdict**: FALSIFIED. Exactly ONE live inference authority (AIRuntime + OllamaProvider, constructed
+once at gateway_runtime.js:228-229); the inference_adapter/service trio and all other Ollama writers
+are stranded or Orca-dormant. No reachable competing inference authority. No consolidation edit.
+
+**Class**: [STAT] static construction/importer/reachability scan + production-entrypoint confirm.
+Not [EMPR] (no live E2E this unit; AIRuntime+OllamaProvider live usage already exercised by green
+ollama/ai + embedding suites).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean ai_runtime.js + ollama_provider.js; 
+ew
+AIRuntime = gateway_runtime.js:228 only; 
+ew OllamaProvider = gateway_runtime.js:229 + engine.js:99
+(dormant Orca); wave3a (ollama/ai) + embedding + knowledge_search + ingest_boundary suites green.
+No code change; no consolidation edit (falsification-complete).
+
+**Canonical AI/inference ruling** (inherit - do not reopen): canonical inference authority = AIRuntime
+(ping-runtime/ai/ai_runtime.js) + OllamaProvider (ping-runtime/ai/ollama_provider.js), created once
+gateway_runtime.js:228-229, sole providers for /api/v1/ollama + /ai + EmbeddingService embedding.
+Any future inference change goes through the existing AIRuntime singleton; never construct a second
+AIRuntime/OllamaProvider, never wire inference_adapter/inference_service/ollama_adapter (stranded)
+onto the live spine, never re-enable Orca ollama auto-discovery (ledger 15).
