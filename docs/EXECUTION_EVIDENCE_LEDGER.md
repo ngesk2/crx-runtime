@@ -1295,3 +1295,40 @@ emission = IntegrationManager (runtime/integration_manager.js, :218, spine-integ
 Any future connector/capability/OAuth/integration change goes through these existing singletons; never
 construct a second of any, never wire the Orca capability_registry (orchestration/execution) or any
 other stranded connector onto the spine.
+
+---
+
+## 35. Event-Read/Query Surface Falsification (2026-08-28) 
+
+**Goal**: falsify no two reachable competing production authorities govern the same event-read/query decision on the live spine (flat/stat reads, causal traversal, degraded fallbacks).
+
+**Method** [STAT]: enumerate every construction site of event-read authorities, every read method surface, and every non-test FROM ping_events reader; classify primary vs fallback vs distinct-domain; confirm reachability from production bootstrap (gateway_runtime.js).
+
+**1. Flat/stat read authority — EventReadAuthority**:
+- Live class = ping-runtime/events/event_read_authority.js (:20), a PATCH_003 shim that extends and re-exports the KERNEL reader (runtime/kernel/event_read_authority.js:17). Methods (kernel, verified): getAllEvents, getRecentEvents, getEventStats, getEventsByStream, getEventsByType, getEventsByCorrelationId, getRecentEventsForContext, getWorkerStatusForContext, getDailyActivityForContext, getLatestSummariesForContext, getRecentFailuresForContext, getModelMetricsForContext, markProcessed, markFailed, getUnprocessedEvents.
+- Construction EXACTLY ONCE on live bootstrap: gateway_runtime.js:382 
+ew EventReadAuthority(this._pool) (initialize :383). Sole kernel-twin construction = runtime/kernel/gateway_adapter.js:30 (kernel DORMANT per 28/29 — not production). rg confirms no other non-test construction.
+- Live consumers: SystemAuthority :407, /events routes :681 (createEventRoutes(eventReadAuthority, unifiedEventRuntime, pool)), /context routes :682, /system routes :684.
+
+**2. Causal traversal read authority — UnifiedEventRuntime (the spine)**:
+- getChildren/getDescendants/getAncestors/getCorrelationGroup defined ONLY on unified_event_runtime.js:244/:265/:297/:328 (P0-A design: "traversal methods live on the spine, not on EventReadAuthority"). UnifiedEventRuntime is the canonical live event WRITER (29) AND the causal-query surface.
+- rg confirms the 4 traversal method definitions exist ONLY in unified_event_runtime.js (other hits are comment/doc/metadata/lineage in-memory doc strings — no competing class defines them).
+
+**3. Degraded fallbacks — NOT competing authorities**:
+- routes/events.js:19/:34/:46/:65 issue direct pool.query ONLY when the EventReadAuthority result is empty (e.g. DB-down degraded boot) — same-semantics mirrors of the authority's get* methods, idempotent, not an independent decision owner. They are reachable but secondary-by-construction.
+
+**4. Other non-test FROM ping_events readers — distinct domains, not event-list query surfaces**:
+- mission_runtime.js:370/:384 — mission-domain correlation-group resolution for getTrace/getAllTraces (mission evidence bundle), not an operator event-query surface.
+- gateway_runtime.js:840 — health/live COUNT diagnostic.
+- evidence_authority.js:54/:95 — evidence backing-event back-resolve (§EvidenceAuthority domain, distinct from flat event query).
+- event_bridge.js:156/:258 — bridge cursor dedup (source='repository_events'/'canonical_events'), bridging concern.
+- canonical_workers.js:434 — COMMENT ONLY.
+- unified_event_runtime.js:207/:248/:271/:276/:303/:308/:332 — the spine's own read methods (same authority).
+
+**Verdict**: FALSIFIED. Exactly ONE live owner per event-read decision: flat/stat reads = EventReadAuthority (gateway_runtime.js:382); causal traversal = UnifiedEventRuntime (spine). routes/events fallbacks are degraded same-semantics mirrors, not competing. No reachable competing event-read authority. No consolidation edit (complementary read surfaces by design).
+
+**Commit**:  (adjusted at commit time).
+
+**Gates**: gateway_runtime LOADS OK; rg new EventReadAuthority = gateway_runtime.js:382 + kernel twin :30 (dormant) only; traversal defs = unified_event_runtime only; routing matrix live path (events/context/system) all through EventReadAuthority. No code change.
+
+**Canonical event-read ruling** (inherit - don't reopen): canonical flat/stat event read authority = EventReadAuthority (constructed once gateway_runtime.js:382, kernel reader via shim). Canonical causal traversal read authority = UnifiedEventRuntime (spine getChildren/getDescendants/getAncestors/getCorrelationGroup). Any future event-read change goes through these two existing authorities; never construct a second EventReadAuthority, never add a competing traversal engine, never elevate the routes/events degraded fallback to a primary path.
