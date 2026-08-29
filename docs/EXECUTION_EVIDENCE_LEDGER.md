@@ -1332,3 +1332,25 @@ ew EventReadAuthority(this._pool) (initialize :383). Sole kernel-twin constructi
 **Gates**: gateway_runtime LOADS OK; rg new EventReadAuthority = gateway_runtime.js:382 + kernel twin :30 (dormant) only; traversal defs = unified_event_runtime only; routing matrix live path (events/context/system) all through EventReadAuthority. No code change.
 
 **Canonical event-read ruling** (inherit - don't reopen): canonical flat/stat event read authority = EventReadAuthority (constructed once gateway_runtime.js:382, kernel reader via shim). Canonical causal traversal read authority = UnifiedEventRuntime (spine getChildren/getDescendants/getAncestors/getCorrelationGroup). Any future event-read change goes through these two existing authorities; never construct a second EventReadAuthority, never add a competing traversal engine, never elevate the routes/events degraded fallback to a primary path.
+---
+
+## 36. AI-Workspace Authority Falsification (2026-08-28) 
+
+**Goal**: falsify no two reachable competing production authorities govern the AI-workspace knowledge-generation decision (sentiment/workspace/session results).
+
+**Method** [STAT]: enumerate every AIWorkspaceAuthority construction site, table writer to ai_workspace_results, route surface, and importer; confirm reachability from production bootstrap (gateway_runtime.js).
+
+**Findings**:
+- Live class = ping-runtime/business/ai_workspace_authority.js (class AIWorkspaceAuthority :36). Only external deps = stdlib crypto (local deterministic sha256 digests :61/:68 for workspace result identity). Persistence flows through an injected storage adapter; route header ("No direct pool.query()") confirmed.
+- Construction EXACTLY ONCE on live bootstrap: gateway_runtime.js:411 
+ew AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelope), initialize :412, services :654. Sole importer of the class = gateway_runtime.js (rg require ../../ping-runtime/business/ai_workspace_authority = gateway_runtime.js + inventory docs only).
+- Route surface: /ai-workspace mounted :779 by createAiWorkspaceRoutes(services.aiWorkspaceAuthority), guarded by if (services.aiWorkspaceAuthority) :778 (PG-up normal boot). Routes (routes/ai_workspace.js) flow AIWorkspaceAuthority -> HuggingFaceAdapter -> API; all persistence through ai_workspace_authority -> storage adapter, zero direct pool.query.
+- Sole non-test writer to ai_workspace_results = ping-runtime/business/ai_workspace_authority.js (rg ai_workspace_results = this file + product-readiness docs only). No competing AI-workspace/session/knowledge-generation authority reachable from bootstrap.
+
+**Verdict**: FALSIFIED. Exactly ONE live AI-workspace authority (AIWorkspaceAuthority, gateway_runtime.js:411), one construction, one table writer, one guarded route surface, zero direct SQL. No competing reachable authority. No consolidation edit.
+
+**Note (non-contradiction)**: this file uses crypto.createHash('sha256') :61/:68 for local deterministic workspace-result identity instead of the canonical hash authority - a mutation-bypass observation, NOT a competing AI-workspace authority (single live owner in its domain; hash-scope refactor belongs to the deferred hash-convergence lane, out of 36 scope).
+
+**Gates**: gateway_runtime LOADS OK (two-source probe); rg new AIWorkspaceAuthority = gateway_runtime.js:411 only; rg ai_workspace_results non-test code = ai_workspace_authority.js only; /ai-workspace mount guarded :778-779. No code change.
+
+**Canonical AI-workspace ruling** (inherit - don't reopen): canonical AI-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js), constructed once gateway_runtime.js:411, guarded /ai-workspace route, sole ai_workspace_results writer. Any future AI-workspace change goes through this singleton; never construct a second AI-workspace authority, never add a competing workspace/session generator onto the live path.
