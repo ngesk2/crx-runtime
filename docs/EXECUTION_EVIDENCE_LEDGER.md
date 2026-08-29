@@ -1106,3 +1106,66 @@ gateway_runtime.js:472, single addNode write path via gateway_runtime.js:602, ex
 = stranded and never a writer to knowledge_nodes. Any future knowledge-graph write must go
 through the live KnowledgeGraph singleton; never construct a second KnowledgeGraph, never
 wire the legacy class family onto the spine.
+
+## 32. Embedding/Qdrant Projection Write Boundary Falsification
+
+**Questions the audit resolves**: (a) is there a SINGLE live writer authority to the knowledge
+Qdrant collection, or do the two "projection owner" sites (EmbeddingService.subscribe subscriber
+and ProjectionWorker) create a competing authority with divergent state? (b) do any other live
+paths write the knowledge collection?
+
+**Single live writer authority (EmbeddingService)**: ping-runtime/embeddings/embedding_service.js
+- the single class owning projectToQdrant (:197) for DEFAULT_COLLECTION 'knowledge' (:18, :99).
+Constructed EXACTLY ONCE gateway_runtime.js:494 (
+ew EmbeddingService({ qdrantAdapter, aiRuntime,
+... })), initialize() :501, subscribe(unifiedEventRuntime) :502, single injected qdrantAdapter
+(one 
+ew QdrantAdapter() at gateway_runtime.js:485). services.embeddingService :663.
+
+**projectToQdrant has EXACTLY TWO production callers (non-test)**: (1) EmbeddingService.subscribe
+subscriber (embedding_service.js:134, one handler per 20 INDEXABLE_TYPES registered on
+eventRuntime.on); (2) ProjectionWorker.handle (ping-runtime/workers/canonical_workers.js:193).
+BOTH call the SAME singleton's same method with the SAME deterministic point id
+	oQdrantId(event.event_id) derived from the triggering event_id -> convergent-by-construction,
+idempotent upsert (same point id overwrites same point). NOT two authorities; a redundant emit of
+one logical write. The Phase-0 "dual projection owner" is confirmed redundancy, not contradiction.
+
+**Overlap analysis**: EmbeddingService INDEXABLE_TYPES (20) ∩ ProjectionWorker eventTypes
+(canonical_workers.js:709: ['KNOWLEDGE_INDEX','PROJECTION_CREATE','RECOMMENDATION_CREATED',
+'LINEAGE_CREATED']) = { RECOMMENDATION_CREATED } only. PROJECTION_CREATE (worker) differs from
+PROJECTION_CREATED (indexable) - distinct spellings, distinct event types. LINEAGE_CREATED is
+terminal (bridge :66, no mission) so ProjectionWorker never dispatches it. RECOMMENDATION_CREATED
+is the only genuine overlap, and both sides derive the identical point id from the same event_id
+-> idempotent convergence, never divergence.
+
+**No other live writer to the knowledge collection**: repository-wide rg of .upsert( (non-test)
+= 9 files; every OTHER one targets a DIFFERENT collection: checkpoint_authority -> 'checkpoints',
+context_compression_authority -> 'context_compression', conversation_memory -> 'conversations',
+document_ingestion -> 'documents', constitutional_runtime + stage_registry -> 'constitutional_documents',
+qdrant_bootstrap/memory_vector_store_authority -> collection creation / 'constitutional_documents'.
+NONE writes 'knowledge'; NONE is required by the live bootstrap (rg under gateway/bootstrap/
+gateway_runtime.js = empty) - all STRANDED.
+
+**Verdict**: FALSIFIED. Exactly ONE live writer authority to the knowledge collection
+(EmbeddingService singleton, projectToQdrant :197, called via subscribe-subscriber + ProjectionWorker,
+both same-singleton same-point-id -> idempotent-convergent). No reachable competing writer to
+knowledge; all other .upsert( sites target distinct collections and are stranded. No
+consolidation edit warranted (the Phase-0 accepted dual-emit is harmless redundancy by deterministic
+point id, as designed/deferred).
+
+**Class**: [STAT] static construction/writer/collection/reachability scan. Not [EMPR] (no live E2E
+this unit; knowledge projection write path already exercised by green suites embedding/commissioning).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean embedding_service.js + canonical_workers.js;
+projectToQdrant production callers = exactly 2 (both EmbeddingService-family); .upsert( to
+'knowledge' = EmbeddingService only; every other upsert site -> distinct collection + stranded.
+No code change; no consolidation edit (falsification-complete).
+
+**Canonical embedding/projection ruling** (inherit - do not reopen): canonical Qdrant knowledge
+collection writer = EmbeddingService (ping-runtime/embeddings/embedding_service.js), constructed
+once gateway_runtime.js:494, single qdrantAdapter :485, write entry point projectToQdrant :197
+(upsert to DEFAULT_COLLECTION 'knowledge'), dual-emit (subscribe-subscriber + ProjectionWorker)
+is idempotent-convergent by deterministic point id and accepted. Any future Qdrant write to
+'knowledge' must go through the existing EmbeddingService singleton's projectToQdrant; never
+introduce a second 'knowledge' collection writer, never wire a stranded .upsert( site (checkpoints/
+context_compression/conversations/documents/constitutional_documents) onto the spine.
