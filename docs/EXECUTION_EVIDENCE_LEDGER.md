@@ -1384,7 +1384,7 @@ ew AIWorkspaceAuthority(this._storage, huggingfaceAdapter, canonicalEventEnvelop
 - Classified: MissionRuntime = LIVE canonical; Orca mission_compiler = DORMANT (Orca-fabric); automatic_mission_generator / mission_authority_v2 = STRANDED (zero importers); gateway/test_*.js + evals/EVAL-006 MissionRuntime constructions = TEST-ONLY.
 - Verdict: FALSIFIED - exactly one live mission-creation/execution authority (MissionRuntime), two ingress paths (event bridge + HTTP route) onto the same singleton. MissionScheduler = scheduling complement (section 28); WorkerRuntime = execution host (dispatch). No consolidation edit.
 
-**Commit**: 9f5d0110 "docs(evidence): MissionRuntime falsification - single live mission-creation/execution authority (ledger 38)" - 1 file. Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js).
+**Commit**: 031f2b57 "docs(evidence): MissionRuntime falsification - single live mission-creation/execution authority (ledger 38)" - 1 file. Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js).
 
 **Gates**: gateway_runtime LOADS OK; rg new MissionRuntime = gateway_runtime.js:476 only (others test-only); rg INSERT INTO ping_missions = mission_runtime.js:79 only (non-test); real-runtime POST /missions micro-test + durable row + endpoint projection PASS; Orca mission_compiler in-memory (no ping_missions/MissionRuntime.create); automatic_mission_generator + mission_authority_v2 zero-importer stranded. No code change.
 
