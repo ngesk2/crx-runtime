@@ -969,3 +969,81 @@ UnifiedEventRuntime as a "duplicate" family. This unit proves exactly ONE live w
 **Gates**: gateway_runtime LOADS OK; UnifiedEventRuntime constructed exactly once; rg
 EventWriteAuthority importer scan = zero; test_events_routes.js 8/8 PASS. No code change; no
 consolidation edit (falsification-complete).
+
+## 30. Dead-Letter / Retry / Worker-Failure Authority Boundary Falsification
+
+**Questions the audit resolves**: (a) is there a SINGLE reachable production dead-letter (DLQ)
+authority, or is there a split source of truth between the old gateway/dead_letter_authority.js
+and a ping-runtime equivalent? (b) does any retry/worker-failure path fork into a second
+reachable authority?
+
+**RECONCILIATION of a documented contradiction**: the 08-08 Track A P0 audit recorded
+gateway/dead_letter_authority.js / retry_authority.js / retry_policy.js as "unreachable from the
+live import graph". The 08-20 "Mission Recovery + Dead-Letter Observability" session (commit
+32c870e4) wired DeadLetterAuthority live. The CAPABILITY_LEDGER (08-27) marked it "LIVE, NOT
+stranded as prior audits claimed". RESOLUTION: the 08-08 claim was correct for the tree BEFORE
+the 08-20 wiring; after 32c870e4 the DLQ boundary is LIVE on exactly one class, one
+construction, one writer, one route surface. No split.
+
+**Single physical class**: gateway/dead_letter_authority.js (416 lines) - constitutional DLQ.
+Writes repository_dead_letters; uses RetryPolicy.forJobType for failure classification +
+isReplayable, WitnessAuthority for witness, identityAuthority.generateDeadLetterId for
+dead-letter identity, constitutionalTimeAuthority.nowAsMillis for timestamps. Methods:
+recordDeadLetter / getDeadLetter / getDeadLettersByJobType / getDeadLettersByMission /
+replayDeadLetter / getStats / cleanOldDeadLetters.
+
+**SINGLE construction site (production)**: 
+ew DeadLetterAuthority(this._pool) at
+gateway/bootstrap/gateway_runtime.js:544 (inside the pgAvailable try block; declared null :377,
+set null on failure :549). initialize() at :545. The SAME singleton is injected TWO places:
+(1) deadLetterAuthority, into 
+ew MissionScheduler({...}) (:556) for the retry-exhaustion
+DLQ record; (2) deadLetterAuthority, replayProvider, into the services object (:665) for the
+mission_control route surface.
+
+**SINGLE production writer to repository_dead_letters**: the ONE live ecordDeadLetter call =
+ping-runtime/orchestration/mission_scheduler.js:303 (exhaustion branch:
+etries >= this._retryPolicy.max_attempts && this._deadLetterAuthority). Header comment at
+:88 documents the same P0-5 contract. Other writers: gateway/dead_letter_authority.js:112 is
+the method definition; gateway/test_durable_mission_lifecycle.js is TEST-ONLY (verification:
+rg for production require of that test = empty; not in the bootstrap graph).
+
+**Route surface**: /mc/dead-letters, /mc/dead-letters/stats, /mc/dead-letters/:id all read
+services.deadLetterAuthority via routes/mission_control.js:607/:628/:639, each returning a
+graceful {status:'degraded', message:'DeadLetterAuthority not initialized'} when null.
+
+**Retry-semantics split is NOT a competing authority**: the live retry decision is the SAME
+live scheduler (section 28 exclusive decider) reading the SAME ping_missions table:
+MissionRuntime.failWithRetry (ping-runtime/orchestration/mission_runtime.js:202, increments
+retries, sets retry_pending + retry_at or failed on exhaustion) + MissionScheduler's
+	his._retryPolicy = options.retryPolicy || { max_attempts: 3, backoff_delay_ms: 5000 }
+(mission_scheduler.js:98). RetryPolicy (gateway/retry_policy.js, pure helper, imported only by
+dead_letter_authority.js) and RetryAuthority (gateway/retry_authority.js, independent class)
+both exist, but **RetryAuthority has ZERO importers anywhere** (verified: rg require of
+retry_authority over gateway/ping-runtime/runtime = no files). RetryAuthority = DORMANT
+(never constructed on any path). No second reachable retry authority.
+
+**Verdict**: FALSIFIED. Exactly ONE live DLQ authority (DeadLetterAuthority singleton,
+gateway_runtime.js:544) and ONE production writer (mission_scheduler.js:303 via the retry
+exhaustion path). RepositoryStore/EventWriteAuthority-style duplicates do not exist here: no
+second class, no second construction, no second writer, no second route surface. RetryAuthority
+= dormant (zero importers). No consolidation edit warranted.
+
+**Class**: [STAT] static require/construction/writer scan. NOT promoted to [EMPR] - no live
+E2E this unit (the durable lifecycle regulator test_durable_mission_lifecycle.js runs 8/8 GREEN
+against a mock pool as the discriminator; actual drain-to-dead-letter against real Postgres is
+a pre-existing empirical capability, not re-run here).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean on dead_letter_authority.js +
+mission_scheduler.js; DeadLetterAuthority constructed exactly once (rg new DeadLetterAuthority =
+gateway_runtime.js:544); production recordDeadLetter writer = mission_scheduler.js:303 only;
+test_durable_mission_lifecycle.js 8/8 PASS; test_dead_letter_wiring.js present. No code change;
+no consolidation edit (falsification-complete).
+
+**Canonical DLQ/retry ruling (inherit - do not reopen)**: canonical DLQ authority =
+DeadLetterAuthority (gateway/dead_letter_authority.js), constructed exactly once at
+gateway_runtime.js:544, injected into MissionScheduler (:556) + services (:665). Canonical
+retry decision = MissionScheduler (single live scheduler, section 28) + MissionRuntime
+.failWithRetry (ping_missions retries/retry_at/retry_pending). Any future DLQ/retry change must
+go through the EXISTING DeadLetterAuthority singleton + the live MissionScheduler path; never
+construct a second DLQ authority, never reintroduce RetryAuthority as a competing decider.
