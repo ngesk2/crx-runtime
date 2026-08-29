@@ -1524,4 +1524,4 @@ Falsification findings [STAT]:
 
 **Canonical ai-workspace ruling (inherit - don't reopen)**: canonical ai-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js), constructed once gateway_runtime.js:411, sole /ai-workspace route gateway_runtime.js:779, sole ai_workspace_results writer :80. Never construct a second AIWorkspaceAuthority; never wire a workspace-parallel implementation. Business-rule model consumer = huggingfaceAdapter (not a competing spine inference authority - section 33).
 
-**Commit**: (placeholder; true hash captured post-commit)
+**Commit**: 77b47942
