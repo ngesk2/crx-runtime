@@ -1502,4 +1502,4 @@ Falsification findings [STAT]:
 
 **Canonical bridge ruling (inherit - don't reopen)**: canonical external-store re-emitter = EventBridge singleton (gateway_runtime.js:462, eventRuntime target); canonical spine->mission creator = EventToMissionBridge singleton (gateway_runtime.js:575, MissionRuntime.create :124). Never construct a second of either; never wire mission_event_bus or a comparable kernel bridge onto the live spine. Both compose into the single MissionRuntime (section 38) + single MissionScheduler (section 28) + single WorkerRuntime dispatch (section 43).
 
-**Commit**: (placeholder; true hash captured post-commit)
+**Commit**: 8a17cac7
