@@ -1633,4 +1633,4 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 - **Similarly constituted:** AIWorkspaceAuthority already falsified (45, single construction gw:411); business emitters (ReviewEmitter/CustomerEmitter/ProjectEmitter gw:567-571) share the single canonicalizationService/UnifiedEventRuntime (§49/§29), NOT a competing write authority.
 - Verdict: FALSIFIED - each business authority (Review/Customer/Project) has exactly one live construction, one route surface, one table-writer; events flow through the single spine (29/49); no two reachable competing business authorities govern any single business decision. No consolidation edit.
 
-**Commit**: <PENDING> "docs(evidence): business authority falsification - single live owner each for Review/Customer/Project (ledger 50)" - 1 file, <N> insertions.
+**Commit**: 49f03048 "docs(evidence): business authority falsification - single live owner each for Review/Customer/Project (ledger 50)" - 1 file, 13 insertions.
