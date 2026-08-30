@@ -1758,3 +1758,20 @@ genuinely new empirical evidence, none reopen a frozen section.
 - **Verdict**: FALSIFIED - no competing live authority; ghost-hit mechanism is structurally explained (single canonically-hash-matched root per ingest), graph-projection is a deliberate subset, §46 read-surface is a dead-primary-with-fallback. No consolidation edit. No code change.
 
 **Commit**: 22ff513e successor - TBD-hash "docs(evidence): ghost-hit mechanism + graph-projection subset falsification - structurally explained (ledger 54)". Staged exactly 1 ledger file; P0-1 hoist  M gateway_runtime.js + AGENTS.md preserved unstaged; post-commit staged empty. Encoding discipline: no BOM, CRLF=1755/bareLF=6 (the 6 pre-existing bare-LF preserved), ends CRLF, content-only diff.
+
+### 2026-08-30 §55 - Serving-Surface Liveness Falsification [EMPR]
+
+Objective: characterize the HTTP serving topology with live empirical evidence - the earlier /mc/replay/trace connection-failure (HTTP=000) must be classified as infrastructure vs code. Close the §54 next-note candidate (connection failure).
+
+Serving-surface classification:
+- Container ping-gateway publishes NO ports (Ports: {}) - NOT the reachable HTTP surface (live-topology, confirmed).
+- The LIVE serving process = host-launched node running gateway/server.js (documented helper start_gateway.ps1, PORT=8080, Postgres via 127.0.0.1:5433). Confirmed listening, clean boot line "Gateway running on http://0.0.0.0:8080".
+- TRANSIENT PROCESSS PROCESS REALITY: earlier this session node exited with NO error banner in gateway_stdout.log (last write = /events/recent ROUTE line, then silence; no stack, no crash). HTTP -> connection refused while no node process. Re-launch via helper restores full fidelity.
+
+Trace-endpoint classification RESOLVED (was HTTP=000, NOT a code divergence):
+- With a live process, GET /mc/replay/trace/<full-64-char-correlation_id> returns 200 with groupSize 9, complete honest replay evidence block (KernelReplayExecutionProvider, verified:true, kernel_verified, fingerprint sha256:8dffa720..., witness_root a695370a..., canonical_input_hash replay-dc6abf4a5d5c, deterministic_execution_identity==fingerprint, artifact_count 1), witness attestation [WITNESS_CREATED 36e2e86e..., attestation witness-3b3a1f03847b3076]. Correlation 48bcfdf9a9abfc5f264485df3b39431f0c957d7dab0485e57e908b788c9b77ad.
+- getCorrelationGroup query measured 1.6ms / 9 rows directly via psql - NOT a slow/hanging query.
+- /mc/replay/stats + /mc/witness/stats + /health all 200 with a live process (control).
+- Root cause of prior HTTP=000 = DOWN PROCESS, not route/query/DB. Infrastructure, not code. Hard-stop condition 3 (empirical failure indistinguishable from infrastructure failure) EXACTLY this case; resolved by process recovery.
+
+Verdict: NO route/query/authority divergence introduced by the trace endpoint. Serving surface = transient in-process node (non-resilient: no auto-restart, no crash banner), reachable only while the node process lives; container never exposed. This is an OPERATIONAL invariant, not a code contradiction. No consolidation edit. No code change.
