@@ -1672,3 +1672,75 @@ Canonical validation ruling (inherit - don't reopen): canonical event_type valid
 ### 2026-08-28 Session - Ledger 52 hash-correction (COMMITTED)
 
 **Record real commit hash for solver52**: main commit `94fe121d` "docs(evidence): integration/capability/connector emission-routing falsification - single live integration authority over spine (ledger 52)" - 1 file, 14 insertions, ledger-only. Direct parent of the hash-correction commit.
+
+
+### 2026-08-30 Session - Fresh-Event LIVE EMPIRICAL VALIDATION (ledger 53 [EMPR])
+
+One fresh canonical-boundary ingest was POSTed (POST /ingest, POSTGRES source, source
+endpoint_empirical_falsification_04, documentId falsify-2026-0830-001, customerId
+cust-falsify-1) and the FULL 9-event causal chain exercised against the real Docker stack
+(ping-gateway :8080, ping-postgres :5433, brain-qdrant :6333, ollama :11434). All resolved
+production-spine invariants (SS26-SS52) re-surfaced as runtime data; this section records only
+genuinely new empirical evidence, none reopen a frozen section.
+
+- **Canonicalization boundary (49)**: POST /ingest returned 201
+  {eventId 48bcfdf9a9abfc5f264485df3b39431f0c957d7dab0485e57e908b788c9b77ad,
+   objectId REVIEW_RECEIVED_de8a410606232f31, canonicalHash de8a410606232f31..., canonicalVersion
+   1.0.0, namespace tenant::hpp}. Namespace preserved through the boundary (no scope drop).
+
+- **Full 9-event causal chain (44) [EMPR]**: ping_events under correlation_id 48bcfdf9... each
+  causation_id = immediate predecessor's event_id (causal integrity verified row-by-row):
+    REVIEW_RECEIVED 48bcfdf9a9ab (causation: none)
+    OBSERVATION_CREATED b230ab5f810a <- 48bcfdf9a9ab
+    CLAIM_CREATED b05bc74175f4 <- b230ab5f810a
+    CLASSIFICATION_CREATED 30a7a750c8ad <- b05bc74175f4
+    RECOMMENDATION_CREATED 031a99e152f1 <- 30a7a750c8ad
+    PROJECTION_CREATED a002c92f076e <- 031a99e152f1
+    REPLAY_COMPLETED 3b3a1f03847b <- a002c92f076e
+    WITNESS_CREATED 36e2e86eb4bc <- 3b3a1f03847b
+    LINEAGE_CREATED f9652b7715fb <- 36e2e86eb4bc
+
+- **Replay provenance (852fee10/20/24) [EMPR]**: /mc/replay/stats 37->38 total_replays, verified
+  38, kernel_verified 6->7, witness_rejected 0. Provider block (process-lifetime) replays_processed
+  0->1, events_replayed 0->1, failures 0 - EXACTLY ONE fresh ingest -> EXACTLY ONE provider replay
+  (singleton identity conserved). /mc/witness/stats attestations 37->38, refusals 0. Trace for the
+  correlation returns groupSize 9 with a single replay entry: KernelReplayExecutionProvider,
+  verified:true, kernel_verified, eventType PROJECTION_CREATED, event_count 1, fingerprint
+  sha256:8dffa720..., witness_root a695370a70..., state_version 1.0, artifact_count 1,
+  canonical_input_hash replay-dc6abf4a5d5c, deterministic_execution_identity == fingerprint,
+  namespace/correlation_id preserved; witness attestation WITNESS_CREATED
+  attestation:witness-3b3a1f03847b3076.
+
+- **Causal durability identity (40)**: the 9 events are keyed/persisted by the accepted raw
+  unit-proof hash (unified_event_runtime) - no boundary change; the chain is deterministic
+  (same ingest, same event_ids) - matches SS40 accepted-lane semantics.
+
+- **Projection (32)**: Qdrant `knowledge` collection (v1.18.2, 768 Cosine, points_count 112,
+  indexed_vectors_count 0 - below the HNSW 10000 full-scan threshold, explaining point-scroll
+  rather than vector-count assertions): fresh point 031a99e1-52f1-8106-e7fb-782e9c1a0b28 = the
+  deterministic UUID-encoded RECOMMENDATION_CREATED event_id; payload kind=RECOMMENDATION_CREATED,
+  namespace=tenant::hpp, confidence=0.5, confidence_source=inherited, documentId
+  falsify-2026-0830-001, embedding ollama/nomic-embed-text. EmbeddingService singleton wrote it.
+
+- **Knowledge graph write (31)**: hybrid /knowledge/search returned KG-context-leg nodes for the
+  fresh chain with verified:true, source:knowledge, rank_score 0.25, confidence 0.5, status
+  candidate, evidence = the fresh event IDs (RECOMMENDATION 031a99e1..., OBSERVATION b230ab5f...),
+  namespace tenant::hpp - proving KnowledgeGraph.addNode wrote them via the gateway_runtime.js:602
+  single production path.
+
+- **Hybrid search + evidence verify (27) [EMPR]**: /knowledge/search returned stats
+  {semanticHits:3, kgHits:5, verified:0, rejected:3}. KG-context nodes verified:true (they ARE the
+  backing record). Semantic-leg Qdrant hits returned verified:false with rejected:3 - the
+  EvidenceAuthority verify() legitimately refused to surface ghost hits (older OBSERVATION_CREATED
+  rows whose backing metadata.canonical_hash does not match the Qdrant payload hash). This is the
+  SS27 documented verify() strictness surfacing as live runtime data (rejected, never silently
+  dropped), NOT a defect.
+
+- **Mission lifecycle (38) / worker host (43) / event-bridge (44)**: the 9-event chain was
+  produced by EventToMissionBridge -> MissionScheduler -> WorkerRuntime.dispatch (8 worker
+  executions, 0 failed). ping_events total reached 1338 (9-chain + mission-lifecycle noise from the
+  long-lived instance; the +41 ledger figure was observed on a prior clean baseline).
+
+- Verdict: every live production-spine surface re-surfaced as expected empirical runtime data for
+  one fresh ingest. NO competing live authority and NO invariant contradiction observed. Chain is
+  fully proven end-to-end against real infrastructure. No consolidation edit.
