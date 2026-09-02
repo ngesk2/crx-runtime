@@ -2897,3 +2897,606 @@ Commit earned edits as explicit allowlist units, preserving unstaged P0-1 hoist 
 - C/D: worker-identity (P3A), priority (P3B), confidence (P3C), replay (commit 852fee10) already single-owner.
 
 **Next** (dependency order): M3 remaining = canonical_event_envelope BLOCK item RESOLVED (ledger 16), google cluster CLOSED (ledger 18), canonicalization families CLOSED (ledger 19). Remaining deferred = B7 commit of 5 agent renames (already on disk, low value), 129MB blob history clean (needs direction). Live E2E Docker currently UP + gateway healthy. Awaiting user direction on next program item (candidate: commit B7 agent moves as explicit unit, or live E2E deep-verification, or IntelligenceWorker-related enrichment wiring).
+
+### 2026-08-28 Session - LIVE E2E DEEP-VERIFICATION (ledger 20, COMMITTED c7c6946c)
+
+Senior-dev execution mode, no-reply rule binding. Docker UP (ping-gateway 2h, ollama 2h,
+ping-postgres healthy, brain-qdrant). Confirmed running container carries P0-1 code
+(provider block present at /mc/replay/stats) -> full initialize() path incl.
+services.replayProvider empirically reachable, not just boot-load static.
+
+Fresh live E2E through production boundary: POST /ingest REVIEW_RECEIVED (sweep-verify,
+tenant::hpp) -> HTTP 201, canonicalized (eventId 2db71cee..., objectId
+REVIEW_RECEIVED_746dff1b..., namespace tenant::hpp). Trace groupSize 9 = full causal
+chain. Replay REAL (kernel_verified, fingerprint sha256:dbcf1ab6..., witness_root
+b64da83ed1..., artifact_count 1, deterministic_execution_identity==fingerprint, no
+violations). Authority block complete (ReplayWorker + KernelReplayExecutionProvider,
+namespace+correlation_id preserved, canonical_input_hash replay-3dde97b3b0c3 = replay-
+transcript identity per ledger 17). Witness WITNESS_CREATED attestation. Counter
+semantics re-proven: provider replays_processed 2->3, durable total_replays 36->37,
+witness attestations 37 / refusals 0.
+
+Committed c7c6946c "docs(evidence): live E2E deep-verification ... (ledger 20) [EMPR]"
+1 file +44 (ledger only). P0-1 hoist in gateway_runtime.js PRESERVED unstaged (M).
+
+Next (dependency order): continue audit-first units; candidates = 129MB blob history
+clean (BLOCKED - needs explicit direction), IntelligenceWorker-related enrichment
+(INTENTIONALLY NOT wired - competing authority, do not enable), or next unresolved
+program item. Remaining frozen: P0-1/P0-2/P3/S4. Live E2E evidence complete.
+
+### 2026-08-28 Session - Repo Hygiene Part 1: Live-Tree Archive-Blob Removal (COMMITTED e0f586cc)
+
+**14:30** | User directive: reduce repo footprint without history rewrite; audit-first; dispose tracked archive-only blobs. Executed Part 1 - removed two tracked orchestration JSON blobs as a normal, non-destructive atomic commit.
+
+**Audit (falsification-complete, [STAT])**: Zero-reachable-reader proven for `ping-runtime/orchestration/{CrossReferenceMatrix.json (35.9MB), SymbolRouter.json (32.6MB)}`. Repo-wide filename sweep (all file types) found only: the 2 tracked files, the ledger, RepositoryKnowledgeIndex metadata entries, + 1 hermes historical audit note (all non-functional text refs). The ONLY code readers/writers = 4 DORMANT scripts (generate_symbol_router / generate_routing_cache / ConstitutionalQueryAPI / generate_cross_reference_matrix) that reference a HARDCODED ABSOLUTE PATH to a DIFFERENT root dir `c:\Users\nolan\PING\orchestration\` - running them would not touch the tracked files. Zero importers of those scripts. Live `ping-runtime/orchestration/` imports from gateway_runtime.js are .js MODULE imports (engine/mission_runtime/mission_scheduler/event_to_mission_bridge), never these JSON data reads.
+
+**Removal (non-destructive)**: `git rm` both blobs (~68.4MB live-tree dead weight). Ledger §22 appended (`docs/EXECUTION_EVIDENCE_LEDGER.md`).
+
+**Verification**: staged set = exactly 2 deletions + 1 ledger edit (allowlist discipline, no unrelated absorption). Regression green: pipeline_bridge 0/10 fail, phase_d_namespace 0/7, commissioning 51 missions, durable_mission_lifecycle 8 GREEN. Boot-load gate: `gateway_runtime.js` LOADS OK (run from gateway/ workdir; earlier error was PATH/quoting artifact in the command, not real).
+
+**Commit**: `e0f586cc` "chore(repo): remove archive-only orchestration JSON blobs (live-tree dead weight) + ledger 22" - 3 files, 35 insertions / 966,611 deletions. Pre-existing dirty entries (event_queue DDL-persistence, generated registries, P0-1 hoist in gateway_runtime.js) intentionally NOT absorbed.
+
+## Key Decisions (Repo Hygiene Part 1)
+- **History bloat (ledger 21) NOT touched** - this was the non-destructive live-tree removal only. git-filter-repo/BFG history rewrite remains BLOCKED (HARD RULE: requires explicit user direction).
+- **Disposition class honored**: CAPABILITY_LEDGER archive-candidate "live-tree dead weight (normal commit, NON-destructive)".
+- **Audit-first before any deletion**: zero-reader proved by content-grep + import-graph analysis across all file types before git rm.
+
+## Session - Next Steps (awaiting user direction)
+1. **Part 2 - history bloat cleanup** (BLOCKED): git-filter-repo/BFG to remove the ~129MB+ blobs (next-swc, .next/cache/webpack packs, .tmp.driveupload) from branch-v2 history. HARD RULE: no force ops / history rewrite without explicit user direction + safety tag + force-push authorization. Also overlaps SECURITY_SWEEP history scrub (Qdrant/Google/Yahoo in 1a7a30ef, 59795121, 3c4c2dcd, aaec592b, 77d830c9).
+2. **B7 agent moves** (5 staged renames, already on disk/verified): low value; commit as explicit allowlist unit when directed.
+3. **Live E2E** Docker UP + gateway healthy - full initialize() + services.replayProvider path runnable when directed.
+
+### 2026-08-28 Session - Ledger 26: Boundary/Authority Single-Construction Falsification (COMMITTED d39cdeb5)
+
+**Objective**: continue the audit-first convergence program - falsify single-construction across the
+authority-bearing BOUNDARY classes (beyond the 12 core authorities of ledger 25). Non-destructive,
+ledger-only. P0-1/P0-2/P3/S4 frozen; no reopening.
+
+**Sweep**: enumerated every `new <Class>(` production-construction site in gateway_runtime.js for the
+boundary/authority classes. Multi-site classes found and traced to reachability:
+- EventGovernance: gateway_runtime (LIVE) + event_queue.js (Orca fabric EventQueue, tests-only import) -> DORMANT (ledger 15).
+- OllamaProvider: gateway_runtime (LIVE) + engine.js (Orca ExecutionEngine, discoverOllama:false) -> DORMANT (ledger 15).
+- CanonicalEventEnvelope: gateway_runtime (LIVE) + wiring.js (non-production DI path) + kernel_replay provider (KERNEL twin, ledger 16) -> both dormant.
+- RepositoryStore: gateway_runtime (LIVE) + authority_registry.js:265 (DEAD file, ZERO importers) + github_constitutional_pipeline.js (3 dormant harnesses only) + replay_runtime.js (repository_reset_harness only) -> all dormant.
+- EventReadAuthority: gateway_runtime (LIVE) + runtime/kernel/gateway_adapter.js (kernel twin) -> dormant.
+- KnowledgePromoter / CanonicalizationService / EventToMissionBridge / EventBridge / KnowledgeGraph: clean single owners.
+
+**Verdict**: NO reachable competing construction site for any boundary authority class. All second
+sites collapse to Orca fabric (15), kernel twin (16), non-production DI (wiring.js), or dead/harness-only
+files. authority_registry.js identified as a DEAD file (archive-candidate). No consolidation warranted.
+
+**Commit**: `d39cdeb5` "docs(evidence): boundary/authority single-construction falsification - multi-site
+classes all resolve dormant (ledger 26)" - 1 file, +45. Staged set exactly 1 ledger file. P0-1 hoist
+preserved unstaged (M gateway_runtime.js). Boot-load OK + 7 suites green (replay_composition,
+replay_worker_wiring, replay_observability, pipeline_bridge, knowledge_search, ingest_boundary,
+wave3b_p7_governance). Post-commit staged set empty.
+
+**Next**: continue audit-first units in dependency order. Candidates: B7 agent commit (low value),
+SearchAuthority/evidence-verification audit, IntelligenceWorker enrichment (NOT wired - competing
+authority). History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Ledger 27: SearchAuthority / Evidence-Verification Falsification (COMMITTED 4e3a111f)
+
+**Objective**: continue the audit-first convergence program - falsify no two reachable competing
+production authorities govern the same search/evidence-verification decision. Non-destructive,
+ledger-only. P0-1/P0-2/P3/S4 frozen; no reopening.
+
+**Falsification-first findings**:
+- Production entrypoint confirmed `server.js` (package.json main + scripts.start + Dockerfile CMD
+  `node gateway/server.js`) -> GatewayRuntime (bootstrap/gateway_runtime.js).
+- LIVE authority pair: HybridSearch (ping-runtime/search/hybrid_search.js) + EvidenceAuthority
+  (ping-runtime/evidence/evidence_authority.js), each constructed EXACTLY once in gateway_runtime.js
+  (:532, :527), single shared instance, sole route observer `POST /knowledge/search` via
+  `hybridSearch: services.hybridSearch` (gateway_runtime.js:797 -> routes/knowledge.js:22). HybridSearch
+  COMPOSES EvidenceAuthority (verification is a sub-step), not competes.
+- KnowledgeRetrieval (gateway/knowledge_retrieval.js) constructed only at wiring.js:111, reachable only
+  via `wireContainer()` from bootstrap/index.js (non-production DI). bootstrap/index.js has ZERO
+  production importers; `wireContainer` never invoked on live path. wiring.js used only for
+  buildDependencyGraph/validateWiring. knowledge.activity.js dormant (activitiesPath string + dormant
+  activities/index.js). DORMANT.
+- No `SearchAuthority` class exists anywhere (class grep zero hits).
+- Other `/search` surface (connectors.js:123) = connector search, different domain; customers.js:9 +
+  projects.js:8 = comments only. No route bypasses evidence verification on live path.
+
+**Verdict**: NO active contradiction in search/evidence-verification domain. Single live authority pair,
+single construction, single route consumer, no bypass. KnowledgeRetrieval = non-prod DI only. No
+consolidation warranted. Evidence [STAT] (source/config/entrypoint); NOT promoted to [EMPR] - no
+fabricated E2E.
+
+**Commit**: `4e3a111f` "docs(evidence): SearchAuthority/evidence-verification falsification - no
+reachable competing authority (ledger 27)" - 1 file, +56. Staged set exactly 1 ledger file. P0-1 hoist
+preserved unstaged (M gateway_runtime.js). Boot-load OK + gates green (knowledge_search, evidence 12/12,
+replay_composition, ingest_boundary, pipeline_bridge). Post-commit staged set empty.
+
+**Next (dependency order)**: continue audit-first units. Candidates: B7 agent commit (already CLOSED -
+do not reopen/recommit), IntelligenceWorker enrichment (NOT wired - competing authority), next unresolved
+search/evidence or orchestration authority verification. History rewrite stays HARD-BLOCKED pending user
+direction.
+
+### 2026-08-28 Session - Hermes Desktop Path/Worktree Repair - PHASE 0-1 (git ref corruption FIXED)
+
+**Objective**: Hermes Desktop broken (hypothesis: worktree/runtime move). Senior-dev execution mode, audit-first. Pipeline: PHASE 0 (map reality, find FIRST broken invariant before invasive change) -> repair -> validate. NEVER reinstall/delete state. No history rewrite.
+
+**Env reality (Windows)** [STAT]: HERMES_HOME=C:\Users\nolan\AppData\Local\hermes; HERMES_GIT_BASH_PATH=C:\Program Files\Git\bin\bash.exe. hermes -> hermes-agent\venv\Scripts\hermes.exe; python -> venv\Scripts\python.exe (3.11.15); uv -> hermes\bin\uv.exe; node -> hermes\node\node.exe (v22.22.3). All on PATH.
+
+**Runtime topology** [STAT]: hermes-agent\ = FULL clone (real .git dir, NOT a worktree). Remote ohttps://github.com/NousResearch/hermes-agent.git. HEAD detached at b5f8996c (2026-06-08). SHALLOW clone (git/shallow=210f4e70, 2026-06-06 boundary). Worktree list = single main worktree. pyproject scripts: hermes=hermes_cli.main:main (console shim), hermes-agent=run_agent:main.
+
+**FIRST BROKEN INVARIANT FOUND + FIXED** [EMPR]: C:\Users\nolan\AppData\Local\hermes\hermes-agent\.git\refs\remotes\origin\main was a CORRUPT loose ref - 41 bytes of ALL NULL (0x00) bytes (a valid ref = 40-hex SHA + \n). This OCCLUDED the valid packed-refs value f3af489e for origin/main, firing "warning: ignoring broken ref refs/remotes/origin/main" + git fsck "badRefContent: refs/remotes/origin/main" + "invalid sha1 pointer 000...0000" for origin/main + origin/HEAD (origin/HEAD is a VALID symref -> false-flagged only because it points at the broken main). Corruption = null-byte truncation, consistent with interrupted filesystem move.
+
+**Repair (non-destructive, Phase-13 compliant)**: quarantined corrupt loose ref to %TEMP%\opencode\hermes-quarantine\origin_main.corrupt.bak (41 null bytes preserved), REMOVED the loose file. Git now falls back to valid packed-refs value f3af489ec2f73eda1337ccb54214a21a43957874. Verified: rev-parse origin/main=f3af489e; git branch -r CLEAN (origin/HEAD -> origin/main, origin/main, NO broken-ref warning); HEAD preserved at b5f8996c; working tree clean; single worktree intact. Falsification-complete: full loose-ref tree scan -> ALL LOOSE REFS VALID (zero corrupt refs remain). No objects deleted, no reset --hard, no worktree deletion.
+
+**SECOND FINDING (environmental, NOT yet fixed)**: hermes.exe (venv console shim) BLOCKED by "An Application Control policy has blocked this file" (Windows App Control/WDAC). BUT venv python.exe runs fine (module hermes_cli imports OK) and node.exe v22.22.3 runs fine - block is SPECIFIC to hermes.exe shim, not python or the module. Desktop launches headless 'hermes serve' - if it launches via the hermes.exe shim, this policy block would prevent Desktop launch INDEPENDENTLY of the git fix. Needs policy review (user AppControl rule) OR confirm Desktop launches via python -m. NOT modified (environmental, out of git-repair lane).
+
+**Remaining**:
+1. Hermes Desktop validation: launch Desktop, confirm headless hermes serve works end-to-end (git layer now clean).
+2. hermes.exe AppControl block - determine if Desktop launches shim or python; if shim, user must adjust AppControl allowlist (external to repo).
+3. git fetch origin (shallow) to refresh origin/main past the broken boundary; optionally unshallow - DEFER (network + would change runtime state; get user direction).
+4. Resume PING audit-first program at scheduler falsification �28 when Hermes repair validated.
+
+### 2026-08-28 Session - PING audit-first resumed at scheduler falsification (LEDGER 28 COMMITTED 8d077b35)
+
+**Context**: Hermes Desktop PHASE 0-1 git-ref repair validated (user confirmed). Resumed the PING audit-first program at �28 - scheduler falsification. Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**�28 Scheduler Falsification COMPLETE** [STAT]: falsified no two reachable competing production schedulers.
+- **MissionScheduler** = SOLE LIVE scheduler (ping-runtime/orchestration/mission_scheduler.js:82), constructed EXACTLY once at gateway_runtime.js:552 (+ start :560, services :660). Only scheduler in the production bootstrap graph.
+- **SchedulerPort** (scheduler_port.js:26) + **TemporalSchedulerProvider** (temporal_scheduler_provider.js:27): constructed ONLY inside wireContainer() (wiring.js:146-158) -> non-production DI, unreachable (ledger 27). DORMANT.
+- **ReplayScheduler** (replay_scheduler.js:3): importer = constitutional_execution_pipeline.js:7 -> constitutional_runtime.js:3 -> reachable ONLY from test_kernel_replay.js:422 (test). STRANDED.
+- **DependencyScheduler** (dependency_scheduler.js:21): importer = execution_planner.js:17, which has ZERO importers; constitutional_execution_planner -> constitutional_automatic_pipeline.js:19 (zero importers). Fully STRANDED.
+- **Verdict**: NO active contradiction. Single live scheduler + single start + single dispatch path (WorkerRuntime.dispatch). Four others collapse to non-prod DI / dormant kernel / zero-importer stranded. No consolidation warranted.
+
+**ENCODING LESSON (CRITICAL)**: the ledger file must be committed as PLAIN TEXT, NO BOM, CRLF line endings. My first append + UTF8Encoding(True) rewrite introduced a BOM + LF conversion -> default diff showed a false 785-line/936-insertion rewrite (pure CRLF->LF + BOM artifact). Verified via whitespace-agnostic diff (--ignore-all-space --ignore-cr-at-eol) that the ONLY real content change was �28 (65 lines). Fixed by: git checkout the file, append �28 via byte-concat with explicit CRLF + UTF8Encoding(False) no-BOM -> diff became exactly 63 insert/0 delete. If a staged doc ever shows mass line-change noise, check encoding/EOL before assuming content drift.
+
+**Commit**: 8d077b35 "docs(evidence): scheduler falsification - no reachable competing production scheduler (ledger 28)" - 1 file, +63. Staged set exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Boot-load + gates green (commissioning 14 scenarios/51 missions/0 failed, pipeline_bridge 10, phase_d 7, slice3a 8, knowledge_search 10, replay_composition 8, witness_negpath 8). Post-commit staged set empty.
+
+**Next** (audit-first, dependency order): next unresolved audit-first unit in the convergence program. Candidates: IntelligenceWorker-related enrichment (NOT wired - competing authority, do not enable), M3 remaining google cluster (CLOSED ledger 18), canonicalization families (CLOSED ledger 19). History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Event-Write Authority Falsification (LEDGER 29 COMMITTED 95a54e71)
+
+**Next audit-first unit selected (dependency order)**: event-write authority falsification - the
+highest-leverage unresolved production-spine unit in the event domain after 828-28 scheduler/families
+closures. Falsified no two reachable competing live event-write authorities.
+
+**29 Event-Write Authority Falsification COMPLETE** [STAT + EMPR]:
+- LIVE sole write spine = UnifiedEventRuntime (ping-runtime/events/unified_event_runtime.js:21),
+  constructed EXACTLY once gateway_runtime.js:433, services.eventRuntime :448, POST /events route
+  :681 createEventRoutes(eventReadAuthority, unifiedEventRuntime, pool); POST handler
+  (events.js:71-86) writes via eventRuntime.emit() (convergence commit 31620edc).
+- EventWriteAuthority (gateway/event_write_authority.js:25) = DEAD - ZERO production importers
+  (rg require(...event_write_authority) = no files; only comment refs events.js:5, event_read_
+  authority.js:11; consistent w/ EVENT_MUTATION_SCHEMA_RECONCILIATION_AUDIT.md:79).
+- EventRepository (gateway/event_repository.js:15) = STRANDED - importers = runtime/kernel/
+  gateway_adapter.js:19 (kernel twin) + constitutional_runtime.js:2 + constitutional_execution_
+  pipeline.js:2 (both section-28 dormant/stranded).
+- EventReadAuthority (ping-runtime/events/event_read_authority.js:20) = LIVE for READS ONLY
+  (built gateway_runtime.js:382, injected SystemAuthority + context/system routes). Not a writer.
+- Verdict: FALSIFIED. Exactly ONE live write authority (UnifiedEventRuntime); EventWriteAuthority
+  dead, EventRepository stranded, EventReadAuthority read-only. No consolidation edit.
+
+**Encoding discipline upheld**: ledger appended via byte-block concat UTF8Encoding($false) with
+explicit LF->CRLF normalization ($text = (section -replace "`r`n","`n") -replace "`n","`r`n") +
+leading/trailing CRLF. First append FAILED the discipline (done with LF line endings -> git warned
+"LF will be replaced by CRLF"); detected by --ignore-all-space --ignore-cr-at-eol diff, reset via
+git checkout, re-appended clean. Final: 971 CRLF pairs / 0 bare-LF; diff = exactly 38 insertions /
+1 deletion (the 1 = old final line gained trailing newline, originally "\ No newline at end of file").
+
+**Commit**: 95a54e71 "docs(evidence): event-write authority falsification - single live writer
+UnifiedEventRuntime (ledger 29)" - 1 file, +38/-1 (real). Staged set exactly 1 ledger file. P0-1
+hoist preserved unstaged (M gateway_runtime.js). Boot-load OK + test_events_routes 8/8 (incl.
+"POST /events routes through eventRuntime.emit, not kernel pipeline") + commissioning. Post-commit
+staged set empty.
+
+**Canonical event-authority ruling** (inherit - don't reopen): LIVE writer = UnifiedEventRuntime;
+LIVE reader = EventReadAuthority. event_write_authority = dead; event_repository = stranded
+(kernel twin). Any future write-path change must go through UnifiedEventRuntime.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates:
+IntelligenceWorker-related enrichment (NOT wired - competing authority, do not enable), next
+unresolved production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Dead-Letter/Retry/Worker-Failure Authority Falsification (LEDGER 30 COMMITTED 9672a0ef)
+
+**Continue audit-first program at the next unresolved production-spine authority (DLQ/retry boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**30 DLQ/Retry Authority Falsification COMPLETE** [STAT]:
+- Reconciled a documented contradiction: 08-08 Track A called dead_letter_authority.js "unreachable" (TRUE pre-08-20); 08-20 commit 32c870e4 wired it LIVE; 08-27 CAPABILITY_LEDGER "LIVE NOT stranded" CONFIRMED. No split.
+- Single physical DLQ class = gateway/dead_letter_authority.js (416 lines, writes repository_dead_letters, uses RetryPolicy.forJobType + WitnessAuthority + identityAuthority). Constructed EXACTLY ONCE gateway_runtime.js:544, initialize :545.
+- SAME singleton injected 2 places: MissionScheduler (:556) for retry-exhaustion DLQ record (:303) + services (:665) for mission_control /mc/dead-letters (+ /stats + /:id, degraded if null).
+- Sole production writer of recordDeadLetter = mission_scheduler.js:303 (P0-5); other writer test_durable_mission_lifecycle.js = TEST-ONLY (rg require empty).
+- RetryAuthority (gateway/retry_authority.js, independent class) = ZERO importers -> DORMANT. RetryPolicy (helper) imported ONLY by dead_letter_authority.js. Live retry decision = MissionScheduler (section 28 decider) + MissionRuntime.failWithRetry (ping_missions retries/retry_at/retry_pending), NOT RetryAuthority.
+- Verdict: FALSIFIED - exactly one live DLQ authority, one construction, one writer, one route surface.
+
+**Commit**: 9672a0ef "docs(evidence): dead-letter/retry/worker-failure authority falsification - single live DLQ authority (ledger 30)" - 1 file, +79/-1 (real, whitespace-agnostic; the 1049/971 stat is CRLF artifact). Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Encoding: no BOM, 1049 CRLF / 0 bare-LF, ends CRLF. Post-commit staged set empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean dead_letter_authority.js + mission_scheduler.js; rg recordDeadLetter = mission_scheduler.js:303 only; test_durable_mission_lifecycle.js 8/8 PASS; test_dead_letter_wiring.js present. No code change; no consolidation edit.
+
+**Canonical DLQ/retry ruling** (inherit - don't reopen): canonical DLQ authority = DeadLetterAuthority (gateway/dead_letter_authority.js), constructed exactly once gateway_runtime.js:544, injected MissionScheduler (:556) + services (:665). Canonical retry decision = MissionScheduler (single live scheduler, 28) + MissionRuntime.failWithRetry. Any future DLQ/retry change through the EXISTING singleton + live scheduler path; never construct a second DLQ authority, never reintroduce RetryAuthority.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: IntelligenceWorker-related enrichment (NOT wired - competing authority, do not enable), next unresolved production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Knowledge/Graph Write Boundary Falsification (LEDGER 31 COMMITTED 53071a04)
+
+**Continue audit-first program at the next unresolved production-spine authority (knowledge write boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**31 Knowledge/Graph Falsification COMPLETE** [STAT]:
+- Sole live KnowledgeGraph class = ping-runtime/knowledge/knowledge_graph.js (single class :30, exports :256). Constructed EXACTLY ONCE gateway_runtime.js:472, init :473, single injection services :658 -> /knowledge :796 + KnowledgePromoter :518 + graph-projection :602 + EmbeddingService :535.
+- Sole live writer to knowledge_nodes: rg INSERT INTO knowledge_nodes over non-test JS = ONLY ping-runtime/knowledge/knowledge_graph.js (addNode :87). ONLY production addNode caller = gateway_runtime.js:602 (graph-projection subscriber).
+- Legacy gateway/knowledge_graph.js = DIFFERENT class family (KnowledgeGraphObject :27 + KnowledgeGraphRuntime :183), NOT the KnowledgeGraph class, does NOT write knowledge_nodes (INSERT INTO|knowledge_nodes rg = EMPTY). Importers = ollama_runtime/prompt_runtime/replay_runtime/repository_reset_harness + harnesses - ALL non-bootstrap (rg under bootstrap = empty). STRANDED.
+- FALSE-POSITIVE CORRECTED: an earlier importer scan listed gateway_runtime.js as importer of legacy gateway/knowledge_graph.js - substring match on knowledge_graph in the require path ../../ping-runtime/knowledge/knowledge_graph (:72). gateway_runtime.js never requires the legacy file. Read the literal require line.
+- Verdict: FALSIFIED - exactly one live reachable writer to knowledge_nodes (ping-runtime KnowledgeGraph.addNode via gateway_runtime.js:602). No consolidation edit.
+
+**Commit**: 53071a04 "docs(evidence): knowledge/graph write boundary falsification - single live KnowledgeGraph writer (ledger 31)" - 1 file, +59 (real, clean CRLF, no artifact). Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Encoding: no BOM, 1108 CRLF / 0 bare-LF, ends CRLF. Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean ping-runtime/knowledge/knowledge_graph.js; rg INSERT INTO knowledge_nodes = single live file; addNode production caller = gateway_runtime.js:602 only; legacy importers all non-bootstrap (stranded). No code change.
+
+**Canonical knowledge ruling** (inherit - don't reopen): canonical knowledge-graph authority = KnowledgeGraph (ping-runtime/knowledge/knowledge_graph.js), constructed once gateway_runtime.js:472, single addNode write path gateway_runtime.js:602, exposed /knowledge routes. Legacy gateway/knowledge_graph.js = stranded, never a writer. Any future knowledge-write through the live singleton; never construct a second KnowledgeGraph, never wire the legacy class family onto the spine.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: embedding/Qdrant write boundary (dual projection owner - EmbeddingService.subscribe vs ProjectionWorker - ACCEPTED dual-owner Phase 0, determine if both truly live or one dormant), next unresolved production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-28 Session - Embedding/Qdrant Projection Write Boundary Falsification (LEDGER 32 COMMITTED 6c6f7139)
+
+**Continue audit-first program at the next unresolved production-spine authority (embedding/projection write boundary; the accepted Phase-0 "dual projection owner").** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**32 Embedding/Qdrant Falsification COMPLETE** [STAT]:
+- Single live writer authority to Qdrant knowledge collection = EmbeddingService (ping-runtime/embeddings/embedding_service.js, DEFAULT_COLLECTION 'knowledge' :18/:99, projectToQdrant :197). Constructed EXACTLY ONCE gateway_runtime.js:494, init :501, subscribe(unifiedEventRuntime) :502, one 
+ew QdrantAdapter() :485.
+- projectToQdrant has EXACTLY 2 production callers (embedding_service.js:134 subscribe-subscriber + canonical_workers.js:193 ProjectionWorker) - BOTH call the SAME singleton's same method with the SAME deterministic point id toQdrantId(event.event_id) -> convergent-by-construction, idempotent (same point id overwrites same point). NOT two authorities; redundant emit of one logical write. Phase-0 dual-owner = confirmed redundancy, not contradiction.
+- Overlap: INDEXABLE_TYPES(20) ∩ ProjectionWorker eventTypes(709: KNOWLEDGE_INDEX/PROJECTION_CREATE/RECOMMENDATION_CREATED/LINEAGE_CREATED) = { RECOMMENDATION_CREATED } only. PROJECTION_CREATE vs PROJECTION_CREATED = distinct spellings/types; LINEAGE_CREATED terminal no-mission (bridge :66). Only true overlap RECOMMENDATION_CREATED converges to identical point id.
+- No other live writer to 'knowledge': rg .upsert( = 9 files; ALL others target DISTINCT collections (checkpoints/context_compression/conversations/documents/constitutional_documents) + NONE required by live bootstrap (rg gateway/bootstrap empty) - STRANDED.
+- Verdict: FALSIFIED - single live 'knowledge' writer (EmbeddingService singleton), dual-emit idempotent-convergent, no reachable competing writer. No consolidation edit (redundancy harmless by deterministic point id, accepted).
+
+**Commit**: 6c6f7139 "docs(evidence): embedding/qdrant projection write boundary falsification - single live writer to knowledge collection (ledger 32)" - 1 file, +63 (clean CRLF). Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Encoding: no BOM, 1171 CRLF / 0 bare-LF, ends CRLF. Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean embedding_service.js + canonical_workers.js; projectToQdrant callers = exactly 2 (both EmbeddingService-family); .upsert( to 'knowledge' = EmbeddingService only; other upsert sites distinct-collection + stranded. No code change.
+
+**Canonical embedding/projection ruling** (inherit - don't reopen): canonical Qdrant knowledge writer = EmbeddingService singleton (gateway_runtime.js:494, qdrantAdapter :485, projectToQdrant :197), dual-emit (subscribe-subscriber + ProjectionWorker) idempotent-convergent + accepted. Any future write through the existing singleton; never a second 'knowledge' writer, never wire a stranded .upsert( site (checkpoints/context_compression/conversations/documents/constitutional_documents) onto the spine.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: AI/inference authority (AIRuntime+OllamaProvider single live inference owner vs stranded inference_adapter/authority/service trio), next unresolved production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - AI/Inference Authority Falsification (LEDGER 33 COMMITTED 6b67e75f)
+
+**Continue audit-first program at the next unresolved production-spine authority (AI/inference boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**33 AI/Inference Falsification COMPLETE** [STAT]:
+- Single live inference owner = AIRuntime (ping-runtime/ai/ai_runtime.js) + OllamaProvider (ping-runtime/ai/ollama_provider.js), each constructed EXACTLY ONCE gateway_runtime.js:228 (AIRuntime), :229 (OllamaProvider), registerProvider('ollama',...) :230. Sole live importer of the pair = gateway_runtime.js (rg i/ollama_provider+i/ai_runtime sole). Consumed LIVE: EmbeddingService (:495,:516), /api/v1/ollama (:676), /ai (:804). Production entrypoint server.js (package.json main) -> gateway_runtime.js (ledger 27).
+- Competing inference implementations all STRANDED/DORMANT (no live reach): 
+ew OllamaProvider engine.js:99 = Orca fabric DORMANT (ledger 15); 
+ew OllamaProviderAdapter inference_adapter.js:42 = different class inside STRANDED inference_adapter; InferenceService (only wiring.js:27) + getInferenceAdapter (constitutional_runtime:26, conversation_memory:12, embedding_batcher:16, document_ingestion:14, knowledge_retrieval:12) - ALL FIVE consumers non-production (wiring.js non-prod DI; the 4 others stranded, reachable only from wiring.js+verify scripts+activities dormant none in live bootstrap). No other reachable Ollama/chat/completion owner.
+- FALSE-POSITIVE CORRECTED: inference_adapter/inference_service rg matched knowledge_graph.js:24 + ollama_provider.js:4 = COMMENT-ONLY (not require). Read literal require lines.
+- Verdict: FALSIFIED - exactly one live inference authority (AIRuntime+OllamaProvider, once gateway_runtime.js:228-229); inference trio + all other Ollama writers stranded/Orca-dormant. No consolidation edit.
+
+**Commit**: 6b67e75f "docs(evidence): AI/inference authority falsification - single live AIRuntime+OllamaProvider owner (ledger 33)" - 1 file, +63 (clean CRLF). Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Encoding: no BOM, 1234 CRLF / 0 bare-LF, ends CRLF. Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean ai_runtime.js+ollama_provider.js; 
+ew AIRuntime = gateway_runtime.js:228 only; 
+ew OllamaProvider = gateway_runtime.js:229 + engine.js:99 (dormant Orca); wave3a (ollama/ai) + embedding + knowledge_search + ingest_boundary green. No code change.
+
+**Canonical AI/inference ruling** (inherit - don't reopen): canonical inference authority = AIRuntime + OllamaProvider, created once gateway_runtime.js:228-229, sole providers for /api/v1/ollama + /ai + EmbeddingService embedding. Any future inference change through the existing AIRuntime singleton; never a second AIRuntime/OllamaProvider, never wire inference_adapter/inference_service/ollama_adapter (stranded) onto the spine, never re-enable Orca ollama auto-discovery (ledger 15).
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: next unresolved production-spine authority (e.g. connector/OAuth/capability registry single-owner, event-read/query surface, ai-workspace authority), IntelligenceWorker pairing. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Connector/Capability/OAuth/Integration Authority Falsification (LEDGER 34 COMMITTED 7733ab8b)
+
+**Continue audit-first program at the next unresolved production-spine authority (connector/capability/OAuth/integration boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**34 Connector/OAuth Falsification COMPLETE** [STAT]:
+- Live single-construction authorities, EACH EXACTLY ONCE on live bootstrap (gateway_runtime.js): ConnectorRegistry :253 (registered google/github/posthog/email/sms :255-275); CapabilityRegistry :294 (composed {oauthManager, connectorRegistry}, provider reg :313); OAuthFlowManager :287 + TokenStore dynamic single :286; IntegrationManager :218 (posthog/email/sms :219-221, LIVE spine-integration subscriber via unified_event_runtime.js, 0 emissions = live-but-idle no real traffic).
+- Competing constructions all STRANDED/DORMANT/TEST: 
+ew CapabilityRegistry() engine.js:61 = ORCA fabric's capability_registry (orchestration/execution/capability_registry.js - DIFFERENT path/class than live connectors one, DORMANT ledger 15); 
+ew IntegrationManager test_wave3a:28,:172 + test_wave3b_p8:146 = TEST-ONLY; generate_capability_registry.js = generator script. No other ConnectorRegistry/OAuthFlowManager/TokenStore construction non-test.
+- FALSE-POSITIVE/CONSOLIDATION-AVOIDED: connectors/capability_registry.js (live) vs orchestration/execution/capability_registry.js (Orca dormant) are SEPARATE modules at separate paths with separate owners - only the connectors one is live; not two live authorities competing.
+- IntegrationManager = live-but-idle (wired spine subscriber, 0 emissions due to no integration traffic) - single-construction, not competing.
+- Verdict: FALSIFIED - exactly one live owner per connector-domain decision (ConnectorRegistry, CapabilityRegistry, OAuthFlowManager+TokenStore, IntegrationManager), each constructed once and composing. No consolidation edit.
+
+**Commit**: 7733ab8b "docs(evidence): connector/capability/oauth/integration authority falsification - single live owner per connector-domain decision (ledger 34)" - 1 file, +63 (clean CRLF, 1297 CRLF/0 bare-LF, ends CRLF; 64 add/1 remove trailing-newline convention). Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; rg each 
+ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = single live site + dormant/test only; connector/oauth/capability routes green (wave3a connectors + capability framework 28/28 + oauth). No code change.
+
+**Canonical connector/OAuth ruling** (inherit - don't reopen): canonical connector catalog = ConnectorRegistry (gateway_runtime.js:253); capability introspection = CapabilityRegistry (connectors/capability_registry.js, :294, composed oauthManager+connectorRegistry); OAuth = OAuthFlowManager+TokenStore (oauth_provider.js, :287/:286); integration emission = IntegrationManager (runtime/integration_manager.js, :218, spine-integration subscriber). Future connector/capability/OAuth/integration change through existing singletons; never a second of any, never wire Orca capability_registry (orchestration/execution) or stranded connector onto the spine.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: event-read/query surface (EventReadAuthority live reader vs other query paths), ai-workspace authority (AIWorkspaceAuthority), witness authority (WitnessAuthority createWitness single live hashing), mission runtime (MissionRuntime live execution authority - complement to scheduler section 28). History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Witness Authority Falsification (LEDGER 37 COMMITTED 15ebed46 + 9877cdb4 hash fix)
+
+**Continue audit-first program at the next unresolved production-spine authority (witness boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**37 Witness Falsification COMPLETE** [STAT]:
+- Two DISTINCT witness decisions, each with exactly ONE live owner:
+  1. **Witness ATTESTATION** (WITNESS_CREATED/WITNESS_REJECTED on the 9-event spine chain) = WitnessWorker (ping-runtime/workers/canonical_workers.js), verified-gated per P0-1/WIT-NEG/Eval-010. NON-HASHING: rg witnessAuthority|WitnessAuthority|createWitness in canonical_workers.js = ZERO hits.
+  2. **Witness HASHING** (createWitness) = WitnessAuthority kernel singleton (runtime/kernel/authorities/witness_authority.js) via gateway shim gateway/witness_authority.js (PATCH_004 pure delegation). Sole LIVE consumer = DeadLetterAuthority (dead_letter_authority.js:35 require './witness_authority', :144 createWitness; constructed once gateway_runtime.js:544 - section 30).
+- Live bootstrap require sweep: rg gateway_runtime.js for ~20 witness-requiring authority files (event_outbox, retry_authority, replay_*, prompt/model/streaming/tool_gateway/execution/inference_witness/witness_registry/verification_pipeline/lineage/transaction_boundary/graph_*/memory_authority) = ZERO; ONLY require('../dead_letter_authority') :90. All ~80 other require('./witness_authority') sites = DORMANT/STRANDED (gateway authority files), KERNEL (kernel twin files), or B7-staged agents (agent_memory_authority/distributed_desktop_agents - not in bootstrap, rg empty).
+- Compiled-TS gateway/replay/kernel/* + TS kernel replay source = KERNEL REPLAY TWIN (sections 16/33), not production spine.
+- Verdict: FALSIFIED - two distinct witness decisions, one live owner each. No second reachable live witness-hashing authority. No consolidation edit. P0-1 witness determinism NOT reopened.
+
+**Commit**: 15ebed46 "docs(evidence): WitnessAuthority falsification - single live witness-hashing authority (ledger 37)" + 9877cdb4 (hash correction). Ledger staged exactly alone each time; P0-1 hoist preserved unstaged (M gateway_runtime.js). Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean dead_letter_authority.js + witness_authority.js; test_dead_letter_wiring 4/4 PASS; canonical_workers.js witness rg = empty. No code change.
+
+**Canonical witness ruling** (inherit - don't reopen): canonical witness attestation = WitnessWorker (spine emitter, verified-gated per P0-1); canonical witness hashing = WitnessAuthority kernel singleton (via gateway shim), sole live consumer DeadLetterAuthority (gateway_runtime.js:544). Never construct a second witness authority, never wire ~80 stranded/kernel witness files onto the live path, never re-enable Orca/Kernel witness spines.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: hash authority (canonical_authority vs crypto.createHash bypass - mutation-bypass lane, not single-owner), MissionRuntime (live execution authority complement to section 28 scheduler), remaining production-spine authorities. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - MissionRuntime Falsification (LEDGER 38 COMMITTED 031f2b57 / final HEAD 55a82a63)
+
+**Objective**: continue the audit-first program at the next unresolved production-spine authority (mission-creation/execution boundary, complement to section 28 scheduler). Audit-first, ledger-only, explicit-allowlist. Real Docker stack UP (ping-gateway/ping-postgres/ollama/brain-qdrant). P0-1/P0-2/P3/S4 frozen; none reopened.
+
+**38 MissionRuntime Falsification COMPLETE** [STAT + EMPR]:
+- Single live durable mission-creation authority = MissionRuntime (ping-runtime/orchestration/mission_runtime.js, .create INSERT INTO ping_missions :79, all transitions in-file: assign :108, running :131, completed :160, failed :174/:218, retry_pending :227, terminal cleanup :256/:279, getPending/Active/Stats/Trace :308/:322/:332/:354/:401). Constructed EXACTLY ONCE gateway_runtime.js:476 (new MissionRuntime({ pool, eventRuntime: unifiedEventRuntime })), initialize :477.
+- Exact reachable path (SAME singleton everywhere): injected MissionScheduler :553, EventToMissionBridge (:577 this._missionRuntime :80, .create(mapping.missionType,...) :124), services.missionRuntime :658, /missions routes :800-801 (routes/missions.js:25 missionRuntime.create(missionType, payload, {priority, createdBy})). Two INGRESS doors (event bridge + HTTP route) onto ONE singleton method = one authority, two doors.
+- Direct-write bypass FALSIFIED: the ONLY non-test INSERT INTO ping_missions in the JS tree is mission_runtime.js:79. Orca mission_compiler (orchestration/execution/mission_compiler.js) builds IN-MEMORY missions into Orca EventQueue via private _createMission() - ZERO ping_missions/MissionRuntime.create refs, never writes durable ping_missions; reachable only via Orca engine.js (discoverOllama:false, dormant - sections 15/33). automatic_mission_generator.js + mission_authority_v2.js = ZERO importers -> STRANDED. No path (including dormant Orca) puts a fresh mission into durable ping_missions outside MissionRuntime.create().
+- Real-runtime micro-test [EMPR]: POST /missions (production HTTP) -> missionRuntime.create() -> missionId d7ce4ef0149c09bb; durable row read back from ping-postgres (MISSION_FALSIFICATION_38|created|1|ledger38-verify|audit-38); /missions/pending + /missions/stats projected SAME row. Cleanup: DELETE 1, marker count 0, /missions/stats back to completed:253 baseline. Zero test artifacts left on live DB.
+- Classified: MissionRuntime = LIVE canonical; Orca mission_compiler = DORMANT (Orca-fabric); automatic_mission_generator / mission_authority_v2 = STRANDED; gateway/test_*.js + evals/EVAL-006 = TEST-ONLY.
+- Ruling: FALSIFIED - exactly one live mission-creation/execution authority; two ingress doors onto the same singleton. No consolidation edit. P0-1 hoist preserved unstaged (M gateway_runtime.js).
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: WorkerRuntime/execution-host authority (dispatch decider complement to sections 28/38), hash/canonicalization mutation-bypass lane, ActivityAuthority/ContextAuthority if reachable from live bootstrap. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Ledger 40: Hash/Canonicalization Mutation-Bypass Lane (COMMITTED f414464e)
+
+**Continue audit-first program at the next unresolved production-spine authority (hash/canonicalization mutation-bypass lane; section-37 next-note).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**40 Hash/Canonicalization Falsification COMPLETE** [STAT]:
+- TWO DISTINCT hashing semantics on live spine, NON-overlapping purpose, each EXACTLY ONE owner (NOT competing authorities):
+  1. SANCTIONED content-address (envelope canonical_hash + object id): canonical_object.js:94-95 CanonicalBytes.serialize -> CanonicalAuthority.hashBytes; :98 objectId = identityAuthority.generateFromCanonicalHash. Both route through kernel singleton (canonical_authority.js shim -> kernel :199 crypto.createHash in AUTHORIZED boundary; identity shim -> kernel generateFromCanonicalHash :51-56). verifyCanonicalObject recomputes :161 (loop closed). Verified: canonical_object routes THROUGH boundary.
+  2. MUTATION-BYPASS durability identity (ping_events.event_id PK, correlation root, causation seed, replay seed): unified_event_runtime.js:83 raw crypto.createHash('sha256').update(JSON.stringify({eventType, source, logical_id|payload})).digest('hex') - unit-proof identity over MESSAGE METADATA (timestamp-stripped logical_id :82 keeps retries idempotent), distinct from payload content-address.
+- unified_event_runtime.js imports ONLY crypto + constitutional_time_authority (:18-19) - NEVER identity_authority/canonical_authority. event_id has ZERO connection to canonical serializer/hash/identity authorities.
+- Live-spine raw crypto.createHash('sha256') sweep: gateway_runtime.js=0, canonical_workers.js=0, unified_event_runtime.js=EXACTLY 1 (:83). generateFromCanonicalHash on live spine (events/workers/knowledge/embedding)=ZERO - identity authority used ONLY by canonical_object.js (envelope), never persisted event identity.
+- Verdict: NOT competing-authority contradiction (single event_id producer, single canonical_hash producer, disjoint purpose). IDENTIFIED MUTATION-BYPASS: live persistence-identity lane routes through raw crypto.createHash instead of canonical authority; envelope content-address lane properly sanctioned. Matches mutation-bypass lane framing (not single-owner).
+- DECISION IMPLICATION (no code change): routing event_id through CanonicalAuthority.hashBytes = CanonicalBytes.serialize semantics + event_id format change = ping_events.event_id PK migration + replay-seed/correlation invariance = BEHAVIOR CHANGE requiring explicit user direction. Recorded, NOT implemented. Deterministic unit-proof durability identity = defensible known design (P6 "event identity nondeterministic" fix added this path).
+
+**Commit**: f414464e "docs(evidence): hash/canonicalization mutation-bypass lane - single identity owners, one raw-bypass site (ledger 40)" - 1 file, +16. Staged exactly 1 ledger file. P0-1 hoist preserved unstaged (M gateway_runtime.js). Encoding: no BOM, 1426 CRLF / 0 bare-LF, ends CRLF. Post-commit staged empty.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean unified_event_runtime.js + canonical_object.js; rg crypto.createHash on live spine = exactly unified_event_runtime.js:83; rg generateFromCanonicalHash on live spine = none; rg identity/canonical authority require in unified_event_runtime.js = none. No code change.
+
+**Canonical hash ruling** (inherit - don't reopen): canonical content-address = CanonicalAuthority.hashBytes (kernel singleton via ping-runtime shim), canonical object identity = identityAuthority.generateFromCanonicalHash (canonical_object.js:98). Persisted event durability identity = unified_event_runtime.js:83 raw unit-proof hash (accepted known design; if ever routed through authority = PK migration, requires direction). Never construct a second hash/identity authority; never reintroduce kernel twins on the live path.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: remaining live retry/DLQ/event-bridge/witness ambiguities (§35/§37 CLOSED - do not reopen), ActivityAuthority/ContextAuthority if reachable from live bootstrap, then lower-value dormant/stranded families (batch 2-3 rulings before reporting). History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-28 Session - Context/Activity Authority Falsification (LEDGER 41 COMMITTED 40884607)
+
+**Continue audit-first program at the next unresolved production-spine boundary (context/activity authority).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**41 Context/Activity Authority Falsification COMPLETE** [STAT]:
+- NO class `ActivityAuthority` exists anywhere; `gateway/activities/*.activity.js` (6 Temporal stubs) have ZERO require sites -> STRANDED (Temporal off-spine).
+- `ContextAuthority` (ping-runtime/orchestration/execution/context_authority.js) constructed EXACTLY ONCE at engine.js:76; ONLY two `_contextAuth` usages in engine.js = :76 construction + :628 pure guard (never calls buildContext/buildPrompt). ExecutionEngine on live bootstrap gateway_runtime.js:338 with discoverOllama:false -> DORMANT, zero method invocation.
+- context_compression_authority.js + context_retrieval_authority.js (gateway root) = DEAD files (distinct classes, zero require sites, never imported).
+- Verdict: FALSIFIED - no live competing context/activity authority. No consolidation edit.
+
+**Commit**: 40884607 "docs(evidence): context/activity authority falsification - no live competing authority (ledger 41)" - 1 file, +16.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean engine.js/context_authority.js/routes/orchestration.js; commissioning 14 scenarios / 53 missions / 0 failed; rg `new ContextAuthority` = engine.js:76 only; rg buildContext/buildPrompt callers on live spine = none; activities + compression/retrieval require = zero. Post-commit staged empty, P0-1 hoist ` M gateway_runtime.js` preserved unstaged.
+
+**Canonical context/activity ruling** (inherit - don't reopen): canonical retrieval-context = HybridSearch + EvidenceAuthority (27); live /context route. ExecutionEngine/ContextAuthority = DORMANT Orca artifact (single construction engine.js:76, discoverOllama:false, no method invocation); activities/*.activity.js STRANDED Temporal stubs; context_compression_authority/context_retrieval_authority DEAD. Never wire Orca/Temporal activities onto spine; never second ContextAuthority. Future context features through live /context + search path only.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: identity/time authority mutation-bypass lane (identity_authority on spine, constitutional_time_authority usage), Loop authority, remaining production-spine authorities. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Ledger 42: Identity/Time Authority Falsification (COMMITTED 57b50090)
+
+**Continue audit-first program at the next unresolved production-spine boundary (identity/time authority mutation-bypass lane; sections 40/41 next-notes).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**42 Identity/Time Authority Falsification COMPLETE** [STAT]:
+- TWO DISTINCT live authorities, each EXACTLY ONE kernel singleton + one pure-delegation shim, NON-overlapping purpose (identity vs time). Both falsified to a single reachable owner on the production bootstrap.
+- IdentityAuthority: kernel singleton EXACTLY ONCE runtime/kernel/authorities/identity_authority.js:324. ping-runtime/authorities/identity_authority.js = PATCH_004 pure-delegation SHIM (subclass + re-export same singleton). Live spine consumer = canonical_object.js:98 objectId = generateFromCanonicalHash (envelope content-address, section 40 sanctioned). ~80 other require sites all dormant/stranded/kernel-twin/test.
+- ConstitutionalTimeAuthority: kernel singleton EXACTLY ONCE constitutional_time_authority.js:128. ping-runtime shim pure-delegation. Live spine consumer = unified_event_runtime.js:19/:130 timestamp = nowAsISOString() for PERSISTED ping_events - canonical time at write boundary, no raw wall-clock.
+- Global construction sweep of new IdentityAuthority/new ConstitutionalTimeAuthority = EXACTLY 2 kernel sites; ZERO in gateway/ping-runtime/workers. gateway_runtime.js has zero direct identity/time construction + zero direct require strings (composes via canonicalization_service + canonical_object + unified_event_runtime).
+- Bypass inherited (NOT reopened, section 40): event durability id = unified_event_runtime.js:83 raw crypto.createHash (accepted lane); envelope content-address = generateFromCanonicalHash + CanonicalAuthority.hashBytes (sanctioned). No new identity/time raw bypass on live path.
+- Verdict: FALSIFIED - exactly one reachable IdentityAuthority + one reachable ConstitutionalTimeAuthority. No second construction, no direct bypass, no divergent live consumer. No consolidation edit.
+
+**Commit**: 57b50090 (ledger auth) + 1-line hash-correction b5b03cc7. Staged exactly 1 ledger file each time; P0-1 hoist M gateway_runtime.js preserved unstaged; post-commit staged empty, no BOM, mixed-EOL preserved (git diff 22 insertions / no force rewrite).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean on identity shim + time shim + unified_event_runtime + canonical_object (exit 0 all 4); rg construction sweep = exactly 2 kernel sites; boot-load gate GATEWAY_RUNTIME LOADS OK. No code change.
+
+**Canonical identity/time ruling** (inherit - don't reopen): canonical identity = kernel IdentityAuthority singleton (via ping-runtime shim), consumer canonical_object.generateFromCanonicalHash (envelope identity); canonical time = kernel ConstitutionalTimeAuthority singleton (via ping-runtime shim), consumer unified_event_runtime.nowAsISOString (spine timestamp). Persisted event durability id = unified_event_runtime.js:83 raw unit-proof hash (accepted section 40 lane). Never construct a second identity/time authority; never wire ~80 dormant/stranded/kernel-twin identity files or wall-clock bypass onto live path.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: WorkerRuntime/execution-host authority (dispatch decider complement to sections 28/38), remaining live bounds (connector/OAuth 34, embedding 32, hash 40, witness 37, mission 38, kernel construction 26, DLQ 30, knowledge 31, scheduler 28, AI 33, event-write 29, context 41, identity/time 42). History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-28 Session - Worker/Execution-Host Authority Falsification (LEDGER 43 COMMITTED 5cc1fc05 + 74dc8011)
+
+**Continue audit-first program at the next unresolved production-spine boundary (worker-execution host; complement to §28 scheduler + §38 mission-runtime).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**43 Worker/Execution-Host Falsification COMPLETE** [STAT]:
+- Sole live worker-execution host = WorkerRuntime (ping-runtime/workers/worker_runtime.js:14). Constructed EXACTLY ONCE gateway_runtime.js:480 (`new WorkerRuntime({pool})`), 8 canonical workers via registerCanonicalWorkers :509/:513, injected MissionScheduler :554 + services :659. No second construction (rg: only EVAL-007 + test_* TEST-ONLY).
+- Sole production dispatch call site = mission_scheduler.js:250 `await this._workerRuntime.dispatch(event)` (single live scheduler §28). Only other `.dispatch(` = worker_runtime.js:157 inside `_poll()` - DISABLED by design (start() :53 never invokes; comment :50-51 'MissionScheduler is the single dispatch path'). dispatch decider (:78) = `eventTypes.includes(eventType)`; empty-eventTypes = dormant (never catch-all).
+- Competing hosts falsified: WorkerRegistry/worker_registry = ZERO importers -> DORMANT; background_workers = wiring.js (non-prod DI §27) + verify/07_workers.js -> STRANDED; WorkerPort = engine.js:29 (Orca discoverOllama:false §15/33/41) -> DORMANT; IntelligenceWorker = empty eventTypes -> DORMANT (§14/17). No direct handle() bypass.
+- Verdict: FALSIFIED - exactly one live worker-execution host, exactly one dispatch path. No consolidation edit.
+
+**Commit**: 5cc1fc05 (auth) + 74dc8011 (hash correction). Staged exactly 1 ledger file each time; P0-1 hoist ` M gateway_runtime.js` preserved unstaged; post-commit staged empty. Encoding discipline held (no BOM, CRLF, 19+1 insertions only).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean worker_runtime.js + canonical_workers.js + mission_scheduler.js; rg construction/dispatch/competing-host sweeps = single live site each; commissioning 14 scenarios / no failures. No code change.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: event-bridge/EventToMissionBridge falsification, ai-workspace authority, remaining production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-28 Session - Event-Bridge / EventToMissionBridge Falsification (LEDGER 44 COMMITTED 8a17cac7 + b06edbd1)
+
+**Continue audit-first program at the next unresolved production-spine boundary (event-routing / mission-creation bridge; complement to §28 scheduler + §38 mission-runtime + §43 worker-run).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**44 Event-Bridge Falsification COMPLETE** [STAT]:
+- TWO DISTINCT bridge authorities, each EXACTLY ONE live production construction, NON-overlapping purpose (NOT competing - disjoint edges of the spine):
+  1. **EventBridge** (ping-runtime/events/event_bridge.js:20) = EXTERNAL-STORE -> SPINE re-emitter. Polls repository_events + canonical_events (:108-123), re-emits into ping_events via eventRuntime.emit (:222/:330), cursor tracking (:65/:72/:300). Constructed ONCE gateway_runtime.js:462, init :468, start :469. Sole requirer = gateway_runtime.js. Sink = eventRuntime (spine), NEVER MissionRuntime.
+  2. **EventToMissionBridge** (ping-runtime/orchestration/event_to_mission_bridge.js:72) = SPINE -> MISSION creator. Listens EVENT_MISSION_MAP (:100), calls _missionRuntime.create(...) (:124) - sole bridge call into MissionRuntime.create (§38 two-ingress-door: bridge + HTTP /missions). Constructed ONCE gateway_runtime.js:575, start :579. Sole requirer = gateway_runtime.js. Sink = MissionRuntime, never spine-output.
+- Both injected into the SAME services object gateway_runtime.js:660 (eventBridge, missionScheduler, eventToMissionBridge). mission_event_bus / MissionEventBus = ZERO refs -> DORMANT. No second construction non-test.
+- Verdict: FALSIFIED - two distinct live bridge authorities, one construction each, disjoint input/output edges. No consolidation edit.
+
+**Commit**: 8a17cac7 (auth) + b06edbd1 (hash correction). Staged exactly 1 ledger file each time; P0-1 hoist ` M gateway_runtime.js` preserved unstaged; post-commit staged empty. Encoding: no BOM, CRLF=1499/bareLF=6 preserved, diff clean (§44 only).
+
+**Gates**: gateway_runtime LOADS OK; node --check clean event_bridge.js + event_to_mission_bridge.js; rg construction/requirer sweeps = single live site each; commissioning/pipeline_bridge green. No code change.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Batch 3 complete (§42 identity/time, §43 worker-host, §44 event-bridge). Candidates: ai-workspace authority (AIWorkspaceAuthority), remaining production-spine authority. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Ledger 45: AIWorkspace Authority Falsification (COMMITTED 77b47942 + 360f79f5)
+
+**Complete the audit-first falsification batch (3rd ruling) at the next unresolved production-spine business authority (ai-workspace boundary).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**45 AIWorkspace Authority Falsification COMPLETE** [STAT]:
+- Single live ai-workspace authority = AIWorkspaceAuthority (ping-runtime/business/ai_workspace_authority.js:36). Constructed EXACTLY ONCE gateway_runtime.js:411. initialize :412.
+- SOLE /ai-workspace route gateway_runtime.js:779 -> routes/ai_workspace.js (7 endpoints, all delegate to single instance).
+- SOLE writer to ai_workspace_results = ai_workspace_authority.js:80 (rg INSERT INTO ai_workspace_results = single site). No other file writes that table.
+- Sole production requirer = gateway_runtime.js:53. No second construction non-test. No competing workspace-named class anywhere (rg class .*workspace = only AIWorkspaceAuthority).
+- Dependencies composition-not-competition: huggingfaceAdapter (business-rule model consumer, not competing spine inference owner - section 33 AIRuntime+OllamaProvider), canonicalEventEnvelope (section 16/26 kernel-layered).
+- Verdict: FALSIFIED - exactly one live ai-workspace authority, one construction, one route surface, one table writer. No consolidation edit.
+
+**Commit**: 77b47942 (auth) + 360f79f5 (hash correction). Staged exactly 1 ledger file each time; P0-1 hoist M gateway_runtime.js preserved unstaged; post-commit staged empty; no BOM; clean 22-line then 1-line diffs.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean ai_workspace_authority.js + routes/ai_workspace.js; rg construction/requirer/table-write sweeps = single live site each. No code change.
+
+**BATCH 4 COMPLETE** (ledger 43 worker-host, 44 event-bridge, 45 ai-workspace): all three falsified clean, hash-corrected, committed with only the ledger staged. P0-1 hoist preserved.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: remaining production-spine authority (e.g. event-read/query surface, capability interplay, or next business authority). History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-28 Session - Ledger 46: Event-Read/Query Authority Falsification (COMMITTED 6adaaabc + 3e3aa6c9)
+
+**Complete the audit-first falsification batch at the next unresolved production-spine boundary (event read/query surface; complement to 29 event-write + 44 event-bridge).** Audit-first, ledger-only, explicit-allowlist, no code changes.
+
+**46 Event-Read/Query Falsification COMPLETE** [STAT]:
+- TWO DISTINCT read authorities, each EXACTLY ONE live production construction, NON-overlapping table scope (NOT competing - disjoint read surfaces):
+  1. **EventReadAuthority** (ping-runtime/events/event_read_authority.js:17,20 PATCH_003 shim -> kernel base runtime/kernel/event_read_authority.js) = reads **repository_events** EXCLUSIVELY (:43,:74,:108,:130,:162,:191,:340 + context stored-procs). Constructed ONCE gateway_runtime.js:382.
+  2. **UnifiedEventRuntime** (spine) = reads **ping_events** EXCLUSIVELY via query() :207, getChildren :248, getDescendants :271/:276, getAncestors :303/:308, getCorrelationGroup :332. Constructed ONCE gateway_runtime.js:433.
+- Route consumers: /events GET list/recent/stats/by-stream -> EventReadAuthority (repository_events) with RAW pool.query ping_events FALLBACK (events.js:19,34,46,65); /events/:eventId/children|descendants|ancestors + /correlation/:id -> eventRuntime (ping_events, P0-A d03271dd); /mc/* -> unifiedEventRuntime.query/getCorrelationGroup.
+- Complementary readers (COMPOSE not compete - shared injected pool): EvidenceAuthority :54,:95 (ping_events, section 27); MissionRuntime.getTrace :370,:384 (ping_events, section 38); EventBridge :156,:258 (repository/canonical_events -> spine, section 44).
+- **DOCUMENTED ASYMMETRY (not a contradiction):** POST /events writes ping_events via eventRuntime.emit (events.js:79, section 29) but GET /events list reads repository_events (EventReadAuthority) with ping_events fallback; causal traversal reads route through spine. Per-table single-owner holds; asymmetry is a known layering artifact, no consolidation edit.
+- canonical_events.js VERIFIED NO READ TARGETS (zero pool/query/SELECT) - /canonical-events is NOT a competing reader.
+- Verdict: FALSIFIED - two distinct read surfaces, single live owner each, disjoint tables. No consolidation edit. TODO pending: none.
+
+**Commit**: 6adaaabc (auth) + 3e3aa6c9 (hash correction). Staged exactly 1 ledger file; P0-1 hoist ` M gateway_runtime.js` preserved unstaged; post-commit staged empty; no BOM, mixed-EOL preserved (1544 CRLF/6 bare-LF), 23-line clean diff.
+
+**Gates**: gateway_runtime LOADS OK; node --check clean event_read_authority.js + unified_event_runtime.js; rg construction/requirer sweeps = single live site each; /events + /mc routes green (events_routes 8/8). No code change.
+
+**Canonical event-read ruling** (inherit - don't reopen): canonical repository_events reader = EventReadAuthority (kernel singleton via shim, gateway_runtime.js:382); canonical ping_events reader = UnifiedEventRuntime traversal (spine, gateway_runtime.js:433). Future read changes through the existing authorities; never a second reader per table, never wire stranded readers onto live path.
+
+**Next** (audit-first, dependency order): continue resolved-unit confirmation. Candidates: event-read/query surface now CLOSED (46); remaining production-spine authority / business authority. History rewrite stays HARD-BLOCKED pending user direction.
+
+
+### 2026-08-28 Session - Ledger 52 Integration/Connector Emission-Routing + /context closed-by-composition (COMMITTED)
+
+**Continue audit-first program; §52 (integration/capability/connector emission-routing) CLOSED + /context verified closed-by-composition (no new boundary).** Ledger-only, explicit-allowlist, no code changes.
+
+**52 Integration/Connector Falsification COMPLETE**:**
+- TWO DISTINCT LIVE surfaces, each EXACTLY ONE production construction at gateway_runtime.js, NON-overlapping purpose:
+  1. **IntegrationManager** (:218) + PostHog/Email/SmsIntegration (:219-221) = EXTERNAL EMISSION-ROUTING authority, invoked by spine emit() step 7 -- SOLE live call site = unified_event_runtime.js:179 (whole-tree rg integrationManager.emit( = exactly 1). Sinks policy-gated (isAllowedEventForIntegration + redactPayload). §34 established live-but-idle (0 emissions, no integration traffic).
+  2. **ConnectorRegistry** (:253) + google/github/posthog/email/sms Connector (:255-275) = CAPABILITY/INTROSPECTION CATALOG, READ-ONLY (register/list/getStats only, NO send/emit). Composed into CapabilityRegistry (:294) + /connectors routes (:806).
+- Business external events flow §51 ConnectorEmitter -> spine -> step7 -> IntegrationManager.emit. ConnectorRegistry never sends.
+- Verdict: FALSIFIED - exactly one live integration-emission-routing authority (IntegrationManager, one construction + one spine call site) and exactly one live capability catalog (ConnectorRegistry, read-only). No consolidation edit.
+- Commits: main `94fe121d` (1 file, 14 insertions) + hash-correction `5cdde739` -- both ledger-only, staged set empty afterward. Encoding: no BOM, CRLF=1668/bareLF=6 preserved (same 6 pre-existing bare-LF). P0-1 hoist + AGENTS.md still working-tree-only/unstaged.
+
+**/context closed-by-composition (verified, NO new ledger entry - would be redundant)**:
+- gateway/routes/context.js is a PURE FACADE over eventReadAuthority (7 handler methods: getRecentEventsForContext / getWorkerStatusForContext / getDailyActivityForContext / getLatestSummariesForContext / getRecentFailuresForContext / getModelMetricsForContext) + constitutionalTimeAuthority (nowAsISOString date derivation). Loads ONLY express + route_middleware + constitutionalTimeAuthority; constructs NO new authority, no competing retrieval path.
+- Constructed gateway_runtime.js:682 with services.eventReadAuthority (single arg); 503 degraded fallback :693.
+- Both composited authorities already falsified single-owner: eventReadAuthority (kernel singleton via shim, 46), constitutionalTimeAuthority (kernel singleton via shim, 42). EventReadAuthority methods (getRecentEventsForContext etc.) newest addition at kernel event_read_authority base.
+- Verdict: /context routes through already-single-owner authorities; NOT a new boundary authority. Closed-by-composition; no § entry authored (avoids forced archaeology).
+
+**Falsification program coverage now COMPLETE across all production-spine boundaries**: 26 construction, 27 search/evidence, 28 scheduler, 29 event-write, 30 DLQ/retry, 31 knowledge-write, 32 embedding/Qdrant, 33 AI/inference, 34 connector/OAuth, 35/46 event-read, 37 witness, 38 mission-runtime, 40 hash/canonicalization, 41 context/activity, 42 identity/time, 43 worker-host, 44 event-bridge, 45 ai-workspace, 47 governance/validation, 48 system (documented divergence), 49 ingestion front-doors, 50 business authorities, 51 business emitters, 52 integration/connector. No unresolved production-spine boundary remains.
+
+**Next**: audit-first program now at natural completion for the production spine. Awaiting user direction: (a) commit further low-value dormant/stranded archaeology batches, (b) resume live E2E deep-verification (Docker UP), (c) proceed to another program phase. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-08-30 Session - Ledger 53: Fresh-Event LIVE EMPIRICAL Falsification (COMMITTED 22ff513e)
+
+**Continue audit-first program; static spine falsification EXHAUSTED (26-52); this is the first fresh-event live empirical unit.** Ledger-only, explicit-allowlist, no code changes. Real Docker stack UP (ping-gateway :8080, ping-postgres :5433, brain-qdrant :6333, ollama :11434). P0-1/P0-2/P3/S4 + all 26-52 frozen; none reopened.
+
+**53 Fresh-Event LIVE EMPIRICAL VALIDATION COMPLETE** [EMPR]:
+- One canonical-boundary POST /ingest (POSTGRES source, endpoint_empirical_falsification_04, documentId falsify-2026-0830-001) -> 201 {eventId 48bcfdf9a9ab..., objectId REVIEW_RECEIVED_de8a410606232f31, canonicalHash de8a4106..., namespace tenant::hpp}. Namespace preserved through the boundary.
+- FULL 9-event causal chain empirically verified row-by-row in ping_events under correlation 48bcfdf9..., each causation_id = immediate predecessor's event_id: REVIEW_RECEIVED 48bcfdf9a9ab -> OBSERVATION_CREATED b230ab5f810a -> CLAIM_CREATED b05bc74175f4 -> CLASSIFICATION_CREATED 30a7a750c8ad -> RECOMMENDATION_CREATED 031a99e152f1 -> PROJECTION_CREATED a002c92f076e -> REPLAY_COMPLETED 3b3a1f03847b -> WITNESS_CREATED 36e2e86eb4bc -> LINEAGE_CREATED f9652b7715fb.
+- Replay provenance (852fee10): /mc/replay/stats 37->38 total_replays, kernel_verified 6->7, witness_rejected 0; provider block replays_processed 0->1, events_replayed 1, failures 0 - EXACTLY ONE ingest -> EXACTLY ONE provider replay (singleton identity conserved). Witness attestations 37->38, refusals 0. Trace: groupSize 9, single replay (KernelReplayExecutionProvider, verified:true, kernel_verified, eventType PROJECTION_CREATED, event_count 1, fingerprint sha256:8dffa720..., witness_root a695370a70..., canonical_input_hash replay-dc6abf4a5d5c, deterministic_execution_identity==fingerprint, namespace/correlation preserved).
+- Projection (32): Qdrant `knowledge` (768 Cosine, points_count 112, indexed_vectors_count 0 - below 10000 HNSW threshold: explains point-scroll not vector-count asserts) fresh point 031a99e1-52f1-8106-e7fb-782e9c1a0b28 = UUID-encoded RECOMMENDATION_CREATED id; payload kind/namespace/confidence 0.5/confidence_source inherited/documentId; embedding ollama/nomic-embed-text. EmbeddingService singleton wrote.
+- Knowledge graph write (31): /knowledge/search KG-context leg returned verified:true, source:knowledge, rank_score 0.25, confidence 0.5, status candidate, evidence = fresh event IDs, namespace tenant::hpp - KnowledgeGraph.addNode single-owner path.
+- Hybrid search + evidence verify (27): stats {semanticHits:3, kgHits:5, verified:0, rejected:3}. KG nodes verified:true (they ARE backing record). Semantic Qdrant hits verified:false + rejected:3 = EvidenceAuthority verify() legitimately refused ghost hits (older OBSERVATION rows lack matching metadata.canonical_hash) - the 27 documented strictness surfacing live, NOT a defect.
+- Mission lifecycle (38) / worker host (43) / event-bridge (44): EventToMissionBridge -> MissionScheduler -> WorkerRuntime.dispatch, 8 worker executions 0 failed. ping_events total 1338 (9-chain + mission-lifecycle noise).
+- Verdict: every live production-spine surface re-surfaced as expected empirical data for one fresh ingest. NO competing live authority, NO invariant contradiction. No consolidation edit.
+
+**Commit**: 22ff513e "docs(evidence): fresh-event live empirical validation - full 9-event causal chain against real spine (ledger 53)" - 1 file, +72 (clean CRLF 1739/6 bare-LF, no BOM, content-only diff verified via --ignore-all-space --ignore-cr-at-eol; 72 insertions exactly). Staged exactly 1 ledger file. P0-1 hoist ` M gateway_runtime.js` + AGENTS.md preserved unstaged. Post-commit staged empty. (An errant `rm` call on the ledger FAILED safely - duplicate -ErrorAction param - file untouched; verified present + clean.)
+
+**Next** (audit-first, dependency order): continue fresh-event/live empirical units, or lower-value dormant/stranded archaeology batches, or resume another program phase per user direction. History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-30 Session - Ledger 54: Ghost-Hit Mechanism + Graph-Projection Subset Falsification (COMMITTED eff11cd8)
+
+**Continue audit-first program; closes the 53 ghost-hit mechanism (root cause of verified:false hits) with backing-row identity plus graph-projection subset.** Ledger-only, explicit-allowlist, no code changes. Real Docker stack UP (ping-gateway :8080, ping-postgres :5433, brain-qdrant :6333, ollama :11434). All 26-53 frozen; none reopened.
+
+**54 Ghost-Hit Mechanism + Graph-Projection Subset Falsification COMPLETE** [EMPR + STAT]:
+- **Ghost-hit mechanism FULLY PINNED**: Qdrant point 48bcfdf9-a9ab-fc5f-2644-85df3b39431f (kind=REVIEW_RECEIVED, ns=tenant::hpp, scroll-proven) carries canonical_hash=de8a410606232f31.... Its exact backing ping_events REVIEW_RECEIVED row carries the SAME metadata.canonical_hash -> EvidenceAuthority.verify() traces point->backing row, canonical_hash MATCH -> verified:true. The verified:true hit is the canonically-hash-matched root, NOT a defect.
+- **Why the 8 chain events are ghost hits**: all downstream backing rows (OBSERVATION/CLAIM/CLASSIFICATION/RECOMMENDATION/PROJECTION/REPLAY/WITNESS/LINEAGE) have EMPTY metadata.canonical_hash (verified row-by-row via SQL). Only the canonicalization boundary (REVIEW_RECEIVED) writes canonical_hash; worker BaseWorker._emit transport (canonical_workers.js) does NOT propagate it. Structurally exactly ONE chain point per ingest can ever be verified:true.
+- **Graph-projection subset [STAT+EMPR]**: exactly 4 knowledge_nodes for the fresh chain - REVIEW_RECEIVED 48bcfdf9, OBSERVATION_CREATED b230ab5f, CLAIM_CREATED b05bc741, RECOMMENDATION_CREATED 031a99e1 - all status=candidate conf=0.5 ns=tenant::hpp correlation_id=48bcfdf9...; CLASSIFICATION/PROJECTION/REPLAY/WITNESS/LINEAGE NOT graph-projected (consistent with gateway_runtime.js:594-602 indexable-types subset).
+- **46 DEAD-PRIMARY CORRECTION [EMPR]**: repository_events=0 (permanently empty), ping_events=1338. GET /events line-18 condition events.length===0 is ALWAYS TRUE -> the raw pool.query('SELECT * FROM ping_events...') fallback (events.js:19-21) is the EFFECTIVE live read surface. EventReadAuthority's repository_events read is a permanently-dead primary.
+- **Live priority scale re-confirmed [EMPR/STAT]**: ping_missions for chain: priority 3:1 (REVIEW_RESPONSE), 2:3 (CLAIM/CLASSIFICATION/RECOMMENDATION), 1:4 (replay/witness/lineage); int 0-3 single-scale, higher=urgent; /events/recent(minutes:600) returns 41 events.
+- **Qdrant point-level payload fields scalar-named**: pt.id, payload.kind, payload.namespace, payload.confidence, payload.canonical_hash, payload.payload.source, payload.documentId (NOT payload.id/payload.event_id/payload.metadata.canonical_hash). Scroll-verification shows exactly 2 REVIEW_RECEIVED points in 'knowledge' collection: 48bcfdf9-... (ch=de8a4106...) and 94dd5519-... (ch=cd18f136...).
+- **/correlation/{id} returns HTTP 404** (documented route absence, not a blocker); authoritative causal source = SQL.
+- Verdict: every live production-spine surface re-surfaced as expected empirical data for one fresh ingest; ghost hits structurally explained, NOT a defect; graph-projection subset confirmed single-owner. No competing live authority, no invariant contradiction. No consolidation edit.
+
+**Commit**: eff11cd8 "docs(evidence): ghost-hit mechanism + graph-projection subset falsification - structurally explained (ledger 54)" - 1 file, +15/-1 (clean CRLF 1754/6 bare-LF, no BOM, content-only diff verified via --ignore-all-space --ignore-cr-at-eol; the -1 = prior terminal line gained trailing newline). Staged exactly 1 ledger file. P0-1 hoist  M gateway_runtime.js + AGENTS.md preserved unstaged. Post-commit staged empty; ledger CLEAN.
+
+**Next** (audit-first, dependency order): continue fresh-event/live empirical units or lower-value dormant/stranded archaeology batches per user direction. Candidates: canonical_hash propagation to downstream chain events would flip all 8 ghost hits to verified:true (a behavior change = requires user direction, not a silent fix), B7 staged-renames commit (low value, already verified), Live E2E full initialize() deep-verification (Docker UP). History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-08-31 Session - Ledger 58: ContextAuthority /context Facade Live-Vacuous Readback (COMMITTED f444ba16)
+
+**58 ContextAuthority /context facade live-vacuous readback FALSIFICATION** [EMPR + STAT]:
+- Live-mounted 200 facade, structurally incapable of returning spine data: /context route group (createContextRoutes(services.eventReadAuthority), gateway_runtime.js mount L682/container 672) is a pure facade over EventReadAuthority (sections 46/52 - reads repository_events EXCLUSIVELY via stored procedures). Against current deployment (docker ping-gateway :8080, same live ping_runtime spine as 57), every facade sub-route returns EMPTY while spine holds 1339 real events: /context/recent-events {"events":[]} 200, /context/worker-status {"workers":[]} 200, /context/recent-failures {"failures":[]} 200, /context/model-metrics {"metrics":[]} 200.
+- Mechanism - non-existent stored functions, error-swallowed into empty: EventReadAuthority kernel base methods getRecentEventsForContext :215 / getWorkerStatusForContext :230 / getRecentFailuresForContext :278 / getModelMetricsForContext :293 each run SELECT FROM <stored_function>() inside try/catch that returns [] on ANY error. Live DB (ping-postgres) has ZERO get_*_context stored functions (pg_proc 0 rows). Gateway logs confirm failure fires per call: "function get_worker_status_for_context() does not exist" + identical for recent events / recent failures / model metrics.
+- Live spine unaffected: /events, /mc/*, /knowledge/* all serve 1339-event spine normally. Facade vacancy ISOLATED to /context group's stored-proc backing. ping_events=1339, repository_events=0, canonical_events=0 (section 54 re-confirmed).
+- Distinct from section 46 (static asymmetry) + section 54 (repo_events empty + GET /events fallback). 58 = FIRST direct live readback of the /context facade surface: returns empty not for lack of spine data but because its sole backing stored-procedure set does not exist in deployed DB - facade degrades to a permanent no-op.
+- Verdict: no competing live authority, no invariant contradiction, no corruption - LIVE-BUT-VACUOUS facade. Stored-proc read layer (:215,:230,:278,:293) never provisioned as DB objects live. No code change, no consolidation edit. Creating stored functions OR rerouting facade to ping_events = BEHAVIOR CHANGE requiring user direction; NOT applied (no-silent-fix).
+- Gates: gateway_runtime LOADS OK; pg_proc confirm zero get_*_context; docker logs show exact 4 stored-function-does-not-exist errors 1:1 to 4 facade ROUTE entries; /events /mc /knowledge return 200 with 1339-event data. No code change.
+- Commit: f444ba16 (ledger-only, 14 insertions, no BOM, CRLF with pre-existing 6 bare-LF preserved, content-only diff). P0-1 hoist M gateway_runtime.js + AGENTS.md preserved unstaged. Post-commit staged empty.
+
+**Next** (audit-first, dependency order): continue fresh-event/live empirical units or lower-value dormant/stranded archaeology batches per user direction. Candidates: canonical_hash propagation to downstream chain events (behavior change, needs direction), B7 staged renames commit, Live E2E full initialize() deep-verification (Docker UP). History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-09-01 Session - Ledger 64: Deployment Registry Round-Trip LIVE EMPIRICAL Falsification (COMMITTED a0dd79d8)
+
+**64 Deployment Registry Round-Trip Falsification** [EMPR]:
+- Round-trip live empirical test of `ping-runtime/runtime/deployment_registry.js` against real Postgres (ping-postgres :5433). S64 section byte-appended to ledger (205,850 bytes total, 28 insertions, whitespace-agnostic clean).
+- 4 defects identified: (1) `updated_at` set at plan time (`$:2 = ${Date.now()}`) — fires during INSERT attempt, not on success; (2) canonical-URI-vs-uuid format mismatch (`deployment://audit63/s64-probe` vs `uuid::uuid_generate_v4()` PK) — `canonicalizeId()` produces URI PK but INSERT injects raw uuid; (3) latent `this._postgres` reference (L230-237) — register will throw if `_postgres` not yet initialized; (4) missing-deployment transition returns 500, not 404.
+- 9 live probes executed; all captured with status + response body.
+- DELETE surface absent: 8 deployment routes, zero DELETE method. Cleanup via direct `docker exec psql`.
+- FK enforced live: INSERT with missing tenant → `deployment_registry_tenant_id_fkey` violation.
+- Registry final state: 0 rows (probe row deleted twice, count verified each time). Tenant `audit63` left in tenant_registry (§63 precedent).
+- Verdict: defects confirmed, NOT a contradiction in the falsification sense — canonicalization concern exists but is not a live competing authority. No consolidation edit.
+- Gates: gateway_runtime LOADS OK; node --check clean deployments.js + deployment_registry.js; regression unchanged; commit ledger-only.
+- Commit: a0dd79d8 (ledger-only, 28 insertions). P0-1 hoist M gateway_runtime.js + AGENTS.md preserved unstaged. Post-commit staged empty.
+
+**Next** (audit-first, dependency order): continue per user direction. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-09-01 Session - Ledger 67: Tenant Registry Round-Trip LIVE EMPIRICAL Falsification (COMMITTED 05d61033)
+
+**67 Tenant Registry Round-Trip Falsification** [EMPR]:
+- Live round-trip of `ping-runtime/runtime/tenant_registry.js` (P003 TenantRegistry) against real Postgres (ping-postgres :5433) via production HTTP (ping-gateway :8080). Temp probe script `tenant67_probe.js` (C:\Users\nolan\AppData\Local\Temp\opencode\), zero repo code changes. audit63 tenant retained (63 precedent); probe tenant audit67 cleaned up after capture.
+- F1 register: POST /tenants -> 200, raw tenant_id persisted (durable row verified: audit67|Ledger 67 Probe|active|production|2026-09-01 14:48:06.623). F2 resolve GET 200. F3 list GET 200 (audit63 + audit67).
+- RF-1 CONFIRMED (canonicalization, 64 class #2): PUT /tenants/audit67 -> 500 {"error":"Tenant audit67 not found"}. executeUpdateTenant (:131) canonicalizes to tenant://{id} for WHERE; register stored raw tenant_id; UPDATE matches 0 rows. Canonical-URI write path cannot match a raw-id-registered tenant.
+- RF-2 CONFIRMED (latent _postgres defect): POST /tenants/audit67/heartbeat -> 500 {"error":"Cannot read properties of undefined (reading 'query')"}; DELETE /tenants/audit67 -> 500 same error. constructor (:20) sets only this._storage; executeRecordHeartbeat (:171) + executeRemoveTenant (:184) reference this._postgres (never assigned). health() (:208) swallows into {healthy:false}.
+- F4 row-still-exists: GET after failed DELETE -> 200 row present (delete never executed). Count 2 -> cleanup DELETE -> remaining 1 (audit63).
+- Verdict: three first-hand live-falsified defect classes (register-path canonicalization mismatch; latent _postgres on heartbeat/remove; PUT canonical-URI dead-write for raw-id tenants). NOT a contradiction - single live registry authority (34/63/64/65 family). No code change, no consolidation edit, no silent fix (behavior changes require user direction).
+- Gates: committed as docs-only unit; staged set exactly 1 ledger file; P0-1 hoist preserved unstaged; 128 pre-existing dirty entries untouched; encoding no-BOM CRLF.
+- Commit: 05d61033 (ledger-only, 13 insertions). Post-commit staged empty.
+
+**Next** (audit-first, dependency order): continue per user direction. Candidates: B7 staged renames commit (low value, already verified), December/remaining dormant archaeology, or another program phase. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-09-01 Session - Ledger 68: Customer Registry Round-Trip + EventBridge Cursor/Namespace Defects (APPENDED, COMMIT PENDING)
+
+**Objective (mandate)**: ledger-only, no code changes; append §68 after §67. CEO verdict at end: audit DONE; defects falsified; do NOT rewrite history, do NOT silently patch; evidence captured; commit pending only.
+
+**68 Customer Registry Round-Trip Falsification COMPLETE** [EMPR]:
+- Live round-trip of ping-runtime/business/customer_authority.js against real Postgres (ping-postgres :5433) via production HTTP (ping-gateway :8080). Probe bodies at %TEMP%\ledger68_customer.json + ledger68_customer2.json. Zero repo code changes.
+- F1 (tenant::audit68) + F2 (tenant::hpp): POST /customers -> 200, persisted; response read-back verified; CUSTOMER_* events emitted via _emitEvent (customer_authority.js :540-551) + CustomerEmitter (business_emitters.js :22-35) through the canonical boundary. Idempotent re-POST/update + cross-tenant isolation validated.
+- ROOT CAUSE #1 (cursor skip): EventBridge _bridgeCanonicalEvents (event_bridge.js :242-248) selects processed = FALSE AND event_id >  ORDER BY event_id ASC and advances a UUID cursor. Canonical event with event_id sorting behind the stored cursor is stranded forever while remaining processed = FALSE. Chain verified in canonical_events (tenant::audit68 seq 1, tenant::hpp seq 1) + ping_events; bridge DEBUG cursor count stayed 1; stranded CUSTOMER_UPDATED event 924fe41e-ac94-5dca-bcee-a0474c042dcd behind cursor 9bf61cbe-2a04-514f-8780-7385c718c71d.
+- ROOT CAUSE #2 (namespace mapping): bridged rows land with namespace = core::system; event_bridge.js :289 stores tenant_id ONLY in metadata, never maps tenant_id -> Ping event namespace. Bypasses the single-namespace-owner law at re-emit (canonicalization_service single-owner). Deliberately NOT silently fixed.
+- NOT the cause: executeEmitEvent + canonical envelope ON CONFLICT DO NOTHING (:172-180) — CUSTOMER_UPDATED directly confirmed in canonical_events as tenant::audit68, sequence 2; envelope persisted correctly.
+- Probe cleanup complete + verified 0 remaining: knowledge_nodes 2, ping_missions 2, ping_events 2, canonical_events 3, customers 2, bridge cursor state 1 (event_processing 0 rows throughout).
+- Verdict: two first-hand live-falsified defect classes (cursor skip + namespace mapping); NOT a contradiction - single live bridge authority (section 44). No code change, no consolidation edit, no silent fix.
+- Infra note (not a defect): /health unhealthy only for qdrant ("error":"fetch failed") + embedding ("not_initialized"); gateway/event_governance/event_runtime healthy.
+- Gates: ledger-only append; pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF; HEAD unchanged 05d61033; §68 closes with commit pending.
+
+**Next** (per CEO verdict): ledger 68 complete, pending commit ONLY. Awaiting explicit direction on committing §68 (ledger-only allowlist). No history rewrite; defects NOT patched (captured as falsified live findings). Prior program items open: B7 staged renames commit (low value), dormant/stranded archaeology batches. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-09-01 Session - Ledger 69: Project Routes 500 Failure - asyncHandler Arity Mismatch (APPENDED, COMMIT PENDING)
+
+**Objective (mandate)**: ledger-only, no code changes; append §69 (project routes 500 falsification) after §68. Root cause verified first-hand. Fix deferred. Commit pending only.
+
+**69 Project Routes Round-Trip Falsification** [EMPR + STAT]:
+- Live probe of the project route boundary via production HTTP (ping-gateway :8080) against real Postgres (ping-postgres :5433). Probe script %TEMP%\ledger69_probe.js (F1-F11), zero repo code changes. EVERY executed /projects route returned HTTP 500 {"error":"handler is not a function"}. Captured entries (ledger69_probe.out.json, exactly 4): [F1-create] POST /projects (tenant::audit69), [F8-list] GET /projects (audit69), [F10-stats] GET /projects/stats (audit69), [F11-missing404] GET /projects/{nonexistent-id} (audit69). F2-F7/F9 absent from output: create/update/list-all/id-route all 500, so no subsequent steps could build on them; F11's expected 404 also never surfaces because the 500 fires before any handler logic runs.
+- ROOT CAUSE - asyncHandler arity mismatch (first-hand source read): route_middleware.js:19 `function asyncHandler(routePath, handler)` (two-arg contract), :29 `const result = await handler(req, res);` = the throw site when `handler` binds undefined, :36 `ROUTE ERROR: ${routePath}` = why gateway logs print the handler function source in the path slot (single-arg call binds the fn to routePath). routes/projects.js:17 imports { asyncHandler }; factory createProjectRoutes(projectAuthority) :19; ALL FOUR call sites are single-arg - :20 POST / , :25 PUT /:id , :33 GET /stats , :40 GET / - each calls asyncHandler(async (req,res)=>{...}) with NO routePath first arg. handler = undefined -> TypeError thrown at route_middleware.js:29 on every request -> 500.
+- Contrast (why customers worked, section 68): routes/customers.js uses the correct two-arg form - :24 asyncHandler('POST /customers/import', async (req)=>{...}), :47 asyncHandler('POST /customers/:id/sync-email', async (req)=>{...}). Same route_middleware contract, correct arity -> /customers round-trip succeeded in section 68; /projects fails on all routes.
+- Belt-and-braces note: even with correct arity, projects.js handlers mix `return result` (L40-42 style) with `res.status(201).json(result)` (L20-23 style); route_middleware.js:32-34 tolerates both (res.json only when !res.headersSent), so the primary defect remains the arity mismatch, not response style.
+- Verdict: live-falsified defect class (route-handler arity mismatch on the project route surface); NOT a falsification contradiction - single route surface, single live authority (ProjectAuthority, section 50 family; no competing authority). Fix options: (a) add routePath first arg at projects.js :20/:25/:33/:40 (smallest change, matches customers.js convention), or (b) make asyncHandler accept a single fn arg. Defect documented, NOT silently fixed (behavior change requires user direction). No code change, no consolidation edit.
+- Gates: ledger-only append; pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF; HEAD unchanged 05d61033; §69 closes with commit pending.
+
+**Next** (per CEO verdict): ledger 69 complete, pending commit ONLY. Awaiting explicit direction on (a) committing §68+§69 (ledger-only allowlist) and/or (b) applying the projects.js fix (add routePath first arg at :20/:25/:33/:40, matching customers.js convention). No history rewrite; defects NOT patched (captured as falsified live findings). Prior program items open: B7 staged renames commit (low value), dormant/stranded archaeology batches. History rewrite stays HARD-BLOCKED pending user direction.
+### 2026-09-01 Session - Ledger 70: Live Route-Surface Empirical Probes - ai-workspace + reviews WORKING two-arg (COMMITTED-READY FILE, LEDGER ONLY)
+
+**70 Live Route-Surface Empirical Probes COMPLETE** [EMPR]: non-mutating live probes of WORKING two-arg asyncHandler route surfaces (ai-workspace project-results GET + project-stats GET, reviews stats GET) against real Postgres via production HTTP. All 200, correct empty edge-case bodies, zero durable writes (ai_workspace_results stayed 0, ping_events unchanged at 1460). Working contrast class to 69's broken single-arg surfaces, empirically proven. Ledger appended (bytes 221,000 -> 223,485, CRLF 10 added, bareLF 6 unchanged, no BOM). Commit pending (ledger allowlist) alongside 68+69.
+
+### 2026-09-01 Session - Ledger 71: events.js GET / Round-Trip Verdict (AGENTS.md entry)
+
+**71 events.js GET / Falsification COMPLETE** [EMPR]: live probe of the events.js GET `/` route surface (gateway/routes/events.js L14-23) against real Postgres via production HTTP (ping-gateway :8080), read-only, zero repo code changes.
+- HTTP 200 both probes: GET /events?limit=5&offset=0 and ?limit=2&offset=5. Row-for-row exact match vs `SELECT event_id FROM ping_events ORDER BY timestamp DESC LIMIT/OFFSET` for both. Count stable at 1460 (read-only). Working two-arg asyncHandler route (`asyncHandler('/events', ...)` -> eventReadAuthority.getAllEvents -> PostgreSQL fallback L19). PostgreSQL fallback is the effective live read surface per section 54 (repository_events permanently empty).
+- Schema reconciliation PASS: columns event_id varchar(64), event_type varchar(255), source varchar(255), timestamp timestamptz, payload jsonb, metadata jsonb, processed boolean, created_at timestamptz, namespace varchar(255) (NOT event_data); indexes on causation_id/correlation_id/namespace/processed/source/timestamp/event_type. Single-row probe f485182b... matched HTTP body exactly (namespace core::system, processed f).
+- Probe evidence (limit=5, offset=0): f485182bc3cc74a8a6acab3211c067851b282d06cf2a98c0718e3706e971e3fb (MISSION_COMPLETED), cde528b4a97cb2882e6fc336ce9d179b582a9dc9cfab7df2dc69272ea72a74b9 (LINEAGE_CREATED), 1e07e3db5f4127ec464216dddf9bab6718c7e4c79696eb2a330b435fab93d343 (MISSION_STARTED), 64d77d4247ada2bad71fb897f02537cc430f11449f87355190fff0ca53d868c8 (MISSION_ASSIGNED), 36168600687a8033666d2f8cde05f8cc9a4af4d32a4a968feda050db626d1b6d. (limit=2, offset=5): 9a68f8a8651a4e287f9635ada8d6216962986e29e9c39f65806cf2232a582823, c954d2b430346a62fded636b9a88e6609414f058cfc91d65b2deab42adabe358.
+- Genuine new coverage (no prior route probe of GET /): fresh verdict - working two-arg route, read-only, no competing live authority, no invariant contradiction, no consolidation edit, no code change. §71 ledger append invariant-verified (size 227,028 B, no BOM, EOF CRLF, bare LF 6 unchanged, CRLF 1995, section at exact previous EOF).
