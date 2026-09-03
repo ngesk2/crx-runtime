@@ -14,7 +14,7 @@ function createMissionControlRoutes(services) {
 
   const { unifiedEventRuntime, knowledgeGraph, missionRuntime, aiRuntime,
     googleConnector, connectorRegistry, workerRuntime, missionScheduler, eventBridge,
-    eventToMissionBridge } = services;
+    eventToMissionBridge, replayProvider } = services;
 
   const hasPG = !!(unifiedEventRuntime && missionRuntime);
 
@@ -26,13 +26,13 @@ function createMissionControlRoutes(services) {
   // ─── Helper: query events by type ──────────────────────────────
   async function queryEventsByType(eventType, limit = 100) {
     const result = await unifiedEventRuntime.query({ eventType, limit });
-    return result.events || [];
+    return { events: result.events || [], count: result.count || 0, truncated: (result.count || 0) > limit };
   }
 
   // ─── Helper: get all events in time window ─────────────────────
   async function queryEventsSince(since, limit = 500) {
     const result = await unifiedEventRuntime.query({ since, limit });
-    return result.events || [];
+    return { events: result.events || [], count: result.count || 0, truncated: (result.count || 0) > limit };
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -40,10 +40,11 @@ function createMissionControlRoutes(services) {
   // ═══════════════════════════════════════════════════════════════
   router.get('/dashboard', requirePG, async (req, res) => {
     try {
-      const [missionStats, allEvents] = await Promise.all([
+      const [missionStats, ev] = await Promise.all([
         missionRuntime.getStats(),
         queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 86400000).toISOString(), 500),
       ]);
+      const allEvents = ev.events;
 
       // Classify events by business category
       const counts = {};
@@ -71,7 +72,7 @@ function createMissionControlRoutes(services) {
         dashboard: {
           business,
           missions: missionStats,
-          eventSummary: { total: allEvents.length, byType: counts, window_size_ms: 86400000, cap: 500 },
+          eventSummary: { total: allEvents.length, count: ev.count, truncated: ev.truncated, byType: counts, window_size_ms: 86400000, cap: 500 },
           uptime: process.uptime(),
           timestamp: constitutionalTimeAuthority.nowAsISOString(),
         },
@@ -89,7 +90,7 @@ function createMissionControlRoutes(services) {
   router.get('/business/who-needs-followup', requirePG, async (req, res) => {
     try {
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(); // 7 days
-      const all = await queryEventsSince(since, 500);
+      const { events: all, truncated, count } = await queryEventsSince(since, 500);
 
       const leads = all.filter(e => e.event_type === 'LEAD_CREATED');
       const estimateSent = all.filter(e => e.event_type === 'ESTIMATE_SENT');
@@ -118,6 +119,8 @@ function createMissionControlRoutes(services) {
         status: 'ok',
         count: items.length,
         items,
+        truncated,
+        totalEvents: count,
         summary: { openLeads: openLeads.length, pendingEstimates: pendingEstimates.length, unansweredReviews: unansweredReviews.length },
       });
     } catch (err) {
@@ -130,7 +133,7 @@ function createMissionControlRoutes(services) {
     try {
       const days = parseInt(req.query.days) || 48; // hours
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 3600000).toISOString();
-      const all = await queryEventsSince(since, 500);
+      const { events: all, truncated, count } = await queryEventsSince(since, 500);
 
       const estimateSent = all.filter(e => e.event_type === 'ESTIMATE_SENT');
       const estimateAccepted = all.filter(e => e.event_type === 'ESTIMATE_ACCEPTED');
@@ -146,7 +149,7 @@ function createMissionControlRoutes(services) {
           hoursSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 3600000),
         }));
 
-      res.json({ status: 'ok', count: stalled.length, stalled });
+      res.json({ status: 'ok', count: stalled.length, stalled, truncated, totalEvents: count });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -155,7 +158,7 @@ function createMissionControlRoutes(services) {
   // Which reviews require responses?
   router.get('/business/pending-reviews', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 86400000).toISOString(), 500);
       const reviews = all.filter(e => e.event_type === 'REVIEW_RECEIVED');
       const responses = all.filter(e => e.event_type === 'REVIEW_RESPONDED');
       const respondedIds = new Set(responses.map(e => e.payload?.review_id));
@@ -171,7 +174,7 @@ function createMissionControlRoutes(services) {
           receivedAt: e.timestamp,
         }));
 
-      res.json({ status: 'ok', count: pending.length, pending });
+      res.json({ status: 'ok', count: pending.length, pending, truncated, totalEvents: count });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -180,7 +183,7 @@ function createMissionControlRoutes(services) {
   // What is AI recommending?
   router.get('/business/ai-recommendations', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
       const recommendations = all.filter(e => e.event_type === 'RECOMMENDATION_CREATED');
 
       const items = recommendations.map(e => ({
@@ -198,6 +201,8 @@ function createMissionControlRoutes(services) {
         status: 'ok',
         count: items.length,
         recommendations: items,
+        truncated,
+        totalEvents: count,
         reason: items.length === 0 ? 'No RECOMMENDATION_CREATED events found — workers may not have processed observations yet' : undefined,
       });
     } catch (err) {
@@ -225,7 +230,7 @@ function createMissionControlRoutes(services) {
   // Which invoices remain unpaid?
   router.get('/business/unpaid-invoices', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 90 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 90 * 86400000).toISOString(), 500);
       const invoicesSent = all.filter(e => e.event_type === 'INVOICE_SENT');
       const invoicesPaid = all.filter(e => e.event_type === 'INVOICE_PAID');
       const paidIds = new Set(invoicesPaid.map(e => e.payload?.invoice_id));
@@ -240,7 +245,7 @@ function createMissionControlRoutes(services) {
           daysSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
-      res.json({ status: 'ok', count: unpaid.length, unpaid });
+      res.json({ status: 'ok', count: unpaid.length, unpaid, truncated, totalEvents: count });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -251,7 +256,7 @@ function createMissionControlRoutes(services) {
     try {
       const days = parseInt(req.query.days) || 30;
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 86400000).toISOString();
-      const all = await queryEventsSince(since, 500);
+      const { events: all, truncated, count } = await queryEventsSince(since, 500);
 
       const created = all.filter(e => e.event_type === 'PROJECT_CREATED');
       const completed = all.filter(e => e.event_type === 'PROJECT_COMPLETED');
@@ -268,7 +273,7 @@ function createMissionControlRoutes(services) {
           daysOpen: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
-      res.json({ status: 'ok', count: atRisk.length, atRisk });
+      res.json({ status: 'ok', count: atRisk.length, atRisk, truncated, totalEvents: count });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -277,7 +282,7 @@ function createMissionControlRoutes(services) {
   // What should marketing do today?
   router.get('/business/marketing', requirePG, async (req, res) => {
     try {
-      const all = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
 
       // Projects completed = case study candidates
       const completed = all.filter(e => e.event_type === 'PROJECT_COMPLETED');
@@ -297,7 +302,7 @@ function createMissionControlRoutes(services) {
         ...nurtureLeads.map(e => ({ action: 'nurture_sequence', leadId: e.payload?.lead_id, source: e.payload?.source, description: e.payload?.description })),
       ];
 
-      res.json({ status: 'ok', count: actions.length, actions });
+      res.json({ status: 'ok', count: actions.length, actions, truncated, totalEvents: count });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -480,6 +485,123 @@ function createMissionControlRoutes(services) {
     const workers = services.workerRuntime;
     if (!workers) return res.json({ status: 'degraded', message: 'WorkerRuntime not initialized' });
     res.json({ status: 'ok', workers: workers.getStats() });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // REPLAY / WITNESS OBSERVABILITY
+  // Surfaces the (real) replay verdict + constitutional evidence that
+  // ReplayWorker/WitnessWorker already emit into ping_events. Pure
+  // addition on live data - never fabricates, never invents a verdict.
+  // Replay provider state is read from the LIVE KernelReplayExecutionProvider
+  // singleton (services.replayProvider) when present, else hidden.
+  // ═══════════════════════════════════════════════════════════════
+  router.get('/replay/stats', requirePG, async (req, res) => {
+    try {
+      const result = await unifiedEventRuntime.query({ eventType: 'REPLAY_COMPLETED', limit: 1000 });
+      const replays = result.events || [];
+      const verified = replays.filter((e) => e.payload && e.payload.replay && e.payload.replay.verified === true);
+      const unverified = replays.filter((e) => e.payload && e.payload.replay && e.payload.replay.verified !== true);
+      const reasonCounts = {};
+      replays.forEach((e) => {
+        const r = e.payload && e.payload.replay;
+        const reason = (r && r.reason) || 'unknown';
+        reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      });
+      const witnessRes = await unifiedEventRuntime.query({ eventType: 'WITNESS_REJECTED', limit: 1000 });
+
+      // LIVE provider state - read from the shared singleton when present.
+      // Absent fields are omitted (never fabricated); the provider is hidden
+      // entirely when it is not injected (e.g. PG-down degraded boot).
+      const provider = replayProvider ? replayProvider.getStats() : null;
+
+      res.json({
+        status: 'ok',
+        stats: {
+          total_replays: replays.length,
+          verified: verified.length,
+          unverified: unverified.length,
+          by_reason: reasonCounts,
+          witness_rejected: (witnessRes.events || []).length,
+        },
+        provider: provider
+          ? {
+              engine_version: replayProvider._engineVersion || 'v1',
+              replays_processed: provider.replays,
+              events_replayed: provider.events,
+              failures: provider.failures,
+            }
+          : undefined,
+        note: replays.length >= 1000 ? 'Replay cap 1000 reached - add event_type filtering for full counts' : undefined,
+      });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
+  // Witness status - event-derived (the live WitnessWorker emits WITNESS_CREATED
+  // on verified replays and WITNESS_REJECTED when it refuses an unverified
+  // replay). WitnessAuthority is a pure createWitness hashing function with NO
+  // runtime counters, so the honest status surface is the emitted attestation
+  // stream - never fabricated, never invented.
+  router.get('/witness/stats', requirePG, async (req, res) => {
+    try {
+      const [createdRes, rejectedRes] = await Promise.all([
+        unifiedEventRuntime.query({ eventType: 'WITNESS_CREATED', limit: 1000 }),
+        unifiedEventRuntime.query({ eventType: 'WITNESS_REJECTED', limit: 1000 }),
+      ]);
+      const created = (createdRes.events || []).length;
+      const rejected = (rejectedRes.events || []).length;
+      res.json({
+        status: 'ok',
+        stats: {
+          attestations: created,
+          refusals: rejected,
+          total: created + rejected,
+        },
+        note: created >= 1000 || rejected >= 1000 ? 'Witness cap 1000 reached - add event_type filtering for full counts' : undefined,
+      });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
+
+  // Full replay + witness tail for a business correlation chain.
+  router.get('/replay/trace/:correlationId', requirePG, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit) || 200;
+      const group = await unifiedEventRuntime.getCorrelationGroup(req.params.correlationId, limit);
+      const events = group.events || [];
+      const replays = events.filter((e) => e.event_type === 'REPLAY_COMPLETED');
+      const witnesses = events.filter((e) => e.event_type === 'WITNESS_CREATED' || e.event_type === 'WITNESS_REJECTED');
+      if (replays.length === 0) {
+        return res.status(404).json({
+          status: 'not_found',
+          message: `No REPLAY_COMPLETED in correlation chain ${req.params.correlationId}`,
+          correlationId: req.params.correlationId,
+        });
+      }
+      res.json({
+        status: 'ok',
+        correlationId: req.params.correlationId,
+        groupSize: events.length,
+        replays: replays.map((e) => ({
+          event_id: e.event_id,
+          timestamp: e.timestamp,
+          replay: e.payload.replay || null,
+          authority: e.payload.authority || null,
+          witness: witnesses.filter((w) => w.payload && w.payload.upstreamEventId === e.event_id)
+            .map((w) => ({
+              event_type: w.event_type,
+              event_id: w.event_id,
+              timestamp: w.timestamp,
+              reason: w.payload.reason || null,
+              witness: w.payload.witness || null,
+            })),
+        })),
+      });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
   });
 
   // ═══════════════════════════════════════════════════════════════
