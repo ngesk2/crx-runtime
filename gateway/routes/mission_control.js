@@ -23,16 +23,37 @@ function createMissionControlRoutes(services) {
     next();
   };
 
+  // ─── Helper: companion COUNT(*) for a WHERE clause mirroring
+  //     unifiedEventRuntime.query() (WHERE 1=1 + optional filters).
+  //     Gives the TRUE matching-cohort cardinality (not LIMIT-capped),
+  //     so totalEvents / truncated are mathematically truthful.
+  async function countEvents(whereConds, params) {
+    if (!unifiedEventRuntime._pool) return 0;
+    const result = await unifiedEventRuntime._pool.query(
+      `SELECT COUNT(*)::int AS count FROM ping_events WHERE ${whereConds.join(' AND ')}`,
+      params,
+    );
+    return Number(result.rows[0].count);
+  }
+
   // ─── Helper: query events by type ──────────────────────────────
   async function queryEventsByType(eventType, limit = 100) {
-    const result = await unifiedEventRuntime.query({ eventType, limit });
-    return { events: result.events || [], count: result.count || 0, truncated: (result.count || 0) > limit };
+    const [result, totalEvents] = await Promise.all([
+      unifiedEventRuntime.query({ eventType, limit }),
+      countEvents(['1=1', 'event_type = $1'], [eventType]),
+    ]);
+    const events = result.events || [];
+    return { events, count: events.length, totalEvents, truncated: totalEvents > events.length };
   }
 
   // ─── Helper: get all events in time window ─────────────────────
   async function queryEventsSince(since, limit = 500) {
-    const result = await unifiedEventRuntime.query({ since, limit });
-    return { events: result.events || [], count: result.count || 0, truncated: (result.count || 0) > limit };
+    const [result, totalEvents] = await Promise.all([
+      unifiedEventRuntime.query({ since, limit }),
+      countEvents(['1=1', 'timestamp >= $1'], [since]),
+    ]);
+    const events = result.events || [];
+    return { events, count: events.length, totalEvents, truncated: totalEvents > events.length };
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -44,6 +65,7 @@ function createMissionControlRoutes(services) {
         missionRuntime.getStats(),
         queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 86400000).toISOString(), 500),
       ]);
+      const { totalEvents } = ev;
       const allEvents = ev.events;
 
       // Classify events by business category
@@ -72,7 +94,7 @@ function createMissionControlRoutes(services) {
         dashboard: {
           business,
           missions: missionStats,
-          eventSummary: { total: allEvents.length, count: ev.count, truncated: ev.truncated, byType: counts, window_size_ms: 86400000, cap: 500 },
+          eventSummary: { total: totalEvents, count: ev.count, truncated: ev.truncated, byType: counts, window_size_ms: 86400000, cap: 500 },
           uptime: process.uptime(),
           timestamp: constitutionalTimeAuthority.nowAsISOString(),
         },
@@ -90,7 +112,7 @@ function createMissionControlRoutes(services) {
   router.get('/business/who-needs-followup', requirePG, async (req, res) => {
     try {
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(); // 7 days
-      const { events: all, truncated, count } = await queryEventsSince(since, 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(since, 500);
 
       const leads = all.filter(e => e.event_type === 'LEAD_CREATED');
       const estimateSent = all.filter(e => e.event_type === 'ESTIMATE_SENT');
@@ -120,7 +142,7 @@ function createMissionControlRoutes(services) {
         count: items.length,
         items,
         truncated,
-        totalEvents: count,
+        totalEvents,
         summary: { openLeads: openLeads.length, pendingEstimates: pendingEstimates.length, unansweredReviews: unansweredReviews.length },
       });
     } catch (err) {
@@ -133,7 +155,7 @@ function createMissionControlRoutes(services) {
     try {
       const days = parseInt(req.query.days) || 48; // hours
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 3600000).toISOString();
-      const { events: all, truncated, count } = await queryEventsSince(since, 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(since, 500);
 
       const estimateSent = all.filter(e => e.event_type === 'ESTIMATE_SENT');
       const estimateAccepted = all.filter(e => e.event_type === 'ESTIMATE_ACCEPTED');
@@ -149,7 +171,7 @@ function createMissionControlRoutes(services) {
           hoursSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 3600000),
         }));
 
-      res.json({ status: 'ok', count: stalled.length, stalled, truncated, totalEvents: count });
+      res.json({ status: 'ok', count: stalled.length, stalled, truncated, totalEvents });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -158,7 +180,7 @@ function createMissionControlRoutes(services) {
   // Which reviews require responses?
   router.get('/business/pending-reviews', requirePG, async (req, res) => {
     try {
-      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 30 * 86400000).toISOString(), 500);
       const reviews = all.filter(e => e.event_type === 'REVIEW_RECEIVED');
       const responses = all.filter(e => e.event_type === 'REVIEW_RESPONDED');
       const respondedIds = new Set(responses.map(e => e.payload?.review_id));
@@ -174,7 +196,7 @@ function createMissionControlRoutes(services) {
           receivedAt: e.timestamp,
         }));
 
-      res.json({ status: 'ok', count: pending.length, pending, truncated, totalEvents: count });
+      res.json({ status: 'ok', count: pending.length, pending, truncated, totalEvents });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -183,7 +205,7 @@ function createMissionControlRoutes(services) {
   // What is AI recommending?
   router.get('/business/ai-recommendations', requirePG, async (req, res) => {
     try {
-      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
       const recommendations = all.filter(e => e.event_type === 'RECOMMENDATION_CREATED');
 
       const items = recommendations.map(e => ({
@@ -202,7 +224,7 @@ function createMissionControlRoutes(services) {
         count: items.length,
         recommendations: items,
         truncated,
-        totalEvents: count,
+        totalEvents,
         reason: items.length === 0 ? 'No RECOMMENDATION_CREATED events found — workers may not have processed observations yet' : undefined,
       });
     } catch (err) {
@@ -230,7 +252,7 @@ function createMissionControlRoutes(services) {
   // Which invoices remain unpaid?
   router.get('/business/unpaid-invoices', requirePG, async (req, res) => {
     try {
-      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 90 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 90 * 86400000).toISOString(), 500);
       const invoicesSent = all.filter(e => e.event_type === 'INVOICE_SENT');
       const invoicesPaid = all.filter(e => e.event_type === 'INVOICE_PAID');
       const paidIds = new Set(invoicesPaid.map(e => e.payload?.invoice_id));
@@ -245,7 +267,7 @@ function createMissionControlRoutes(services) {
           daysSinceSent: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
-      res.json({ status: 'ok', count: unpaid.length, unpaid, truncated, totalEvents: count });
+      res.json({ status: 'ok', count: unpaid.length, unpaid, truncated, totalEvents });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -256,7 +278,7 @@ function createMissionControlRoutes(services) {
     try {
       const days = parseInt(req.query.days) || 30;
       const since = new Date(constitutionalTimeAuthority.nowAsMillis() - days * 86400000).toISOString();
-      const { events: all, truncated, count } = await queryEventsSince(since, 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(since, 500);
 
       const created = all.filter(e => e.event_type === 'PROJECT_CREATED');
       const completed = all.filter(e => e.event_type === 'PROJECT_COMPLETED');
@@ -273,7 +295,7 @@ function createMissionControlRoutes(services) {
           daysOpen: Math.round((constitutionalTimeAuthority.nowAsMillis() - new Date(e.timestamp).getTime()) / 86400000),
         }));
 
-      res.json({ status: 'ok', count: atRisk.length, atRisk, truncated, totalEvents: count });
+      res.json({ status: 'ok', count: atRisk.length, atRisk, truncated, totalEvents });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
@@ -282,7 +304,7 @@ function createMissionControlRoutes(services) {
   // What should marketing do today?
   router.get('/business/marketing', requirePG, async (req, res) => {
     try {
-      const { events: all, truncated, count } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
+      const { events: all, truncated, count, totalEvents } = await queryEventsSince(new Date(constitutionalTimeAuthority.nowAsMillis() - 7 * 86400000).toISOString(), 500);
 
       // Projects completed = case study candidates
       const completed = all.filter(e => e.event_type === 'PROJECT_COMPLETED');
@@ -302,7 +324,7 @@ function createMissionControlRoutes(services) {
         ...nurtureLeads.map(e => ({ action: 'nurture_sequence', leadId: e.payload?.lead_id, source: e.payload?.source, description: e.payload?.description })),
       ];
 
-      res.json({ status: 'ok', count: actions.length, actions, truncated, totalEvents: count });
+      res.json({ status: 'ok', count: actions.length, actions, truncated, totalEvents });
     } catch (err) {
       res.status(500).json({ status: 'error', error: err.message });
     }
