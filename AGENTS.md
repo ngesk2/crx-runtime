@@ -3540,3 +3540,15 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 
 **Next**: (1) classify 13 namespaces' producers (live vs dormant) before any NAMESPACE_OWNERS change - requires user direction; (2) Phase D deterministic live probe matrix when Docker daemon returns; (3) open program items unchanged: +68/69/70/73 ledger COMMIT-PENDING, B7 staged renames, dormant archaeology. History rewrite stays HARD-BLOCKED pending user direction.
 
+### 2026-09-04 Session - B7 CONFIRMED COMMITTED + L3541 13-fix COMMITTED (438dc840)
+
+**Objective**: verify B7 rename disposition and apply/finalize the L3541 AGENTS.md "14"→"13" correction as the user-authorized allowlist unit. Freeze-preserving (ledger/doc only; no production code touch, no history rewrite).
+
+**B7 disposition CONFIRMED (no commit needed)**: `git diff HEAD -- ping-runtime/agents/` is EMPTY and staged set empty — the 5 agent renames (agent_memory_authority, base_worker, distributed_desktop_agents, replay_worker, worker_port) were already absorbed into HEAD `52bc59e2` in a prior session. Prior summary's "must re-stage" note was STALE. Nothing to redo.
+
+**L3541 13-fix COMMITTED**: user directed "Commit AGENTS.md edit (allowlist)". Staged set = exactly `AGENTS.md` (single file, 40 insertions, `git diff --cached --name-only` == AGENTS.md). Committed `438dc840` "docs(ledger): record governance Phase C classification note - classify 13 namespaces (was 14) via AGENTS.md". Post-commit staged set EMPTY; remaining dirty tree = pre-existing noise only (P0-1 hoist ` M gateway_runtime.js`, COMMISSIONING/KERNEL_PIPELINE reports, generated registries, event_queue DDL-persistence files, BRANCH-CONVERGENCE-001.md, eval_harness.js, test_replay_composition.js).
+
+**Confirmations**: L3533 + L3539 + L3541 all read "13" (zero remaining "14 namespaces" strings); AGENTS.md 3542 lines; GOVERNANCE_AUDIT_PHASE_C_CLASSIFICATION.md present (9115 B, 13 namespace rows, LIVE 8 / DORMANT 3 / DELEGATED 2, `unknown` excluded); §73 ledger tail committed at 52bc59e2 (this session appended the AGENTS.md allowlist on top).
+
+**Next** (awaiting user direction): (1) per Phase C next-step — classify 13 namespaces' producers (live vs dormant) BEFORE any NAMESPACE_OWNERS change; (2) Phase D deterministic live probe matrix when Docker daemon returns; (3) open program items unchanged: §68/69/70 ledger COMMIT-PENDING, dormant archaeology. History rewrite stays HARD-BLOCKED pending user direction.
+
