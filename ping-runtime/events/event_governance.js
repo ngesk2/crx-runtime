@@ -56,6 +56,14 @@ const NAMESPACE_OWNERS = {
   file: 'PING',
   snippet: 'PING',
   ai: 'PING',
+  candidate: 'PING',
+  commit: 'PING',
+  compiler: 'PING',
+  hashing: 'PING',
+  prompt: 'PING',
+  git: 'PING',
+  knowledge: 'PING',
+  object: 'PING',
 
   // Business namespaces
   customer: 'HPP',
