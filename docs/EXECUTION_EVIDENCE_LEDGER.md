@@ -2011,3 +2011,28 @@ ew MissionRuntime({ pool: this._pool, eventRuntime: unifiedEventRuntime })), wir
 - NO MUTATION: counts stable (ping_missions completed=290, ping_events total=1496) before/after both GET probes (read-only surface).
 - Verdict: FALSIFIED - single live mission-stats authority (MissionRuntime.getStats via gateway_runtime.js:476 singleton), exact live cross-check vs real Postgres for both /missions/stats and /events/stats. No competing live authority, no invariant contradiction, no consolidation edit.
 - Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); probes were non-mutating GET reads with counts verified stable. Commit pending (ledger allowlist).
+
+### 2026-09-04 Session - Ledger 74: Governance Phase C Classification CORRECTION (13 namespaces resolved: LIVE 4 / DORMANT 7 / DELEGATED 2)
+
+**74 Governance Phase C Classification CORRECTION COMPLETE** [STAT]:
+- Framing: closes the Phase C action item from the AGENTS.md 2026-09-04 Governance Audit - classify the 13 `NAMESPACE_OWNERS`-undefined namespaces (source-level only, BEFORE any `NAMESPACE_OWNERS` change). All 13 produce `expectedOwner:'UNKNOWN'` ownership entries - a governance-coverage gap pending producer-liveness classification, NOT a hard-rejection defect (only literal `unknown` is rejected at event_governance.js `_validateNamespace` :183). No runtime policy change, no `NAMESPACE_OWNERS` repair, no consolidation edit.
+- Final verdicts: LIVE (4) = hashing, prompt, git, knowledge; DORMANT (7) = candidate, commit, object, constitutional-ir, rule-engine, diagnostics, compiler; DELEGATED (2) = graph, parsing.
+- DORMANT rows (source-level reachability evidence):
+  - candidate - ClaimWorker emits `CLAIM_CREATED`, NOT `CANDIDATE_CLAIM_CREATED` (ping-runtime/workers/canonical_workers.js); event_registry.json:242 candidate entry is declaration-only, no emitter.
+  - commit - sole demonstrated COMMIT_CREATED emitter = gateway/github_ingestion.js:28 (orphan/dead); COMMIT_VERIFIED has no emitter repo-wide.
+  - object - KNOWLEDGE_OBJECT_CREATED / CONSTITUTIONAL_OBJECT_CREATED are distinct types; no demonstrated object.* emitter.
+  - constitutional-ir - zero emitters repo-wide.
+  - rule-engine - zero emitters repo-wide.
+  - diagnostics - zero emitters repo-wide.
+  - compiler - decisive negative-proof: zero *.js matches repo-wide for `compiler.architecturediff_produced` / `compiler.constitutionalproof_produced` / `compiler.intent_loaded`; registry :606/:634/:662 carry `authority_owner:"CompilerAuthority"` (not "compiler"), `source:"intent"`, `source_file:"intents\compiler\intent-manifest.yaml"`; zero `"authority_owner":"compiler"` keys in the 233-event registry; gateway/generated/compiler_compatibility.js is a P029 version-chain startup validator, not an event producer.
+- LIVE rows (route-mediated / kernel authorities):
+  - hashing - kernel authority via ping-runtime shim (sanctioned boundary).
+  - prompt - prompt_generated via ContextAuthority (Orca fabric), route /orchestration, engine.js :116/:143/:602/:687.
+  - git - git_diff (+ alias github) -> NAMESPACE_OWNERS 'HPP', engine.js :116/:143.
+  - knowledge - knowledge_compiled emitted by engine.js:602 (Orca fabric), route-mediated.
+- DELEGATED rows (commodity/detached producers):
+  - graph - event_registry.json :2642/:2670 marked "(commodity - delegated)"; shares intent_loaded variants with the compiler intent file family.
+  - parsing - event_registry.json :4130/:4158 marked "(delegated to Tree-sitter)"; shares intent_loaded variants with the compiler intent file family.
+- B-CLOSURE (production boot graph): whole-file watch-term grep on gateway/bootstrap/gateway_runtime.js (`compiler_authority|repository_authority|activities|TemporalRuntime|temporal_scheduler|constitutional_runtime|import\(`) -> ZERO matches; file confirmed 890 lines. Temporal/activities exist ONLY in gateway/bootstrap/wiring.js (:29-30, :134-150, :208-210) and gateway/bootstrap/lifecycle.js (:25, :33); no import edge from gateway_runtime.js. Production entrypoint gateway/server.js requires ONLY ./bootstrap/gateway_runtime.
+- STALENESS NOTE: GOVERNANCE_AUDIT_PHASE_C_CLASSIFICATION.md header claims HEAD b757ef08; actual HEAD = dfae14fa (observed, NOT fixed). Summary table :12-20 holds 7 falsified "LIVE" rows that this section rewrites.
+- Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); no code change. Commit pending (ledger allowlist).
