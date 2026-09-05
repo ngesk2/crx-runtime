@@ -1968,7 +1968,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - Infra note (not a defect): /health unhealthy only for qdrant ("error":"fetch failed") + embedding ("not_initialized"); gateway/event_governance/event_runtime healthy.
 - Gates: ledger-only append; pre-existing dirty tree untouched; encoding no-BOM CRLF; commit pending.
 
-### 2026-09-01 Session - Ledger 69: Project Routes 500 Failure - asyncHandler Arity Mismatch (LIVE EMPIRICAL, probe; commit pending)
+### 2026-09-01 Session - Ledger 69: Project Routes 500 Failure - asyncHandler Arity Mismatch (LIVE EMPIRICAL, probe; 2ca32264)
 
 **69 Project Routes Round-Trip Falsification** [EMPR + STAT]:
 - Live probe of the project route boundary via production HTTP (ping-gateway :8080) against real Postgres (ping-postgres :5433). Probe script %TEMP%\ledger69_probe.js (F1-F11), zero repo code changes. EVERY executed /projects route returned HTTP 500 {"error":"handler is not a function"}. Captured entries (ledger69_probe.out.json, exactly 4): [F1-create] POST /projects (tenant::audit69), [F8-list] GET /projects (audit69), [F10-stats] GET /projects/stats (audit69), [F11-missing404] GET /projects/{nonexistent-id} (audit69). F2-F7/F9 absent from output: create/update/list-all/id-route all 500, so no subsequent steps could build on them; F11's expected 404 also never surfaces because the 500 fires before any handler logic runs.
@@ -1976,7 +1976,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - Contrast (why customers worked, section 68): routes/customers.js uses the correct two-arg form - :24 asyncHandler('POST /customers/import', async (req)=>{...}), :47 asyncHandler('POST /customers/:id/sync-email', async (req)=>{...}). Same route_middleware contract, correct arity -> /customers round-trip succeeded in section 68; /projects fails on all routes.
 - Belt-and-braces note: even with correct arity, projects.js handlers mix `return result` (L40-42 style) with `res.status(201).json(result)` (L20-23 style); route_middleware.js:32-34 tolerates both (res.json only when !res.headersSent), so the primary defect remains the arity mismatch, not response style.
 - Verdict: live-falsified defect class (route-handler arity mismatch on the project route surface); NOT a falsification contradiction - single route surface, single live authority (ProjectAuthority, section 50 family; no competing authority). Fix options: (a) add routePath first arg at projects.js :20/:25/:33/:40 (smallest change, matches customers.js convention), or (b) make asyncHandler accept a single fn arg. Defect documented, NOT silently fixed (behavior change requires user direction). No code change, no consolidation edit.
-- Gates: ledger-only append; pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF; commit pending.
+- Gates: ledger-only append; pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF; committed as 2ca32264 (fix(gateway): pass routePath to asyncHandler in projects routes).
 ### 2026-09-01 Session - Ledger 70: Live Route-Surface Empirical Probes - ai-workspace + reviews WORKING two-arg (COMMITTED-READY file, LEDGER ONLY)
 
 **70 Live Route-Surface Empirical Probes COMPLETE** [EMPR]:
