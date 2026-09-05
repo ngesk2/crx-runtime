@@ -17,12 +17,12 @@ const router = express.Router();
 const { asyncHandler } = require('../route_middleware');
 
 function createProjectRoutes(projectAuthority) {
-  router.post('/', asyncHandler(async (req, res) => {
+  router.post('/', asyncHandler('POST /projects', async (req, res) => {
     const result = await projectAuthority.executeCreateProject(req.body);
     res.status(201).json(result);
   }));
 
-  router.put('/:id', asyncHandler(async (req, res) => {
+  router.put('/:id', asyncHandler('PUT /projects/:id', async (req, res) => {
     const result = await projectAuthority.executeUpdateProject({
       projectId: req.params.id,
       ...req.body,
@@ -30,14 +30,14 @@ function createProjectRoutes(projectAuthority) {
     res.json(result);
   }));
 
-  router.get('/stats', asyncHandler(async (req, res) => {
+  router.get('/stats', asyncHandler('GET /projects/stats', async (req, res) => {
     const stats = await projectAuthority.executeGetProjectStats({
       tenantId: req.query.tenantId,
     });
     res.json(stats);
   }));
 
-  router.get('/', asyncHandler(async (req, res) => {
+  router.get('/', asyncHandler('GET /projects', async (req, res) => {
     const projects = await projectAuthority.executeListProjects({
       tenantId: req.query.tenantId,
       status: req.query.status,
