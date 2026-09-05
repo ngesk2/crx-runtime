@@ -1945,7 +1945,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - Commit: docs-only trivial-allowlist commit (forensics doc + ledger §66) - described below.
 
 
-### 2026-09-01 Session - Ledger 67: Tenant Registry Round-Trip LIVE EMPIRICAL Falsification (probe; commit pending)
+### 2026-09-01 Session - Ledger 67: Tenant Registry Round-Trip LIVE EMPIRICAL Falsification (probe; 05d61033)
 
 **67 Tenant Registry Round-Trip Falsification** [EMPR]:
 - Live round-trip of `ping-runtime/runtime/tenant_registry.js` (P003 TenantRegistry) against real Postgres (ping-postgres :5433) via production HTTP (ping-gateway :8080). Temp probe script (C:\Users\nolan\AppData\Local\Temp\opencode\tenant67_probe.js), zero repo code changes. audit63 tenant retained (63 precedent); probe tenant audit67 cleaned up after capture.
@@ -1956,7 +1956,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - F4 row-still-exists: GET /tenants/audit67 after failed DELETE -> 200 row still present (delete never executed). Durable count verified 2 -> cleanup DELETE audit67 -> remaining 1 (audit63).
 - Verdict: three first-hand live-falsified defect classes (register-path canonicalization mismatch; latent _postgres on heartbeat/remove; PUT canonical-URI dead-write for raw-id tenants). NOT a contradiction in falsification sense - single live registry authority (section 34/63/64/65 family), canonicalization defect documented, no competing authority. No code change, no consolidation edit, no silent fix (behavior changes require user direction).
 - Gates: committed as docs-only unit; P0-1 hoist preserved; pre-existing dirty tree untouched; encoding no-BOM CRLF.
-### 2026-09-01 Session - Ledger 68: Customer Registry Round-Trip LIVE EMPIRICAL Falsification + EventBridge Cursor/Namespace Defects (probe; commit pending)
+### 2026-09-01 Session - Ledger 68: Customer Registry Round-Trip LIVE EMPIRICAL Falsification + EventBridge Cursor/Namespace Defects (probe; 6f450317)
 
 **68 Customer Registry Round-Trip Falsification** [EMPR]:
 - Live round-trip of the customer boundary (ping-runtime/business/customer_authority.js, executeUpsertCustomer :399-420, _updateCustomer :485-525, _emitEvent :540-551) via production HTTP (ping-gateway :8080) against real Postgres (ping-postgres :5433, ping_runtime). Probe bodies at %TEMP%\ledger68_customer.json + ledger68_customer2.json, zero repo code changes.
@@ -1966,7 +1966,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - Downstream housekeeping observed and cleaned: 2 ping_missions (a9e873ae5cc7a295, f8ecbea6572556af) + 2 knowledge_nodes (a5cf3df8e0e51f59, b6252fd91cab9a46) created by the bridged chain. All probe rows deleted in FK dependency order, each verified 0 remaining: knowledge_nodes 2 (edges cascade, 0 existed) -> ping_missions 2 -> ping_events 2 -> canonical_events 3 (audit68 seqs 1-2, hpp seq 1) -> customers 2 (tenant::audit68 + tenant::hpp) -> ping_bridge_cursors 1 (canonical_events cursor 9bf61cbe...). event_processing had 0 rows throughout.
 - Verdict: two first-hand live-falsified defect classes in the canonical_events bridge (cursor skip + namespace mapping); NOT a contradiction in falsification sense - single live bridge authority (section 44), no competing live authority. No code change, no consolidation edit, no silent fix.
 - Infra note (not a defect): /health unhealthy only for qdrant ("error":"fetch failed") + embedding ("not_initialized"); gateway/event_governance/event_runtime healthy.
-- Gates: ledger-only append; pre-existing dirty tree untouched; encoding no-BOM CRLF; commit pending.
+- Gates: ledger-only append; pre-existing dirty tree untouched; encoding no-BOM CRLF; committed as 6f450317 (docs(evidence): ledger 68-71 live route-surface empirical probes + session log).
 
 ### 2026-09-01 Session - Ledger 69: Project Routes 500 Failure - asyncHandler Arity Mismatch (LIVE EMPIRICAL, probe; 2ca32264)
 
@@ -1988,7 +1988,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - Verdict: three freshly-probed live route surfaces (ai-workspace project-results GET, project-stats GET, reviews stats GET) all WORKING two-arg asyncHandler, correct edge/empty responses, zero durable writes. Complements 46 (event-read asymmetry, /context facade) + 69 (broken single-arg surfaces) - here the WORKING contrast class is empirically proven, not just statically asserted. No competing authority, no invariant contradiction, no consolidation edit.
 - Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved; probes were non-mutating GET reads with byte count verified before/after. Commit pending (ledger allowlist).
 
-### 2026-09-01 Session - Ledger 71: events.js GET / Route - Live Row-for-Row Reconciliation (LIVE EMPIRICAL, probe; commit pending)
+### 2026-09-01 Session - Ledger 71: events.js GET / Route - Live Row-for-Row Reconciliation (LIVE EMPIRICAL, probe; 6f450317)
 
 **71 events.js GET / Route Falsification** [EMPR + STAT]:
 - Live probe of the GET / route surface (gateway/routes/events.js L14-23) via production HTTP (ping-gateway :8080) against real Postgres (ping-postgres :5433). Zero repo code changes. GET / events.js uses the correct two-arg asyncHandler('/events', ...) (L14) -> eventReadAuthority.getAllEvents(limit, offset) first, then fallback `SELECT * FROM ping_events ORDER BY timestamp DESC LIMIT $1 OFFSET $2` (L19) when the former is empty. Section 54 established repository_events is permanently empty (0 rows) + GET /events line-18 condition always-true -> the PostgreSQL fallback is the effective live read surface. GET / had NO prior route-probe coverage (54/57/58/60/61 probed /events/stats, /events/recent, /events/unprocessed via SQL, not the GET / route).
@@ -1998,9 +1998,9 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 - NO MUTATION: row count stable at 1460 after both probes (read-only surface).
 - SCHEMA RECONCILIATION (PASS): \d ping_events shows event_id varchar(64), event_type varchar(255), source varchar(255), timestamp timestamptz, payload jsonb, metadata jsonb, processed boolean, created_at timestamptz, namespace varchar(255) (NOT event_data); indexes on causation_id, correlation_id, namespace, processed, source, timestamp, event_type. Single-row probe of f485182b... returned event_id match=t, MISSION_COMPLETED, mission-runtime, 2026-09-02 00:43:50.791+00, payload = {"result":{"worker":"lineage","completed_at":"2026-09-02T00:43:50.787Z"},"missionId":"6177095580908301","duration_ms":14}, correlation_id identical, namespace=core::system, processed=f - ALL exactly matching the HTTP response body.
 - Verdict: events.js GET / is a WORKING two-arg route with exact row-level reconciliation against live PostgreSQL data, read-only (count stable at 1460). PostgreSQL is the effective read surface (repository_events empty per section 54). Fresh coverage (no prior route probe of GET /). No competing live authority, no invariant contradiction, no consolidation edit.
-- Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); probes were non-mutating GET reads with row count verified stable. Commit pending (ledger allowlist).
+- Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); probes were non-mutating GET reads with row count verified stable. Committed as 6f450317 (docs(evidence): ledger 68-71 live route-surface empirical probes + session log).
 
-### 2026-09-02 Session - Ledger 73: /missions/stats + /events/stats Route-Surface LIVE EMPIRICAL Falsification (COMMIT PENDING)
+### 2026-09-02 Session - Ledger 73: /missions/stats + /events/stats Route-Surface LIVE EMPIRICAL Falsification (probe; 52bc59e2)
 
 **73 Mission-Stats Route-Surface Falsification COMPLETE** [EMPR + STAT]:
 - Live probe of the mission/event stats route surface via production HTTP (ping-gateway :8080) against real Postgres (ping-postgres :5433). Read-only GET probes, zero repo code changes.
@@ -2010,7 +2010,7 @@ Verdict: NO route/query/authority divergence introduced by the trace endpoint. S
 ew MissionRuntime({ pool: this._pool, eventRuntime: unifiedEventRuntime })), wired services :658, injected MissionScheduler :553 + EventToMissionBridge :577 (section 38 two-ingress-door). No competing authority, no second construction (evals/tests only).
 - NO MUTATION: counts stable (ping_missions completed=290, ping_events total=1496) before/after both GET probes (read-only surface).
 - Verdict: FALSIFIED - single live mission-stats authority (MissionRuntime.getStats via gateway_runtime.js:476 singleton), exact live cross-check vs real Postgres for both /missions/stats and /events/stats. No competing live authority, no invariant contradiction, no consolidation edit.
-- Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); probes were non-mutating GET reads with counts verified stable. Commit pending (ledger allowlist).
+- Gates: ledger-only append (this file); pre-existing dirty tree untouched (P0-1 hoist M gateway_runtime.js + AGENTS.md only); encoding no-BOM CRLF preserved (bare LF count unchanged); probes were non-mutating GET reads with counts verified stable. Committed as 52bc59e2 (docs(ledger): record §73 /missions/stats + /events/stats route-surface falsification + session log).
 
 ### 2026-09-04 Session - Ledger 74: Governance Phase C Classification CORRECTION (13 namespaces resolved: LIVE 4 / DORMANT 7 / DELEGATED 2)
 
