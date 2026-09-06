@@ -36,7 +36,7 @@ function createOrchestrationRoutes(engine) {
    *   metadata?: object       // extra metadata
    * }
    */
-  router.post('/missions', asyncHandler(async (req, res) => {
+  router.post('/missions', asyncHandler('POST /orchestration/missions', async (req, res) => {
     const {
       type = 'GENERAL',
       target,
@@ -80,7 +80,7 @@ function createOrchestrationRoutes(engine) {
    * GET /orchestration/missions
    * List all missions with optional status filter.
    */
-  router.get('/missions', asyncHandler(async (req, res) => {
+  router.get('/missions', asyncHandler('GET /orchestration/missions', async (req, res) => {
     const { status, limit = 50 } = req.query;
     let missions = engine._missions || [];
 
@@ -109,7 +109,7 @@ function createOrchestrationRoutes(engine) {
    * GET /orchestration/missions/:id
    * Get full mission status including worker outputs.
    */
-  router.get('/missions/:id', asyncHandler(async (req, res) => {
+  router.get('/missions/:id', asyncHandler('GET /orchestration/missions/:id', async (req, res) => {
     const mission = engine._missions.find(m => m.id === req.params.id);
     if (!mission) return res.status(404).json({ error: 'Mission not found' });
 
@@ -137,7 +137,7 @@ function createOrchestrationRoutes(engine) {
    * POST /orchestration/missions/:id/dispatch
    * Dispatch a pending mission to available workers.
    */
-  router.post('/missions/:id/dispatch', asyncHandler(async (req, res) => {
+  router.post('/missions/:id/dispatch', asyncHandler('POST /orchestration/missions/:id/dispatch', async (req, res) => {
     const mission = engine._missions.find(m => m.id === req.params.id);
     if (!mission) return res.status(404).json({ error: 'Mission not found' });
 
@@ -172,7 +172,7 @@ function createOrchestrationRoutes(engine) {
    *   summary?: string
    * }
    */
-  router.post('/missions/:id/output', asyncHandler(async (req, res) => {
+  router.post('/missions/:id/output', asyncHandler('POST /orchestration/missions/:id/output', async (req, res) => {
     const { workerId, findings, confidence, summary } = req.body;
     if (!workerId) return res.status(400).json({ error: 'workerId is required' });
 
@@ -201,7 +201,7 @@ function createOrchestrationRoutes(engine) {
    * GET /orchestration/workers
    * List all registered workers and their status.
    */
-  router.get('/workers', asyncHandler(async (req, res) => {
+  router.get('/workers', asyncHandler('GET /orchestration/workers', async (req, res) => {
     const registry = engine._registry;
     const workers = registry.listWorkers();
     const stats = registry.getStats();
@@ -229,7 +229,7 @@ function createOrchestrationRoutes(engine) {
    * GET /orchestration/engine
    * Full engine dashboard.
    */
-  router.get('/engine', asyncHandler(async (req, res) => {
+  router.get('/engine', asyncHandler('GET /orchestration/engine', async (req, res) => {
     res.json(engine.generateDashboard());
   }));
 
@@ -237,7 +237,7 @@ function createOrchestrationRoutes(engine) {
    * GET /orchestration/engine/report
    * Full engine report including capabilities and high-priority missions.
    */
-  router.get('/engine/report', asyncHandler(async (req, res) => {
+  router.get('/engine/report', asyncHandler('GET /orchestration/engine/report', async (req, res) => {
     res.json(engine.getReport());
   }));
 
@@ -245,7 +245,7 @@ function createOrchestrationRoutes(engine) {
    * POST /orchestration/engine/compile
    * Trigger mission compilation from the intelligence graph.
    */
-  router.post('/engine/compile', asyncHandler(async (req, res) => {
+  router.post('/engine/compile', asyncHandler('POST /orchestration/engine/compile', async (req, res) => {
     const missions = engine.compileMissions();
     res.json({
       compiled: missions.length,
@@ -269,7 +269,7 @@ function createOrchestrationRoutes(engine) {
    *   missionsPerIteration?: number (default 3)
    * }
    */
-  router.post('/engine/loop', asyncHandler(async (req, res) => {
+  router.post('/engine/loop', asyncHandler('POST /orchestration/engine/loop', async (req, res) => {
     const { maxIterations = 3, minPriority = 5, missionsPerIteration = 3 } = req.body;
     const results = engine.startAutonomousLoop({
       maxIterations,
@@ -295,7 +295,7 @@ function createOrchestrationRoutes(engine) {
    *
    * Body: { diff: string }
    */
-  router.post('/engine/git-diff', asyncHandler(async (req, res) => {
+  router.post('/engine/git-diff', asyncHandler('POST /orchestration/engine/git-diff', async (req, res) => {
     const { diff } = req.body;
     if (!diff) return res.status(400).json({ error: 'diff is required' });
 

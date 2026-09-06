@@ -49,7 +49,7 @@ function createProjectRoutes(projectAuthority) {
     res.json(projects);
   }));
 
-  router.get('/:id', asyncHandler(async (req, res) => {
+  router.get('/:id', asyncHandler('GET /projects/:id', async (req, res) => {
     const project = await projectAuthority.executeResolveProject({
       projectId: req.params.id,
       tenantId: req.query.tenantId,
@@ -58,7 +58,7 @@ function createProjectRoutes(projectAuthority) {
     res.json(project);
   }));
 
-  router.post('/:id/artifacts', asyncHandler(async (req, res) => {
+  router.post('/:id/artifacts', asyncHandler('POST /projects/:id/artifacts', async (req, res) => {
     const result = await projectAuthority.executeAddArtifact({
       projectId: req.params.id,
       ...req.body,
@@ -66,7 +66,7 @@ function createProjectRoutes(projectAuthority) {
     res.status(201).json(result);
   }));
 
-  router.get('/:id/artifacts', asyncHandler(async (req, res) => {
+  router.get('/:id/artifacts', asyncHandler('GET /projects/:id/artifacts', async (req, res) => {
     const artifacts = await projectAuthority.executeListArtifacts({
       projectId: req.params.id,
       tenantId: req.query.tenantId,
