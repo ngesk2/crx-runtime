@@ -1,117 +1,75 @@
 /**
  * BYTE UTILITIES
- * 
- * Portable byte utilities for constitutional replay kernel.
- * 
- * Requirements:
- * - runtime-neutral (no Buffer, no Node crypto)
- * - pure Uint8Array
- * - standards-based APIs (TextEncoder, TextDecoder)
- * - works in browser, Node, Deno, Bun, WASM
- * 
+ *
+ * Compatibility facade over ByteAuthority (byte_authority.ts).
+ *
+ * This file no longer contains standalone implementations.  Every helper has
+ * been unified into the single canonical source — ByteAuthority — and the
+ * legacy names below are re-exported aliases so existing importers continue to
+ * work unchanged.
+ *
+ * Legacy-name map:
+ *   utf8Encode        -> encodeUtf8
+ *   utf8Decode        -> decodeUtf8
+ *   hexEncode         -> encodeHex
+ *   hexDecode         -> decodeHex
+ *   concatBytes       -> concatBytes (same name)
+ *   base64UrlEncode   -> encodeBase64Url
+ *   base64UrlDecode   -> decodeBase64Url
+ *   bytesEqual        -> bytesEqual (same name)
+ *
  * PHASE 4: REMOVE NODE BUFFER AUTHORITY
  * Replaces Node Buffer with portable Uint8Array utilities.
  */
 
-/**
- * Concatenate Uint8Arrays
- * Runtime-neutral implementation
- */
-export function concatBytes(...arrays: Uint8Array[]): Uint8Array {
-  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const arr of arrays) {
-    result.set(arr, offset);
-    offset += arr.length;
-  }
-  return result;
-}
+import {
+  encodeUtf8,
+  decodeUtf8,
+  encodeHex as _encodeHex,
+  decodeHex as _decodeHex,
+  encodeBase64Url as _encodeBase64Url,
+  decodeBase64Url as _decodeBase64Url,
+  concatBytes as _concatBytes,
+  bytesEqual as _bytesEqual,
+} from './byte_authority';
 
 /**
- * Encode string to UTF-8 bytes
- * Runtime-neutral implementation using TextEncoder
+ * Concatenate Uint8Arrays.
  */
-export function utf8Encode(str: string): Uint8Array {
-  const encoder = new TextEncoder();
-  return encoder.encode(str);
-}
+export const concatBytes = _concatBytes;
 
 /**
- * Decode UTF-8 bytes to string
- * Runtime-neutral implementation using TextDecoder
+ * Encode string to UTF-8 bytes.
  */
-export function utf8Decode(bytes: Uint8Array): string {
-  const decoder = new TextDecoder();
-  return decoder.decode(bytes);
-}
+export const utf8Encode = encodeUtf8;
 
 /**
- * Encode bytes to hex string
- * Runtime-neutral implementation
+ * Decode UTF-8 bytes to string.
  */
-export function hexEncode(bytes: Uint8Array): string {
-  const hexChars = '0123456789abcdef';
-  let hex = '';
-  for (let i = 0; i < bytes.length; i++) {
-    const byte = bytes[i];
-    hex += hexChars[(byte >> 4) & 0x0f];
-    hex += hexChars[byte & 0x0f];
-  }
-  return hex;
-}
+export const utf8Decode = decodeUtf8;
 
 /**
- * Decode hex string to bytes
- * Runtime-neutral implementation
+ * Encode bytes to hex string (lowercase).
  */
-export function hexDecode(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
-  }
-  return bytes;
-}
+export const hexEncode = _encodeHex;
 
 /**
- * Encode bytes to base64url string
- * Runtime-neutral implementation
+ * Decode hex string to bytes.
+ * Throws if the input has an odd length.
  */
-export function base64UrlEncode(bytes: Uint8Array): string {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}
+export const hexDecode = _decodeHex;
 
 /**
- * Decode base64url string to bytes
- * Runtime-neutral implementation
+ * Encode bytes to base64url string (no padding).
  */
-export function base64UrlDecode(base64Url: string): Uint8Array {
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
+export const base64UrlEncode = _encodeBase64Url;
 
 /**
- * Compare two Uint8Arrays for equality
- * Runtime-neutral implementation
+ * Decode base64url string to bytes.
  */
-export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
+export const base64UrlDecode = _decodeBase64Url;
+
+/**
+ * Compare two Uint8Arrays for equality.
+ */
+export const bytesEqual = _bytesEqual;
