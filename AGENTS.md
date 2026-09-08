@@ -3552,3 +3552,15 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 
 **Next** (awaiting user direction): (1) per Phase C next-step — classify 13 namespaces' producers (live vs dormant) BEFORE any NAMESPACE_OWNERS change; (2) Phase D deterministic live probe matrix when Docker daemon returns; (3) open program items unchanged: §68/69/70 ledger COMMIT-PENDING, dormant archaeology. History rewrite stays HARD-BLOCKED pending user direction.
 
+
+### 2026-09-07 Session - Greenfield Smoke Test on ping-gateway-fresh (end-to-end PASS)
+
+**Objective**: greenfield end-to-end smoke test on a fresh gateway container (ping-gateway-fresh, image ping-gateway, 8081->8080) to prove the production spine works from scratch: POST /ingest -> canonicalization -> Postgres event chain -> Qdrant projection -> hybrid search, zero pre-existing state.
+
+- Root cause fix: ping-gateway-fresh was missing curious-squid_ping_internal membership (worktree's compose network) -> Postgres DNS failure. docker network connect + docker restart restored DNS (postgres / ping-postgres -> 172.22.0.3). Busybox image = no bash; use Node v24 for in-container TCP checks.
+- Body-file POST to /ingest returned HTTP 201. PowerShell quoting mangles inline curl JSON - plain-HTML "Bad Request" is Express body-parse failure (NOT a route 400); fix = --data-binary @file.
+- /health counters confirmed: event_runtime emitted:41/persisted:41/dispatched:17/failed:0; embedding embedded:6/projected:6/subscribed:19, collection knowledge, vectorSize 768, model nomic-embed-text; Qdrant healthy 1.18.2.
+- Postgres verification: ping_events stores metadata jsonb - correlation_id lives at metadata->>'correlation_id', NOT a top-level column (LEDGER 71). Query returned full 9-event causal chain under correlation 651256dd... : REVIEW_RECEIVED -> OBSERVATION -> CLAIM -> CLASSIFICATION -> RECOMMENDATION -> PROJECTION -> REPLAY -> WITNESS -> LINEAGE.
+- Hybrid search POST /knowledge/search ({"query":"greenfield smoke test","namespace":"tenant::hpp","limit":3} via body file) -> 200, total 3, stats semanticHits:5/kgHits:1/verified:1/rejected:4. Root REVIEW_RECEIVED verified:true (canonical_hash 7373d066... backed by ping_events, ollama embedding, score 0.7439517); downstream chain hits verified:false = documented LEDGER 54 behavior (only the canonicalization boundary carries canonical_hash), NOT a defect.
+
+**Next**: (1) optional cleanup docker rm ping-gateway-fresh; (2) LEDGER 54 canonical_hash propagation to downstream chain events = behavior change requiring explicit direction (no silent fix); (3) open program items unchanged: 68/69/70 ledger sections COMMIT-PENDING, Phase C 13-namespace classification, Phase D live probes. History rewrite stays HARD-BLOCKED pending user direction.
