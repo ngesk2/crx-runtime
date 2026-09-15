@@ -1,11 +1,13 @@
 import express from "express"
 import { commitArtifact } from "./api/commit_controller"
+import { auditArtifacts } from "./api/audit_controller"
 
 const app = express()
 
 app.use(express.json())
 
 app.post("/kernel/commit", commitArtifact)
+app.get("/kernel/audit", auditArtifacts)
 
 const port = 8080
 
