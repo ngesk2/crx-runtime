@@ -1,0 +1,9 @@
+FROM python:3-alpine
+WORKDIR /app
+COPY workers/ /app/workers/
+COPY kernel/ /app/kernel/
+ENV GATEWAY_URL=http://gateway:8080
+ENV POLL_INTERVAL=5.0
+ENV MAX_RETRIES=3
+ENV WORKER_NAME=worker_runtime
+CMD python3 -u /app/workers/worker_runtime.py
