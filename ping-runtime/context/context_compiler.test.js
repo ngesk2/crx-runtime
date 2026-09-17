@@ -278,6 +278,67 @@ async function main() {
     console.log('  FAIL different evidence produces different identity: ' + e.message);
   }
 
+  // REGRESSION: Event permutation determinism
+  // This test FAILS currently and exposes a real determinism defect.
+  // Same events in different input order produce different ContextPack identities.
+  // DO NOT DELETE. Fix the implementation to make this pass.
+  try {
+    const mockEventRuntime2 = {
+      getCorrelationGroup: async (correlationId, limit) => {
+        return {
+          correlation_id: correlationId,
+          events: [
+            {
+              event_id: 'evt_002',
+              event_type: 'CUSTOMER_CREATED',
+              source: 'customer-authority',
+              timestamp: '2026-09-17T12:01:00Z',
+              payload: {
+                customer_id: 'cust_001',
+                customerId: 'cust_001',
+              },
+              metadata: {},
+            },
+            {
+              event_id: 'evt_001',
+              event_type: 'LEAD_CREATED',
+              source: 'webhook',
+              timestamp: '2026-09-17T12:00:00Z',
+              payload: {
+                lead_id: 'lead_001',
+                customer_id: 'cust_001',
+                customerEmail: 'jane@example.com',
+              },
+              metadata: {
+                authority: 'customer-authority',
+              },
+            },
+          ],
+        };
+      },
+    };
+    const compiler2 = new ContextCompiler({
+      eventRuntime: mockEventRuntime2,
+    });
+    const pack1 = await compiler.compile({
+      missionId: 'mission_001',
+      query: 'Follow up on lead',
+      correlationId: 'corr_001',
+    });
+    const pack2 = await compiler2.compile({
+      missionId: 'mission_001',
+      query: 'Follow up on lead',
+      correlationId: 'corr_001',
+    });
+    // Same events, different input order MUST produce same identity
+    assert.strictEqual(pack1.context_pack_id, pack2.context_pack_id);
+    passed++;
+    console.log('  PASS event permutation produces same identity');
+  } catch (e) {
+    failed++;
+    console.log('  FAIL event permutation produces same identity: ' + e.message);
+  }
+
   try {
     const pack = await compiler.compile({
       missionId: 'mission_001',
