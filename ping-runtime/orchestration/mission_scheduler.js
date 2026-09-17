@@ -53,6 +53,9 @@ const MISSION_WORKER_MAP = {
   // Knowledge missions
   KNOWLEDGE_EXTRACT: 'observation',
   KNOWLEDGE_INDEX: 'projection',
+  // Phase 5 (2026-09-17): route KNOWLEDGE_PROMOTE missions to the
+  // already-registered 'knowledge-promotion' worker (KnowledgePromoter).
+  KNOWLEDGE_PROMOTE: 'knowledge-promotion',
 
   // System missions — SYSTEM_HEALTH_CHECK is dispatched as the event_type by the
   // bridge (payload.event_type || mission.mission_type), so the worker must

@@ -61,9 +61,27 @@ const EVENT_MISSION_MAP = {
   CLASSIFICATION_CREATED: { missionType: 'RECOMMENDATION_CREATE', priority: 2 },
   RECOMMENDATION_CREATED: { missionType: 'PROJECTION_CREATE', priority: 1 },
   PROJECTION_CREATED: { missionType: 'REPLAY_VERIFY', priority: 1 },
+  // Phase 6 (2026-09-17): a directly emitted REPLAY_VERIFY event previously
+  // created no mission, so the dispatch-only worker runtime never ran the
+  // replay worker. Route it through the existing bridge: the mission ID is
+  // deterministic (sha256 missionType:event_id, ON CONFLICT DO NOTHING), so
+  // re-emitting the same semantic event cannot create duplicate execution.
+  // No loop: ReplayWorker emits REPLAY_COMPLETED, never REPLAY_VERIFY.
+  REPLAY_VERIFY: { missionType: 'REPLAY_VERIFY', priority: 1 },
   REPLAY_COMPLETED: { missionType: 'WITNESS_CREATE', priority: 1 },
   WITNESS_CREATED: { missionType: 'LINEAGE_CREATE', priority: 1 },
   // LINEAGE_CREATED is terminal — chain complete. No further missions created.
+
+  // Knowledge promotion (human-gated approval family) — Phase 5 (2026-09-17).
+  // These were absent from the bridge map, so the ordinary runtime could never
+  // route them to KnowledgePromoter. One mission type for the family; the
+  // scheduler's MISSION_WORKER_MAP routes it to the already-registered
+  // 'knowledge-promotion' worker. Emitting these events still requires the
+  // established authorized human action — this map only routes arrivals.
+  SNIPPET_APPROVED: { missionType: 'KNOWLEDGE_PROMOTE', priority: 2 },
+  SNIPPET_REJECTED: { missionType: 'KNOWLEDGE_PROMOTE', priority: 2 },
+  AI_RESPONSE_ACCEPTED: { missionType: 'KNOWLEDGE_PROMOTE', priority: 2 },
+  AI_RESPONSE_REJECTED: { missionType: 'KNOWLEDGE_PROMOTE', priority: 2 },
 
   // System events
   SYSTEM_HEALTH_CHECK: { missionType: 'SYSTEM_AUDIT', priority: 0 },
