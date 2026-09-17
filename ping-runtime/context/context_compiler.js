@@ -30,7 +30,7 @@ class ContextCompiler {
     if (!query) throw new Error('query is required');
 
     const correlationGroup = await this._getCorrelationGroup(missionId, correlationId);
-    const events = correlationGroup.events || [];
+    const events = this._canonicalizeEvents(correlationGroup.events || []);
 
     const canonicalObjectRefs = this._extractCanonicalObjectRefs(events);
     const artifactRefs = this._extractArtifactRefs(events);
@@ -78,6 +78,67 @@ class ContextCompiler {
     return { correlation_id: missionId, events: [] };
   }
 
+  _canonicalizeEvents(events) {
+    if (!Array.isArray(events)) {
+      throw new Error('Correlation group events must be an array');
+    }
+
+    const byId = new Map();
+    for (const event of events) {
+      if (!event || typeof event !== 'object' || Array.isArray(event)) {
+        throw new Error('Canonical event must be an object');
+      }
+      for (const field of ['event_id', 'event_type', 'source']) {
+        if (typeof event[field] !== 'string' || event[field].length === 0) {
+          throw new Error(`Canonical event ${field} must be a non-empty string`);
+        }
+      }
+
+      const parsedTimestamp = event.timestamp instanceof Date
+        ? event.timestamp
+        : new Date(event.timestamp);
+      if (!Number.isFinite(parsedTimestamp.getTime())) {
+        throw new Error(`Canonical event '${event.event_id}' has an invalid timestamp`);
+      }
+      for (const field of ['payload', 'metadata']) {
+        if (!event[field] || typeof event[field] !== 'object' || Array.isArray(event[field])) {
+          throw new Error(`Canonical event '${event.event_id}' ${field} must be an object`);
+        }
+      }
+
+      const canonicalEvent = {
+        event_id: event.event_id,
+        event_type: event.event_type,
+        source: event.source,
+        namespace: event.namespace ?? event.metadata.namespace ?? null,
+        timestamp: parsedTimestamp.toISOString(),
+        payload: event.payload,
+        metadata: event.metadata,
+      };
+      const contentHash = CanonicalAuthority.hash(canonicalEvent);
+      const previous = byId.get(canonicalEvent.event_id);
+      if (previous && previous.content_hash !== contentHash) {
+        throw new Error(
+          `Conflicting canonical event content for event_id '${canonicalEvent.event_id}'`
+        );
+      }
+      if (!previous) {
+        byId.set(canonicalEvent.event_id, {
+          event: canonicalEvent,
+          content_hash: contentHash,
+        });
+      }
+    }
+
+    return Array.from(byId.values())
+      .sort((left, right) => {
+        if (left.event.event_id < right.event.event_id) return -1;
+        if (left.event.event_id > right.event.event_id) return 1;
+        return 0;
+      })
+      .map(({ event, content_hash }) => ({ ...event, content_hash }));
+  }
+
   _extractCanonicalObjectRefs(events) {
     const refs = new Set();
     for (const event of events) {
@@ -91,7 +152,7 @@ class ContextCompiler {
       if (payload.invoice_id) refs.add('invoice:' + payload.invoice_id);
       if (payload.invoice_id) refs.add('invoice:' + payload.invoice_id);
     }
-    return Array.from(refs);
+    return Array.from(refs).sort();
   }
 
   _extractArtifactRefs(events) {
@@ -103,7 +164,7 @@ class ContextCompiler {
       if (payload.artifact_id) refs.add('artifact:' + payload.artifact_id);
       if (metadata.artifact_id) refs.add('artifact:' + metadata.artifact_id);
     }
-    return Array.from(refs);
+    return Array.from(refs).sort();
   }
 
   _extractRelationshipRefs(events) {
@@ -117,7 +178,7 @@ class ContextCompiler {
         refs.add('customer:' + payload.customerId + '→project:' + payload.project_id);
       }
     }
-    return Array.from(refs);
+    return Array.from(refs).sort();
   }
 
   _buildSourceMetadata(events) {
@@ -129,46 +190,36 @@ class ContextCompiler {
         authorities.add(event.metadata.authority);
       }
     }
+    const timestamps = events.map(event => event.timestamp).sort();
     return {
-      sources: Array.from(sources),
-      authorities: Array.from(authorities),
+      sources: Array.from(sources).sort(),
+      authorities: Array.from(authorities).sort(),
       event_count: events.length,
-      earliest_event: events.length > 0 ? events[0].timestamp : null,
-      latest_event: events.length > 0 ? events[events.length - 1].timestamp : null,
+      earliest_event: timestamps[0] || null,
+      latest_event: timestamps[timestamps.length - 1] || null,
     };
   }
 
   _buildRetrievalManifest(inputs) {
-    const stable = { ...inputs };
-    delete stable.eventCount; // non-deterministic during retries
-
-    // Events are an unordered set — canonicalize before hashing
-    if (stable.events && Array.isArray(stable.events)) {
-      // Extract only the canonical fields for hashing
-      const eventFields = stable.events.map(e => ({
-        event_id: e.event_id,
-        event_type: e.event_type,
-        source: e.source,
-        timestamp: e.timestamp,
-        payload: e.payload,
-        metadata: e.metadata,
-      }));
-      // Replace events array with canonical set hash
-      // This removes order from the hash computation
-      stable.events_hash = CanonicalAuthority.hashSet(eventFields);
-      // CRITICAL: Delete events array before hashing
-      // Otherwise the original order pollutes the hash
-      delete stable.events;
-    }
-
-    const hash = CanonicalAuthority.hash(stable);
+    const manifestInputs = {
+      mission_id: inputs.missionId,
+      query: inputs.query,
+      correlation_id: inputs.correlationId,
+    };
+    const selectedEvents = inputs.events.map(event => ({
+      event_id: event.event_id,
+      content_hash: event.content_hash,
+    }));
+    const hash = CanonicalAuthority.hash({
+      version: 1,
+      inputs: manifestInputs,
+      selected_events: selectedEvents,
+    });
     return {
+      version: 1,
       hash,
-      inputs: {
-        mission_id: inputs.missionId,
-        query: inputs.query,
-        correlation_id: inputs.correlationId,
-      },
+      inputs: manifestInputs,
+      selected_events: selectedEvents,
     };
   }
 
