@@ -42,10 +42,17 @@ function createIngestRoutes(canonicalizationService) {
     }
 
     try {
-      // Boundary authorization: a producer may claim its per-source namespace or
-      // an explicit override. Unauthorized claims (invalid namespace) are rejected
-      // here BEFORE canonicalization — the route guard for the namespace boundary.
-      const auth = canonicalizationService.authorizeNamespace(body.source, body.namespace);
+      // Boundary authorization: authorize against the AUTHENTICATED principal,
+      // never the client-supplied body.source. Phase 3 follow-up (2026-09-17):
+      // a bearer principal could otherwise claim an internal source
+      // (e.g. review-authority) to reach namespaces it is not entitled to.
+      // body.source remains the emitted provenance, but it grants no authority.
+      // No internal HTTP callers of /ingest exist (in-process callers use the
+      // service directly), so binding authorization to the bearer identity is
+      // safe. Missing identity fails closed.
+      const _agent = req.authenticatedAgent;
+      const _principal = _agent ? ('api:' + _agent.agentId) : 'api:unknown';
+      const auth = canonicalizationService.authorizeNamespace(_principal, body.namespace);
       if (!auth.authorized) {
         return res.status(400).json({ status: 'error', error: auth.reason });
       }

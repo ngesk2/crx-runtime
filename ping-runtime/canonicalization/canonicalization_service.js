@@ -43,11 +43,17 @@ class CanonicalizationService {
    * @param {object} options.eventRuntime — UnifiedEventRuntime instance
    * @param {object} [options.namespaces] — source → namespace map (e.g. { 'review-authority': 'tenant::hpp' })
    * @param {string} [options.defaultNamespace] — fallback namespace (default 'core::owner')
+   * @param {object} [options.namespaceEntitlements] — source → explicit namespace allowlist (Phase 3)
    */
   constructor(options = {}) {
     this._eventRuntime = options.eventRuntime || null;
     this._namespaces = options.namespaces || {};
     this._defaultNamespace = options.defaultNamespace || DEFAULT_NAMESPACE;
+    // Phase 3 (2026-09-17): per-principal namespace entitlements. An explicit
+    // namespace claim is allowed only for a listed namespace. null = the map
+    // was not configured; the boundary keeps its established syntax-only
+    // check (the gateway always configures the map).
+    this._namespaceEntitlements = options.namespaceEntitlements || null;
   }
 
   /**
@@ -69,6 +75,12 @@ class CanonicalizationService {
    * (authorized: true/false) the boundary route uses before canonicalizing;
    * it wraps resolveNamespace so resolution + validation have exactly one owner.
    *
+   * Phase 3 (2026-09-17): per-principal entitlement. When the entitlement map
+   * is configured, an EXPLICIT namespace claim is allowed only if the source
+   * is explicitly entitled to the resolved namespace; unknown sources and
+   * unlisted namespaces are denied (fail closed). Implicit resolution (no
+   * explicit claim) preserves existing behavior.
+   *
    * @param {string} source — producing source/authority ID
    * @param {string} [requested] — explicit namespace override (optional)
    * @returns {{authorized: true, namespace: string} | {authorized: false, reason: string}}
@@ -76,6 +88,17 @@ class CanonicalizationService {
   authorizeNamespace(source, requested) {
     try {
       const namespace = this.resolveNamespace(source, requested);
+      if (requested && this._namespaceEntitlements) {
+        const allowed = Object.prototype.hasOwnProperty.call(this._namespaceEntitlements, source)
+          ? this._namespaceEntitlements[source]
+          : [];
+        if (!allowed.includes(namespace)) {
+          return {
+            authorized: false,
+            reason: `Source '${source}' is not entitled to namespace '${namespace}' (explicit claim denied)`,
+          };
+        }
+      }
       return { authorized: true, namespace };
     } catch (err) {
       return { authorized: false, reason: err.message };

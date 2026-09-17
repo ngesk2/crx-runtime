@@ -134,7 +134,7 @@ class GatewayRuntime {
       this._pool = new Pool({
         host: process.env.POSTGRES_HOST || 'localhost',
         port: parseInt(process.env.POSTGRES_PORT || '5432'),
-        database: process.env.POSTGRES_DB || 'crx',
+        database: require('./db_guard').resolveDatabase(process.env.POSTGRES_DB),
         user: process.env.POSTGRES_USER || 'crx',
         password: process.env.POSTGRES_PASSWORD || 'crx',
         max: 10,
@@ -390,7 +390,7 @@ class GatewayRuntime {
         this._storage = new PostgresAdapter({
           host: process.env.POSTGRES_HOST || 'localhost',
           port: parseInt(process.env.POSTGRES_PORT || '5432'),
-          database: process.env.POSTGRES_DB || 'crx_runtime',
+          database: require('./db_guard').resolveDatabase(process.env.POSTGRES_DB),
           user: process.env.POSTGRES_USER || 'postgres',
           password: String(process.env.POSTGRES_PASSWORD || 'postgres'),
         });
@@ -453,6 +453,25 @@ class GatewayRuntime {
             'sms-connector': 'tenant::hpp',
             'google-connector': 'tenant::hpp',
             'github-connector': 'tenant::hpp',
+          },
+          // Phase 3 (2026-09-17): explicit per-principal namespace entitlements.
+          // Fail-closed: an explicit namespace claim is denied unless the source
+          // is listed here for that namespace. Implicit/default resolution is
+          // unchanged. Conservative initial policy: API principals may explicitly
+          // claim only the default namespace they already resolve to implicitly;
+          // system sources keep exactly the namespaces the per-source map above
+          // assigns them. The entitlement CONTENTS are a Nolan decision
+          // (P0 Remaining #1); unknown namespaces stay unclassified.
+          namespaceEntitlements: {
+            'api:muse': ['core::owner'],
+            'api:muse-level-2': ['core::owner'],
+            'review-authority': ['tenant::hpp'],
+            'customer-authority': ['tenant::hpp'],
+            'project-authority': ['tenant::hpp'],
+            'email-connector': ['tenant::hpp'],
+            'sms-connector': ['tenant::hpp'],
+            'google-connector': ['tenant::hpp'],
+            'github-connector': ['tenant::hpp'],
           },
         });
         console.log('[GatewayRuntime] Canonicalization Service initialized');
