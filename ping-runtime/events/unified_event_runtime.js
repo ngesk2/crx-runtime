@@ -323,17 +323,22 @@ class UnifiedEventRuntime {
    * This is the "view everything from one originating observation" query.
    * @param {string} correlationId
    * @param {number} [limit=200]
+   * @param {string|null} [namespace=null] — optional tenant/core boundary
    * @returns {{ status: string, events: Array }}
    */
-  async getCorrelationGroup(correlationId, limit = 200) {
+  async getCorrelationGroup(correlationId, limit = 200, namespace = null) {
     if (!this._pool) return { status: 'error', error: 'No pool' };
+    const params = [correlationId];
+    const namespaceClause = namespace ? ` AND namespace = $${params.push(namespace)}` : '';
+    const limitPlaceholder = `$${params.push(limit)}`;
     const result = await this._pool.query(
       `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace
        FROM ping_events
        WHERE metadata->>'correlation_id' = $1
+       ${namespaceClause}
        ORDER BY created_at ASC
-       LIMIT $2`,
-      [correlationId, limit]
+       LIMIT ${limitPlaceholder}`,
+      params
     );
     return { status: 'ok', events: result.rows };
   }

@@ -9,13 +9,18 @@ const crypto = require('crypto');
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 const { CanonicalAuthority } = require('../authorities/canonical_authority.js');
 
+const NAMESPACE_RE = /^(core|tenant)::[a-zA-Z0-9_.-]+$/;
+const MAX_CONTEXT_EVENTS = 100;
+
 class ContextCompiler {
   constructor(options = {}) {
     this._eventRuntime = options.eventRuntime || null;
+    this._evidenceAuthority = options.evidenceAuthority || null;
     this._knowledgeGraph = options.knowledgeGraph || null;
     this._customerAuthority = options.customerAuthority || null;
     this._projectAuthority = options.projectAuthority || null;
     this._dependencies = ['eventRuntime'];
+    if (this._evidenceAuthority) this._dependencies.push('evidenceAuthority');
     if (this._knowledgeGraph) this._dependencies.push('knowledgeGraph');
     if (this._customerAuthority) this._dependencies.push('customerAuthority');
     if (this._projectAuthority) this._dependencies.push('projectAuthority');
@@ -25,12 +30,30 @@ class ContextCompiler {
     return this._dependencies;
   }
 
-  async compile({ missionId, query, correlationId } = {}) {
+  async compile({ missionId, query, correlationId, namespace } = {}) {
     if (!missionId) throw new Error('missionId is required');
     if (!query) throw new Error('query is required');
+    if (!namespace || !NAMESPACE_RE.test(namespace)) {
+      throw new Error('namespace is required and must be canonical');
+    }
+    if (!this._eventRuntime || typeof this._eventRuntime.getCorrelationGroup !== 'function') {
+      throw new Error('ContextCompiler requires the canonical event runtime');
+    }
+    if (!this._evidenceAuthority || typeof this._evidenceAuthority.accumulate !== 'function') {
+      throw new Error('ContextCompiler requires EvidenceAuthority');
+    }
 
-    const correlationGroup = await this._getCorrelationGroup(missionId, correlationId);
-    const events = this._canonicalizeEvents(correlationGroup.events || []);
+    const resolvedCorrelationId = correlationId || missionId;
+    const correlationGroup = await this._getCorrelationGroup(resolvedCorrelationId, namespace);
+    if (correlationGroup.events.length > MAX_CONTEXT_EVENTS) {
+      throw new Error(`Context selection exceeds the ${MAX_CONTEXT_EVENTS}-event bound`);
+    }
+    const events = this._canonicalizeEvents(correlationGroup.events, {
+      namespace,
+      correlationId: resolvedCorrelationId,
+    });
+    this._validateLineage(events);
+    await this._verifyEvidenceBacking(events, namespace, resolvedCorrelationId);
 
     const canonicalObjectRefs = this._extractCanonicalObjectRefs(events);
     const artifactRefs = this._extractArtifactRefs(events);
@@ -40,14 +63,16 @@ class ContextCompiler {
     const retrievalManifest = this._buildRetrievalManifest({
       missionId,
       query,
-      correlationId: correlationGroup.correlation_id,
+      namespace,
+      correlationId: resolvedCorrelationId,
       eventCount: events.length,
       events,
     });
     const contextPackId = this._generateContextPackId({
       missionId,
       query,
-      correlationId: correlationGroup.correlation_id,
+      namespace,
+      correlationId: resolvedCorrelationId,
       retrievalManifest,
     });
 
@@ -55,6 +80,7 @@ class ContextCompiler {
       context_pack_id: contextPackId,
       mission_id: missionId,
       query,
+      namespace,
       canonical_object_refs: canonicalObjectRefs,
       artifact_refs: artifactRefs,
       evidence_refs: evidenceRefs,
@@ -65,20 +91,19 @@ class ContextCompiler {
     };
   }
 
-  async _getCorrelationGroup(missionId, correlationId) {
-    if (!this._eventRuntime) {
-      return { correlation_id: correlationId || missionId, events: [] };
+  async _getCorrelationGroup(correlationId, namespace) {
+    const group = await this._eventRuntime.getCorrelationGroup(
+      correlationId,
+      MAX_CONTEXT_EVENTS + 1,
+      namespace
+    );
+    if (!group || group.status !== 'ok' || !Array.isArray(group.events)) {
+      throw new Error(`Canonical event retrieval failed for correlation '${correlationId}'`);
     }
-
-    if (correlationId) {
-      const group = await this._eventRuntime.getCorrelationGroup(correlationId, 100);
-      return group;
-    }
-
-    return { correlation_id: missionId, events: [] };
+    return group;
   }
 
-  _canonicalizeEvents(events) {
+  _canonicalizeEvents(events, expected = {}) {
     if (!Array.isArray(events)) {
       throw new Error('Correlation group events must be an array');
     }
@@ -115,6 +140,19 @@ class ContextCompiler {
         payload: event.payload,
         metadata: event.metadata,
       };
+      if (expected.namespace && canonicalEvent.namespace !== expected.namespace) {
+        throw new Error(
+          `Canonical event '${canonicalEvent.event_id}' namespace mismatch`
+        );
+      }
+      if (
+        expected.correlationId &&
+        canonicalEvent.metadata.correlation_id !== expected.correlationId
+      ) {
+        throw new Error(
+          `Canonical event '${canonicalEvent.event_id}' correlation mismatch`
+        );
+      }
       const contentHash = CanonicalAuthority.hash(canonicalEvent);
       const previous = byId.get(canonicalEvent.event_id);
       if (previous && previous.content_hash !== contentHash) {
@@ -137,6 +175,31 @@ class ContextCompiler {
         return 0;
       })
       .map(({ event, content_hash }) => ({ ...event, content_hash }));
+  }
+
+  _validateLineage(events) {
+    const selectedIds = new Set(events.map(event => event.event_id));
+    for (const event of events) {
+      const causationId = event.metadata.causation_id;
+      if (causationId && !selectedIds.has(causationId)) {
+        throw new Error(
+          `Canonical event '${event.event_id}' causation_id '${causationId}' is not selected`
+        );
+      }
+    }
+  }
+
+  async _verifyEvidenceBacking(events, namespace, correlationId) {
+    const eventIds = events.map(event => event.event_id);
+    const backing = await this._evidenceAuthority.accumulate(eventIds);
+    const verified = this._canonicalizeEvents(backing, { namespace, correlationId });
+    this._validateLineage(verified);
+
+    const selectedRefs = events.map(event => [event.event_id, event.content_hash]);
+    const verifiedRefs = verified.map(event => [event.event_id, event.content_hash]);
+    if (CanonicalAuthority.hash(selectedRefs) !== CanonicalAuthority.hash(verifiedRefs)) {
+      throw new Error('Evidence backing mismatch for selected canonical events');
+    }
   }
 
   _extractCanonicalObjectRefs(events) {
@@ -204,6 +267,7 @@ class ContextCompiler {
     const manifestInputs = {
       mission_id: inputs.missionId,
       query: inputs.query,
+      namespace: inputs.namespace,
       correlation_id: inputs.correlationId,
     };
     const selectedEvents = inputs.events.map(event => ({
@@ -223,10 +287,11 @@ class ContextCompiler {
     };
   }
 
-  _generateContextPackId({ missionId, query, correlationId, retrievalManifest }) {
+  _generateContextPackId({ missionId, query, namespace, correlationId, retrievalManifest }) {
     const identity = {
       mission_id: missionId,
       query,
+      namespace,
       correlationId,
       retrieval_hash: retrievalManifest.hash,
     };
@@ -236,8 +301,9 @@ class ContextCompiler {
 
   async health() {
     return {
-      healthy: !!this._eventRuntime,
+      healthy: !!this._eventRuntime && !!this._evidenceAuthority,
       eventRuntime: !!this._eventRuntime,
+      evidenceAuthority: !!this._evidenceAuthority,
       knowledgeGraph: !!this._knowledgeGraph,
       customerAuthority: !!this._customerAuthority,
       projectAuthority: !!this._projectAuthority,

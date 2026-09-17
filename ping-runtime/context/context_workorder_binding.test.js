@@ -112,9 +112,11 @@ test('canonical worker outcome retains the verified ContextPack binding', async 
 });
 
 test('ContextIntegration binds compiled context at the WorkOrder boundary', async () => {
+  let compileRequest = null;
   const integration = new ContextIntegration({
     contextCompiler: {
-      async compile() {
+      async compile(request) {
+        compileRequest = request;
         return {
           context_pack_id: 'ctx_compiled_001',
           canonical_object_refs: ['lead:lead_001'],
@@ -137,6 +139,7 @@ test('ContextIntegration binds compiled context at the WorkOrder boundary', asyn
   assert.strictEqual(workOrder.context_pack_id, 'ctx_compiled_001');
   assert.strictEqual(workOrder.input.context_pack_id, 'ctx_compiled_001');
   assert.deepStrictEqual(workOrder.input.context_refs.evidence, ['evt_a']);
+  assert.strictEqual(compileRequest.namespace, 'core::owner');
 });
 
 test('JSON schemas require ContextPack identity on both envelopes', () => {

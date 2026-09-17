@@ -3,6 +3,7 @@
 const assert = require('assert');
 const { test } = require('node:test');
 const { ContextCompiler } = require('./context_compiler');
+const { UnifiedEventRuntime } = require('../events/unified_event_runtime');
 
 function event(id, options = {}) {
   const namespace = options.namespace || 'tenant::acme';
@@ -138,4 +139,21 @@ test('compiler health requires both canonical reader and evidence authority', as
   assert.strictEqual(healthy.healthy, true);
   assert.strictEqual(healthy.evidenceAuthority, true);
   assert.strictEqual(unverified.healthy, false);
+});
+
+test('UnifiedEventRuntime applies namespace in the canonical correlation query', async () => {
+  const queries = [];
+  const runtime = new UnifiedEventRuntime({
+    pool: {
+      async query(sql, params) {
+        queries.push({ sql, params });
+        return { rows: [] };
+      },
+    },
+  });
+
+  await runtime.getCorrelationGroup('corr_001', 101, 'tenant::acme');
+  assert.match(queries[0].sql, /AND namespace = \$2/);
+  assert.match(queries[0].sql, /LIMIT \$3/);
+  assert.deepStrictEqual(queries[0].params, ['corr_001', 'tenant::acme', 101]);
 });

@@ -22,6 +22,7 @@ class ContextIntegration {
       missionId,
       query,
       correlationId,
+      namespace: workOrderParams.namespace,
     });
 
     const enhancedInput = {

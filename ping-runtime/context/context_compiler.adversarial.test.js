@@ -8,31 +8,49 @@ const EVENT_A = {
   event_id: 'evt_a',
   event_type: 'LEAD_CREATED',
   source: 'webhook',
+  namespace: 'core::owner',
   timestamp: '2026-09-17T12:00:00Z',
   payload: {
     lead_id: 'lead_001',
     customer_id: 'cust_001',
     nested: { score: 10, labels: ['new', 'qualified'] },
   },
-  metadata: { authority: 'event-authority' },
+  metadata: {
+    authority: 'event-authority',
+    namespace: 'core::owner',
+    correlation_id: 'corr_001',
+    causation_id: null,
+  },
 };
 
 const EVENT_B = {
   event_id: 'evt_b',
   event_type: 'CUSTOMER_CREATED',
   source: 'customer-authority',
+  namespace: 'core::owner',
   timestamp: '2026-09-17T12:01:00Z',
   payload: { customer_id: 'cust_001', project_id: 'project_001' },
-  metadata: { authority: 'customer-authority' },
+  metadata: {
+    authority: 'customer-authority',
+    namespace: 'core::owner',
+    correlation_id: 'corr_001',
+    causation_id: 'evt_a',
+  },
 };
 
 const EVENT_C = {
   event_id: 'evt_c',
   event_type: 'CUSTOMER_CREATED',
   source: 'customer-authority',
+  namespace: 'core::owner',
   timestamp: '2026-09-17T12:02:00Z',
   payload: { customer_id: 'cust_002' },
-  metadata: { authority: 'customer-authority' },
+  metadata: {
+    authority: 'customer-authority',
+    namespace: 'core::owner',
+    correlation_id: 'corr_001',
+    causation_id: 'evt_a',
+  },
 };
 
 function clone(value) {
@@ -40,10 +58,16 @@ function clone(value) {
 }
 
 function compilerFor(events) {
+  const eventRuntime = {
+    async getCorrelationGroup(correlationId) {
+      return { status: 'ok', correlation_id: correlationId, events };
+    },
+  };
   return new ContextCompiler({
-    eventRuntime: {
-      async getCorrelationGroup(correlationId) {
-        return { correlation_id: correlationId, events };
+    eventRuntime,
+    evidenceAuthority: {
+      async accumulate(ids) {
+        return events.filter(event => ids.includes(event.event_id));
       },
     },
   });
@@ -54,6 +78,7 @@ async function compile(events) {
     missionId: 'mission_001',
     query: 'Follow up',
     correlationId: 'corr_001',
+    namespace: 'core::owner',
   });
 }
 
@@ -119,7 +144,12 @@ test('conflicting contents under one event identity fail closed', async () => {
 
 test('object property insertion order does not change canonical identity', async () => {
   const reordered = {
-    metadata: { authority: 'event-authority' },
+    metadata: {
+      causation_id: null,
+      correlation_id: 'corr_001',
+      namespace: 'core::owner',
+      authority: 'event-authority',
+    },
     payload: {
       nested: { labels: ['new', 'qualified'], score: 10 },
       customer_id: 'cust_001',
@@ -127,6 +157,7 @@ test('object property insertion order does not change canonical identity', async
     },
     timestamp: '2026-09-17T12:00:00Z',
     source: 'webhook',
+    namespace: 'core::owner',
     event_type: 'LEAD_CREATED',
     event_id: 'evt_a',
   };
