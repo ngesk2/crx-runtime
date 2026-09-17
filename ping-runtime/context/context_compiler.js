@@ -42,6 +42,7 @@ class ContextCompiler {
       query,
       correlationId: correlationGroup.correlation_id,
       eventCount: events.length,
+      events,
     });
     const contextPackId = this._generateContextPackId({
       missionId,
