@@ -140,9 +140,30 @@ class ContextCompiler {
 
   _buildRetrievalManifest(inputs) {
     const stable = { ...inputs };
-    delete stable.eventCount;
+    delete stable.eventCount; // non-deterministic during retries
+
+    // Events are an unordered set — canonicalize before hashing
+    if (stable.events && Array.isArray(stable.events)) {
+      // Extract only the canonical fields for hashing
+      const eventFields = stable.events.map(e => ({
+        event_id: e.event_id,
+        event_type: e.event_type,
+        source: e.source,
+        timestamp: e.timestamp,
+        payload: e.payload,
+        metadata: e.metadata,
+      }));
+      // Replace events array with canonical set hash
+      // This removes order from the hash computation
+      stable.events_hash = CanonicalAuthority.hashSet(eventFields);
+      // CRITICAL: Delete events array before hashing
+      // Otherwise the original order pollutes the hash
+      delete stable.events;
+    }
+
+    const hash = CanonicalAuthority.hash(stable);
     return {
-      hash: CanonicalAuthority.hash(stable),
+      hash,
       inputs: {
         mission_id: inputs.missionId,
         query: inputs.query,
