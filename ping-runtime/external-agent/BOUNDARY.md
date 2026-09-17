@@ -40,13 +40,15 @@ The exterior agent's sandbox boundary is its authority boundary. The agent:
 PING-side ordering (contract EXECUTION_CONTRACT.md:221-255, verified live):
 
 1. `issueWorkOrder` -> authorization (fail-closed) -> deterministic
-   work_order_id = sha256("workorder:" + task_id)[0:16] (idempotent re-issue).
+   work_order_id = sha256("workorder:" + task_id)[0:16] (idempotent re-issue),
+   bound to the immutable `context_pack_id` selected by PING.
 2. Transport invokes exactly one agent with the work order. Windows-native
    agents (Hermes) run in their own filesystem: they CANNOT see WSL paths
    (verified 2026-09-17: FIXTURE.txt unreadable from WSL scratch). Input that
    must be read goes inline in the work order, never by path.
-3. `verifyResultEnvelope` binds authorized agent = invoked agent = result agent,
-   then validates work order, capability, status/output/error, and deadline.
+3. `verifyResultEnvelope` binds authorized agent = invoked agent = result agent
+   and authorized context = WorkOrder context = result context, then validates
+   work order, capability, status/output/error, and deadline.
    Failure is non-retryable and cannot reach canonical event authority.
 4. Caller-supplied semantic verification (e.g. exact output match) runs next.
 5. `recordVerifiedResult` computes one deterministic result identity per issued

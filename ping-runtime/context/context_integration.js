@@ -38,6 +38,7 @@ class ContextIntegration {
     if (this._externalAgentAdapter) {
       const workOrder = await this._externalAgentAdapter.issueWorkOrder({
         ...workOrderParams,
+        contextPackId: contextPack.context_pack_id,
         input: enhancedInput,
       });
       return workOrder;

@@ -4,9 +4,10 @@
   "description": "Result envelope returned by the exterior agent. PING validates it before recording WORKER_COMPLETED or WORKER_FAILED through the canonical event runtime. Validation failure is non-retryable.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["work_order_id","agent_id","capability","status","output","evidence","error"],
+  "required": ["work_order_id","context_pack_id","agent_id","capability","status","output","evidence","error"],
   "properties": {
     "work_order_id": {"type": "string", "minLength": 1, "description": "Must echo the issued work_order_id exactly."},
+    "context_pack_id": {"type": "string", "minLength": 1, "description": "Must echo the ContextPack identity authorized by the issued WorkOrder exactly."},
     "agent_id": {"type": "string", "minLength": 1, "description": "Self-declared agent identity; PING cross-checks it against the invoked agent."},
     "capability": {"type": "string", "minLength": 1, "description": "Must echo the capability authorized by the issued work order."},
     "status": {"type": "string", "enum": ["completed","failed"]},

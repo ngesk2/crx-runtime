@@ -17,6 +17,7 @@ const BASE = {
   taskId: 'task-uppercase-001',
   missionId: 'mission-agent-exec-001',
   correlationId: 'sprint-2026-09-16',
+  contextPackId: 'ctx_agent_exec_001',
   input: { text: 'abc' },
   constraints: {
     read_only: true, no_writes: true, no_network: true,
@@ -74,6 +75,7 @@ n++; console.log(`ok ${n} - issueWorkOrder throws on denial`);
 const VERIFY = { invokedAgentId: 'hermes', verifiedAt: '2026-09-17T02:59:59Z' };
 const res = {
   work_order_id: '0d598aef352b9a8a',
+  context_pack_id: 'ctx_agent_exec_001',
   agent_id: 'hermes',
   capability: 'text.transform',
   status: 'completed',

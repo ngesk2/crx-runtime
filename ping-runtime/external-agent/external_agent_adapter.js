@@ -108,7 +108,7 @@ function authorizeWorkOrder({ agentId, capability, namespace, constraints }) {
 /**
  * Build (but do not send) a WorkOrder envelope. Throws on authorization denial.
  */
-function issueWorkOrder({ agentId, capability, namespace, taskId, missionId, correlationId, input, constraints, resultPath, deadline, causationId, attempt = 1 }) {
+function issueWorkOrder({ agentId, capability, namespace, taskId, missionId, correlationId, contextPackId, input, constraints, resultPath, deadline, causationId, attempt = 1 }) {
   const auth = authorizeWorkOrder({ agentId, capability, namespace, constraints });
   if (!auth.granted) {
     const err = new Error(`Work order denied: ${auth.reason}`);
@@ -116,7 +116,7 @@ function issueWorkOrder({ agentId, capability, namespace, taskId, missionId, cor
     err.reason = auth.reason;
     throw err;
   }
-  for (const [field, value] of Object.entries({ taskId, missionId, correlationId, resultPath, deadline })) {
+  for (const [field, value] of Object.entries({ taskId, missionId, correlationId, contextPackId, resultPath, deadline })) {
     if (typeof value !== 'string' || value.length === 0) {
       const err = new Error(`Work order denied: ${field} must be a non-empty string`);
       err.code = 'WORK_ORDER_DENIED';
@@ -144,6 +144,7 @@ function issueWorkOrder({ agentId, capability, namespace, taskId, missionId, cor
     mission_id: missionId,
     task_id: taskId,
     correlation_id: correlationId,
+    context_pack_id: contextPackId,
     causation_id: causationId || null,
     attempt,
     principal: 'ping:external-agent-adapter',
@@ -177,6 +178,7 @@ function resultIdentity(_result, workOrder) {
     attempt: workOrder.attempt,
     agent_id: workOrder.agent_id,
     capability: workOrder.capability,
+    context_pack_id: workOrder.context_pack_id,
     namespace: workOrder.namespace,
   };
   return crypto.createHash('sha256').update(`external-result:${stableStringify(binding)}`).digest('hex');
@@ -190,13 +192,13 @@ function verifyResultEnvelope(result, workOrder, { invokedAgentId, verifiedAt } 
   if (!result || typeof result !== 'object' || Array.isArray(result)) return invalidResult('Result is not an object');
   if (!workOrder || typeof workOrder !== 'object' || Array.isArray(workOrder)) return invalidResult('Work order is not an object');
 
-  for (const f of ['work_order_id', 'agent_id', 'capability', 'status', 'output', 'evidence', 'error']) {
+  for (const f of ['work_order_id', 'context_pack_id', 'agent_id', 'capability', 'status', 'output', 'evidence', 'error']) {
     if (!(f in result)) return invalidResult(`Missing field: ${f}`);
   }
-  for (const f of ['work_order_id', 'agent_id', 'capability', 'deadline']) {
+  for (const f of ['work_order_id', 'context_pack_id', 'agent_id', 'capability', 'deadline']) {
     if (typeof workOrder[f] !== 'string' || workOrder[f].length === 0) return invalidResult(`Invalid work order field: ${f}`);
   }
-  for (const f of ['work_order_id', 'agent_id', 'capability', 'status']) {
+  for (const f of ['work_order_id', 'context_pack_id', 'agent_id', 'capability', 'status']) {
     if (typeof result[f] !== 'string' || result[f].length === 0) return invalidResult(`Invalid result field: ${f}`);
   }
   if (!result.evidence || typeof result.evidence !== 'object' || Array.isArray(result.evidence)) {
@@ -204,6 +206,9 @@ function verifyResultEnvelope(result, workOrder, { invokedAgentId, verifiedAt } 
   }
   if (result.work_order_id !== workOrder.work_order_id) {
     return invalidResult('work_order_id mismatch (envelope does not match issued work order)');
+  }
+  if (result.context_pack_id !== workOrder.context_pack_id) {
+    return invalidResult('context_pack_id mismatch (result does not match authorized context)');
   }
   if (typeof invokedAgentId !== 'string' || invokedAgentId.length === 0) {
     return invalidResult('invokedAgentId is required for executor binding');
@@ -254,6 +259,7 @@ async function recordVerifiedResult({ eventRuntime, result, workOrder, invokedAg
       mission_id: workOrder.mission_id,
       task_id: workOrder.task_id,
       work_order_id: workOrder.work_order_id,
+      context_pack_id: workOrder.context_pack_id,
       result_id: verification.result_id,
       agent_id: workOrder.agent_id,
       capability: workOrder.capability,
@@ -269,6 +275,7 @@ async function recordVerifiedResult({ eventRuntime, result, workOrder, invokedAg
       causation_id: workOrder.causation_id,
       metadata: {
         work_order_id: workOrder.work_order_id,
+        context_pack_id: workOrder.context_pack_id,
         result_id: verification.result_id,
       },
     }
