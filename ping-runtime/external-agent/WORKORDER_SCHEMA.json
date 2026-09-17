@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PING ExternalAgentAdapter WorkOrder envelope v1",
+  "description": "File-protocol work order issued by PING (authority side) to an exterior agent. The agent executes within its own sandbox and MUST NOT emit canonical events, write mission state, or decide promotion. Proven live 2026-09-16/17 (Hermes one-shot execution, work_order_id 0d598aef352b9a8a).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["work_order_id","agent_id","mission_id","task_id","correlation_id","attempt","principal","namespace","capability","input","constraints","result_path","deadline"],
+  "properties": {
+    "work_order_id": {"type": "string", "minLength": 1, "description": "Deterministic: sha256('workorder:' + task_id)[0:16]. Idempotent re-issue."},
+    "agent_id": {"type": "string", "minLength": 1, "description": "Agent authorized to execute this work order. Must equal the invoked and result agent identities."},
+    "mission_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "correlation_id": {"type": "string", "minLength": 1},
+    "causation_id": {"type": ["string","null"]},
+    "attempt": {"type": "integer", "minimum": 1},
+    "principal": {"type": "string", "const": "ping:external-agent-adapter", "description": "Issuing principal. Never self-asserted by the agent."},
+    "namespace": {"type": "string", "pattern": "^(core|tenant)::[a-z0-9_.-]+$", "description": "Isolation namespace for the execution."},
+    "capability": {"type": "string", "minLength": 1, "description": "Capability requested, e.g. 'fixture.read', 'text.transform'. Must be in the agent profile allowlist."},
+    "input": {"type": "object"},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["read_only","allowed_workspace","no_network","no_writes","no_canonical_events","no_mission_state_writes"],
+      "properties": {
+        "read_only": {"type": "boolean"},
+        "no_writes": {"type": "boolean"},
+        "no_network": {"type": "boolean"},
+        "no_tool_use_required": {"type": "boolean"},
+        "no_canonical_events": {"type": "boolean"},
+        "no_mission_state_writes": {"type": "boolean"},
+        "allowed_workspace": {"type": "string"},
+        "allowed_toolsets": {"type": "array", "items": {"type": "string"}},
+        "allowed_capabilities": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "result_path": {"type": "string", "minLength": 1, "description": "Where PING persists the captured result envelope. The agent never writes here directly in subprocess transport; PING captures stdout and writes it."},
+    "deadline": {"type": "string", "format": "date-time"}
+  }
+}
