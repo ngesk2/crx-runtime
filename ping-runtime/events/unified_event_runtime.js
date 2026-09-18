@@ -154,8 +154,44 @@ class UnifiedEventRuntime {
         if ((result.rowCount || 0) > 0) {
           this._stats.persisted++;
         } else {
-          this._stats.deduplicated++;
-          return { status: 'ok', eventId, event, deduplicated: true };
+          // ON CONFLICT DO NOTHING - check if duplicate or collision
+          const persisted = await this._pool.query(
+            'SELECT payload, metadata, namespace FROM ping_events WHERE event_id = ',
+            [event.event_id]
+          );
+          
+          if (persisted.rows.length > 0) {
+            const persistedRow = persisted.rows[0];
+            const persistedPayload = JSON.stringify(persistedRow.payload);
+            const persistedMetadata = JSON.stringify(persistedRow.metadata);
+            const persistedNamespace = persistedRow.namespace;
+            
+            const currentPayload = JSON.stringify(event.payload);
+            const currentMetadata = JSON.stringify(event.metadata);
+            const currentNamespace = event.namespace;
+            
+            // Compare canonical content
+            // Note: metadata can differ on legitimate retries (causation_id, correlation_id, etc.)
+            // Only payload collision is treated as an error
+            if (persistedPayload === currentPayload) {
+              // Genuine duplicate (same payload, metadata differences are OK for retries)
+              this._stats.deduplicated++;
+              return { status: 'ok', eventId, event, deduplicated: true };
+            } else {
+              // Collision - same event ID but different payload
+              this._stats.failed++;
+              return { 
+                status: 'error', 
+                error: 'Collision detected: same event_id with different payload', 
+                eventId,
+                collision: true
+              };
+            }
+          } else {
+            // Should not happen if rowCount was 0, but handle gracefully
+            this._stats.deduplicated++;
+            return { status: 'ok', eventId, event, deduplicated: true };
+          }
         }
       } catch (err) {
         this._stats.failed++;

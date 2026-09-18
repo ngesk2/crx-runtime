@@ -170,11 +170,25 @@ async function main() {
   // A persisted duplicate is already canonical history. Re-dispatching it would
   // repeat mission creation and integration side effects on every retry.
   await testAsync('Persisted duplicate does not dispatch handlers or integrations twice', async () => {
-    let inserts = 0;
     const pool = {
-      async query() {
-        inserts++;
-        return { rowCount: inserts === 1 ? 1 : 0 };
+      async query(sql, params) {
+        if (sql.includes('INSERT')) {
+          // First insert succeeds, second returns rowCount: 0 (ON CONFLICT)
+          if (!this._insertCount) this._insertCount = 0;
+          this._insertCount++;
+          return { rowCount: this._insertCount === 1 ? 1 : 0 };
+        }
+        if (sql.includes('SELECT')) {
+          // Return the exact same payload for duplicate detection
+          return { 
+            rows: [{ 
+              payload: { work_order_id: 'wo-1', result_id: 'result-1' },
+              metadata: {},
+              namespace: 'core::system'
+            }] 
+          };
+        }
+        return { rows: [] };
       },
     };
     const integrationManager = {
@@ -209,14 +223,20 @@ async function main() {
     const pool = {
       async query(sql, params) {
         if (sql.includes('INSERT') && sql.includes('ping_events')) {
-          // First insert succeeds, subsequent are duplicates
+          // First insert succeeds, subsequent return rowCount: 0
           if (!this._insertCount) this._insertCount = 0;
           this._insertCount++;
-          if (this._insertCount === 1) {
-            return { rowCount: 1 };
-          } else {
-            return { rowCount: 0 }; // ON CONFLICT DO NOTHING
-          }
+          return { rowCount: this._insertCount === 1 ? 1 : 0 };
+        }
+        if (sql.includes('SELECT') && sql.includes('ping_events')) {
+          // Return the same payload for duplicate detection
+          return { 
+            rows: [{ 
+              payload: { value: 42 },
+              metadata: {},
+              namespace: null
+            }] 
+          };
         }
         return { rows: [] };
       },
@@ -248,20 +268,24 @@ async function main() {
 
   // Test: Collision detection - same event ID with different content should error
   await testAsync('Collision detection: same event ID with different content errors', async () => {
+    const storedEvents = {};
     const pool = {
       async query(sql, params) {
         if (sql.includes('INSERT') && sql.includes('ping_events')) {
-          // First insert succeeds
-          if (!this._insertCount) this._insertCount = 0;
-          this._insertCount++;
-          if (this._insertCount === 1) {
-            return { rowCount: 1 };
-          } else {
-            // For collision, we should detect this and error
-            // Current implementation returns rowCount: 0 (treated as duplicate)
-            // This test documents the defect: collision is not detected
-            return { rowCount: 0 };
-          }
+          // Always return rowCount: 0 to simulate ON CONFLICT DO NOTHING
+          // (event_id already exists from first insert)
+          return { rowCount: 0 };
+        }
+        if (sql.includes('SELECT') && sql.includes('ping_events')) {
+          // Return the originally persisted payload (value: 42)
+          // This will differ from the second emission's payload (value: 999)
+          return { 
+            rows: [{ 
+              payload: { value: 42 },
+              metadata: {},
+              namespace: null
+            }] 
+          };
         }
         return { rows: [] };
       },
@@ -272,19 +296,16 @@ async function main() {
     };
     const er = new UnifiedEventRuntime({ pool, integrationManager });
     
-    // First emission
+    // First emission - this will be stored (we fake it by returning rowCount: 0 on SELECT)
     await er.emit('TEST_COLLISION', 'test', { value: 42 });
     
     // Second emission with same event type/source but different payload
-    // In a proper collision detection system, this should error
-    // Current implementation treats it as a duplicate (rowCount: 0)
+    // This should now be detected as a collision and error
     const result = await er.emit('TEST_COLLISION', 'test', { value: 999 });
     
-    // This assertion documents the current defect
-    // The result is classified as duplicate (deduplicated: true)
-    // But the content is materially different - this should be a collision error
-    assert.strictEqual(result.deduplicated, true, 'Current defect: collision treated as duplicate');
-    // TODO: Implement collision detection by reading persisted row and comparing canonical content
+    assert.strictEqual(result.status, 'error', 'Collision should return error status');
+    assert.strictEqual(result.collision, true, 'Error should be marked as collision');
+    assert.ok(result.error.includes('Collision detected'), 'Error message should mention collision');
   });
 
   console.log(`\n=== Summary ===`);
