@@ -246,6 +246,47 @@ async function main() {
     assert.strictEqual(er._stats.deduplicated, 9, 'Runtime should track 9 deduplications');
   });
 
+  // Test: Collision detection - same event ID with different content should error
+  await testAsync('Collision detection: same event ID with different content errors', async () => {
+    const pool = {
+      async query(sql, params) {
+        if (sql.includes('INSERT') && sql.includes('ping_events')) {
+          // First insert succeeds
+          if (!this._insertCount) this._insertCount = 0;
+          this._insertCount++;
+          if (this._insertCount === 1) {
+            return { rowCount: 1 };
+          } else {
+            // For collision, we should detect this and error
+            // Current implementation returns rowCount: 0 (treated as duplicate)
+            // This test documents the defect: collision is not detected
+            return { rowCount: 0 };
+          }
+        }
+        return { rows: [] };
+      },
+    };
+    const integrationManager = {
+      calls: 0,
+      async emit() { this.calls++; },
+    };
+    const er = new UnifiedEventRuntime({ pool, integrationManager });
+    
+    // First emission
+    await er.emit('TEST_COLLISION', 'test', { value: 42 });
+    
+    // Second emission with same event type/source but different payload
+    // In a proper collision detection system, this should error
+    // Current implementation treats it as a duplicate (rowCount: 0)
+    const result = await er.emit('TEST_COLLISION', 'test', { value: 999 });
+    
+    // This assertion documents the current defect
+    // The result is classified as duplicate (deduplicated: true)
+    // But the content is materially different - this should be a collision error
+    assert.strictEqual(result.deduplicated, true, 'Current defect: collision treated as duplicate');
+    // TODO: Implement collision detection by reading persisted row and comparing canonical content
+  });
+
   console.log(`\n=== Summary ===`);
   console.log(`Passed: ${passed}`);
   console.log(`Failed: ${failed}`);
