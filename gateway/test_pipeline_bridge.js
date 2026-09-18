@@ -167,6 +167,42 @@ async function main() {
     assert.strictEqual(stats.failed, 0);
   });
 
+  // A persisted duplicate is already canonical history. Re-dispatching it would
+  // repeat mission creation and integration side effects on every retry.
+  await testAsync('Persisted duplicate does not dispatch handlers or integrations twice', async () => {
+    let inserts = 0;
+    const pool = {
+      async query() {
+        inserts++;
+        return { rowCount: inserts === 1 ? 1 : 0 };
+      },
+    };
+    const integrationManager = {
+      calls: 0,
+      async emit() { this.calls++; },
+    };
+    const eventRuntime = new UnifiedEventRuntime({ pool, integrationManager });
+    let handlerCalls = 0;
+    eventRuntime.on('WORKER_COMPLETED', async () => { handlerCalls++; });
+
+    const args = [
+      'WORKER_COMPLETED',
+      'worker-runtime:external-agent-adapter',
+      { work_order_id: 'wo-1', result_id: 'result-1' },
+      { namespace: 'core::system', logical_id: 'result-1' },
+    ];
+    const first = await eventRuntime.emit(...args);
+    const duplicate = await eventRuntime.emit(...args);
+
+    assert.strictEqual(first.deduplicated, undefined);
+    assert.strictEqual(duplicate.deduplicated, true);
+    assert.strictEqual(first.eventId, duplicate.eventId);
+    assert.strictEqual(handlerCalls, 1);
+    assert.strictEqual(integrationManager.calls, 1);
+    assert.strictEqual(eventRuntime.getStats().deduplicated, 1);
+    assert.strictEqual(eventRuntime.getStats().emitted, 1);
+  });
+
   console.log(`\n=== Summary ===`);
   console.log(`Passed: ${passed}`);
   console.log(`Failed: ${failed}`);

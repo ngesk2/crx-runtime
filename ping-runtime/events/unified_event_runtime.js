@@ -155,6 +155,7 @@ class UnifiedEventRuntime {
           this._stats.persisted++;
         } else {
           this._stats.deduplicated++;
+          return { status: 'ok', eventId, event, deduplicated: true };
         }
       } catch (err) {
         this._stats.failed++;
@@ -176,7 +177,12 @@ class UnifiedEventRuntime {
     // 7. Route to integrations
     if (this._integrationManager) {
       try {
-        await this._integrationManager.emit(event.event_type, event.payload);
+        await this._integrationManager.emit(event.event_type, event.payload, {
+          namespace: event.namespace,
+          event_id: event.event_id,
+          correlation_id: event.metadata.correlation_id,
+          causation_id: event.metadata.causation_id,
+        });
       } catch (err) {
         console.error(`[EventRuntime] Integration routing failed:`, err.message);
       }
