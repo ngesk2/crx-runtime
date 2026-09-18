@@ -203,6 +203,49 @@ async function main() {
     assert.strictEqual(eventRuntime.getStats().emitted, 1);
   });
 
+  // Test: Concurrent duplicate emissions produce one canonical outcome
+  await testAsync('Concurrent duplicate emissions produce one canonical outcome', async () => {
+    let handlerCalls = 0;
+    const pool = {
+      async query(sql, params) {
+        if (sql.includes('INSERT') && sql.includes('ping_events')) {
+          // First insert succeeds, subsequent are duplicates
+          if (!this._insertCount) this._insertCount = 0;
+          this._insertCount++;
+          if (this._insertCount === 1) {
+            return { rowCount: 1 };
+          } else {
+            return { rowCount: 0 }; // ON CONFLICT DO NOTHING
+          }
+        }
+        return { rows: [] };
+      },
+    };
+    const integrationManager = {
+      calls: 0,
+      async emit() { this.calls++; },
+    };
+    const er = new UnifiedEventRuntime({ pool, integrationManager });
+    er.on('TEST_CONCURRENT', async () => { handlerCalls++; });
+    const event = {
+      type: 'TEST_CONCURRENT',
+      source: 'test',
+      payload: { value: 42 },
+    };
+    const promises = [];
+    for (let i = 0; i < 10; i++) {
+      promises.push(er.emit(event.type, event.source, event.payload));
+    }
+    const results = await Promise.all(promises);
+    const duplicates = results.filter(r => r.deduplicated).length;
+    const nonDuplicates = results.filter(r => !r.deduplicated).length;
+    assert.strictEqual(handlerCalls, 1, 'Handler should be called exactly once');
+    assert.strictEqual(integrationManager.calls, 1, 'Integration should be called exactly once');
+    assert.strictEqual(nonDuplicates, 1, 'Exactly one emission should be non-duplicate');
+    assert.strictEqual(duplicates, 9, 'Nine emissions should be classified as duplicates');
+    assert.strictEqual(er._stats.deduplicated, 9, 'Runtime should track 9 deduplications');
+  });
+
   console.log(`\n=== Summary ===`);
   console.log(`Passed: ${passed}`);
   console.log(`Failed: ${failed}`);
