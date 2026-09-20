@@ -89,7 +89,41 @@
 
 **Result:** COMMITTED to WSL canonical repository
 
-**Next:** Continue PATCH 2 - authority duplication audit for hash authorities
+**Next:** Continue PATCH 2 - hash authority jurisdictional split documentation
+
+---
+
+## PATCH 2 - HASH AUTHORITY JURISDICTIONAL SPLIT DOCUMENTATION
+
+**Objective:** Document jurisdictional split between hash authorities across subsystems
+
+**Finding:** Hash authorities are jurisdictionally separated, NOT duplicates to collapse:
+
+**Python CanonicalHashAuthority** (runtime/authorities/canonical_hash_authority.py):
+- Simple hashlib.sha256 wrapper
+- Methods: sha256(), hash_json(), hash_dict()
+- No envelope pattern
+- Jurisdiction: Python constitutional subsystem
+
+**TypeScript CanonicalHashAuthority** (runtime/kernel/replay/canonical_hash_authority.ts):
+- Delegates to CanonicalJson for canonicalization
+- Delegates to CertificateAuthority for SHA-256 (sole hash authority per its constitutional rule)
+- Uses envelope pattern: hash_algorithm:hash
+- Jurisdiction: Replay subsystem
+
+**TypeScript HashAuthority** (runtime/constitutional/src/hash-authority.ts):
+- Uses Node crypto.createHash directly
+- Has envelope pattern with canonical_version, serialization_version, algorithm, payload
+- Own canonicalizeObject() implementation
+- Jurisdiction: TypeScript constitutional subsystem
+
+**Verdict:** DO NOT COLLAPSE. These are jurisdictionally separated subsystems with no cross-language data flow per hash-authority.ts comments.
+
+**Convergence Decision:** Jurisdictional separation is intentional. No convergence needed.
+
+**Result:** Documented in ledger (no code changes)
+
+**Next:** Continue PATCH 2 - certificate authority duplication audit
 
 ---
 
