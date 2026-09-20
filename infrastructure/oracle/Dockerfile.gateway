@@ -1,4 +1,8 @@
 FROM node:18-alpine
+
+# Build tools for native modules (tree-sitter)
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Install gateway dependencies
