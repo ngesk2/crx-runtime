@@ -1,9 +1,18 @@
 FROM node:18-alpine
 WORKDIR /app
-COPY gateway/package*.json ./
-RUN npm ci --only=production
-COPY gateway/ ./
+
+# Install gateway dependencies
+COPY gateway/package*.json ./gateway/
+RUN cd gateway && npm ci --only=production
+
+# Copy runtime trees (preserve directory structure for relative requires)
+# gateway/ requires ../../ping-runtime/ and ../../runtime/
+# ping-runtime/ requires ../../gateway/ (circular) and ../../runtime/
+COPY gateway/ ./gateway/
+COPY ping-runtime/ ./ping-runtime/
+COPY runtime/ ./runtime/
+
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 EXPOSE 8080
-CMD node server.js
+CMD ["node", "gateway/server.js"]
