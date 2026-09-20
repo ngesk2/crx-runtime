@@ -162,6 +162,124 @@
 
 **Architectural Decision:** Object identity uses established deterministic/content-addressed path (type_hash16), NOT UUID-v7. UUID-v7 is for internal temporal identifiers, not durable cryptographic identity.
 
+**Status:** COMPLETE - COMMITTED at SHA fc2a04b9d
+
+**Files Changed:**
+- ADDED: database/ping_objects.sql (154 lines) - PostgreSQL schema for ping_objects, ping_relationships, ping_transitions
+- ADDED: runtime/constitutional/src/schemas/ping-objects.ts (88 lines) - TypeScript interfaces for PING objects
+- ADDED: runtime/constitutional/src/ping-object-kernel.ts (206 lines) - PING object operations using existing authorities
+- MODIFIED: runtime/constitutional/src/index.ts - exports PingObjectKernel and schemas
+
+**Authorities Reused:**
+- IdentityAuthority for deterministic object IDs (type_hash16 format)
+- HashAuthority for content hashing
+- TimeAuthority for timestamps
+
+**Schemas Implemented:**
+- ping.identity@1
+- ping.social.profile@1
+- ping.social.post@1
+- ping.relationship@1
+- ping.transition@1
+
+**Canonical Object Structure:**
+```json
+{
+  "id": "object_<deterministic-id>",
+  "schema": "ping.social.post@1",
+  "controller": "alice",
+  "created_at": "...",
+  "content": { "text": "Hello PING" },
+  "refs": []
+}
+```
+
+**Operations Implemented:**
+- createPost(controller, text, refs)
+- createProfile(controller, displayName, bio)
+- createRelationship(subject, predicate, object)
+- createCreateTransition(objectId, actorId, payload, proof)
+- createRelateTransition(objectId, actorId, sequence, payload, previousTransition, proof)
+- verifyTransition(transition, expectedPayload)
+
+**Database Tables:**
+- ping_objects (append-only content store)
+- ping_relationships (subject-predicate-object graph)
+- ping_transitions (append-only immutable state changes with triggers preventing updates/deletes)
+
+**Architectural Decisions:**
+- Object identity uses deterministic/content-addressed path (type_hash16), NOT UUID-v7
+- UUID-v7 remains for internal temporal identifiers only
+- No replacements for existing authorities
+- Minimal protocol-neutral primitives (no dozens of subclasses)
+
+**Next:** PATCH 4 - Immutable Transitions (append to ping_events, not separate event store)
+
+---
+
+## PATCH 4 — IMMUTABLE TRANSITIONS (IN PROGRESS)
+
+**Objective:** Append object transitions to existing ping_events canonical event spine
+
+**Scope:**
+- Do NOT introduce ping_object_events, social_events, object_event_bus, or another replay store
+- Use existing canonical event spine (events table from database/events.sql)
+- Operations: create, relate, unrelate, propose, approve, publish, tombstone
+
+**Status:** COMPLETE - COMMITTED at SHA [pending]
+
+**Files Changed:**
+- ADDED: runtime/constitutional/src/ping-transition-mapper.ts (102 lines)
+- MODIFIED: runtime/constitutional/src/index.ts - exports PingTransitionMapper
+
+**Canonical Event Mapping:**
+- PING transitions mapped to existing events table schema (stream, event_type, payload, created_at)
+- Stream format: `ping.{object_id}`
+- Event type format: `ping.{operation}` (e.g., ping.create, ping.relate, ping.approve)
+- Bidirectional conversion: toCanonicalEvent() and fromCanonicalEvent()
+- Validation: validateEvent() checks required fields
+
+**Canonical Event Format:**
+```json
+{
+  "stream": "ping.object_a1b2c3d4",
+  "event_type": "ping.create",
+  "payload": {
+    "transition_id": "transition_e5f6g7h8",
+    "object_id": "object_a1b2c3d4",
+    "operation": "create",
+    "actor_id": "alice",
+    "sequence": 1,
+    "previous_transition": null,
+    "payload_hash": "...",
+    "proof": {},
+    "metadata": {}
+  },
+  "created_at": "2026-09-20T13:00:00Z"
+}
+```
+
+**Architectural Decision:**
+- NO separate ping_object_events, social_events, object_event_bus, or replay store
+- Uses existing canonical event spine (events table from database/events.sql)
+- Transitions are immutable once appended to events table (existing triggers prevent updates/deletes)
+
+**Next:** PATCH 5 - Two Actually Independent Identities (Alice and Bob with independent signing keys)
+
+---
+
+## PATCH 5 — TWO ACTUALLY INDEPENDENT IDENTITIES (IN PROGRESS)
+
+**Objective:** Create Alice and Bob with independent identity records, signing keys, controllers, and local/client state
+
+**Scope:**
+- Alice and Bob MUST have independent identity records
+- Independent signing keys
+- Independent controllers
+- Independent local/client state
+- PROVE: Alice signs P1, Bob independently verifies P1
+- PROVE: Bob cannot sign as Alice
+
 **Status:** IN PROGRESS
 
 ---
