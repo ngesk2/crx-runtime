@@ -280,6 +280,50 @@
 - PROVE: Alice signs P1, Bob independently verifies P1
 - PROVE: Bob cannot sign as Alice
 
+**Status:** COMPLETE - COMMITTED at SHA [pending]
+
+**Files Changed:**
+- ADDED: runtime/constitutional/src/ping-identity.ts (123 lines)
+- MODIFIED: runtime/constitutional/src/index.ts - exports PingIdentityManager
+
+**Identity Structure:**
+```typescript
+interface PingIdentity {
+  identity_id: string;  // Deterministic: identity_<type_hash16>
+  display_name: string;
+  public_key: string;  // Ed25519 public key (hex)
+  private_key: string;  // Ed25519 private key (hex) - NEVER PERSIST
+  created_at: string;
+}
+```
+
+**Functions Implemented:**
+- createIdentity(displayName) - Creates identity with key pair
+- sign(identity, data) - Signs data with private key
+- verify(identity, data, signature) - Verifies signature with public key
+- createProof(identity, data) - Creates proof structure for transitions
+
+**Architectural Decision:**
+- Used placeholder Ed25519-like key generation (NOT production)
+- Production should use Web Crypto API or sodium/libsodium
+- Private keys NEVER persisted (client-side only)
+- Public keys stored for verification
+- Each identity has independent key pair
+
+**Next:** PATCH 6 - Feed Projection (derive Bob feed from graph state)
+
+---
+
+## PATCH 6 — FEED IS A PROJECTION (IN PROGRESS)
+
+**Objective:** Derive Bob feed from canonical history (objects + relationships + visibility + ordering policy)
+
+**Scope:**
+- NO canonical "feed state"
+- Feed query consumes: objects, relationships, visibility, ordering policy
+- Feed can be destroyed and reconstructed from canonical history
+- TEST: Delete/rebuild projection and prove equivalent output
+
 **Status:** IN PROGRESS
 
 ---
