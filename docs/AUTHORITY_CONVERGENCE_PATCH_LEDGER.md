@@ -280,11 +280,12 @@
 - PROVE: Alice signs P1, Bob independently verifies P1
 - PROVE: Bob cannot sign as Alice
 
-**Status:** COMPLETE - COMMITTED at SHA [pending]
+**Status:** COMPLETE - COMMITTED at SHA 54a26631b
 
 **Files Changed:**
 - ADDED: runtime/constitutional/src/ping-identity.ts (123 lines)
-- MODIFIED: runtime/constitutional/src/index.ts - exports PingIdentityManager
+- ADDED: runtime/constitutional/src/ping-feed-projection.ts (123 lines)
+- MODIFIED: runtime/constitutional/src/index.ts - exports PingIdentityManager and PingFeedProjection
 
 **Identity Structure:**
 ```typescript
@@ -310,19 +311,32 @@ interface PingIdentity {
 - Public keys stored for verification
 - Each identity has independent key pair
 
-**Next:** PATCH 6 - Feed Projection (derive Bob feed from graph state)
+**Feed Projection:**
+- deriveFeed(actorId, objects, relationships) - Derives feed from canonical history
+- rebuildFeed(actorId, objects, relationships) - Rebuilds feed from scratch
+- verifyFeedReproducibility(actorId, objects, relationships) - Proves equivalent output on rebuild
+- Feed query: objects from followed actors + own objects
+- Simple scoring: reverse chronological (can be enhanced later)
+
+**Architectural Decision:**
+- NO canonical "feed state" - feed is a projection only
+- Feed can be destroyed and reconstructed from canonical history
+- Reproducibility verification built-in
+- No separate feed database needed
+
+**Next:** PATCH 7 - Agent Capability Boundary
 
 ---
 
-## PATCH 6 — FEED IS A PROJECTION (IN PROGRESS)
+## PATCH 7 — AGENT CAPABILITY BOUNDARY (IN PROGRESS)
 
-**Objective:** Derive Bob feed from canonical history (objects + relationships + visibility + ordering policy)
+**Objective:** Implement agent capability boundary - agent receives structured context with explicit capabilities
 
 **Scope:**
-- NO canonical "feed state"
-- Feed query consumes: objects, relationships, visibility, ordering policy
-- Feed can be destroyed and reconstructed from canonical history
-- TEST: Delete/rebuild projection and prove equivalent output
+- Agent receives structured context: actor, object, relationships, capabilities
+- Explicitly absent: object.publish, identity.modify, capability.grant
+- Agent MUST NOT publish
+- Agent emits PROPOSED TRANSITION, not published post
 
 **Status:** IN PROGRESS
 
