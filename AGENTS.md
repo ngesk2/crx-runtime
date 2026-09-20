@@ -208,6 +208,40 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 - **Future trunk = constitutional synthesis**: audit-hardening runtime + main governance assets + runtime/ replay engine + runtime/ SecretAdapter. Neither current branch replaces the other.
 - **Sprint 04 scope**: No Neo4j, Devin Desktop, MCP, agents, supervisors, Kafka, Temporal, Ollama redesign, Yahoo redesign, Mission Control redesign. Only runtime activation.
 
+### 2026-09-20 Session 14 (PING AUTHORITY CONVERGENCE — WSL Canonical Recovery)
+
+**12:55** | Started Session 14. Goal: Execute authorized PING AUTHORITY CONVERGENCE work in canonical WSL repository, using Windows as recovery source. | Read AGENTS.md, Windows forensic report.
+
+**13:00** | PHASE A: Verified WSL canonical repository state. NO gitlink problem in WSL. runtime/ is already normal tracked directory with 258 files. Gitlink problem isolated to Windows branch (feature/mission-control-truth). | Decision: Work in canonical WSL repository only, abandon Windows branch repair.
+
+**13:05** | PHASE B: Three-way runtime inventory. WSL runtime/constitutional/ contains only Python files. Windows has TypeScript constitutional authorities (identity-authority.ts, hash-authority.ts, time-authority.ts). WSL has JavaScript IdentityAuthority at runtime/kernel/authorities/identity_authority.js. | Harvest Windows TypeScript authorities to WSL.
+
+**13:10** | PHASE D: CRITICAL ID FORMAT DISCREPANCY RESOLVED. Examined WSL JavaScript implementation at line 57: `return \`${type}_${hash.substring(0, 16)}\``. ACTUAL legacy format is type_hash16 (underscore separator), NOT type:hash16 (colon separator). PATCH 1 initial implementation used wrong separator. | Fixed TypeScript implementation to use underscore.
+
+**13:15** | Created branch refactor/runtime-authority-convergence in WSL. Created runtime/constitutional/src/ directory. Copied TypeScript authorities from Windows: identity-authority.ts, hash-authority.ts, time-authority.ts, index.ts, package.json. | Minimal index.ts exports only time, hash, identity authorities (not 24 unused authorities).
+
+**13:20** | Fixed identity-authority.ts generateId() to use underscore separator (type_hash16). Fixed identity-authority.test.ts regex to match underscore format. | Staged changes.
+
+**13:25** | PATCH 1 COMMITTED to WSL canonical repository at SHA 28f0c9707. Commit message: "fix(identity): restore canonical IdentityAuthority contract". 6 files changed, 547 insertions. | Created docs/AUTHORITY_CONVERGENCE_PATCH_LEDGER.md documenting PATCH 1 in WSL.
+
+**13:30** | PATCH 1 complete in canonical WSL repository. Windows branch blocked by gitlink but work continues in canonical WSL. ID format verified: type_hash16 (underscore separator) matches historical JavaScript implementation. | Ready for PATCH 2 (identity primitive convergence).
+
+**13:35** | PATCH 2a: Identity semantic split documented. Python IdentityAuthority (UUID v7) serves random/temporal identity for execution/events/actors. JavaScript/TypeScript IdentityAuthority (type_hash16) serves deterministic/content-addressed identity for objects/artifacts. These are semantically distinct, NOT duplicates to collapse. | Documented in docs/IDENTITY_SEMANTIC_SPLIT.md.
+
+**13:40** | PATCH 2b: Hash authority jurisdictional split documented. Python CanonicalHashAuthority (simple hashlib), TypeScript CanonicalHashAuthority (replay subsystem, delegates to CanonicalJson + CertificateAuthority), TypeScript HashAuthority (constitutional subsystem, Node crypto + envelope). Jurisdictional separation is intentional per code comments. | Documented in ledger.
+
+**13:45** | PATCH 2 complete. No authority collapsing needed. Semantic/jurisdictional splits are intentional architectural boundaries. | Session complete.
+
+## Session 14 — Key Decisions
+- **WSL canonical repository is the true engineering root** — /home/nolan/ping. Windows (C:\Users\nolan\PING) is preserved UI/control/rollback state but has stranded gitlink problem.
+- **Gitlink problem isolated to Windows branch** — WSL runtime/ is already normal tracked directory with 258 files. No governance repair needed in WSL.
+- **ID format discrepancy resolved** — Historical JavaScript uses type_hash16 (underscore), not type:hash16 (colon). TypeScript implementation corrected to match.
+- **Minimal package exports** — index.ts exports only time, hash, identity authorities. Avoided exporting 24 unused authorities that were in Windows index.ts.
+- **PATCH 1 scope limited** — Only IdentityAuthority TypeScript implementation + characterization tests + package metadata. No unrelated acquisition fixes or broad index.ts.
+- **Identity semantic split is intentional** — Random/temporal IDs (UUID v7) for execution/events/actors. Deterministic/content-addressed IDs (type_hash16) for objects/artifacts. NOT duplicates.
+- **Hash authority jurisdictional split is intentional** — Python, TypeScript replay, TypeScript constitutional are separate subsystems with no cross-language data flow. NOT duplicates.
+- **Authority convergence principle** — Prove same semantics before collapsing. Semantic/jurisdictional splits are architectural boundaries, not technical debt.
+
 ### 2026-06-27 Session 11 (Phase S.16 Constitutional Stabilization — Execution)
 
 **14:00** | Started Session 11. Goal: Execute Phase S.16 Constitutional Stabilization — single implementation for every constitutional authority, pure adapters, unified identity, artifact resolution, commodity isolation. | Read AGENTS.md.

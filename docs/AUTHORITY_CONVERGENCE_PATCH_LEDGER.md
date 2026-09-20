@@ -123,7 +123,46 @@
 
 **Result:** Documented in ledger (no code changes)
 
-**Next:** Continue PATCH 2 - certificate authority duplication audit
+**PIVOT:** Authority convergence baseline accepted. PATCH 1 (IdentityAuthority) + PATCH 2 (semantic/jurisdictional split documentation) are sufficient foundation. Pivoting to PING social object vertical slice.
+
+**Next:** PATCH 3 - Object Kernel
+
+---
+
+## PATCH 3 — OBJECT KERNEL (PING SOCIAL OBJECT VERTICAL SLICE)
+
+**Objective:** Implement the smallest protocol-neutral PING primitives for social object flow
+
+**Scope:**
+- Inspect and reuse existing authorities (IdentityAuthority, Canonical serialization, HashAuthority, CapabilityAuthority, ping_events, replay/evidence machinery, gateway composition, Postgres access boundaries)
+- Implement minimal protocol-neutral primitives: Actor, Object, Relationship, Transition, Capability, Proof
+- Do NOT create replacements for existing authorities
+- Do NOT create dozens of subclasses
+
+**Initial Schemas:**
+- ping.identity@1
+- ping.social.profile@1
+- ping.social.post@1
+- ping.relationship@1
+- ping.transition@1
+
+**Canonical Object Structure:**
+```json
+{
+  "id": "object_<deterministic-id>",
+  "schema": "ping.social.post@1",
+  "controller": "alice",
+  "created_at": "...",
+  "content": {
+    "text": "Hello PING"
+  },
+  "refs": []
+}
+```
+
+**Architectural Decision:** Object identity uses established deterministic/content-addressed path (type_hash16), NOT UUID-v7. UUID-v7 is for internal temporal identifiers, not durable cryptographic identity.
+
+**Status:** IN PROGRESS
 
 ---
 
