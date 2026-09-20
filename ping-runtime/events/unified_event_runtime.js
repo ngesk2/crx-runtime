@@ -141,8 +141,12 @@ class UnifiedEventRuntime {
       },
     };
 
-    // 5. Persist
-    if (this._pool) {
+    // 5. Persist - fail closed if no pool (never return ok without durability)
+    if (!this._pool) {
+      this._stats.failed++;
+      return { status: "error", error: "No persistence available: event not durably stored", eventId };
+    }
+    {
       try {
         const result = await this._pool.query(
           `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace)
@@ -154,6 +158,21 @@ class UnifiedEventRuntime {
         if ((result.rowCount || 0) > 0) {
           this._stats.persisted++;
         } else {
+          // CONFLICT: check if this is a true duplicate or a semantic collision
+          const existing = await this._pool.query(
+            "SELECT payload FROM ping_events WHERE event_id = $1",
+            [event.event_id]
+          );
+          if (existing.rows.length > 0) {
+            const existingPayload = JSON.parse(existing.rows[0].payload);
+            // Compare canonical JSON (sorted keys) for semantic equivalence
+            const canon = (o) => JSON.stringify(o, Object.keys(o).sort());
+            if (canon(existingPayload) !== canon(event.payload)) {
+              // COLLISION: same ID, different semantics — fail closed
+              this._stats.failed++;
+              return { status: "error", error: "Event ID collision: same event_id with different payload semantics", eventId };
+            }
+          }
           this._stats.deduplicated++;
         }
       } catch (err) {
