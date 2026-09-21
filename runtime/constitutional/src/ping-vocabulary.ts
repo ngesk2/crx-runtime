@@ -106,3 +106,96 @@ export function assertProjectorOperation(op: string): asserts op is ProjectorOpe
     throw new Error(`PingVocabulary: unknown projector operation '${op}'`);
   }
 }
+
+/* ============================================================================
+ * PING Knowledge Vocabulary (Lane B, 2026-09-21; ADDITIVE).
+ *
+ * Website -> object-graph ingest predicates and schemas. This section only
+ * ADDS to the canonical vocabulary; every social predicate, schema,
+ * operation, and visibility above is untouched.
+ *
+ * Predicates (relationships):
+ *   has_website       - business has_website website        (the site itself)
+ *   located_at        - business located_at location        (service area / address)
+ *   offers            - business offers service             (services/products)
+ *   employs           - business employs person             (role carried in metadata)
+ *   member_of         - person member_of business           (inverse view of employs)
+ *   published         - business/website published article  (content authored)
+ *   external_identity - business external_identity profile (social/other-platform claim)
+ *
+ * Revocation rule (unchanged, extended): there are NO negative predicates.
+ * Revocation is a second RELATIONSHIP_CREATED with the same predicate and
+ * status 'inactive' (last-wins by acceptance sequence in the projector).
+ * 'unfollows'/'unlikes' remain forbidden and are not knowledge predicates.
+ *
+ * Object schemas:
+ *   ping.knowledge.business@1, ping.knowledge.website@1,
+ *   ping.knowledge.location@1, ping.knowledge.service@1,
+ *   ping.knowledge.person@1, ping.knowledge.article@1,
+ *   ping.knowledge.external_identity@1
+ *
+ * Provenance rule: knowledge objects are CLAIMS made by the observed source
+ * (e.g. "website says X"), never constitutional truth. Every knowledge
+ * object carries metadata.provenance { source_url, source_type, observed_at,
+ * evidence_ref } and content carries claim_basis: 'website_statement'.
+ * ========================================================================== */
+
+export const KNOWLEDGE_PREDICATES = [
+  'has_website',
+  'located_at',
+  'offers',
+  'employs',
+  'member_of',
+  'published',
+  'external_identity',
+] as const;
+
+export type KnowledgePredicate = (typeof KNOWLEDGE_PREDICATES)[number];
+
+/**
+ * Every predicate the projector may write to ping_relationships.
+ * database/ping_objects.sql's predicate CHECK must mirror exactly this list
+ * (enforced by ping-vocabulary.test.ts, same as the social list before it).
+ */
+export const CANONICAL_PREDICATES = [
+  ...SOCIAL_PREDICATES,
+  ...KNOWLEDGE_PREDICATES,
+] as const;
+
+export type CanonicalPredicate = (typeof CANONICAL_PREDICATES)[number];
+
+export const KNOWLEDGE_SCHEMAS = [
+  'ping.knowledge.business@1',
+  'ping.knowledge.website@1',
+  'ping.knowledge.location@1',
+  'ping.knowledge.service@1',
+  'ping.knowledge.person@1',
+  'ping.knowledge.article@1',
+  'ping.knowledge.external_identity@1',
+] as const;
+
+export type KnowledgeSchema = (typeof KNOWLEDGE_SCHEMAS)[number];
+
+/** Every object schema the ingest path may accept. */
+export const CANONICAL_SCHEMAS = [
+  ...SOCIAL_SCHEMAS,
+  ...KNOWLEDGE_SCHEMAS,
+] as const;
+
+export type CanonicalSchema = (typeof CANONICAL_SCHEMAS)[number];
+
+export function isKnowledgePredicate(p: string): p is KnowledgePredicate {
+  return (KNOWLEDGE_PREDICATES as readonly string[]).includes(p);
+}
+
+export function isCanonicalPredicate(p: string): p is CanonicalPredicate {
+  return (CANONICAL_PREDICATES as readonly string[]).includes(p);
+}
+
+export function isKnowledgeSchema(s: string): s is KnowledgeSchema {
+  return (KNOWLEDGE_SCHEMAS as readonly string[]).includes(s);
+}
+
+export function isCanonicalSchema(s: string): s is CanonicalSchema {
+  return (CANONICAL_SCHEMAS as readonly string[]).includes(s);
+}

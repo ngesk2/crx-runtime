@@ -74,10 +74,20 @@ function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
     // (BFF signature verified; vocabulary enforced; ids minted by the ONE
     // IdentityAuthority). Typed client errors return 400.
     if (req.body && req.body.type && req.body.payload && !req.body.event_type) {
-      const adapter = require('../social_ingest_adapter');
+      // Lane B (2026-09-21, additive): knowledge envelopes (payload.schema
+      // 'ping.knowledge.*') normalize through the knowledge ingest adapter;
+      // everything else keeps the proven social adapter. The social path is
+      // untouched.
+      const kSchema = req.body.payload && req.body.payload.schema;
+      const adapter =
+        typeof kSchema === 'string' && kSchema.startsWith('ping.knowledge.')
+          ? require('../knowledge_ingest_adapter')
+          : require('../social_ingest_adapter');
+      const normalize =
+        adapter.normalizeKnowledgeEnvelope || adapter.normalizeBffEnvelope;
       let norm;
       try {
-        norm = await adapter.normalizeBffEnvelope(req.body, pool);
+        norm = await normalize(req.body, pool);
       } catch (e) {
         const code = String(e.message || 'INGEST_ERROR').split(':')[0];
         const client = /^(INVALID_|UNKNOWN_|MISSING_|UNSUPPORTED_|PREDICATE_|SECRET_|SIGNER_)/.test(code);

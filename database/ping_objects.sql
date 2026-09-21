@@ -80,7 +80,12 @@ CREATE TABLE IF NOT EXISTS ping_relationships (
   -- 2026-09-21: predicate vocabulary reconciled with runtime/constitutional/src/ping-vocabulary.ts.
   -- 'references' and 'mentions' removed: no defined semantics, no projector handling, no live use.
   -- They are RESERVED (not forbidden); reintroduction requires a vocabulary decision plus projector semantics.
-  CHECK (predicate IN ('follows', 'likes', 'replies_to', 'approves', 'denies')),
+  -- 2026-09-21 (Lane B, additive): knowledge predicates appended. Must mirror CANONICAL_PREDICATES
+  -- in ping-vocabulary.ts (enforced by ping-vocabulary.test.ts). Revocation for knowledge predicates
+  -- is status 'inactive' on the same predicate; no negative predicates exist.
+  CHECK (predicate IN ('follows', 'likes', 'replies_to', 'approves', 'denies',
+                       'has_website', 'located_at', 'offers', 'employs', 'member_of',
+                       'published', 'external_identity')),
   CHECK (status IN ('active', 'inactive')),
   UNIQUE (subject, predicate, object)
 );
