@@ -10,8 +10,22 @@
  * TRUNCATE-guarded and is never touched here).
  * These tables can be destroyed and rebuilt from canonical history.
  *
- * Consumes only REGISTERED event types: OBJECT_CREATED, RELATIONSHIP_CREATED.
- * The legacy unregistered ping.create / ping.relate vocabulary is not read.
+ * Consumes only REGISTERED event types: OBJECT_CREATED, OBJECT_UPDATED,
+ * RELATIONSHIP_CREATED. The legacy unregistered ping.create / ping.relate
+ * vocabulary is not read.
+ *
+ * Ordering contract: every journal scan orders by
+ * (sequence ASC NULLS LAST, created_at ASC, event_id ASC), with the
+ * sequence direction (and tiebreakers) reversed for last-wins scans.
+ * created_at is a total order in this deployment; event_id is the
+ * final unique tiebreaker. The assertNoNullSequences guard refuses
+ * NULL-sequence consumed events outright, so the tiebreaker is
+ * defense in depth, not a second ordering authority.
+ *
+ * Operation/predicate vocabulary is owned by ping-vocabulary.ts; the SQL
+ * schema CHECK constraints in database/ping_objects.sql must mirror it
+ * (enforced by ping-vocabulary.test.ts). This projector asserts every
+ * operation it writes against the vocabulary before inserting.
  *
  * Dependency inversion: the projector takes an injected minimal database
  * client. It does not import a database driver, so this package carries no
@@ -21,6 +35,7 @@
  */
 
 import { IdentityAuthority } from './identity-authority';
+import { assertProjectorOperation } from './ping-vocabulary';
 
 export interface ProjectorDb {
   query<T = any>(text: string, params?: any[]): Promise<{ rows: T[]; rowCount: number | null }>;
@@ -44,6 +59,9 @@ interface CanonicalJournalEvent {
   created_at: string;
 }
 
+/** The three registered journal event types this projector consumes. */
+const CONSUMED_EVENT_TYPES = ['OBJECT_CREATED', 'OBJECT_UPDATED', 'RELATIONSHIP_CREATED'] as const;
+
 export class PingProjector {
   constructor(private readonly config: PingProjectorConfig) {}
 
@@ -60,6 +78,27 @@ export class PingProjector {
       );
     }
     await this.config.db.query(schemaSql);
+  }
+
+  /**
+   * FAIL-CLOSED invariant: every consumed journal event must carry a
+   * PostgreSQL acceptance sequence. An event with unknown ordering cannot
+   * be projected deterministically, so the rebuild is refused outright
+   * rather than projecting it in an arbitrary position.
+   */
+  private async assertNoNullSequences(db: ProjectorDb): Promise<void> {
+    const result = await db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count FROM ping_events
+       WHERE event_type IN ('OBJECT_CREATED', 'OBJECT_UPDATED', 'RELATIONSHIP_CREATED')
+         AND sequence IS NULL`
+    );
+    const missing = Number(result.rows[0]?.count ?? 0);
+    if (missing > 0) {
+      throw new Error(
+        `PingProjector: FAIL CLOSED: ${missing} consumed event(s) lack an acceptance sequence; ` +
+          'ordering is unknown and projection would be nondeterministic. Refusing rebuild.'
+      );
+    }
   }
 
   /**
@@ -81,6 +120,7 @@ export class PingProjector {
     const db = this.config.db;
     await db.query('BEGIN');
     try {
+      await this.assertNoNullSequences(db);
       const conflicts = await this.detectConflicts();
       if (conflicts.length > 0) {
         throw new Error(
@@ -107,13 +147,17 @@ export class PingProjector {
   }
 
   /**
-   * Rebuild ping_objects from OBJECT_CREATED events, oldest acceptance first.
+   * Rebuild ping_objects from OBJECT_CREATED events, then apply
+   * OBJECT_UPDATED events in acceptance order. Each update is a shallow
+   * content merge (right-wins) applied only when the update's `updated_by`
+   * equals the object's controller; anything else fails closed.
+   *
    * ON CONFLICT DO NOTHING keeps rebuilds idempotent; same-ID conflicts with
    * different content are a governance concern (rejected at ingestion), and
    * detectConflicts() surfaces them for inspection.
    */
   private async rebuildObjects(db: ProjectorDb): Promise<number> {
-    const result = await db.query(`
+    const created = await db.query(`
       INSERT INTO ping_objects (object_id, schema, controller, created_at, content, refs, visibility, status, metadata)
       SELECT
         payload->>'object_id' AS object_id,
@@ -127,10 +171,64 @@ export class PingProjector {
         COALESCE(payload->'metadata', '{}'::jsonb) AS metadata
       FROM ping_events pe
       WHERE pe.event_type = 'OBJECT_CREATED'
-      ORDER BY pe.sequence ASC NULLS LAST
+      ORDER BY pe.sequence ASC NULLS LAST, pe.created_at ASC, pe.event_id ASC
       ON CONFLICT (object_id) DO NOTHING
     `);
-    return result.rowCount ?? 0;
+
+    const updates = await db.query<CanonicalJournalEvent>(`
+      SELECT event_id, event_type, payload, pe.sequence AS acceptance_sequence, pe.created_at
+      FROM ping_events pe
+      WHERE pe.event_type = 'OBJECT_UPDATED'
+      ORDER BY pe.sequence ASC NULLS LAST, pe.created_at ASC, pe.event_id ASC
+    `);
+
+    let applied = 0;
+    for (const event of updates.rows) {
+      const payload = event.payload ?? {};
+      const objectId = payload.object_id;
+      const changes = payload.changes;
+      const updatedBy = payload.updated_by;
+      if (!objectId || typeof objectId !== 'string') {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: OBJECT_UPDATED event ${event.event_id} has no object_id; refusing to project.`
+        );
+      }
+      if (!changes || typeof changes !== 'object' || Array.isArray(changes)) {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: OBJECT_UPDATED event ${event.event_id} has malformed changes; refusing to project.`
+        );
+      }
+      if (!updatedBy || typeof updatedBy !== 'string') {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: OBJECT_UPDATED event ${event.event_id} has no updated_by; refusing to project.`
+        );
+      }
+      const target = await db.query<{ controller: string }>(
+        'SELECT controller FROM ping_objects WHERE object_id = $1',
+        [objectId]
+      );
+      if (target.rows.length === 0) {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: OBJECT_UPDATED event ${event.event_id} targets unknown object ${objectId}; refusing to project.`
+        );
+      }
+      if (target.rows[0].controller !== updatedBy) {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: OBJECT_UPDATED event ${event.event_id} signed by ${updatedBy} ` +
+            `but object ${objectId} is controlled by ${target.rows[0].controller}; refusing to project.`
+        );
+      }
+      await db.query(
+        `UPDATE ping_objects
+         SET content = content || $2::jsonb,
+             metadata = metadata || COALESCE($3::jsonb, '{}'::jsonb)
+         WHERE object_id = $1`,
+        [objectId, JSON.stringify(changes), JSON.stringify(payload.metadata ?? {})]
+      );
+      applied += 1;
+    }
+
+    return (created.rowCount ?? 0) + applied;
   }
 
   /**
@@ -155,7 +253,7 @@ export class PingProjector {
         COALESCE(payload->'metadata', '{}'::jsonb) AS metadata
       FROM ping_events pe
       WHERE pe.event_type = 'RELATIONSHIP_CREATED'
-      ORDER BY payload->>'subject', payload->>'predicate', payload->>'object', pe.sequence DESC NULLS LAST
+      ORDER BY payload->>'subject', payload->>'predicate', payload->>'object', pe.sequence DESC NULLS LAST, pe.created_at DESC, pe.event_id DESC
       ON CONFLICT (subject, predicate, object) DO NOTHING
     `);
     return result.rowCount ?? 0;
@@ -163,6 +261,11 @@ export class PingProjector {
 
   /**
    * Rebuild ping_transitions from the canonical journal in acceptance order.
+   * Operation vocabulary (create/update/relate) is asserted against
+   * ping-vocabulary.ts before insert. For relationship events the operation
+   * is always 'relate'; whether the event relates or revokes is carried in
+   * the transition metadata as relationship_status (the revocation is a
+   * status on the same predicate, never a separate operation).
    * Transition IDs are produced by IdentityAuthority in TypeScript, never
    * synthesized in SQL. Per-target sequence is derived from acceptance order;
    * previous_transition chains each target's transitions.
@@ -172,8 +275,8 @@ export class PingProjector {
     const events = await db.query<CanonicalJournalEvent>(`
       SELECT event_id, event_type, payload, pe.sequence AS acceptance_sequence, pe.created_at
       FROM ping_events pe
-      WHERE pe.event_type IN ('OBJECT_CREATED', 'RELATIONSHIP_CREATED')
-      ORDER BY pe.sequence ASC NULLS LAST
+      WHERE pe.event_type IN ('OBJECT_CREATED', 'OBJECT_UPDATED', 'RELATIONSHIP_CREATED')
+      ORDER BY pe.sequence ASC NULLS LAST, pe.created_at ASC, pe.event_id ASC
     `);
 
     let inserted = 0;
@@ -182,8 +285,7 @@ export class PingProjector {
 
     for (const event of events.rows) {
       const payload = event.payload ?? {};
-      const isObject = event.event_type === 'OBJECT_CREATED';
-      const targetId = isObject ? payload.object_id : payload.relationship_id;
+      const targetId = payload.object_id ?? payload.relationship_id;
       if (!targetId) {
         throw new Error(
           `PingProjector: ${event.event_type} event ${event.event_id} has no target ID in payload; refusing to project.`
@@ -195,8 +297,30 @@ export class PingProjector {
           `PingProjector: FAIL CLOSED: ${event.event_type} event ${event.event_id} lacks payload_hash; refusing to project.`
         );
       }
-      const operation = isObject ? 'create' : payload.status === 'inactive' ? 'unrelate' : 'relate';
-      const actorId = isObject ? payload.controller : payload.subject;
+
+      let operation: string;
+      let actorId: string;
+      let transitionMetadata: Record<string, any>;
+      if (event.event_type === 'OBJECT_CREATED') {
+        operation = 'create';
+        actorId = payload.controller;
+        transitionMetadata = payload.metadata ?? {};
+      } else if (event.event_type === 'OBJECT_UPDATED') {
+        operation = 'update';
+        actorId = payload.updated_by;
+        transitionMetadata = payload.metadata ?? {};
+      } else {
+        operation = 'relate';
+        actorId = payload.subject;
+        transitionMetadata = { ...(payload.metadata ?? {}), relationship_status: payload.status ?? 'active' };
+      }
+      assertProjectorOperation(operation);
+      if (!actorId) {
+        throw new Error(
+          `PingProjector: FAIL CLOSED: ${event.event_type} event ${event.event_id} has no actor; refusing to project.`
+        );
+      }
+
       const sequence = (sequenceByTarget.get(targetId) ?? 0) + 1;
       sequenceByTarget.set(targetId, sequence);
       const transitionId = IdentityAuthority.generateId('transition', { event_id: event.event_id });
@@ -217,7 +341,7 @@ export class PingProjector {
           payloadHash,
           event.created_at,
           JSON.stringify(payload.proof ?? {}),
-          JSON.stringify(payload.metadata ?? {}),
+          JSON.stringify(transitionMetadata),
         ]
       );
       inserted += 1;

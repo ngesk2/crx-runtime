@@ -99,6 +99,31 @@ describeIntegration('PingProjector integration (live PostgreSQL)', () => {
     );
   }
 
+  async function insertUpdateEvent(e: {
+    event_id: string;
+    object_id: string;
+    changes: Record<string, any>;
+    updated_by: string;
+    sequence: number | null;
+    metadata?: Record<string, any>;
+  }): Promise<void> {
+    const payload = {
+      object_id: e.object_id,
+      changes: e.changes,
+      updated_by: e.updated_by,
+      created_at: '2026-09-21T12:10:00.000Z',
+      metadata: e.metadata ?? {},
+      proof: {},
+      payload_hash: sha256hex(JSON.stringify(e.changes ?? null)),
+    };
+    await pool.query(
+      `INSERT INTO ping_events (event_id, event_type, payload, sequence)
+       VALUES ($1, 'OBJECT_UPDATED', $2::jsonb, $3)
+       ON CONFLICT (event_id) DO NOTHING`,
+      [e.event_id, JSON.stringify(payload), e.sequence]
+    );
+  }
+
   async function clearJournal(): Promise<void> {
     await pool.query('DELETE FROM ping_events');
   }
@@ -242,7 +267,10 @@ describeIntegration('PingProjector integration (live PostgreSQL)', () => {
     const tr = await pool.query(
       'SELECT operation, sequence, previous_transition FROM ping_transitions ORDER BY sequence'
     );
-    expect(tr.rows.map((r: any) => [r.operation, Number(r.sequence)])).toEqual([['relate', 1], ['unrelate', 2]]);
+    expect(tr.rows.map((r: any) => [r.operation, Number(r.sequence)])).toEqual([['relate', 1], ['relate', 2]]);
+    const metas = await pool.query('SELECT metadata FROM ping_transitions ORDER BY sequence');
+    expect(metas.rows[0].metadata.relationship_status).toBe('active');
+    expect(metas.rows[1].metadata.relationship_status).toBe('inactive');
     expect(tr.rows[1].previous_transition).toBeTruthy();
   });
 
@@ -253,6 +281,57 @@ describeIntegration('PingProjector integration (live PostgreSQL)', () => {
 
     const counts = await projector.countProjections();
     expect(counts).toEqual({ objects: 0, relationships: 0, transitions: 0 });
+  });
+
+  it('OBJECT_UPDATED applies shallow content merges in acceptance order', async () => {
+    await insertObjectEvent({ event_id: 'ev-m1', object_id: 'object_m', controller: 'identity_alice', content: { display_name: 'Alice', handle: 'x' }, sequence: 1 });
+    await insertUpdateEvent({ event_id: 'ev-m2', object_id: 'object_m', changes: { handle: 'alice' }, updated_by: 'identity_alice', sequence: 2 });
+    await insertUpdateEvent({ event_id: 'ev-m3', object_id: 'object_m', changes: { bio: 'dev' }, updated_by: 'identity_alice', sequence: 3 });
+
+    const counts = await projector.rebuildAll();
+    expect(counts.objects).toBe(3); // 1 create + 2 updates applied
+    expect(counts.transitions).toBe(3);
+
+    const obj = await pool.query('SELECT content FROM ping_objects WHERE object_id = $1', ['object_m']);
+    expect(obj.rows[0].content).toEqual({ display_name: 'Alice', handle: 'alice', bio: 'dev' });
+
+    const tr = await pool.query(
+      'SELECT operation, actor_id, sequence, previous_transition FROM ping_transitions WHERE object_id = $1 ORDER BY sequence',
+      ['object_m']
+    );
+    expect(tr.rows.map((r: any) => [r.operation, r.actor_id, Number(r.sequence)])).toEqual([
+      ['create', 'identity_alice', 1],
+      ['update', 'identity_alice', 2],
+      ['update', 'identity_alice', 3],
+    ]);
+    expect(tr.rows[1].previous_transition).toBeTruthy();
+    expect(tr.rows[2].previous_transition).not.toBe(tr.rows[1].previous_transition);
+  });
+
+  it('OBJECT_UPDATED fails closed on unknown target', async () => {
+    await insertUpdateEvent({ event_id: 'ev-u9', object_id: 'object_ghost', changes: { handle: 'x' }, updated_by: 'identity_alice', sequence: 1 });
+    await expect(projector.rebuildAll()).rejects.toThrow(/unknown object/);
+    expect(await projector.countProjections()).toEqual({ objects: 0, relationships: 0, transitions: 0 });
+  });
+
+  it('OBJECT_UPDATED fails closed when signer is not the controller', async () => {
+    await insertObjectEvent({ event_id: 'ev-a1', object_id: 'object_owned', controller: 'identity_alice', content: { text: 'mine' }, sequence: 1 });
+    await insertUpdateEvent({ event_id: 'ev-a2', object_id: 'object_owned', changes: { text: 'yours' }, updated_by: 'identity_bob', sequence: 2 });
+    await expect(projector.rebuildAll()).rejects.toThrow(/is controlled by/);
+    expect(await projector.countProjections()).toEqual({ objects: 0, relationships: 0, transitions: 0 });
+  });
+
+  it('OBJECT_UPDATED fails closed on malformed changes', async () => {
+    await insertObjectEvent({ event_id: 'ev-b1', object_id: 'object_bm', controller: 'identity_alice', content: { text: 't' }, sequence: 1 });
+    await insertUpdateEvent({ event_id: 'ev-b2', object_id: 'object_bm', changes: null as any, updated_by: 'identity_alice', sequence: 2 });
+    await expect(projector.rebuildAll()).rejects.toThrow(/malformed changes/);
+  });
+
+  it('rebuild fails closed when any consumed event lacks an acceptance sequence', async () => {
+    await insertObjectEvent({ event_id: 'ev-s1', object_id: 'object_s', controller: 'identity_alice', content: { text: 's' }, sequence: 1 });
+    await insertUpdateEvent({ event_id: 'ev-s2', object_id: 'object_s', changes: { text: 's2' }, updated_by: 'identity_alice', sequence: null });
+    await expect(projector.rebuildAll()).rejects.toThrow(/acceptance sequence/);
+    expect(await projector.countProjections()).toEqual({ objects: 0, relationships: 0, transitions: 0 });
   });
 
   it('row-level append-only triggers still reject direct row mutation', async () => {

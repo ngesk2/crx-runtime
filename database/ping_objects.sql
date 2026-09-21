@@ -77,7 +77,10 @@ CREATE TABLE IF NOT EXISTS ping_relationships (
   metadata JSONB NOT NULL DEFAULT '{}',
   
   -- Constraints
-  CHECK (predicate IN ('follows', 'replies_to', 'references', 'likes', 'mentions', 'denies', 'approves')),
+  -- 2026-09-21: predicate vocabulary reconciled with runtime/constitutional/src/ping-vocabulary.ts.
+  -- 'references' and 'mentions' removed: no defined semantics, no projector handling, no live use.
+  -- They are RESERVED (not forbidden); reintroduction requires a vocabulary decision plus projector semantics.
+  CHECK (predicate IN ('follows', 'likes', 'replies_to', 'approves', 'denies')),
   CHECK (status IN ('active', 'inactive')),
   UNIQUE (subject, predicate, object)
 );
@@ -124,7 +127,11 @@ CREATE TABLE IF NOT EXISTS ping_transitions (
   metadata JSONB NOT NULL DEFAULT '{}',
   
   -- Constraints
-  CHECK (operation IN ('create', 'relate', 'unrelate', 'propose', 'approve', 'publish', 'tombstone')),
+  -- 2026-09-21: operation vocabulary reconciled with ping-vocabulary.ts (create/update/relate).
+  -- Legacy 'unrelate' retired: revocation is status 'inactive' on the same predicate, projected as
+  -- operation 'relate' with relationship_status in transition metadata. 'propose'/'approve'/'publish'/'tombstone'
+  -- retired: no journal events, no projector paths, no live rows; preserved in git history.
+  CHECK (operation IN ('create', 'update', 'relate')),
   UNIQUE (object_id, sequence)
 );
 
