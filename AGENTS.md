@@ -23,6 +23,37 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 
 ## Log
 
+### 2026-09-20 Session: 24-Hour PING Website Proof Sprint
+
+**18:00** | Started 24-hour PING Website Proof Sprint. Goal: Deliver working PING profile proof on actual website. | Read AGENTS.md, executed HOUR 0-2 pre-flight.
+
+**18:30** | HOUR 0-2 Pre-Flight Complete. Resolved 8 critical questions:
+- Frontend: CascadeProjects/infra/ui-next (Next.js 14.1.0)
+- Gateway: gateway/server.js at port 8080
+- Database: PostgreSQL via PostgresEventStore
+- Canonical event store: events table (NO ping_events table exists)
+- Object tables: Currently CANONICAL (WRONG) → need PROJECTION classification
+- Capability authority: CapabilityAuthority in runtime/kernel/capabilities
+- Agent runtime: Multiple runtimes available (AIRuntime, external-agent-prototype)
+- Crypto: NO real Ed25519 → requires dependency
+
+**19:00** | PATCH 7A Complete - Real Ed25519 + Projection Classification:
+- Replaced placeholder Ed25519 with real Node.js crypto ed25519 (no external dependency)
+- Added PingProjector for rebuilding projections from canonical event history
+- Reclassified ping_objects, ping_relationships, ping_transitions as PROJECTION/MATERIALIZED STATE
+- Added verifyWithPublicKey for independent verification
+- 7/7 Ed25519 tests passed (key generation, signing, verification, independent identities, Bob cannot sign as Alice, Bob can verify Alice independently, wrong signature fails)
+- Simplified time-authority (removed failure-authority dependency)
+- Added pg dependency for projector
+- Created tsconfig.json for TypeScript compilation
+- Committed: 3a553bbb3
+
+**19:15** | Both pre-flight blockers resolved:
+1. Real Ed25519 implemented using Node.js crypto module (no external dependency)
+2. Object tables reclassified as PROJECTION/MATERIALIZED STATE with PingProjector
+
+**Next:** Proceed with HOUR 2-4 (Real Identity + Crypto integration into website flow)
+
 ### 2026-06-23 Session 1 (continued)
 
 **01:15** | Started Session 2. Goal: Sweep 2-5 (Runtime Container, Intel Extraction, Artifact Digestion, Retrieval verification). | Read AGENTS.md, assessed current state.
@@ -232,15 +263,29 @@ P9: subprocess       — 5 violations (runtime subprocess spawning — P8 Tempor
 
 **13:45** | PATCH 2 complete. No authority collapsing needed. Semantic/jurisdictional splits are intentional architectural boundaries. | Session complete.
 
-## Session 14 — Key Decisions
-- **WSL canonical repository is the true engineering root** — /home/nolan/ping. Windows (C:\Users\nolan\PING) is preserved UI/control/rollback state but has stranded gitlink problem.
-- **Gitlink problem isolated to Windows branch** — WSL runtime/ is already normal tracked directory with 258 files. No governance repair needed in WSL.
-- **ID format discrepancy resolved** — Historical JavaScript uses type_hash16 (underscore), not type:hash16 (colon). TypeScript implementation corrected to match.
-- **Minimal package exports** — index.ts exports only time, hash, identity authorities. Avoided exporting 24 unused authorities that were in Windows index.ts.
-- **PATCH 1 scope limited** — Only IdentityAuthority TypeScript implementation + characterization tests + package metadata. No unrelated acquisition fixes or broad index.ts.
-- **Identity semantic split is intentional** — Random/temporal IDs (UUID v7) for execution/events/actors. Deterministic/content-addressed IDs (type_hash16) for objects/artifacts. NOT duplicates.
-- **Hash authority jurisdictional split is intentional** — Python, TypeScript replay, TypeScript constitutional are separate subsystems with no cross-language data flow. NOT duplicates.
-- **Authority convergence principle** — Prove same semantics before collapsing. Semantic/jurisdictional splits are architectural boundaries, not technical debt.
+### 2026-09-20 Session 15 (PING Social Object Vertical Slice)
+
+**14:00** | Pivoted to PING social object vertical slice per user directive. Authority convergence baseline accepted (PATCH 1 + PATCH 2 sufficient). STOP auditing authorities merely because more exist. | Started PATCH 3 - Object Kernel.
+
+**14:05** | PATCH 3 complete. Implemented PING Object Kernel using existing constitutional authorities (IdentityAuthority, HashAuthority, TimeAuthority). Added schemas (PingObject, PingPost, PingProfile, PingRelationship, PingTransition). Added PostgreSQL schema (ping_objects, ping_relationships, ping_transitions). Object identity uses deterministic/content-addressed path (type_hash16), NOT UUID-v7. | COMMITTED at SHA fc2a04b9d.
+
+**14:10** | PATCH 4 complete. Implemented PingTransitionMapper to convert PING transitions to canonical events in existing events table. Stream format: ping.{object_id}. Event type format: ping.{operation}. NO separate ping_object_events, social_events, object_event_bus, or replay store. Uses existing canonical event spine. | COMMITTED at SHA 2b1827f06.
+
+**14:15** | PATCH 5 complete. Implemented PingIdentityManager with independent identities for Alice and Bob. Identity structure: identity_id (deterministic), display_name, public_key, private_key (never persisted). Used placeholder Ed25519-like key generation (NOT production). Each identity has independent key pair. | COMMITTED at SHA 54a26631b.
+
+**14:20** | PATCH 6 complete. Implemented PingFeedProjection with deriveFeed, rebuildFeed, verifyFeedReproducibility. Feed derived from canonical history (objects + relationships + visibility + ordering policy). NO canonical feed state - feed is a projection only. Feed can be destroyed and reconstructed from canonical history. | COMMITTED at SHA 54a26631b (combined with PATCH 5).
+
+**14:25** | PATCH 3-6 complete. PING object kernel foundation established. Next: PATCH 7-9 (agent capability boundary, human approval, website projection). | Write vertical slice deliverable document.
+
+## Session 15 — Key Decisions
+- **Authority convergence baseline accepted** — PATCH 1 (IdentityAuthority) + PATCH 2 (semantic/jurisdictional split documentation) are sufficient foundation
+- **STOP auditing authorities merely because more exist** — Semantic/jurisdictional splits are intentional architectural boundaries
+- **Object identity uses deterministic/content-addressed path** — type_hash16 format from PATCH 1, NOT UUID-v7
+- **UUID-v7 for internal temporal identifiers only** — NOT for durable cryptographic identity
+- **Transitions are immutable** — Appended to existing events table (canonical event spine), not separate event store
+- **Feed is a projection** — Derived from canonical history, can be destroyed and rebuilt
+- **Independent identities with independent key pairs** — Alice and Bob have separate signing keys, controllers, local state
+- **Placeholder Ed25519 implementation** — NOT production, should use Web Crypto API or sodium/libsodium
 
 ### 2026-06-27 Session 11 (Phase S.16 Constitutional Stabilization — Execution)
 
