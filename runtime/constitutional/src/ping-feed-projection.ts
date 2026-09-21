@@ -1,9 +1,23 @@
 /**
  * PING Feed Projection
  * PATCH 6: Feed Is A Projection
- * 
- * Derives feeds from canonical history (objects + relationships + visibility + ordering policy)
- * Feed can be destroyed and reconstructed from canonical history
+ * PATCH 7B: visibility enforcement + deterministic ordering
+ *
+ * Derives feeds from canonical history (objects + relationships + visibility + ordering policy).
+ * Feed can be destroyed and reconstructed from canonical history.
+ *
+ * Ordering contract: created_at DESC, then object_id DESC as the deterministic
+ * tiebreak. Two derivations over the same canonical state always produce the
+ * same order, regardless of input row order.
+ *
+ * Visibility contract:
+ * - public: visible to everyone.
+ * - followers: visible to the controller and to actors with an active
+ *   follows relationship toward the controller.
+ * - private: visible to the controller only.
+ * - PING_ONLY is a recorded schema gap: it is NOT silently treated as
+ *   followers or public. Objects carrying an unrecognized visibility are
+ *   hidden from everyone except the controller (fail closed).
  */
 
 import { PingObject, PingRelationship } from './schemas/ping-objects';
@@ -13,7 +27,7 @@ import { PingObject, PingRelationship } from './schemas/ping-objects';
  */
 export interface FeedEntry {
   object: PingObject;
-  relationship?: PingRelationship;  // How this object entered the feed (e.g., "follows")
+  relationship?: PingRelationship;  // How this object entered the feed (e.g. "follows")
   score: number;  // For ordering
 }
 
@@ -23,11 +37,11 @@ export interface FeedEntry {
 export class PingFeedProjection {
   /**
    * Derive feed for an actor
-   * 
-   * @param actorId - Actor to derive feed for (e.g., "bob")
+   *
+   * @param actorId - Actor to derive feed for (e.g. an identity ID)
    * @param objects - All objects in system
    * @param relationships - All relationships in system
-   * @returns Feed entries sorted by score
+   * @returns Feed entries in deterministic order (created_at DESC, object_id DESC)
    */
   static deriveFeed(
     actorId: string,
@@ -36,16 +50,28 @@ export class PingFeedProjection {
   ): FeedEntry[] {
     const feed: FeedEntry[] = [];
 
-    // Find all actors that the given actor follows
-    const following = relationships
-      .filter(r => r.subject === actorId && r.predicate === 'follows' && r.status === 'active')
-      .map(r => r.object);
+    const activeRels = relationships.filter((r) => r.status === 'active');
 
-    // Add objects from followed actors
+    // Find all actors that the given actor follows
+    const following = new Set(
+      activeRels
+        .filter((r) => r.subject === actorId && r.predicate === 'follows')
+        .map((r) => r.object)
+    );
+
+    const followsController = (viewer: string, controller: string): boolean =>
+      activeRels.some(
+        (r) => r.subject === viewer && r.predicate === 'follows' && r.object === controller
+      );
+
     for (const object of objects) {
-      if (following.includes(object.controller)) {
-        const relationship = relationships.find(
-          r => r.subject === actorId && r.predicate === 'follows' && r.object === object.controller
+      const own = object.controller === actorId;
+      if (!this.isVisibleTo(object, actorId, own, followsController)) {
+        continue;
+      }
+      if (own || following.has(object.controller)) {
+        const relationship = activeRels.find(
+          (r) => r.subject === actorId && r.predicate === 'follows' && r.object === object.controller
         );
 
         feed.push({
@@ -56,20 +82,44 @@ export class PingFeedProjection {
       }
     }
 
-    // Add actor's own objects
-    const ownObjects = objects.filter(o => o.controller === actorId);
-    for (const object of ownObjects) {
-      feed.push({
-        object,
-        relationship: undefined,
-        score: this.computeScore(object, undefined)
-      });
-    }
-
-    // Sort by score (descending)
-    feed.sort((a, b) => b.score - a.score);
+    // Deterministic order: newest first, object_id DESC breaks timestamp ties.
+    feed.sort((a, b) => {
+      const timeDiff =
+        new Date(b.object.created_at).getTime() - new Date(a.object.created_at).getTime();
+      if (timeDiff !== 0) {
+        return timeDiff;
+      }
+      if (a.object.id === b.object.id) {
+        return 0;
+      }
+      return a.object.id < b.object.id ? 1 : -1;
+    });
 
     return feed;
+  }
+
+  /**
+   * Visibility enforcement. Unknown visibility values fail closed: hidden
+   * from everyone except the controller.
+   */
+  private static isVisibleTo(
+    object: PingObject,
+    actorId: string,
+    own: boolean,
+    followsController: (viewer: string, controller: string) => boolean
+  ): boolean {
+    const visibility = object.visibility ?? 'public';
+    switch (visibility) {
+      case 'public':
+        return true;
+      case 'followers':
+        return own || followsController(actorId, object.controller);
+      case 'private':
+        return own;
+      default:
+        // PING_ONLY and any future value: fail closed until explicitly modeled.
+        return own;
+    }
   }
 
   /**

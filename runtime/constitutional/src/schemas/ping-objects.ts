@@ -1,7 +1,8 @@
 /**
  * PING Social Object Schemas
  * PATCH 3: Object Kernel
- * 
+ * PATCH 7B: visibility/status on the object contract
+ *
  * Protocol-neutral PING primitives for social object flow
  */
 
@@ -15,6 +16,8 @@ export interface PingObject {
   created_at: string;  // ISO timestamp
   content: Record<string, any>;  // Object-specific content
   refs: string[];  // References to other object IDs
+  visibility?: string;  // public | followers | private (default: public). PING_ONLY is a recorded schema gap.
+  status?: string;  // active | tombstoned (default: active)
 }
 
 /**
@@ -34,7 +37,9 @@ export interface PingProfile extends PingObject {
   schema: 'ping.social.profile@1';
   content: {
     display_name: string;
+    handle?: string;
     bio?: string;
+    public_key?: string;
   };
 }
 
@@ -43,9 +48,9 @@ export interface PingProfile extends PingObject {
  */
 export interface PingRelationship {
   id: string;  // Deterministic: relationship_<type_hash16>
-  subject: string;  // Who is relating (e.g., "bob")
+  subject: string;  // Who is relating (e.g., identity ID)
   predicate: string;  // Type of relationship (e.g., "follows", "replies_to", "references")
-  object: string;  // What is being related to (e.g., "alice", object ID)
+  object: string;  // What is being related to (e.g., identity ID, object ID)
   created_at: string;  // ISO timestamp
   status: 'active' | 'inactive';
   metadata?: Record<string, any>;

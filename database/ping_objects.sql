@@ -2,9 +2,9 @@
 -- PATCH 3: Object Kernel
 -- Date: 2026-09-20
 -- Classification: PROJECTION / MATERIALIZED STATE
--- Rebuild Source: canonical event history (events table)
+-- Rebuild Source: canonical event history (ping_events table)
 -- NOTE: These tables are projections, NOT canonical state
--- Canonical truth resides in the events table
+-- Canonical truth resides in the ping_events table
 -- These tables can be destroyed and rebuilt from canonical history
 
 -- PING Objects Table
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS ping_relationships (
   metadata JSONB NOT NULL DEFAULT '{}',
   
   -- Constraints
-  CHECK (predicate IN ('follows', 'replies_to', 'references', 'likes', 'mentions')),
+  CHECK (predicate IN ('follows', 'replies_to', 'references', 'likes', 'mentions', 'denies', 'approves')),
   CHECK (status IN ('active', 'inactive')),
   UNIQUE (subject, predicate, object)
 );
@@ -143,6 +143,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_prevent_transition_updates ON ping_transitions;
 CREATE TRIGGER trigger_prevent_transition_updates
   BEFORE UPDATE ON ping_transitions
   FOR EACH ROW
@@ -156,6 +157,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_prevent_transition_deletes ON ping_transitions;
 CREATE TRIGGER trigger_prevent_transition_deletes
   BEFORE DELETE ON ping_transitions
   FOR EACH ROW

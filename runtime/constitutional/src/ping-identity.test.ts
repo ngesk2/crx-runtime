@@ -1,67 +1,58 @@
 /**
- * Test real Ed25519 implementation
- * PATCH 7A: Real Cryptographic Identity
+ * Ed25519 identity and signing behavior
+ * PATCH 7A: Real Cryptographic Identity (originally a self-running console script)
+ * PATCH 7B: converted to a real jest suite. Private key material is never logged.
  */
 
 import { PingIdentityManager } from './ping-identity';
 
-async function testRealEd25519() {
-  console.log('Testing real Ed25519 implementation...\n');
+describe('Ed25519 identity and signing', () => {
+  it('generates a key pair with a deterministic identity ID', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    expect(alice.identity_id).toMatch(/^identity_[0-9a-f]{16}$/);
+    expect(alice.public_key).toHaveLength(88); // 44-byte SPKI DER, hex
+    expect(alice.private_key).toHaveLength(96); // 48-byte PKCS8 DER, hex
+  });
 
-  // Test 1: Generate key pair
-  console.log('Test 1: Generate key pair');
-  const alice = PingIdentityManager.createIdentity('Alice');
-  console.log(`  Alice ID: ${alice.identity_id}`);
-  console.log(`  Public key: ${alice.public_key.substring(0, 32)}...`);
-  console.log(`  Private key: ${alice.private_key.substring(0, 32)}...`);
-  console.log('  ✓ Key pair generated\n');
+  it('signs data and verifies with the same identity', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const data = 'Hello PING';
+    const signature = PingIdentityManager.sign(alice, data);
+    expect(signature).toHaveLength(128); // 64-byte Ed25519 signature, hex
+    expect(PingIdentityManager.verify(alice, data, signature)).toBe(true);
+  });
 
-  // Test 2: Sign data
-  console.log('Test 2: Sign data');
-  const data = 'Hello PING';
-  const signature = PingIdentityManager.sign(alice, data);
-  console.log(`  Data: ${data}`);
-  console.log(`  Signature: ${signature.substring(0, 32)}...`);
-  console.log('  ✓ Data signed\n');
+  it('creates independent identities for Alice and Bob', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const bob = PingIdentityManager.createIdentity('Bob');
+    expect(alice.identity_id).not.toBe(bob.identity_id);
+    expect(alice.public_key).not.toBe(bob.public_key);
+  });
 
-  // Test 3: Verify signature
-  console.log('Test 3: Verify signature');
-  const verified = PingIdentityManager.verify(alice, data, signature);
-  console.log(`  Verification result: ${verified}`);
-  console.log('  ✓ Signature verified\n');
+  it('rejects Bob signing as Alice', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const bob = PingIdentityManager.createIdentity('Bob');
+    const data = 'Hello PING';
+    const bobSignature = PingIdentityManager.sign(bob, data);
+    expect(PingIdentityManager.verifyWithPublicKey(data, bobSignature, alice.public_key)).toBe(false);
+  });
 
-  // Test 4: Independent identity
-  console.log('Test 4: Create independent Bob identity');
-  const bob = PingIdentityManager.createIdentity('Bob');
-  console.log(`  Bob ID: ${bob.identity_id}`);
-  console.log(`  Alice ID: ${alice.identity_id}`);
-  console.log(`  IDs are different: ${alice.identity_id !== bob.identity_id}`);
-  console.log(`  Keys are different: ${alice.public_key !== bob.public_key}`);
-  console.log('  ✓ Independent identity created\n');
+  it('lets Bob verify Alice independently with her public key', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const data = 'Hello PING';
+    const signature = PingIdentityManager.sign(alice, data);
+    expect(PingIdentityManager.verifyWithPublicKey(data, signature, alice.public_key)).toBe(true);
+  });
 
-  // Test 5: Bob cannot sign as Alice
-  console.log('Test 5: Bob cannot sign as Alice');
-  const bobSignature = PingIdentityManager.sign(bob, data);
-  const bobCannotVerifyAsAlice = !PingIdentityManager.verifyWithPublicKey(data, bobSignature, alice.public_key);
-  console.log(`  Bob signature: ${bobSignature.substring(0, 32)}...`);
-  console.log(`  Bob cannot verify as Alice: ${bobCannotVerifyAsAlice}`);
-  console.log('  ✓ Bob cannot sign as Alice\n');
+  it('rejects a signature over the wrong data', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const wrongSignature = PingIdentityManager.sign(alice, 'Wrong data');
+    expect(PingIdentityManager.verify(alice, 'Hello PING', wrongSignature)).toBe(false);
+  });
 
-  // Test 6: Bob can verify Alice
-  console.log('Test 6: Bob can verify Alice independently');
-  const bobCanVerifyAlice = PingIdentityManager.verifyWithPublicKey(data, signature, alice.public_key);
-  console.log(`  Bob can verify Alice: ${bobCanVerifyAlice}`);
-  console.log('  ✓ Bob can verify Alice independently\n');
-
-  // Test 7: Wrong signature fails
-  console.log('Test 7: Wrong signature fails');
-  const wrongData = 'Wrong data';
-  const wrongSignature = PingIdentityManager.sign(alice, wrongData);
-  const wrongVerification = PingIdentityManager.verify(alice, data, wrongSignature);
-  console.log(`  Wrong signature verification: ${wrongVerification}`);
-  console.log('  ✓ Wrong signature fails\n');
-
-  console.log('All Ed25519 tests passed!');
-}
-
-testRealEd25519().catch(console.error);
+  it('rejects a tampered message', () => {
+    const alice = PingIdentityManager.createIdentity('Alice');
+    const signature = PingIdentityManager.sign(alice, 'Hello PING');
+    expect(PingIdentityManager.verify(alice, 'Hello PING!', signature)).toBe(false);
+  });
+});

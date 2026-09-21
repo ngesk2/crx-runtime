@@ -1,15 +1,22 @@
 /**
  * Constitutional Identity Authority
- * 
+ *
  * Centralized deterministic ID generation for constitutional compliance.
  * All ID generation must route through this authority to ensure replay determinism.
- * 
+ *
  * Constitutional Requirements:
  * - IDs are deterministic
  * - IDs are derived from canonical bytes
  * - IDs use HashAuthority for hashing
  * - IDs include namespace for disambiguation
  * - IDs are content-addressable where applicable
+ *
+ * Patch 7B: generateId canonicalizes the context through
+ * HashAuthority.canonicalizeObject before serialization, so nested key order
+ * never affects the ID. Blast radius verified 2026-09-21: zero persisted
+ * type_hash16 IDs exist in the repo and zero OBJECT_CREATED rows exist in the
+ * live Oracle journal, so no persisted consumer depends on the old
+ * JSON.stringify behavior.
  */
 
 import { HashAuthority } from './hash-authority';
@@ -33,7 +40,7 @@ export class IdentityAuthority {
 
   /**
    * Generate deterministic ID from namespace and context
-   * 
+   *
    * @param namespace - Namespace for disambiguation
    * @param context - Context data (will be canonicalized)
    * @returns Canonical ID
@@ -58,7 +65,7 @@ export class IdentityAuthority {
 
   /**
    * Generate event ID
-   * 
+   *
    * @param eventType - Event type
    * @param aggregateId - Aggregate ID
    * @returns Event ID
@@ -75,7 +82,7 @@ export class IdentityAuthority {
 
   /**
    * Generate ID from canonical bytes
-   * 
+   *
    * @param canonicalBytes - Canonical byte representation
    * @param type - Type prefix
    * @returns Deterministic ID
@@ -92,7 +99,7 @@ export class IdentityAuthority {
 
   /**
    * Get constitutional version
-   * 
+   *
    * @returns Version string
    */
   static getVersion(): string {
@@ -102,13 +109,22 @@ export class IdentityAuthority {
   /**
    * Compatibility method: generate ID from type and context
    * Returns deterministic ID string (legacy API compatibility)
-   * 
+   *
+   * The context is canonicalized through HashAuthority.canonicalizeObject
+   * BEFORE serialization, so nested key order does not affect the ID.
+   * Two semantically identical contexts always produce the same ID;
+   * any semantic difference produces a different ID. Array order is
+   * significant (arrays carry semantic ordering).
+   *
+   * Normalization note: `undefined` values canonicalize to `null`.
+   *
    * @param type - Type prefix
    * @param context - Context data
    * @returns Deterministic ID string
    */
   static generateId(type: string, context: any): string {
-    const canonicalId = this.generateDeterministicId(type, JSON.stringify(context));
+    const canonicalContext = JSON.stringify(HashAuthority.canonicalizeObject(context));
+    const canonicalId = this.generateDeterministicId(type, canonicalContext);
     // Format: type_hash16 for compatibility with existing ID format (underscore separator, not colon)
     return `${type}_${canonicalId.hash.substring(0, 16)}`;
   }
@@ -116,7 +132,7 @@ export class IdentityAuthority {
   /**
    * Compatibility method: generate deterministic ID from namespace and context
    * Returns CanonicalID object (new API)
-   * 
+   *
    * @param namespace - Namespace
    * @param context - Context string
    * @returns Canonical ID
