@@ -19,6 +19,9 @@ COPY runtime/ ./runtime/
 # Infrastructure adapters required by runtime/ (e.g. physical_clock_adapter)
 COPY infrastructure/physical_clock_adapter.js ./infrastructure/
 
+# Generation manifest required by gateway/generated/generation_manifest_loader.js
+COPY GENERATION_MANIFEST.yaml ./
+
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 EXPOSE 8080
