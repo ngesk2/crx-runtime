@@ -16,6 +16,9 @@ COPY gateway/ ./gateway/
 COPY ping-runtime/ ./ping-runtime/
 COPY runtime/ ./runtime/
 
+# Infrastructure adapters required by runtime/ (e.g. physical_clock_adapter)
+COPY infrastructure/physical_clock_adapter.js ./infrastructure/
+
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 EXPOSE 8080
