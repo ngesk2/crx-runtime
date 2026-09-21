@@ -22,6 +22,9 @@ COPY infrastructure/physical_clock_adapter.js ./infrastructure/
 # Generation manifest required by gateway/generated/generation_manifest_loader.js
 COPY GENERATION_MANIFEST.yaml ./
 
+# Database SQL files required by gateway/canonical_event_envelope.js
+COPY database/ ./database/
+
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 EXPOSE 8080
