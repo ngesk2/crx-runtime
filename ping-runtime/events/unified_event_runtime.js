@@ -164,7 +164,8 @@ class UnifiedEventRuntime {
             [event.event_id]
           );
           if (existing.rows.length > 0) {
-            const existingPayload = JSON.parse(existing.rows[0].payload);
+            const rawPayload = existing.rows[0].payload;
+            const existingPayload = typeof rawPayload === "string" ? JSON.parse(rawPayload) : rawPayload;
             // Compare canonical JSON (sorted keys) for semantic equivalence
             const canon = (o) => JSON.stringify(o, Object.keys(o).sort());
             if (canon(existingPayload) !== canon(event.payload)) {
