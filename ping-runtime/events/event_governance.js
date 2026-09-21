@@ -76,6 +76,10 @@ const NAMESPACE_OWNERS = {
   sms: 'HPP',
   google: 'HPP',
   github: 'HPP',
+
+  // FYD product namespaces (2026-09-21): FYD site projections and
+  // owner-correction overlays. Owned by the FYD product authority.
+  fyd: 'FYD',
 };
 
 class EventGovernance {

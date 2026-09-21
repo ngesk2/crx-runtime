@@ -326,6 +326,13 @@ class EventGenerator {
       { event_type: 'SNIPPET_REJECTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
       { event_type: 'AI_RESPONSE_ACCEPTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
       { event_type: 'AI_RESPONSE_REJECTED', authority_owner: 'KnowledgePromoter', event_class: 'observation' },
+      // FYD site overlay (2026-09-21): an owner-correction / site-customization patch
+      // for a compiled FYD site projection. Emitted by
+      // tools/fyd-site-projection/emit-overlay.py, consumed by
+      // tools/fyd-site-projection/dump.py. Registered for repo-booted (demo/dev)
+      // gateways; the 8080 deployment image carries its own baked registry and is
+      // owned by the deployment lane.
+      { event_type: 'FYD_SITE_OVERLAY', authority_owner: 'FydSiteAuthority', event_class: 'business' },
     ];
 
     return pipelineEvents.map(e => ({

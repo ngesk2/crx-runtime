@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "generator": "EventGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-08-27T15:02:35.233Z",
-  "count": 233,
-  "hash": "32b532129ec7cefb72caabdbea1a050e0c88bcfa69c73425512e2ca7a229cb9c",
+  "generated_at": "2026-09-21T19:23:53.705Z",
+  "count": 234,
+  "hash": "50935a77a56e54da1344881e4c9f2aa8d093e61e4776b4d55b9069aadf088383",
   "events": [
     {
       "event_type": "AI_RESPONSE_ACCEPTED",
@@ -192,7 +192,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\capability\\intent-manifest.yaml"
+      "source_file": "intents/capability/intent-manifest.yaml"
     },
     {
       "event_type": "capability.capabilitymap_produced",
@@ -220,7 +220,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\capability\\intent-manifest.yaml"
+      "source_file": "intents/capability/intent-manifest.yaml"
     },
     {
       "event_type": "capability.completed",
@@ -312,7 +312,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\capability\\intent-manifest.yaml"
+      "source_file": "intents/capability/intent-manifest.yaml"
     },
     {
       "event_type": "capability.registered",
@@ -628,7 +628,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\compiler\\intent-manifest.yaml"
+      "source_file": "intents/compiler/intent-manifest.yaml"
     },
     {
       "event_type": "compiler.constitutionalproof_produced",
@@ -656,7 +656,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\compiler\\intent-manifest.yaml"
+      "source_file": "intents/compiler/intent-manifest.yaml"
     },
     {
       "event_type": "compiler.intent_loaded",
@@ -684,7 +684,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\compiler\\intent-manifest.yaml"
+      "source_file": "intents/compiler/intent-manifest.yaml"
     },
     {
       "event_type": "consensus_completed",
@@ -840,7 +840,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml"
+      "source_file": "intents/constitutional-ir/intent-manifest.yaml"
     },
     {
       "event_type": "constitutional-ir.canonicalobject_produced",
@@ -868,7 +868,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml"
+      "source_file": "intents/constitutional-ir/intent-manifest.yaml"
     },
     {
       "event_type": "constitutional-ir.completed",
@@ -960,7 +960,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml"
+      "source_file": "intents/constitutional-ir/intent-manifest.yaml"
     },
     {
       "event_type": "constitutional-ir.merkletree_produced",
@@ -988,7 +988,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml"
+      "source_file": "intents/constitutional-ir/intent-manifest.yaml"
     },
     {
       "event_type": "constitutional-ir.registered",
@@ -1048,7 +1048,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\constitutional-ir\\intent-manifest.yaml"
+      "source_file": "intents/constitutional-ir/intent-manifest.yaml"
     },
     {
       "event_type": "constitutional-ir.started",
@@ -1236,7 +1236,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\diagnostics\\intent-manifest.yaml"
+      "source_file": "intents/diagnostics/intent-manifest.yaml"
     },
     {
       "event_type": "diagnostics.failed",
@@ -1296,7 +1296,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\diagnostics\\intent-manifest.yaml"
+      "source_file": "intents/diagnostics/intent-manifest.yaml"
     },
     {
       "event_type": "diagnostics.registered",
@@ -1388,7 +1388,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\diagnostics\\intent-manifest.yaml"
+      "source_file": "intents/diagnostics/intent-manifest.yaml"
     },
     {
       "event_type": "DOCUMENT_DIGESTED",
@@ -1800,7 +1800,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\evidence\\intent-manifest.yaml"
+      "source_file": "intents/evidence/intent-manifest.yaml"
     },
     {
       "event_type": "evidence.evidencegraph_produced",
@@ -1828,7 +1828,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\evidence\\intent-manifest.yaml"
+      "source_file": "intents/evidence/intent-manifest.yaml"
     },
     {
       "event_type": "evidence.failed",
@@ -1888,7 +1888,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\evidence\\intent-manifest.yaml"
+      "source_file": "intents/evidence/intent-manifest.yaml"
     },
     {
       "event_type": "evidence.registered",
@@ -2012,7 +2012,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\execution\\intent-manifest.yaml"
+      "source_file": "intents/execution/intent-manifest.yaml"
     },
     {
       "event_type": "execution.failed",
@@ -2072,7 +2072,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\execution\\intent-manifest.yaml"
+      "source_file": "intents/execution/intent-manifest.yaml"
     },
     {
       "event_type": "execution.registered",
@@ -2331,6 +2331,38 @@
       "source_file": "database/fix_pipeline_blockers.sql"
     },
     {
+      "event_type": "FYD_SITE_OVERLAY",
+      "schema_version": "1.0.0",
+      "authority_owner": "FydSiteAuthority",
+      "event_class": "business",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
       "event_type": "git_diff",
       "schema_version": "1.0.0",
       "authority_owner": "OrchestrationEngine",
@@ -2516,7 +2548,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\governance\\intent-manifest.yaml"
+      "source_file": "intents/governance/intent-manifest.yaml"
     },
     {
       "event_type": "governance.intent_loaded",
@@ -2544,7 +2576,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\governance\\intent-manifest.yaml"
+      "source_file": "intents/governance/intent-manifest.yaml"
     },
     {
       "event_type": "governance.policycompliance_produced",
@@ -2572,7 +2604,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\governance\\intent-manifest.yaml"
+      "source_file": "intents/governance/intent-manifest.yaml"
     },
     {
       "event_type": "governance.registered",
@@ -2664,7 +2696,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\graph\\intent-manifest.yaml"
+      "source_file": "intents/graph/intent-manifest.yaml"
     },
     {
       "event_type": "graph.intent_loaded",
@@ -2692,7 +2724,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\graph\\intent-manifest.yaml"
+      "source_file": "intents/graph/intent-manifest.yaml"
     },
     {
       "event_type": "hashing.canonicalhash_produced",
@@ -2720,7 +2752,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\hashing\\intent-manifest.yaml"
+      "source_file": "intents/hashing/intent-manifest.yaml"
     },
     {
       "event_type": "hashing.completed",
@@ -2812,7 +2844,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\hashing\\intent-manifest.yaml"
+      "source_file": "intents/hashing/intent-manifest.yaml"
     },
     {
       "event_type": "hashing.registered",
@@ -2872,7 +2904,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\hashing\\intent-manifest.yaml"
+      "source_file": "intents/hashing/intent-manifest.yaml"
     },
     {
       "event_type": "hashing.started",
@@ -2932,7 +2964,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\hashing\\intent-manifest.yaml"
+      "source_file": "intents/hashing/intent-manifest.yaml"
     },
     {
       "event_type": "identity.canonicalidentity_produced",
@@ -2960,7 +2992,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\identity\\intent-manifest.yaml"
+      "source_file": "intents/identity/intent-manifest.yaml"
     },
     {
       "event_type": "identity.completed",
@@ -3052,7 +3084,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\identity\\intent-manifest.yaml"
+      "source_file": "intents/identity/intent-manifest.yaml"
     },
     {
       "event_type": "identity.registered",
@@ -3144,7 +3176,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\identity\\intent-manifest.yaml"
+      "source_file": "intents/identity/intent-manifest.yaml"
     },
     {
       "event_type": "INVOICE_CREATED",
@@ -3972,7 +4004,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\ownership\\intent-manifest.yaml"
+      "source_file": "intents/ownership/intent-manifest.yaml"
     },
     {
       "event_type": "ownership.failed",
@@ -4032,7 +4064,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\ownership\\intent-manifest.yaml"
+      "source_file": "intents/ownership/intent-manifest.yaml"
     },
     {
       "event_type": "ownership.ownershipmap_produced",
@@ -4060,7 +4092,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\ownership\\intent-manifest.yaml"
+      "source_file": "intents/ownership/intent-manifest.yaml"
     },
     {
       "event_type": "ownership.registered",
@@ -4152,7 +4184,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\parsing\\intent-manifest.yaml"
+      "source_file": "intents/parsing/intent-manifest.yaml"
     },
     {
       "event_type": "parsing.intent_loaded",
@@ -4180,7 +4212,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\parsing\\intent-manifest.yaml"
+      "source_file": "intents/parsing/intent-manifest.yaml"
     },
     {
       "event_type": "PROJECT_COMPLETED",
@@ -4432,7 +4464,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\proof\\intent-manifest.yaml"
+      "source_file": "intents/proof/intent-manifest.yaml"
     },
     {
       "event_type": "proof.failed",
@@ -4492,7 +4524,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\proof\\intent-manifest.yaml"
+      "source_file": "intents/proof/intent-manifest.yaml"
     },
     {
       "event_type": "proof.proofobject_produced",
@@ -4520,7 +4552,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\proof\\intent-manifest.yaml"
+      "source_file": "intents/proof/intent-manifest.yaml"
     },
     {
       "event_type": "proof.registered",
@@ -4676,7 +4708,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\query\\intent-manifest.yaml"
+      "source_file": "intents/query/intent-manifest.yaml"
     },
     {
       "event_type": "query.queryresult_produced",
@@ -4704,7 +4736,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\query\\intent-manifest.yaml"
+      "source_file": "intents/query/intent-manifest.yaml"
     },
     {
       "event_type": "query.registered",
@@ -4924,7 +4956,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repair\\intent-manifest.yaml"
+      "source_file": "intents/repair/intent-manifest.yaml"
     },
     {
       "event_type": "repair.failed",
@@ -4984,7 +5016,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repair\\intent-manifest.yaml"
+      "source_file": "intents/repair/intent-manifest.yaml"
     },
     {
       "event_type": "repair.registered",
@@ -5044,7 +5076,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repair\\intent-manifest.yaml"
+      "source_file": "intents/repair/intent-manifest.yaml"
     },
     {
       "event_type": "repair.started",
@@ -5296,7 +5328,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\replay\\intent-manifest.yaml"
+      "source_file": "intents/replay/intent-manifest.yaml"
     },
     {
       "event_type": "replay.registered",
@@ -5356,7 +5388,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\replay\\intent-manifest.yaml"
+      "source_file": "intents/replay/intent-manifest.yaml"
     },
     {
       "event_type": "replay.replayresult_produced",
@@ -5384,7 +5416,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\replay\\intent-manifest.yaml"
+      "source_file": "intents/replay/intent-manifest.yaml"
     },
     {
       "event_type": "replay.started",
@@ -5444,7 +5476,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\replay\\intent-manifest.yaml"
+      "source_file": "intents/replay/intent-manifest.yaml"
     },
     {
       "event_type": "REPOSITORY_DISCOVERED",
@@ -5632,7 +5664,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repository\\intent-manifest.yaml"
+      "source_file": "intents/repository/intent-manifest.yaml"
     },
     {
       "event_type": "repository.failed",
@@ -5692,7 +5724,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repository\\intent-manifest.yaml"
+      "source_file": "intents/repository/intent-manifest.yaml"
     },
     {
       "event_type": "repository.registered",
@@ -5784,7 +5816,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\repository\\intent-manifest.yaml"
+      "source_file": "intents/repository/intent-manifest.yaml"
     },
     {
       "event_type": "REVIEW_RECEIVED",
@@ -5908,7 +5940,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\rule-engine\\intent-manifest.yaml"
+      "source_file": "intents/rule-engine/intent-manifest.yaml"
     },
     {
       "event_type": "rule-engine.failed",
@@ -5968,7 +6000,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\rule-engine\\intent-manifest.yaml"
+      "source_file": "intents/rule-engine/intent-manifest.yaml"
     },
     {
       "event_type": "rule-engine.intent_loaded",
@@ -5996,7 +6028,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\rule-engine\\intent-manifest.yaml"
+      "source_file": "intents/rule-engine/intent-manifest.yaml"
     },
     {
       "event_type": "rule-engine.registered",
@@ -6056,7 +6088,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\rule-engine\\intent-manifest.yaml"
+      "source_file": "intents/rule-engine/intent-manifest.yaml"
     },
     {
       "event_type": "rule-engine.started",
@@ -6148,7 +6180,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\scheduler\\intent-manifest.yaml"
+      "source_file": "intents/scheduler/intent-manifest.yaml"
     },
     {
       "event_type": "scheduler.failed",
@@ -6208,7 +6240,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\scheduler\\intent-manifest.yaml"
+      "source_file": "intents/scheduler/intent-manifest.yaml"
     },
     {
       "event_type": "scheduler.registered",
@@ -6268,7 +6300,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\scheduler\\intent-manifest.yaml"
+      "source_file": "intents/scheduler/intent-manifest.yaml"
     },
     {
       "event_type": "scheduler.started",
@@ -6712,7 +6744,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\witness\\intent-manifest.yaml"
+      "source_file": "intents/witness/intent-manifest.yaml"
     },
     {
       "event_type": "witness.registered",
@@ -6772,7 +6804,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\witness\\intent-manifest.yaml"
+      "source_file": "intents/witness/intent-manifest.yaml"
     },
     {
       "event_type": "witness.started",
@@ -6832,7 +6864,7 @@
       },
       "compatibility": "backward",
       "source": "intent",
-      "source_file": "intents\\witness\\intent-manifest.yaml"
+      "source_file": "intents/witness/intent-manifest.yaml"
     },
     {
       "event_type": "worker_assigned",
