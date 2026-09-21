@@ -17,6 +17,7 @@ const { TenantRegistry } = require('../../ping-runtime/runtime/tenant_registry')
 const { DeploymentRegistry } = require('../../ping-runtime/runtime/deployment_registry');
 const { RuntimeRegistry } = require('../../ping-runtime/runtime/runtime_registry');
 const createEventRoutes = require('../routes/events');
+const createIdentityRoutes = require('../routes/identities');
 const createRepositoryRoutes = require('../routes/repository');
 const createContextRoutes = require('../routes/context');
 const createHealthRoutes = require('../routes/health');
@@ -679,6 +680,7 @@ class GatewayRuntime {
     // PG-dependent routes — only mount when Postgres is available
     if (hasPG) {
       this._app.use('/events', createEventRoutes(services.eventReadAuthority, services.unifiedEventRuntime, services.pool));
+      this._app.use('/identities', createIdentityRoutes(services.unifiedEventRuntime, services.pool));
       this._app.use('/context', createContextRoutes(services.eventReadAuthority));
       this._app.use('/api/v1/repository', createRepositoryRoutes(services.repoStore));
       this._app.use('/system', createSystemRoutes(services.eventReadAuthority));

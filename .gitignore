@@ -136,3 +136,6 @@ docs/.doctrees/
 # Misc
 *.bak
 *.backup
+
+# Gateway build artifact: compiled constitutional authorities (built in Dockerfile)
+gateway/constitutional-dist/

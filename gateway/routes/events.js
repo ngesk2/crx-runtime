@@ -68,7 +68,38 @@ function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
     return { events, stream, count: events.length, limit, offset };
   }));
 
-  router.post('/', asyncHandler('/events', async (req) => {
+  router.post('/', asyncHandler('/events', async (req, res) => {
+    // Website-BFF practice envelope: { type, payload, proof, metadata }.
+    // Normalized into canonical journal shape by the social ingest adapter
+    // (BFF signature verified; vocabulary enforced; ids minted by the ONE
+    // IdentityAuthority). Typed client errors return 400.
+    if (req.body && req.body.type && req.body.payload && !req.body.event_type) {
+      const adapter = require('../social_ingest_adapter');
+      let norm;
+      try {
+        norm = await adapter.normalizeBffEnvelope(req.body, pool);
+      } catch (e) {
+        const code = String(e.message || 'INGEST_ERROR').split(':')[0];
+        const client = /^(INVALID_|UNKNOWN_|MISSING_|UNSUPPORTED_|PREDICATE_|SECRET_|SIGNER_)/.test(code);
+        res.status(client ? 400 : 500).json({ error: code, message: e.message });
+        return;
+      }
+      const bffResult = await eventRuntime.emit(norm.eventType, 'api', norm.eventData, {
+        metadata: { aggregate_id: norm.aggregateId, aggregate_type: norm.aggregateType }
+      });
+      if (bffResult.status !== 'ok') {
+        throw new Error(bffResult.error || 'Event rejected');
+      }
+      return {
+        event_id: bffResult.eventId,
+        id: bffResult.eventId, // BFF-reader compatibility: the website BFF reads `id`
+        event_type: norm.eventType,
+        aggregate_id: norm.aggregateId,
+        aggregate_type: norm.aggregateType,
+        status: 'ok'
+      };
+    }
+
     const { event_type, aggregate_id, aggregate_type, event_data } = req.body;
     if (!event_type || !aggregate_id || !aggregate_type || !event_data) {
       throw new Error('event_type, aggregate_id, aggregate_type, and event_data are required');
