@@ -25,6 +25,15 @@ COPY GENERATION_MANIFEST.yaml ./
 # Database SQL files required by gateway/canonical_event_envelope.js
 COPY database/ ./database/
 
+# Compile the committed TypeScript constitutional sources to gateway/constitutional-dist/
+# (mirrors gateway/Dockerfile; required by gateway/routes/identities.js, added d3ad88c39;
+# FL-20260921-P1: absent from the oracle image, container crashed on boot)
+RUN npm install --no-save typescript @types/node && \
+    ./node_modules/.bin/tsc runtime/constitutional/src/identity-authority.ts runtime/constitutional/src/hash-authority.ts runtime/constitutional/src/ping-vocabulary.ts \
+      --outDir gateway/constitutional-dist --module commonjs --target es2020 \
+      --esModuleInterop --skipLibCheck --types node && \
+    npm uninstall --no-save typescript @types/node
+
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 EXPOSE 8080
