@@ -3,10 +3,12 @@
  * PATCH 5: Two Actually Independent Identities
  * 
  * Creates independent identities with signing keys for Alice and Bob
+ * Uses real Ed25519 via Node.js crypto module (no external dependency)
  */
 
 import { IdentityAuthority } from './identity-authority';
 import { HashAuthority } from './hash-authority';
+import * as crypto from 'crypto';
 
 /**
  * PING Identity with signing key
@@ -20,52 +22,58 @@ export interface PingIdentity {
 }
 
 /**
- * Simple Ed25519-like key pair generator
- * NOTE: This is a placeholder for production Ed25519
- * Production should use crypto.subtle or proper Ed25519 library
+ * Real Ed25519 key pair generator using Node.js crypto module
+ * Production: uses built-in crypto.generateKeyPairSync with ed25519
  */
 export class PingIdentityGenerator {
   /**
-   * Generate simple key pair (placeholder - NOT production Ed25519)
-   * In production, use Web Crypto API or sodium/libsodium
+   * Generate real Ed25519 key pair using Node.js crypto module
    */
   static generateKeyPair(): { public_key: string; private_key: string } {
-    // Placeholder: generate random 64-byte strings
-    // In production: use Ed25519 key generation
-    const randomBytes = (length: number): string => {
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += Math.floor(Math.random() * 16).toString(16);
-      }
-      return result;
-    };
-
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+    
     return {
-      public_key: randomBytes(64),
-      private_key: randomBytes(64)
+      public_key: publicKey.export({ type: 'spki', format: 'der' }).toString('hex'),
+      private_key: privateKey.export({ type: 'pkcs8', format: 'der' }).toString('hex')
     };
   }
 
   /**
-   * Sign data with private key (placeholder - NOT production Ed25519)
-   * In production: use Ed25519 signing
+   * Sign data with private key using real Ed25519
    */
-  static sign(data: string, privateKey: string): string {
-    // Placeholder: SHA-256 hash + HMAC-like construction
-    // In production: use Ed25519 signing
-    const hash = HashAuthority.hash(data + privateKey);
-    return hash;
+  static sign(data: string, privateKeyHex: string): string {
+    const privateKeyBuffer = Buffer.from(privateKeyHex, 'hex');
+    const privateKey = crypto.createPrivateKey({
+      key: privateKeyBuffer,
+      format: 'der',
+      type: 'pkcs8'
+    });
+    
+    const dataBuffer = Buffer.from(data, 'utf8');
+    const signature = crypto.sign(null, dataBuffer, privateKey);
+    
+    return signature.toString('hex');
   }
 
   /**
-   * Verify signature with public key (placeholder - NOT production Ed25519)
-   * In production: use Ed25519 verification
+   * Verify signature with public key using real Ed25519
    */
-  static verify(data: string, signature: string, publicKey: string): boolean {
-    // Placeholder: Re-compute signature and compare
-    // In production: use Ed25519 verification
-    const expectedSignature = HashAuthority.hash(data + publicKey);
-    return signature === expectedSignature;
+  static verify(data: string, signatureHex: string, publicKeyHex: string): boolean {
+    try {
+      const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
+      const publicKey = crypto.createPublicKey({
+        key: publicKeyBuffer,
+        format: 'der',
+        type: 'spki'
+      });
+      
+      const dataBuffer = Buffer.from(data, 'utf8');
+      const signatureBuffer = Buffer.from(signatureHex, 'hex');
+      
+      return crypto.verify(null, dataBuffer, publicKey, signatureBuffer);
+    } catch (error) {
+      return false;
+    }
   }
 }
 
@@ -105,6 +113,13 @@ export class PingIdentityManager {
   }
 
   /**
+   * Verify signature with public key directly (independent verification)
+   */
+  static verifyWithPublicKey(data: string, signature: string, publicKey: string): boolean {
+    return PingIdentityGenerator.verify(data, signature, publicKey);
+  }
+
+  /**
    * Create proof structure for transition
    */
   static createProof(identity: PingIdentity, data: string): {
@@ -114,7 +129,7 @@ export class PingIdentityManager {
   } {
     const signature = this.sign(identity, data);
     return {
-      verification_method: 'ping-ed25519-placeholder',
+      verification_method: 'ed25519',
       signature,
       public_key: identity.public_key
     };

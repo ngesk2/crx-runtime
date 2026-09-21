@@ -4,11 +4,7 @@
  * Centralized time authority for all timestamps.
  * All timestamps must come from this authority to ensure replay determinism.
  * Supports runtime mode (system time) and replay mode (injected time).
- * 
- * All failures use constitutional failure envelopes (deterministic, replay-safe).
  */
-
-import { FailureAuthority, FailureCode, FailurePhase, FailureSource } from './failure-authority';
 
 /**
  * Time mode for constitutional replay safety
@@ -121,17 +117,11 @@ export class ConstitutionalTimeAuthority {
     
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      const failure = FailureAuthority.createFailure({
-        code: FailureCode.INVALID_INPUT,
-        phase: FailurePhase.NORMALIZATION,
-        authority: FailureSource.CONSTITUTIONAL,
-        occurredAt: this.now(),
-        retryClassification: 'non_retryable',
-      });
-      
-      throw new Error(failure.code);
+      throw new Error('Invalid timestamp');
     }
     
     return date.toISOString();
   }
 }
+
+export const TimeAuthority = ConstitutionalTimeAuthority;

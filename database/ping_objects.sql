@@ -1,9 +1,15 @@
 -- PING Social Object Schema
 -- PATCH 3: Object Kernel
 -- Date: 2026-09-20
+-- Classification: PROJECTION / MATERIALIZED STATE
+-- Rebuild Source: canonical event history (events table)
+-- NOTE: These tables are projections, NOT canonical state
+-- Canonical truth resides in the events table
+-- These tables can be destroyed and rebuilt from canonical history
 
 -- PING Objects Table
 -- Stores all PING social objects (posts, profiles, etc.)
+-- PROJECTION: Rebuildable from canonical event history
 CREATE TABLE IF NOT EXISTS ping_objects (
   -- Identity (deterministic, content-addressed)
   object_id VARCHAR(255) PRIMARY KEY,
@@ -47,6 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_ping_objects_content_gin ON ping_objects USING GI
 
 -- PING Relationships Table
 -- Stores relationships between actors and objects (follows, replies, references)
+-- PROJECTION: Rebuildable from canonical event history
 CREATE TABLE IF NOT EXISTS ping_relationships (
   -- Identity (deterministic)
   relationship_id VARCHAR(255) PRIMARY KEY,
@@ -84,6 +91,7 @@ CREATE INDEX IF NOT EXISTS idx_ping_relationships_subject_predicate ON ping_rela
 
 -- PING Transitions Table
 -- Immutable transitions representing state changes (create, relate, propose, approve, publish, tombstone)
+-- PROJECTION: Rebuildable from canonical event history
 CREATE TABLE IF NOT EXISTS ping_transitions (
   -- Identity (deterministic)
   transition_id VARCHAR(255) PRIMARY KEY,

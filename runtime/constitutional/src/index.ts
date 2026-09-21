@@ -9,6 +9,7 @@
  * - PING Transition Mapper: Maps PING transitions to canonical events
  * - PING Identity: Independent identities with signing keys
  * - PING Feed Projection: Derives feeds from canonical history
+ * - PING Projector: Rebuilds projections from canonical event history
  */
 
 export * from './time-authority';
@@ -18,4 +19,5 @@ export * from './ping-object-kernel';
 export * from './ping-transition-mapper';
 export * from './ping-identity';
 export * from './ping-feed-projection';
+export * from './ping-projector';
 export * from './schemas/ping-objects';
