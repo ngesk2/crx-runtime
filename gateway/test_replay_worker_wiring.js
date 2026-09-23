@@ -128,7 +128,7 @@ test('RW-1: No provider → verified: false, no_replay_provider', async () => {
 test('RW-2: Provider + clean events → verified: true, kernel_verified', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const replayEvents = [
     {
@@ -168,7 +168,7 @@ test('RW-2: Provider + clean events → verified: true, kernel_verified', async 
 test('RW-3: Provider + circular lineage → verified: false, kernel_error', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   // Cycle: art-a → art-b (lineage) but processed in order a,b
   // When processing art-a: lineage=['art-b'] but art-b doesn't exist yet → throw
@@ -227,7 +227,7 @@ test('RW-3: Provider + circular lineage → verified: false, kernel_error', asyn
 test('RW-4: Provider sanitizes dangling lineage by construction → verified: true', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const replayEvents = [
     {
@@ -270,7 +270,7 @@ test('RW-4: Provider sanitizes dangling lineage by construction → verified: tr
 test('RW-5: Provider + empty replay_events → single-event fallback → verified: true', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const result = await worker.handle({
     event_id: 'evt-test-5',
@@ -436,7 +436,7 @@ test('RW-12: No payload → handled gracefully', async () => {
 test('RW-13: Provider computes artifact_hash from event content', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   // Event without canonical_hash — provider should compute it from payload
   const replayEvents = [
@@ -494,7 +494,7 @@ test('RW-14: Deterministic witness_root for clean events', async () => {
 async function runReplayWithEvents(replayEvents) {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const result = await worker.handle({
     event_id: 'evt-helper',
@@ -512,7 +512,7 @@ async function runReplayWithEvents(replayEvents) {
 async function runReplayWithWitness(replayEvents) {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const result = await worker.handle({
     event_id: 'evt-helper-w',
@@ -550,7 +550,7 @@ test('RW-15: registerCanonicalWorkers wires replayProvider into ReplayWorker', (
 test('RW-16: authority evidence present and non-fabricated on verified path', async () => {
   const eventRuntime = new MockEventRuntime();
   const provider = new KernelReplayExecutionProvider();
-  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider });
+  const worker = new ReplayWorker({ eventRuntime, replayProvider: provider, allowPayloadTranscript: true });
 
   const result = await worker.handle({
     event_id: 'evt-obs-16',

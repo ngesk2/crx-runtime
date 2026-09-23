@@ -18,6 +18,61 @@
 const crypto = require('crypto');
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 
+// ─── Verdict-class admission authority ─────────────────────────────────
+// A verdict-class event asserts an authoritative outcome (a replay verified,
+// a witness attested, a lineage recorded, a decision evaluated). Authentication
+// proves WHO called; it does not authorize WHAT semantic claim they may make.
+// Only the canonical producer worker named below may emit each verdict type,
+// and only with qualifying provenance. Everything else fails closed BEFORE
+// persistence. This check runs before the _skipGovernance branch: bridges,
+// replays, and internal callers cannot bypass it. There is exactly one
+// admission choke point (UnifiedEventRuntime.emit) and this is it.
+//
+// Registry seam: gateway/generated/event_registry.json carries authority_owner
+// per event type (ReplayWorker, WitnessWorker, LineageWorker, JevShadowWorker).
+// VERDICT_PRODUCERS binds those owners to the actual worker source strings.
+// (BaseWorker._emit stamps this._name as source; the string alone is not
+// trust — the binding of string-to-execution-context at this choke point is.)
+const VERDICT_PRODUCERS = Object.freeze({
+  REPLAY_COMPLETED: 'replay',           // registry authority_owner: ReplayWorker
+  WITNESS_CREATED: 'witness',           // registry authority_owner: WitnessWorker
+  WITNESS_REJECTED: 'witness',          // registry authority_owner: WitnessWorker
+  LINEAGE_CREATED: 'lineage',           // registry authority_owner: LineageWorker
+  JEV_DECISION_EVALUATED: 'jev-shadow', // registry authority_owner: JevShadowWorker
+});
+
+// Verdict-shaped events must also carry qualifying provenance — the evidence
+// the genuine producer always attaches. These are structural (shape) checks,
+// not truth checks: they reject hand-built forgeries at admission while
+// accepting every genuine producer path, including the failure-honest
+// verified:false records (which are records, not attestations).
+function verdictProvenanceOk(eventType, payload) {
+  const p = payload && typeof payload === 'object' ? payload : {};
+  switch (eventType) {
+    case 'REPLAY_COMPLETED': {
+      // The genuine ReplayWorker emits ok / no_provider / kernel_error shapes;
+      // all carry a boolean verified. The authority proof is the source check
+      // above (only the worker's _emit stamps source 'replay'); this is a
+      // well-formedness check, not an evidence gate — the witness qualifies
+      // evidence before attesting.
+      const r = p.replay;
+      return !!r && typeof r === 'object' && typeof r.verified === 'boolean';
+    }
+    case 'WITNESS_CREATED':
+      return !!(p.witness && typeof p.witness === 'object'
+        && typeof p.witness.attestation === 'string' && p.witness.attestation.length > 0
+        && p.upstreamEventId);
+    case 'WITNESS_REJECTED':
+      return typeof p.reason === 'string' && p.reason.length > 0 && !!p.upstreamEventId;
+    case 'LINEAGE_CREATED':
+      return !!(p.lineage && typeof p.lineage === 'object' && p.upstreamEventId);
+    case 'JEV_DECISION_EVALUATED':
+      return p.mode === 'shadow' && Array.isArray(p.evaluations);
+    default:
+      return true;
+  }
+}
+
 class UnifiedEventRuntime {
   /**
    * @param {object} options
@@ -68,6 +123,36 @@ class UnifiedEventRuntime {
    * @param {string} eventType — e.g., 'REVIEW_RECEIVED', 'CUSTOMER_CREATED'
    * @param {string} source — which connector/worker emitted it
    * @param {object} payload — the event data
+  /**
+   * Verdict-class admission authority. Returns { ok:true } for non-verdict
+   * event types. For verdict-class types, the source must be the canonical
+   * producer worker AND the payload must carry qualifying provenance.
+   * Authentication (who called) never substitutes for this authorization
+   * (what the caller may assert). Runs before _skipGovernance: unskippable.
+   */
+  _assertVerdictAuthority(eventType, source, payload) {
+    const producer = VERDICT_PRODUCERS[eventType];
+    if (!producer) return { ok: true };
+    if (source !== producer) {
+      return {
+        ok: false,
+        reason: `verdict_not_authorized: ${eventType} may only be produced by '${producer}' (got source '${source}')`,
+      };
+    }
+    if (!verdictProvenanceOk(eventType, payload)) {
+      return {
+        ok: false,
+        reason: `verdict_provenance_missing: ${eventType} from '${source}' lacks qualifying producer provenance`,
+      };
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Emit an event. Validates, persists, dispatches to handlers, and routes to integrations.
+   * @param {string} eventType — e.g., 'REVIEW_RECEIVED', 'CUSTOMER_CREATED'
+   * @param {string} source — which connector/worker emitted it
+   * @param {object} payload — the event data
    * @param {object} options — { causation_id, correlation_id, metadata, namespace, logical_id }
    */
   async emit(eventType, source, payload, options = {}) {
@@ -96,6 +181,15 @@ class UnifiedEventRuntime {
           return { status: 'error', error: `Unknown event_type: ${eventType}`, eventId };
         }
       }
+    }
+
+    // 2b. Verdict-class admission authority — fail closed before persistence.
+    // Runs before the _skipGovernance branch: no caller (API, bridge, replay,
+    // internal) can bypass producer authorization for verdict-class events.
+    const verdictCheck = this._assertVerdictAuthority(eventType, source, payload);
+    if (!verdictCheck.ok) {
+      this._stats.failed++;
+      return { status: 'error', error: verdictCheck.reason, eventId };
     }
 
     // 3. Check governance (skip for bridge-sourced events that are already governed).

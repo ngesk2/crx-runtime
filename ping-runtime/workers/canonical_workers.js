@@ -230,6 +230,12 @@ class ReplayWorker extends BaseWorker {
     // The kernel replay execution provider — injected by registerCanonicalWorkers
     // or by test harness. When absent, replay is a no-op (verified: false).
     this._replayProvider = options.replayProvider || null;
+    // SECURITY: explicit test-harness authorization for caller-supplied
+    // transcripts. Worker construction options are system metadata — no event
+    // payload can ever set this. Production workers are constructed without
+    // it and always resolve the authoritative correlation group from the
+    // canonical store.
+    this._allowPayloadTranscript = options.allowPayloadTranscript === true;
   }
 
   async handle(event) {
@@ -387,7 +393,9 @@ class ReplayWorker extends BaseWorker {
     const corr = event.metadata?.correlation_id || event.correlation_id;
     if (corr != null) evidence.correlation_id = corr;
 
-    const ns = event.metadata?.namespace || event.namespace;
+    // SECURITY: the event row namespace is authoritative execution context;
+    // caller-controlled metadata must never outrank it for tenant identity.
+    const ns = event.namespace || event.metadata?.namespace;
     if (ns != null) evidence.namespace = ns;
 
     if (replay != null) {
@@ -415,8 +423,11 @@ class ReplayWorker extends BaseWorker {
 
   /**
    * Build replay events from the event chain.
-   * In production, this loads correlated events from Postgres.
-   * In tests, this constructs events directly.
+   * Production: loads the full correlation group from the canonical event
+   * store via UnifiedEventRuntime.getCorrelationGroup (deterministic created_at
+   * ASC ordering from the existing schema).
+   * In authorized test harnesses (allowPayloadTranscript), events may be
+   * supplied directly via payload.
    *
    * Events must be in causal order (ancestor → descendant) for the kernel
    * state machine to process them correctly.
@@ -425,14 +436,43 @@ class ReplayWorker extends BaseWorker {
     const payload = event.payload || {};
     const correlationId = event.metadata?.correlation_id || event.correlation_id || event.event_id;
 
-    // If events are provided in payload (test mode), use them directly
-    if (Array.isArray(payload.replay_events) && payload.replay_events.length > 0) {
-      return payload.replay_events;
+    // SECURITY INVARIANT: caller payload is DATA, never authority.
+    // A caller-supplied transcript (payload.replay_events) may be executed
+    // ONLY when the worker was explicitly constructed with test authorization
+    // (system metadata at construction, unreachable from any event payload).
+    // Production always resolves the authoritative correlation group from the
+    // canonical store. An unauthorized caller transcript is ignored — it stays
+    // inert data on the original event row and is never replayed.
+    const callerTranscript = payload.replay_events;
+    if (Array.isArray(callerTranscript) && callerTranscript.length > 0) {
+      if (this._allowPayloadTranscript === true) {
+        return callerTranscript;
+      }
+      console.warn('[ReplayWorker] ignoring caller-supplied replay_events (no test authorization); resolving authoritative correlation group');
     }
 
-    // In production, this would query Postgres for the correlation group:
-    // SELECT * FROM ping_events WHERE metadata->>'correlation_id' = $1
-    // For now, return the triggering event as a single-event replay.
+    // JEV P1: causal replay. Resolve the triggering event to its full
+    // correlation/causation group instead of replaying only the triggering
+    // event. getCorrelationGroup returns the group in deterministic
+    // created_at ASC order (existing schema semantics - no invented ordering).
+    if (correlationId && this._eventRuntime && typeof this._eventRuntime.getCorrelationGroup === 'function') {
+      try {
+        const group = await this._eventRuntime.getCorrelationGroup(correlationId, 200);
+        if (group && group.status === 'ok' && Array.isArray(group.events) && group.events.length > 0) {
+          return group.events.map((e) => ({
+            event_id: e.event_id,
+            event_type: e.event_type,
+            payload: e.payload,
+            metadata: e.metadata || {},
+            timestamp: e.timestamp,
+          }));
+        }
+      } catch (err) {
+        console.warn("[ReplayWorker] correlation group load failed (" + err.message + ") - falling back to single-event replay");
+      }
+    }
+
+    // Fallback: the triggering event as a single-event replay.
     // This is correct: a single observation can be replayed independently.
     return [{
       event_id: event.event_id,
@@ -452,6 +492,9 @@ class WitnessWorker extends BaseWorker {
   constructor(options = {}) {
     super(options);
     this._name = 'witness';
+    // Optional EventValidator for replay-transcript type registration checks.
+    // Absent validator => transcripts fail closed (see _replayTranscriptSound).
+    this._eventValidator = options.eventValidator || null;
   }
 
   async handle(event) {
@@ -470,6 +513,24 @@ class WitnessWorker extends BaseWorker {
     // for an unverified replay) and records an observable WITNESS_REJECTED.
     const isReplayAttestation = event.event_type === 'REPLAY_COMPLETED';
     const replayVerified = payload.replay && payload.replay.verified === true;
+
+    // Evidence qualification (defense in depth): a verified claim without
+    // the genuine execution evidence is refused, not attested.
+    if (isReplayAttestation && replayVerified) {
+      const evidence = this._replayEvidenceQualifies(payload, event);
+      if (!evidence.ok) {
+        console.log(`[WitnessWorker] REFUSING to attest: evidence unqualified for ${documentId || 'unknown'} (reason: ${evidence.reason})`);
+        await this._emit('WITNESS_REJECTED', {
+          documentId,
+          upstreamEventId: event.event_id || event.mission_id,
+          replay: payload.replay || null,
+          reason: `evidence_unqualified:${evidence.reason}`,
+        }, {
+          causation_id: event.event_id,
+        });
+        return { status: 'rejected', reason: `evidence_unqualified:${evidence.reason}` };
+      }
+    }
 
     if (isReplayAttestation && !replayVerified) {
       const reason = payload.replay?.reason || 'replay_not_verified';
@@ -503,6 +564,101 @@ class WitnessWorker extends BaseWorker {
     });
 
     return { status: 'ok', witness };
+  }
+
+  /**
+   * Evidence qualification for attestation — defense in depth behind the
+   * admission barrier. The witness attests ONLY a replay that actually
+   * verified AND carries the evidence a genuine kernel execution produces:
+   * a deterministic execution fingerprint, a clean violation set, a document
+   * binding consistent with the verdict, an upstream reference consistent
+   * with the verdict, the producer's authority evidence, and — when a replay
+   * transcript is present — a structurally sound transcript (unique event
+   * ids, closed causation, registered event types). A bare { verified: true }
+   * is a claim, not evidence, and is refused with an observable
+   * WITNESS_REJECTED (never silently dropped, never attested).
+   */
+  _replayEvidenceQualifies(payload, event) {
+    const replay = payload.replay || {};
+    // (a) verified must be boolean true — strict; 'true'/1 rejected by ===.
+    // (Already gated by the caller, re-asserted here so this method is
+    // self-contained.)
+    if (replay.verified !== true) return { ok: false, reason: 'replay_not_verified' };
+    // (b) Deterministic execution fingerprint must be present. The kernel
+    // engine always computes one on the verified path; its absence means no
+    // verifiable execution took place.
+    if (replay.fingerprint === null || replay.fingerprint === undefined || replay.fingerprint === '') {
+      return { ok: false, reason: 'replay_fingerprint_missing' };
+    }
+    // (c) Violations must be an empty array. verified WITH violations is a
+    // contradiction, not an attestation.
+    if (!Array.isArray(replay.violations) || replay.violations.length > 0) {
+      return { ok: false, reason: 'replay_violations_present' };
+    }
+    // (d) Document binding: a replayed document that disagrees with the
+    // verdict's document is a wrong-document forgery.
+    if (replay.documentId && payload.documentId && replay.documentId !== payload.documentId) {
+      return { ok: false, reason: 'replay_document_mismatch' };
+    }
+    // (e) Upstream consistency: the replay's upstream reference must agree
+    // with the verdict's upstream reference (forged upstream refs rejected).
+    if (replay.upstreamEventId && payload.upstreamEventId && replay.upstreamEventId !== payload.upstreamEventId) {
+      return { ok: false, reason: 'replay_upstream_mismatch' };
+    }
+    // (f) Producer authority evidence: the genuine ReplayWorker always
+    // attaches the kernel execution authority block. Its absence means the
+    // verdict did not come through the genuine producer path. The fixed
+    // strings are identifiers, not trust — they must accompany the
+    // fingerprint, violations, and ancestry checks above.
+    const auth = payload.authority;
+    if (!auth || typeof auth !== 'object' || auth.authority !== 'ReplayWorker' || !auth.provider) {
+      return { ok: false, reason: 'replay_authority_evidence_missing' };
+    }
+    // (g) Replay transcript structural soundness, when a transcript is
+    // present. The genuine producer never includes one; a present-but-
+    // malformed transcript is evidence of forgery.
+    if (Array.isArray(replay.replay_events) && replay.replay_events.length > 0) {
+      const structural = this._replayTranscriptSound(replay.replay_events, payload);
+      if (!structural.ok) return structural;
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Structural soundness of a replay transcript: unique event ids, closed
+   * causation (every causation_id resolves to a transcript member or the
+   * verdict's own upstream event), and registered event types. Fail closed
+   * when no type registry is available.
+   */
+  _replayTranscriptSound(events, payload) {
+    const ids = new Set();
+    for (const e of events) {
+      if (!e || typeof e.event_id !== 'string' || e.event_id.length === 0) {
+        return { ok: false, reason: 'replay_transcript_event_missing_id' };
+      }
+      if (ids.has(e.event_id)) return { ok: false, reason: 'replay_transcript_duplicate_event' };
+      ids.add(e.event_id);
+    }
+    for (const e of events) {
+      // Causation may be stated in metadata (genuine correlation-group shape)
+      // or top level; a forgery must not evade the closure check by moving it.
+      const cid = (e.metadata && e.metadata.causation_id) || e.causation_id;
+      if (cid && !ids.has(cid) && cid !== payload.upstreamEventId) {
+        return { ok: false, reason: 'replay_transcript_causation_open' };
+      }
+      const t = e.event_type;
+      if (typeof t === 'string' && t.length > 0) {
+        if (this._eventValidator && typeof this._eventValidator.isRegistered === 'function') {
+          if (!this._eventValidator.isRegistered(t)) {
+            return { ok: false, reason: `replay_transcript_unknown_event_type:${t}` };
+          }
+        } else {
+          // Fail closed: without a type registry the transcript cannot be validated.
+          return { ok: false, reason: 'replay_transcript_type_unverifiable' };
+        }
+      }
+    }
+    return { ok: true };
   }
 }
 

@@ -53,7 +53,7 @@ async function run() {
 
   // (a) Determinism: same transcript twice → identical fingerprint + witness_root.
   const rt1 = new MockEventRuntime();
-  const w1 = new ReplayWorker({ eventRuntime: rt1, replayProvider: new KernelReplayExecutionProvider() });
+  const w1 = new ReplayWorker({ eventRuntime: rt1, allowPayloadTranscript: true, replayProvider: new KernelReplayExecutionProvider() });
   const r1 = await w1.handle({
     event_id: 'evt-root-009',
     event_type: 'REPLAY_VERIFY',
@@ -62,7 +62,7 @@ async function run() {
   });
 
   const rt2 = new MockEventRuntime();
-  const w2 = new ReplayWorker({ eventRuntime: rt2, replayProvider: new KernelReplayExecutionProvider() });
+  const w2 = new ReplayWorker({ eventRuntime: rt2, allowPayloadTranscript: true, replayProvider: new KernelReplayExecutionProvider() });
   const r2 = await w2.handle({
     event_id: 'evt-root-009',
     event_type: 'REPLAY_VERIFY',
@@ -93,7 +93,7 @@ async function run() {
     timestamp: '2026-08-21T00:00:01.000Z',
   }];
   const rt3 = new MockEventRuntime();
-  const w3 = new ReplayWorker({ eventRuntime: rt3, replayProvider: new KernelReplayExecutionProvider() });
+  const w3 = new ReplayWorker({ eventRuntime: rt3, allowPayloadTranscript: true, replayProvider: new KernelReplayExecutionProvider() });
   const r3 = await w3.handle({
     event_id: 'evt-root-dup',
     event_type: 'REPLAY_VERIFY',
@@ -108,7 +108,7 @@ async function run() {
   // (c) Trace preservation on clean path — authority evidence carries the exact
   // triggering event trace (preserved, not invented).
   const rt4 = new MockEventRuntime();
-  const w4 = new ReplayWorker({ eventRuntime: rt4, replayProvider: new KernelReplayExecutionProvider() });
+  const w4 = new ReplayWorker({ eventRuntime: rt4, allowPayloadTranscript: true, replayProvider: new KernelReplayExecutionProvider() });
   await w4.handle({
     event_id: 'evt-root-trace',
     event_type: 'REPLAY_VERIFY',

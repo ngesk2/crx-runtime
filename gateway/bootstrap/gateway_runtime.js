@@ -85,6 +85,7 @@ const { CapabilityRegistry } = require('../../ping-runtime/connectors/capability
 const { OAuthFlowManager } = require('../../ping-runtime/connectors/oauth_provider');
 const { WorkerRuntime } = require('../../ping-runtime/workers/worker_runtime');
 const { registerCanonicalWorkers } = require('../../ping-runtime/workers/canonical_workers');
+const { JevShadowWorker } = require('../../ping-runtime/jev/shadow_worker');
 const { EventToMissionBridge } = require('../../ping-runtime/orchestration/event_to_mission_bridge');
 const { ReviewEmitter, CustomerEmitter, ProjectEmitter, ConnectorEmitter, SystemEmitter } = require('../../ping-runtime/business/business_emitters');
 const { Neo4jAdapter } = require('../../ping-runtime/graph/neo4j_adapter');
@@ -513,11 +514,26 @@ class GatewayRuntime {
         const replayProvider = new KernelReplayExecutionProvider();
         registerCanonicalWorkers(workerRuntime, {
           eventRuntime: unifiedEventRuntime,
+          eventValidator, // WitnessWorker consumes options.eventValidator (verdict evidence)
           pool: this._pool,
           aiRuntime,
           embeddingService, // ProjectionWorker consumes options.embeddingService (C3)
           knowledgeGraph,   // KnowledgePromoter consumes options.knowledgeGraph (Phase F)
           replayProvider,   // ReplayWorker consumes options.replayProvider (kernel replay)
+        });
+
+        // JEV P3: shadow evaluation worker. Zero execution authority — observes
+        // CLAIM_CREATED, runs typed decision providers on the same evidence,
+        // and emits JEV_DECISION_EVALUATED through the canonical event
+        // mechanism. Never alters canonical pipeline behavior.
+        const jevShadowWorker = new JevShadowWorker({
+          eventRuntime: unifiedEventRuntime,
+          pool: this._pool,
+        });
+        workerRuntime.register('jev-shadow', jevShadowWorker, {
+          eventTypes: ['CLAIM_CREATED'],
+          capabilities: ['jev.shadow'],
+          maxConcurrent: 2,
         });
 
         // ─── Evidence Authority + Hybrid Search (Phase E) ─────────

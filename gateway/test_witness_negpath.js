@@ -87,6 +87,15 @@ function makeTrigger(overrides = {}) {
       replay: {
         verified: true,
         reason: 'kernel_verified',
+        fingerprint: 'fp-neg-1',
+        violations: [],
+      },
+      // Genuine ReplayWorker authority evidence (see _buildAuthorityEvidence).
+      // WIT-NEG-1 tests the legitimate attestation path, so the fixture must
+      // carry the evidence the genuine producer always attaches.
+      authority: {
+        authority: 'ReplayWorker',
+        provider: 'KernelReplayExecutionProvider',
       },
       upstreamEventId: 'evt-replay-parent',
     },
