@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "generator": "EventGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-09-21T19:23:53.705Z",
-  "count": 234,
-  "hash": "50935a77a56e54da1344881e4c9f2aa8d093e61e4776b4d55b9069aadf088383",
+  "generated_at": "2026-09-23T02:11:30.716Z",
+  "count": 235,
+  "hash": "487331b7eabdbfd8dd67bc9bc2609bb83fd6f77c8cb9daf91c4c133550820d7c",
   "events": [
     {
       "event_type": "AI_RESPONSE_ACCEPTED",
@@ -3247,6 +3247,38 @@
       "schema_version": "1.0.0",
       "authority_owner": "ProjectAuthority",
       "event_class": "business",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "JEV_DECISION_EVALUATED",
+      "schema_version": "1.0.0",
+      "authority_owner": "JevShadowWorker",
+      "event_class": "inference",
       "payload_schema": {
         "type": "object",
         "properties": {

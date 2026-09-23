@@ -333,6 +333,10 @@ class EventGenerator {
       // gateways; the 8080 deployment image carries its own baked registry and is
       // owned by the deployment lane.
       { event_type: 'FYD_SITE_OVERLAY', authority_owner: 'FydSiteAuthority', event_class: 'business' },
+      // JEV shadow evaluation (P2/P3): JevShadowWorker emits one evaluation
+      // record per CLAIM_CREATED through the canonical event mechanism.
+      // Shadow-only: zero execution authority.
+      { event_type: 'JEV_DECISION_EVALUATED', authority_owner: 'JevShadowWorker', event_class: 'inference' },
     ];
 
     return pipelineEvents.map(e => ({
