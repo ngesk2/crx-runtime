@@ -48,7 +48,6 @@ async function runTest() {
 
     // Step 4: Initialize Qdrant client
     console.log('Step 4: Initializing Qdrant client...');
-    qdrantClient = new QdrantClient();
     await qdrantClient.ensureCollection(TEST_COLLECTION, 768);
     console.log('✓ Qdrant collection ready\n');
 

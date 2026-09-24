@@ -14,7 +14,6 @@ const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/con
 const { deterministicIdAuthority } = require('../ping-runtime/authorities/deterministic_id_authority');
 const { ConstitutionalValidationHarness } = require('./constitutional_validation_harness');
 const { EmbeddingAuthority } = require('./embedding_authority');
-const { QdrantClient } = require('./qdrant_client');
 const { ConstitutionalCompatibilityScorer } = require('./constitutional_compatibility_scorer');
 const { ConstitutionalRegressionCorpus } = require('./constitutional_regression_corpus');
 const { ObjectRegistry } = require('./object_registry');
@@ -50,7 +49,6 @@ class ConstitutionalAcquisitionRunner {
 
     // Initialize validation harness
     this._embeddingAuthority = new EmbeddingAuthority();
-    this._qdrantClient = new QdrantClient();
     this._reflectionGenerator = new ReflectionGenerator();
     this._missionGenerator = new MissionGenerator();
 

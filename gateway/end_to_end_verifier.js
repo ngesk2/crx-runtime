@@ -16,16 +16,12 @@
  */
 
 const { Pool } = require('pg');
-const { QdrantClient } = require('./qdrant_client');
 const { GitHubSnapshot } = require('./github_snapshot');
 const { KnowledgeCompiler } = require('./knowledge_compiler');
 const { VersionedSchemaCompiler } = require('./schema_compiler');
 const { ObjectRegistry } = require('./object_registry');
 const { DependencyGraph } = require('./dependency_graph');
-const { ImmutableReplayLog } = require('./replay_log');
-const { WitnessChain } = require('./witness_chain');
 const { ConstitutionValidator } = require('./constitution_validator');
-const { ConstitutionalEventBus } = require('./event_bus');
 const { QdrantBootstrap } = require('./qdrant_bootstrap');
 const { StructuralIndexAdapter } = require('./structural_index');
 const { OllamaAnalystTools } = require('./ollama_analyst_tools');
@@ -40,7 +36,6 @@ class EndToEndVerifier {
       password: process.env.POSTGRES_PASSWORD || '',
     });
 
-    this._qdrant = new QdrantClient();
     this._report = {
       timestamp: new Date().toISOString(),
       stages: [],

@@ -279,8 +279,6 @@ class ${adapterContract.adapter_name} extends GeneratedAdapter {
   }
 
   async initialize() {
-    const { QdrantClient } = require('@qdrant/js-client-rest');
-    this._client = new QdrantClient({ url: this._configuration.endpoint });
   }
 `;
   }

@@ -10,14 +10,12 @@
  * - Fail loudly if any stage is broken
  */
 
-const { QdrantClient } = require('./qdrant_client');
 const { ObjectRegistry } = require('./object_registry');
 const { CanonicalAuthority } = require('../ping-runtime/authorities/canonical_authority.js');
 
 class QdrantBootstrap {
   constructor(postgresPool, qdrantUrl = null) {
     this._postgres = postgresPool;
-    this._qdrant = new QdrantClient(qdrantUrl);
     this._registry = new ObjectRegistry(postgresPool);
     this._report = {
       timestamp: new Date().toISOString(),
