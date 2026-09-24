@@ -1,4 +1,13 @@
 /**
+ * DEPRECATION NOTICE (2026-09-24, mission/event-bus convergence stream):
+ * ConstitutionalEventBus is a LEGACY competing event path. It writes its own
+ * `events` table with self-minted IDs and never reaches the canonical
+ * UnifiedEventRuntime journal (`ping_events`). New code MUST use
+ * UnifiedEventRuntime.emit() (ping-runtime/events/unified_event_runtime.js).
+ * Known migration direction: knowledge_compiler -> UER. Do not add new
+ * publishers. Behavior below is frozen for existing consumers.
+ */
+/**
  * ConstitutionalEventBus
  * 
  * Central event bus for all constitutional lifecycle events.

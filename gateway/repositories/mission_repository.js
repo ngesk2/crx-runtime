@@ -1,4 +1,13 @@
 /**
+ * DEPRECATION NOTICE (2026-09-24, mission/event-bus convergence stream):
+ * The `missions` table scheme is DORMANT LEGACY. This repository has zero
+ * instantiations in the repo and is not wired into the live gateway
+ * (gateway/server.js -> bootstrap/gateway_runtime.js). The canonical mission
+ * authority is MissionRuntime (ping-runtime/orchestration/mission_runtime.js)
+ * writing `ping_missions`, fed by EventToMissionBridge from UnifiedEventRuntime.
+ * Do not resurrect this scheme; extend MissionRuntime instead.
+ */
+/**
  * Mission Repository
  * 
  * Phase 21 — Repository Pattern for SQL Centralization

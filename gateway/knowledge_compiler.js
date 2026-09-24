@@ -1,4 +1,11 @@
 /**
+ * MIGRATION NOTE (2026-09-24, mission/event-bus convergence stream):
+ * This compiler currently emits pass lifecycle events through the legacy
+ * ConstitutionalEventBus (gateway/event_bus.js), which bypasses the canonical
+ * UnifiedEventRuntime journal. The sanctioned direction is migrating emission
+ * and replay to UER (ping_events). Behavior unchanged until that migration.
+ */
+/**
  * Knowledge Compiler with 7 Passes
  * 
  * Phase 3: Compiler stages are fixed.

@@ -1,4 +1,13 @@
 /**
+ * DEPRECATION NOTICE (2026-09-24, mission/event-bus convergence stream):
+ * DORMANT LEGACY. This module reads the legacy `missions` table scheme and is
+ * not required by any live code path (absent from the gateway/server.js ->
+ * bootstrap/gateway_runtime.js require graph; zero requirers in repo).
+ * Canonical mission state lives in `ping_missions` via MissionRuntime
+ * (ping-runtime/orchestration/mission_runtime.js), served by /missions routes.
+ * Do not rewire; archive only with explicit approval.
+ */
+/**
  * Control Center Subscription
  * 
  * Phase 21 — Control Center Subscription Mechanism
