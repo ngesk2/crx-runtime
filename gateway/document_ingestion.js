@@ -10,14 +10,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { QdrantClient } = require('./qdrant_client');
+const { getQdrantClient } = require('./qdrant_access_authority');
 const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class DocumentIngestion {
   constructor(config = {}) {
     this._watchPath = config.watchPath || './documents';
-    this._qdrantClient = new QdrantClient();
+    this._qdrantClient = getQdrantClient();
     this._inferenceAdapter = null;
     this._collectionName = config.collectionName || 'documents';
     this._chunkSize = config.chunkSize || 500;

@@ -8,13 +8,13 @@
  * Ollama remembers previous conversations.
  */
 
-const { QdrantClient } = require('./qdrant_client');
+const { getQdrantClient } = require('./qdrant_access_authority');
 const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
 class ConversationMemory {
   constructor(config = {}) {
-    this._qdrantClient = new QdrantClient();
+    this._qdrantClient = getQdrantClient();
     this._inferenceAdapter = null;
     this._collectionName = config.collectionName || 'conversations';
     this._chunkSize = config.chunkSize || 300;

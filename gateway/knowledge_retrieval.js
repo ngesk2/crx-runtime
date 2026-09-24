@@ -8,12 +8,12 @@
  * RAG (Retrieval-Augmented Generation) for Second Brain.
  */
 
-const { QdrantClient } = require('./qdrant_client');
+const { getQdrantClient } = require('./qdrant_access_authority');
 const { getInferenceAdapter } = require('../ping-runtime/ai/inference_adapter');
 
 class KnowledgeRetrieval {
   constructor(config = {}) {
-    this._qdrantClient = new QdrantClient();
+    this._qdrantClient = getQdrantClient();
     this._inferenceAdapter = null;
     this._collectionName = config.collectionName || 'documents';
     this._topK = config.topK || 5;
