@@ -11,7 +11,9 @@
  *   2. UnifiedEventRuntime.emit (ping-runtime/events — single event spine)
  *
  * Responsibilities (nothing more):
- *   - resolve + validate the namespace before persistence (core:: / tenant::)
+ *   - resolve the namespace under the binding rule before persistence
+ *     (core:: / tenant::); caller-supplied overrides are UNTRUSTED material
+ *     and are honored only when the source is bound to them
  *   - derive a deterministic, timestamp-stripped logical identity
  *   - wrap the payload in the canonical envelope (schema_version /
  *     constitution_version / canonical_version already carried by the envelope)
@@ -24,10 +26,10 @@
  */
 
 const { createCanonicalObject, verifyCanonicalObject } = require('./canonical_object');
+const { createNamespaceBinder, NAMESPACE_RE } = require('./namespace_binding');
 
 const CANONICAL_VERSION = '1.0.0';
 const DEFAULT_NAMESPACE = 'core::owner';
-const NAMESPACE_RE = /^(core|tenant)::[a-zA-Z0-9_-]+$/;
 
 // Volatile fields are stripped when deriving logical identity so that two
 // emissions of the same logical event hash identically (no Date.now()).
@@ -41,21 +43,27 @@ class CanonicalizationService {
   /**
    * @param {object} options
    * @param {object} options.eventRuntime — UnifiedEventRuntime instance
-   * @param {object} [options.namespaces] — source → namespace map (e.g. { 'review-authority': 'tenant::hpp' })
+   * @param {object} [options.namespaces] — source → namespace map (e.g. { 'review-authority': 'tenant::hpp' }).
+   *   Operator-registered and TRUSTED: these become the source→namespace
+   *   bindings. Never caller-set.
    * @param {string} [options.defaultNamespace] — fallback namespace (default 'core::owner')
    */
   constructor(options = {}) {
     this._eventRuntime = options.eventRuntime || null;
     this._namespaces = options.namespaces || {};
     this._defaultNamespace = options.defaultNamespace || DEFAULT_NAMESPACE;
+    // The binder is the single authority for the allow/deny decision on
+    // explicit overrides. Bindings come from the operator map above.
+    this._binder = createNamespaceBinder({
+      bindings: this._namespaces,
+      defaultNamespace: this._defaultNamespace,
+    });
   }
 
   /**
-   * Resolve and validate the namespace for a source.
-   * Priority: explicit request > per-source map > default.
+   * Validate a trusted namespace value (operator config / resolved default).
    */
-  resolveNamespace(source, requested) {
-    const namespace = requested || this._namespaces[source] || this._defaultNamespace;
+  _checkedNamespace(namespace) {
     if (!NAMESPACE_RE.test(namespace)) {
       throw new Error(`Invalid namespace: '${namespace}' (must be core::<name> or tenant::<id>)`);
     }
@@ -63,11 +71,36 @@ class CanonicalizationService {
   }
 
   /**
+   * Resolve the namespace for a source.
+   *
+   * Binding rule (P1 tenant-spoof fix): an explicit `requested` namespace is
+   * UNTRUSTED request material. It is honored ONLY when the source is bound
+   * to it (operator-registered binding). An unbound override is NEVER
+   * honored: trusted routing (per-source map, then server default) resolves
+   * the context instead. Malformed namespaces still throw.
+   */
+  resolveNamespace(source, requested) {
+    const trusted = this._namespaces[source] || this._defaultNamespace;
+    if (!requested) {
+      return this._checkedNamespace(trusted);
+    }
+    if (!NAMESPACE_RE.test(requested)) {
+      throw new Error(`Invalid namespace: '${requested}' (must be core::<name> or tenant::<id>)`);
+    }
+    const decision = this._binder.authorize(source, requested);
+    if (decision.authorized) {
+      return decision.namespace;
+    }
+    // Unbound override: ignore it in favor of trusted routing.
+    return this._checkedNamespace(trusted);
+  }
+
+  /**
    * Authorize a producer's namespace claim at the boundary (audit §7 #1).
-   * Producers' allowed namespaces = the per-source map + explicit override,
-   * resolved by the same rule as resolveNamespace. This is the guard decision
-   * (authorized: true/false) the boundary route uses before canonicalizing;
-   * it wraps resolveNamespace so resolution + validation have exactly one owner.
+   * Delegates the allow/deny decision to the namespace binder: an explicit
+   * override the source is not bound to is reported unauthorized (never
+   * throws). This is the guard decision the boundary route uses before
+   * canonicalizing; resolution + validation still have exactly one owner.
    *
    * @param {string} source — producing source/authority ID
    * @param {string} [requested] — explicit namespace override (optional)
@@ -75,8 +108,15 @@ class CanonicalizationService {
    */
   authorizeNamespace(source, requested) {
     try {
-      const namespace = this.resolveNamespace(source, requested);
-      return { authorized: true, namespace };
+      if (!requested) {
+        const trusted = this._namespaces[source] || this._defaultNamespace;
+        return { authorized: true, namespace: this._checkedNamespace(trusted) };
+      }
+      const decision = this._binder.authorize(source, requested);
+      if (!decision.authorized) {
+        return { authorized: false, reason: decision.reason };
+      }
+      return { authorized: true, namespace: decision.namespace };
     } catch (err) {
       return { authorized: false, reason: err.message };
     }
@@ -99,7 +139,7 @@ class CanonicalizationService {
    * @param {string} input.source — producing source/authority ID
    * @param {string} input.eventType — event type (validated by EventValidator)
    * @param {object} input.payload — event data
-   * @param {string} [input.namespace] — explicit namespace override
+   * @param {string} [input.namespace] — explicit namespace override (honored only if bound)
    * @param {string} [input.logicalId] — explicit logical identity (defaults to timestamp-stripped payload)
    * @param {number} [input.confidence] — default 0.5 (observations are not knowledge)
    * @param {array} [input.evidence] — evidence event IDs / references

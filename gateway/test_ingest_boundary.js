@@ -144,10 +144,16 @@ test('per-source namespace map resolves (review-authority → tenant::hpp)', asy
   assert.strictEqual(result.envelope.identity.namespace, 'tenant::hpp');
 });
 
-test('explicit namespace overrides source map', async () => {
+test('explicit unbound namespace is ignored in favor of trusted per-source map (P1 spoof fix)', async () => {
   const { service } = buildService({ 'review-authority': 'tenant::hpp' });
   const result = await service.canonicalizeAndEmit({ source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: { review_id: 'r4' }, namespace: 'core::system' });
-  assert.strictEqual(result.namespace, 'core::system');
+  assert.strictEqual(result.namespace, 'tenant::hpp');
+});
+
+test('explicit bound namespace override is honored (byte-identical for bound claims)', async () => {
+  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
+  const result = await service.canonicalizeAndEmit({ source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: { review_id: 'r4b' }, namespace: 'tenant::hpp' });
+  assert.strictEqual(result.namespace, 'tenant::hpp');
 });
 
 test('invalid namespace is rejected', async () => {
@@ -163,10 +169,17 @@ test('authorizeNamespace: mapped source → authorized with mapped namespace', a
   assert.deepStrictEqual(auth, { authorized: true, namespace: 'tenant::hpp' });
 });
 
-test('authorizeNamespace: explicit override → authorized (map + override rule)', async () => {
+test('authorizeNamespace: unbound explicit override → unauthorized (P1 spoof fix)', async () => {
   const { service } = buildService({ 'review-authority': 'tenant::hpp' });
   const auth = service.authorizeNamespace('review-authority', 'core::system');
-  assert.deepStrictEqual(auth, { authorized: true, namespace: 'core::system' });
+  assert.strictEqual(auth.authorized, false);
+  assert.match(auth.reason, /not bound/);
+});
+
+test('authorizeNamespace: bound explicit override → authorized', async () => {
+  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
+  const auth = service.authorizeNamespace('review-authority', 'tenant::hpp');
+  assert.deepStrictEqual(auth, { authorized: true, namespace: 'tenant::hpp' });
 });
 
 test('authorizeNamespace: invalid claim → unauthorized with reason (no throw)', async () => {
@@ -277,6 +290,19 @@ test('POST /ingest 400 on missing payload', async () => {
   try {
     const resp = await post(port, '/ingest', { source: 's', eventType: 'REVIEW_RECEIVED' });
     assert.strictEqual(resp.status, 400);
+  } finally {
+    server.close();
+  }
+});
+
+test('POST /ingest 400 on unbound namespace override (tenant spoof rejected at guard)', async () => {
+  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
+  const { server, port } = await startServer(service);
+  try {
+    const resp = await post(port, '/ingest', { source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: {}, namespace: 'tenant::victim-b' });
+    assert.strictEqual(resp.status, 400);
+    const body = await resp.json();
+    assert.match(body.error, /not bound/);
   } finally {
     server.close();
   }
