@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { CanonicalAuthority, CanonicalBytes } = require('./canonical_authority');
 
 /**
@@ -261,6 +262,37 @@ class IdentityAuthority {
    */
   generateEventId(eventType, aggregateId) {
     return this.generateId('evt', { event_type: eventType, aggregate_id: aggregateId });
+  }
+
+  /**
+   * Generate spine event ID (UnifiedEventRuntime acceptance path).
+   *
+   * LOAD-BEARING SCHEME - DO NOT CHANGE THE BYTES. This exact scheme is the
+   * idempotency identity of the event spine: idempotent retries, the
+   * ON CONFLICT (event_id) DO NOTHING dedup, the semantic-collision check,
+   * and every historical ping_events row depend on these exact bytes.
+   * Changing the scheme remints every event ID.
+   *
+   * Scheme: sha256 hex of JSON.stringify({ eventType, source,
+   * [namespace], [logical_id | payload] }). Namespace + logical_id are only
+   * included when provided so legacy callers keep their existing event IDs
+   * (idempotent retries preserved). logical_id is the timestamp-stripped
+   * logical identity - two emissions of the same logical event (even with
+   * different timestamps in payload) hash identically.
+   *
+   * Single owned minting function for spine event identity (AUTH-CONV-06):
+   * the spine calls this instead of inlining the hash.
+   *
+   * @param {string} eventType - Event type, e.g. 'REVIEW_RECEIVED'
+   * @param {string} source - Producer source, e.g. 'email-connector'
+   * @param {object} options - { namespace, logical_id, payload }
+   * @returns {string} 64-char hex event ID
+   */
+  generateSpineEventId(eventType, source, options = {}) {
+    const identity = { eventType, source };
+    if (options.namespace) identity.namespace = options.namespace;
+    identity[options.logical_id ? 'logical_id' : 'payload'] = options.logical_id || options.payload;
+    return crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex');
   }
 
   /**

@@ -15,8 +15,12 @@
  * - metadata (schema_version, causation_id, correlation_id)
  */
 
-const crypto = require('crypto');
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+// AUTH-CONV-06: event identity and canonicalization owned by the declared
+// authorities (shims delegating to runtime/kernel). No inline ID minting,
+// no ad-hoc canonical-JSON helpers on the acceptance path.
+const { identityAuthority } = require('../authorities/identity_authority.js');
+const { CanonicalBytes } = require('../authorities/canonical_authority.js');
 
 // ─── Verdict-class admission authority ─────────────────────────────────
 // A verdict-class event asserts an authoritative outcome (a replay verified,
@@ -162,10 +166,11 @@ class UnifiedEventRuntime {
     //    keep their existing event IDs (idempotent retries preserved).
     //    logical_id is the timestamp-stripped logical identity — two emissions of the
     //    same logical event (even with different timestamps in payload) hash identically.
-    const identity = { eventType, source };
-    if (options.namespace) identity.namespace = options.namespace;
-    identity[options.logical_id ? 'logical_id' : 'payload'] = options.logical_id || payload;
-    const eventId = crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex');
+    const eventId = identityAuthority.generateSpineEventId(eventType, source, {
+      namespace: options.namespace,
+      logical_id: options.logical_id,
+      payload,
+    });
 
     // 2. Validate event type
     if (this._eventValidator) {
@@ -260,9 +265,9 @@ class UnifiedEventRuntime {
           if (existing.rows.length > 0) {
             const rawPayload = existing.rows[0].payload;
             const existingPayload = typeof rawPayload === "string" ? JSON.parse(rawPayload) : rawPayload;
-            // Compare canonical JSON (sorted keys) for semantic equivalence
-            const canon = (o) => JSON.stringify(o, Object.keys(o).sort());
-            if (canon(existingPayload) !== canon(event.payload)) {
+            // Compare deep-canonical bytes for semantic equivalence
+            // (AUTH-CONV-06: single canonical serializer, no ad-hoc inline canon)
+            if (CanonicalBytes.serializeString(existingPayload) !== CanonicalBytes.serializeString(event.payload)) {
               // COLLISION: same ID, different semantics — fail closed
               this._stats.failed++;
               return { status: "error", error: "Event ID collision: same event_id with different payload semantics", eventId };
