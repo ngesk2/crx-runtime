@@ -5,6 +5,11 @@
  * executed by workers, tracked here. Replaces 12 dead mission implementations.
  * 
  * Mission lifecycle: created → assigned → running → completed/failed → archived
+ *
+ * Retry lifecycle (F-01 repair): running → retry_pending →(reclaimRetryPending,
+ * backoff-gated)→ created → assigned → running … → failed (exhaustion).
+ * retry_pending rows are NEVER dispatched directly: they re-enter through the
+ * conditional claim, so every attempt is counted and retries stay bounded.
  * 
  * Mission Control navigates these via events/queues, not CRUD.
  */
@@ -190,8 +195,9 @@ class MissionRuntime {
    *
    * `getPending()` only returns `created` missions, so retry_pending missions
    * are invisible until `retry_at` is reached and `reclaimRetryPending()`
-   * moves them back to `created` (or until `reapExpiredLeases()` picks them up
-   * if retry_at has passed).
+   * moves them back to `created` through the normal conditional-claim path.
+   * The `retries` counter is never reset by a reclaim: every failure advances
+   * it, so retries are bounded and exhaustion is always reachable (F-01).
    *
    * @param {string} missionId
    * @param {string} error — error description
@@ -221,11 +227,15 @@ class MissionRuntime {
       );
       affectedRows = result.rowCount || 0;
     } else {
-      // Schedule retry
+      // Schedule retry. The IN-list deliberately includes 'retry_pending': a
+      // failure recorded against an already-retry_pending row must still
+      // advance the attempt counter (state progress). Without it the UPDATE
+      // matches zero rows and the mission re-executes forever with retries
+      // frozen — the F-01 infinite loop.
       const retryAt = new Date(Date.now() + backoffMs);
       const result = await this._pool.query(
         `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3
-         WHERE mission_id = $4 AND status IN ('running', 'assigned')`,
+         WHERE mission_id = $4 AND status IN ('running', 'assigned', 'retry_pending')`,
         [error, nextRetry, retryAt.toISOString(), missionId]
       );
       affectedRows = result.rowCount || 0;
@@ -298,16 +308,75 @@ class MissionRuntime {
   }
 
   /**
+   * Reclaim due retries — the missing link of the retry contract (F-01 repair).
+   *
+   * Moves `retry_pending` missions whose `retry_at` backoff gate has elapsed
+   * back to `created`, so they re-enter through the normal conditional-claim
+   * path (assign → start → dispatch) instead of being dispatched directly.
+   * The `retries` counter is NOT reset: attempt counting persists across
+   * reclaims, so retries stay bounded and exhaustion stays reachable.
+   *
+   * @returns {Promise<number>} count of reclaimed missions
+   */
+  async reclaimRetryPending() {
+    const result = await this._pool.query(
+      `UPDATE ping_missions
+       SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NULL
+       WHERE status = 'retry_pending'
+         AND retry_at IS NOT NULL
+         AND retry_at <= NOW()
+       RETURNING mission_id`
+    );
+
+    const reclaimed = result.rowCount || 0;
+    if (reclaimed > 0) {
+      console.log(`[MissionRuntime] Reclaimed ${reclaimed} due retries for redispatch`);
+      for (const row of result.rows) {
+        if (this._eventRuntime) {
+          await this._eventRuntime.emit('MISSION_RETRY_RECLAIMED', 'mission-runtime', { missionId: row.mission_id });
+        }
+      }
+    }
+
+    return reclaimed;
+  }
+
+  /**
+   * Find missions stuck in an active state beyond a bounded threshold.
+   *
+   * Returns missions in `running`/`assigned` whose last state progress
+   * (`started_at`, else `claimed_at`, else `created_at`) is older than the
+   * cutoff. Feeds the scheduler's stuck-running watchdog; the caller filters
+   * out missions it is actively processing.
+   *
+   * @param {string} olderThanIso — ISO cutoff; missions older than this qualify
+   * @returns {Promise<object[]>} mission rows
+   */
+  async findStuckRunning(olderThanIso) {
+    const result = await this._pool.query(
+      `SELECT * FROM ping_missions
+       WHERE status IN ('running', 'assigned')
+         AND COALESCE(started_at, claimed_at, created_at) < $1
+       ORDER BY created_at ASC`,
+      [olderThanIso]
+    );
+    return result.rows;
+  }
+
+  /**
    * Get pending missions (for Orca scheduler).
    *
-   * Returns missions in `created` status AND `retry_pending` missions whose
-   * `retry_at` has elapsed — both are claimable.
+   * Returns missions in `created` status ONLY. `retry_pending` missions are
+   * invisible here by design: they re-enter through `reclaimRetryPending()`,
+   * which enforces the `retry_at` backoff gate and routes them back through
+   * the conditional claim (assign → start), so every attempt is counted and
+   * retries stay bounded. Dispatching retry_pending rows directly bypassed
+   * the claim guard and froze the retry counter — the F-01 infinite loop.
    */
   async getPending(limit = 10) {
     const result = await this._pool.query(
       `SELECT * FROM ping_missions
        WHERE status = 'created'
-          OR (status = 'retry_pending' AND retry_at IS NOT NULL AND retry_at <= NOW())
        ORDER BY priority DESC, created_at ASC LIMIT $1`,
       [limit]
     );

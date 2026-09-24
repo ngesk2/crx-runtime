@@ -20,10 +20,15 @@
  *   - Skips missions already assigned (idempotent)
  *   - Gracefully no-ops when dependencies unavailable
  *   - Single source of truth: MissionRuntime
+ *   - Retry re-entry is via reclaimRetryPending() (backoff-gated), never by
+ *     dispatching retry_pending rows directly; every attempt is counted (F-01)
+ *   - Dispatch is bounded by dispatchTimeoutMs; unknown outcomes emit a HOLD
+ *     reconciliation record via the stuck-running watchdog (never FAILED)
  */
 
 const crypto = require('crypto');
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
+const { deriveFailureRecord } = require('./failure_record.js');
 
 // Map mission_type → worker name
 // Workers register with WorkerRuntime using these names
@@ -89,6 +94,10 @@ class MissionScheduler {
    * @param {object} options.retryPolicy — P0-4: { max_attempts, backoff_delay_ms } default retry config
    * @param {number} options.pollIntervalMs — poll interval (default 5000)
    * @param {number} options.maxConcurrent — max missions processed in parallel (default 3)
+   * @param {number} options.dispatchTimeoutMs — bound on one worker dispatch (default 120000);
+   *   a dispatch that never settles yields an UNKNOWN outcome for the watchdog
+   * @param {number} options.stuckThresholdMs — running/assigned missions older than this
+   *   are reconciled as HOLD by the stuck-running watchdog (default 600000)
    */
   constructor(options = {}) {
     this._missionRuntime = options.missionRuntime || null;
@@ -98,9 +107,13 @@ class MissionScheduler {
     this._retryPolicy = options.retryPolicy || { max_attempts: 3, backoff_delay_ms: 5000 };
     this._pollIntervalMs = options.pollIntervalMs || 5000;
     this._maxConcurrent = options.maxConcurrent || 3;
+    this._dispatchTimeoutMs = options.dispatchTimeoutMs || 120000;
+    this._stuckThresholdMs = options.stuckThresholdMs || 600000;
     this._timer = null;
     this._running = false;
     this._processing = new Set(); // mission_ids currently being processed
+    this._reconciled = new Set(); // mission_ids with an outstanding HOLD reconciliation record
+    this._reconciliationLog = []; // bounded (100) observable record of reconciler emissions
 
     this._stats = {
       dispatched: 0,
@@ -108,6 +121,8 @@ class MissionScheduler {
       failed: 0,
       skipped: 0,
       renewals: 0,
+      reconciled: 0,
+      watchdogScans: 0,
     };
   }
 
@@ -140,7 +155,8 @@ class MissionScheduler {
   }
 
   /**
-   * Single poll cycle: get pending missions, dispatch to workers.
+   * Single poll cycle: renew leases, reap orphans, reclaim due retries,
+   * run the stuck-running watchdog, then dispatch new missions.
    */
   async _poll() {
     if (!this._missionRuntime || !this._workerRuntime) return;
@@ -171,7 +187,33 @@ class MissionScheduler {
         console.error('[MissionScheduler] Lease reaping failed (non-fatal):', reapErr.message);
       }
 
-      // Arrow 2: Dispatch new missions — only when capacity available.
+      // Arrow 2: Reclaim due retries — moves retry_pending missions whose
+      // retry_at backoff gate has elapsed back to created, so they re-enter
+      // through the conditional claim. F-01 repair: retry_pending rows are
+      // never dispatched directly, and the retries counter is never reset,
+      // so every retry makes state progress toward exhaustion.
+      // Capability-guarded: runtimes predating the repair (stubs, older
+      // deployments) simply skip this arrow.
+      if (typeof this._missionRuntime.reclaimRetryPending === 'function') {
+        try {
+          const reclaimed = await this._missionRuntime.reclaimRetryPending();
+          if (reclaimed > 0) console.log(`[MissionScheduler] Reclaimed ${reclaimed} due retries`);
+        } catch (reclaimErr) {
+          console.error('[MissionScheduler] Retry reclaim failed (non-fatal):', reclaimErr.message);
+        }
+      }
+
+      // Arrow 3: Stuck-running watchdog — detects missions holding running/
+      // assigned beyond the bounded threshold and emits a HOLD reconciliation
+      // record (never FAILED on timeout). Detection only; runs regardless of
+      // capacity.
+      try {
+        await this.reconcileStuckRunning();
+      } catch (watchErr) {
+        console.error('[MissionScheduler] Watchdog scan failed (non-fatal):', watchErr.message);
+      }
+
+      // Arrow 4: Dispatch new missions — only when capacity available.
       if (this._processing.size >= this._maxConcurrent) return;
 
       const availableSlots = this._maxConcurrent - this._processing.size;
@@ -208,8 +250,16 @@ class MissionScheduler {
     this._processing.add(mission.mission_id);
 
     try {
-      // Assign mission
-      await this._missionRuntime.assign(mission.mission_id, workerName);
+      // Assign mission — F-01 repair: the conditional claim (P0-1) is the ONLY
+      // gate into dispatch. If the row is no longer claimable (claimed
+      // elsewhere, stale pending snapshot, retry_pending not yet reclaimed),
+      // the worker is NEVER invoked for it.
+      const claimed = await this._missionRuntime.assign(mission.mission_id, workerName);
+      if (claimed < 1) {
+        console.log(`[MissionScheduler] Mission ${mission.mission_id} not claimable (status changed since poll) — skipping dispatch`);
+        this._stats.skipped++;
+        return;
+      }
 
       // Start mission
       await this._missionRuntime.start(mission.mission_id);
@@ -246,8 +296,10 @@ class MissionScheduler {
         },
       };
 
-      // Dispatch to worker — P0-2: throws on worker failure
-      const dispatchResult = await this._workerRuntime.dispatch(event);
+      // Dispatch to worker — P0-2: throws on worker failure. Bounded by the
+      // dispatch timeout: a hung worker yields an UNKNOWN outcome, which the
+      // watchdog reconciles as HOLD (never FAILED on timeout).
+      const dispatchResult = await this._dispatchWithTimeout(event);
       this._stats.dispatched++;
 
       // P0-3: complete() only when worker returns verified ok.
@@ -270,10 +322,19 @@ class MissionScheduler {
           completed_at: constitutionalTimeAuthority.nowAsISOString(),
         });
         this._stats.completed++;
+        // Resolved: a future stuck episode for this mission may be reconciled again.
+        this._reconciled.delete(mission.mission_id);
       }
     } catch (err) {
-      console.error(`[MissionScheduler] Mission ${mission.mission_id} failed: ${err.message}`);
-      await this._failMission(mission, err.message);
+      if (err && err.code === 'DISPATCH_TIMEOUT') {
+        // Unknown outcome — HOLD for reconciliation. Deliberately NOT
+        // _failMission: no automatic retry is derived for unknown effects
+        // (retry safety unproven), and a timeout never resolves to FAILED.
+        await this._reconcileUnknown(mission, workerName, err.message);
+      } else {
+        console.error(`[MissionScheduler] Mission ${mission.mission_id} failed: ${err.message}`);
+        await this._failMission(mission, err.message);
+      }
     } finally {
       this._processing.delete(mission.mission_id);
     }
@@ -285,6 +346,10 @@ class MissionScheduler {
    * Calls failWithRetry on the mission. If the retry policy is exhausted
    * (retries >= max_attempts), the mission is `failed` and, when a
    * deadLetterAuthority is wired, recorded as a dead letter (P0-5).
+   *
+   * NOTE: deriveFailureRecord is deliberately NOT wired into this path —
+   * held for a human word. Reconciliation records are emitted only by the
+   * stuck-running watchdog (_reconcileUnknown) for UNKNOWN outcomes.
    */
   async _failMission(mission, error) {
     try {
@@ -326,6 +391,153 @@ class MissionScheduler {
   }
 
   /**
+   * Dispatch a worker event with a bounded timeout.
+   *
+   * A worker that never settles yields an UNKNOWN outcome (effect_known=false):
+   * the timer wins the race and throws a typed DISPATCH_TIMEOUT error. The
+   * still-pending worker promise gets a no-op settlement handler so its late
+   * resolution can never surface as an unhandled rejection; the mission row
+   * truthfully keeps its `running` status until the worker (or a reconciler)
+   * resolves it.
+   */
+  async _dispatchWithTimeout(event) {
+    const timeoutMs = this._dispatchTimeoutMs;
+    let dispatchPromise;
+    try {
+      dispatchPromise = Promise.resolve(this._workerRuntime.dispatch(event));
+    } catch (syncErr) {
+      // Synchronous throw from dispatch() — same as a rejected dispatch.
+      throw syncErr;
+    }
+    let timer = null;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const err = new Error(`dispatch timeout after ${timeoutMs}ms (outcome unknown)`);
+        err.code = 'DISPATCH_TIMEOUT';
+        reject(err);
+      }, timeoutMs);
+      if (timer.unref) timer.unref();
+    });
+    try {
+      return await Promise.race([dispatchPromise, timeoutPromise]);
+    } finally {
+      if (timer) clearTimeout(timer);
+      // Swallow the late settlement of a timed-out dispatch: the worker may
+      // still finish, but its outcome arrived after the HOLD was emitted.
+      dispatchPromise.then(() => {}, () => {});
+    }
+  }
+
+  /**
+   * Watchdog reconciler — emits a HOLD reconciliation record for an unknown
+   * execution outcome.
+   *
+   * The record is derived mechanically via deriveFailureRecord() with dispatch
+   * outcome 'unknown' and effect_known=false, which yields status
+   * HOLD_RECONCILE, classification UNKNOWN_EXECUTION, and the literal
+   * "OUTCOME UNKNOWN — RECONCILIATION IN PROGRESS". The mission row is NOT
+   * touched: a timeout never resolves to FAILED, and no automatic retry is
+   * derived for unknown effects.
+   *
+   * Emission is observable (MISSION_RECONCILE_HOLD event + bounded in-memory
+   * log + stats) and replayable (the record carries mission_id, payload
+   * digest, dispatch outcome, and correlation/causation ids; the failure_id is
+   * derived deterministically from the execution result). Deduplicated per
+   * mission: one outstanding HOLD per mission per session.
+   */
+  async _reconcileUnknown(mission, workerName, reason) {
+    if (this._reconciled.has(mission.mission_id)) return null;
+
+    let payload = {};
+    try {
+      payload = typeof mission.payload === 'string'
+        ? JSON.parse(mission.payload)
+        : (mission.payload || {});
+    } catch (_) { payload = {}; }
+
+    let record;
+    try {
+      record = deriveFailureRecord({
+        mission,
+        dispatch: { outcome: 'unknown', worker: workerName || null, error: reason, effect_known: false },
+        policy: { max_attempts: this._retryPolicy.max_attempts },
+        correlation_id: payload.correlation_id || payload.event_id || mission.mission_id,
+        causation_id: payload.event_id || null,
+      }, { now: constitutionalTimeAuthority.nowAsISOString() });
+    } catch (deriveErr) {
+      console.error(`[MissionScheduler] Reconciler derivation failed for ${mission.mission_id}: ${deriveErr.message}`);
+      return null;
+    }
+
+    this._reconciled.add(mission.mission_id);
+
+    if (this._eventRuntime) {
+      await this._eventRuntime.emit('MISSION_RECONCILE_HOLD', 'mission-scheduler', {
+        missionId: mission.mission_id,
+        record,
+      });
+    }
+    this._reconciliationLog.push({
+      mission_id: mission.mission_id,
+      emitted_at: constitutionalTimeAuthority.nowAsISOString(),
+      reason,
+      record,
+    });
+    if (this._reconciliationLog.length > 100) this._reconciliationLog.shift();
+    this._stats.reconciled++;
+    console.log(`[MissionScheduler] ${record.display} — mission ${mission.mission_id} (${reason})`);
+    return record;
+  }
+
+  /**
+   * Stuck-running watchdog scan.
+   *
+   * Finds missions holding `running` (or `assigned`) whose last state progress
+   * is older than the bounded stuck threshold and which this scheduler is not
+   * actively processing, and emits a HOLD reconciliation record for each.
+   * Detection only — mission rows are never failed, retried, or cancelled here.
+   *
+   * @returns {Promise<number>} count of missions reconciled in this scan
+   */
+  async reconcileStuckRunning() {
+    if (!this._missionRuntime) return 0;
+    // Capability guard: runtimes predating the watchdog (stubs, older
+    // deployments) simply yield nothing to reconcile.
+    if (typeof this._missionRuntime.findStuckRunning !== 'function') return 0;
+    this._stats.watchdogScans++;
+    const cutoffIso = new Date(Date.now() - this._stuckThresholdMs).toISOString();
+    let rows = [];
+    try {
+      rows = await this._missionRuntime.findStuckRunning(cutoffIso);
+    } catch (err) {
+      console.error(`[MissionScheduler] Stuck-running scan query failed: ${err.message}`);
+      return 0;
+    }
+    let count = 0;
+    for (const row of rows) {
+      if (this._processing.has(row.mission_id)) continue; // actively dispatched; lease renewal owns it
+      if (this._reconciled.has(row.mission_id)) continue; // HOLD already outstanding
+      const since = row.started_at || row.claimed_at || row.created_at;
+      await this._reconcileUnknown(
+        row,
+        row.assigned_to,
+        `stuck in '${row.status}' since ${since} (beyond ${this._stuckThresholdMs}ms threshold)`
+      );
+      count++;
+    }
+    return count;
+  }
+
+  /**
+   * Observable reconciler emissions (bounded, most recent last).
+   *
+   * @returns {Array} copies of { mission_id, emitted_at, reason, record }
+   */
+  getReconciliationLog() {
+    return this._reconciliationLog.slice();
+  }
+
+  /**
    * Get scheduler stats.
    */
   getStats() {
@@ -336,6 +548,9 @@ class MissionScheduler {
       processing: this._processing.size,
       pollIntervalMs: this._pollIntervalMs,
       maxConcurrent: this._maxConcurrent,
+      dispatchTimeoutMs: this._dispatchTimeoutMs,
+      stuckThresholdMs: this._stuckThresholdMs,
+      reconciliationLogSize: this._reconciliationLog.length,
     };
   }
 }
