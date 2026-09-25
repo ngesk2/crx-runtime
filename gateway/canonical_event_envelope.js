@@ -20,6 +20,14 @@ const path = require('path');
 const { computeCanonicalHash } = require('../ping-runtime/authorities/constitutional_validation');
 const { constitutionalTimeAuthority } = require('../ping-runtime/authorities/constitutional_time_authority.js');
 
+/**
+ * Canonical tenant identifier pattern, shared with the FYD journal gateway
+ * and the FYD tenant context. Lowercase alnum + dash, 1-64 chars.
+ * Tenant authority comes from the authenticated execution context; this
+ * pattern rejects path-traversal / injection-shaped values at every seam.
+ */
+const TENANT_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
+
 class CanonicalEventEnvelope {
   constructor(storage, options = {}) {
     this._storage = storage;
@@ -27,6 +35,21 @@ class CanonicalEventEnvelope {
     this._sequences = new Map();
     this._dependencies = ['storage'];
     this._authorityVersion = '1.0.0';
+  }
+
+  /**
+   * Tenant gate: the contract invariant "tenant A cannot read tenant B
+   * events" is enforced here, at the storage authority, not in callers.
+   * Missing or malformed tenant context fails closed (throws) — it must
+   * never degrade into an unscoped cross-tenant query.
+   */
+  _requireTenantId(tenantId) {
+    if (typeof tenantId !== 'string' || !TENANT_ID_PATTERN.test(tenantId)) {
+      throw new Error(
+        'CanonicalEventEnvelope: valid tenantId is required (tenant isolation fail-closed)',
+      );
+    }
+    return tenantId;
   }
 
   /**
@@ -135,6 +158,10 @@ class CanonicalEventEnvelope {
       metadata = {}
     } = command;
 
+    // Fail closed before any I/O: a write without trusted tenant context
+    // must never land in the store.
+    this._requireTenantId(tenantId);
+
     const sequence = await this.getNextSequence(tenantId);
     const timestamp = constitutionalTimeAuthority.nowAsISOString();
     const eventId = this.generateEventId(tenantId, eventType, timestamp, sequence);
@@ -231,14 +258,13 @@ class CanonicalEventEnvelope {
     limit = 100,
     offset = 0,
   } = {}) {
-    let query = 'SELECT * FROM canonical_events WHERE 1=1';
-    const params = [];
-    let paramIndex = 1;
+    // Fail closed: the contract invariant "tenant A cannot read tenant B
+    // events" means an unscoped read is a defect, not a default.
+    this._requireTenantId(tenantId);
 
-    if (tenantId) {
-      query += ` AND tenant_id = $${paramIndex++}`;
-      params.push(tenantId);
-    }
+    let query = 'SELECT * FROM canonical_events WHERE tenant_id = $1';
+    const params = [tenantId];
+    let paramIndex = 2;
 
     if (eventType) {
       query += ` AND event_type = $${paramIndex++}`;
@@ -275,7 +301,10 @@ class CanonicalEventEnvelope {
    * @returns {Object} Stats
    */
   async executeGetStats(tenantId) {
-    let query = `
+    // Fail closed: cross-tenant aggregates leak activity metadata.
+    this._requireTenantId(tenantId);
+
+    const query = `
       SELECT 
         tenant_id,
         COUNT(*) as total_events,
@@ -283,17 +312,11 @@ class CanonicalEventEnvelope {
         MIN(timestamp) as first_event,
         MAX(timestamp) as last_event,
         COUNT(CASE WHEN NOT processed THEN 1 END) as unprocessed
-      FROM canonical_events`;
+      FROM canonical_events
+      WHERE tenant_id = $1
+      GROUP BY tenant_id`;
     
-    const params = [];
-    if (tenantId) {
-      query += ' WHERE tenant_id = $1';
-      params.push(tenantId);
-    }
-    
-    query += ' GROUP BY tenant_id';
-    
-    const result = await this._storage.query(query, params);
+    const result = await this._storage.query(query, [tenantId]);
     return result.rows;
   }
 
@@ -336,6 +359,7 @@ class CanonicalEventEnvelope {
    * @returns {Object[]} Events
    */
   async executeGetUnprocessed(tenantId, limit = 100) {
+    this._requireTenantId(tenantId);
     const result = await this._storage.query(
       `SELECT * FROM canonical_events 
        WHERE NOT processed AND tenant_id = $1 

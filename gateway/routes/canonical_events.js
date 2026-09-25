@@ -25,6 +25,9 @@ function createCanonicalEventRoutes(canonicalEventEnvelope) {
     if (!tenant_id || !event_type || !source || !actor || !payload) {
       throw new Error('tenant_id, event_type, source, actor, and payload are required');
     }
+    if (!/^[a-z0-9-]{1,64}$/.test(tenant_id)) {
+      throw new Error('tenant_id is invalid (tenant isolation fail-closed)');
+    }
 
     const event = await canonicalEventEnvelope.executeEmitEvent({
       tenantId: tenant_id,
@@ -46,6 +49,10 @@ function createCanonicalEventRoutes(canonicalEventEnvelope) {
       from, to, limit, offset,
     } = req.query;
 
+    if (!tenant_id || !/^[a-z0-9-]{1,64}$/.test(tenant_id)) {
+      throw new Error('tenant_id query param is required (tenant isolation fail-closed)');
+    }
+
     const events = await canonicalEventEnvelope.executeQueryEvents({
       tenantId: tenant_id,
       eventType: event_type,
@@ -61,13 +68,18 @@ function createCanonicalEventRoutes(canonicalEventEnvelope) {
 
   router.get('/stats', asyncHandler('GET /canonical-events/stats', async (req) => {
     const { tenant_id } = req.query;
+    if (!tenant_id || !/^[a-z0-9-]{1,64}$/.test(tenant_id)) {
+      throw new Error('tenant_id query param is required (tenant isolation fail-closed)');
+    }
     const stats = await canonicalEventEnvelope.executeGetStats(tenant_id);
     return { stats };
   }));
 
   router.get('/unprocessed', asyncHandler('GET /canonical-events/unprocessed', async (req) => {
     const { tenant_id, limit } = req.query;
-    if (!tenant_id) throw new Error('tenant_id is required');
+    if (!tenant_id || !/^[a-z0-9-]{1,64}$/.test(tenant_id)) {
+      throw new Error('tenant_id is required (tenant isolation fail-closed)');
+    }
     const events = await canonicalEventEnvelope.executeGetUnprocessed(
       tenant_id,
       limit ? parseInt(limit) : undefined
