@@ -14,6 +14,21 @@
  * Mission Control navigates these via events/queues, not CRUD.
  */
 
+// W3 MISSION tenant binding. Missions carry an immutable tenant_id set at
+// creation from trusted execution context (options.tenant_id). Missing or
+// invalid tenant fails closed (throws); it is never defaulted from, and never
+// taken from, the mission payload (spoof surface). Tenant joins the
+// idempotency key so the same event_id in two tenants never collides into
+// ON CONFLICT DO NOTHING silence.
+const MISSION_TENANT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
+
+function requireMissionTenantId(tenantId) {
+  if (typeof tenantId !== 'string' || !MISSION_TENANT_ID_PATTERN.test(tenantId)) {
+    throw new Error('MissionRuntime: valid options.tenant_id is required (tenant isolation fail-closed)');
+  }
+  return tenantId;
+}
+
 class MissionRuntime {
   /**
    * @param {object} options
@@ -59,32 +74,52 @@ class MissionRuntime {
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS retry_at TIMESTAMPTZ;
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS lease_until TIMESTAMPTZ;
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64);
+      UPDATE ping_missions SET tenant_id = 'UNKNOWN' WHERE tenant_id IS NULL;
+      CREATE INDEX IF NOT EXISTS idx_pm_tenant_id ON ping_missions(tenant_id);
     `);
+  }
+
+  /**
+   * Resolve a mission's tenant_id for lifecycle events (HOLD/retry/reaper
+   * paths preserve tenant context by re-reading the immutable row value).
+   * @private
+   */
+  async _missionTenant(missionId) {
+    if (!this._pool) return null;
+    const row = await this._pool.query(
+      `SELECT tenant_id FROM ping_missions WHERE mission_id = $1`,
+      [missionId]
+    );
+    return (row.rows[0] && row.rows[0].tenant_id) || null;
   }
 
   /**
    * Create a new mission.
    *
-   * mission_id is deterministic: hash(missionType:event_id) when event_id is
-   * present in payload, otherwise hash(missionType:canonical_payload). Same
-   * event always produces the same mission — idempotent by construction.
-   * ON CONFLICT DO NOTHING prevents duplicate missions for the same event.
+   * mission_id is deterministic: hash(tenant:missionType:event_id) when
+   * event_id is present in payload, otherwise hash(tenant:missionType:
+   * canonical_payload). Tenant joins the key: the same event_id in two
+   * tenants is two missions, never an ON CONFLICT silence. Same
+   * (tenant, event) always produces the same mission — idempotent by
+   * construction. options.tenant_id is REQUIRED (fail closed).
    */
   async create(missionType, payload = {}, options = {}) {
+    const tenantId = requireMissionTenantId(options.tenant_id);
     const crypto = require('crypto');
     const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
     const idempotencyKey = payload.event_id
-      ? `${missionType}:${payload.event_id}`
-      : `${missionType}:${JSON.stringify(payload)}`;
+      ? `${tenantId}:${missionType}:${payload.event_id}`
+      : `${tenantId}:${missionType}:${JSON.stringify(payload)}`;
     const missionId = crypto.createHash('sha256')
       .update(idempotencyKey)
       .digest('hex').slice(0, 16);
 
     const result = await this._pool.query(
-      `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by, tenant_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (mission_id) DO NOTHING`,
-      [missionId, missionType, JSON.stringify(payload), options.priority || 0, options.createdBy || null]
+      [missionId, missionType, JSON.stringify(payload), options.priority || 0, options.createdBy || null, tenantId]
     );
 
     const created = (result.rowCount || 0) === 1;
@@ -92,7 +127,7 @@ class MissionRuntime {
     if (created && this._eventRuntime) {
       await this._eventRuntime.emit('MISSION_CREATED', 'mission-runtime', {
         missionId, missionType, payload, priority: options.priority || 0,
-      });
+      }, { tenant_id: tenantId });
     }
 
     return missionId;
@@ -117,9 +152,10 @@ class MissionRuntime {
     const claimed = (result.rowCount || 0) === 1;
 
     if (claimed && this._eventRuntime) {
+      const tenantId = await this._missionTenant(missionId);
       await this._eventRuntime.emit('MISSION_ASSIGNED', 'mission-runtime', {
         missionId, assignedTo: workerName,
-      });
+      }, tenantId ? { tenant_id: tenantId } : {});
     }
 
     return result.rowCount || 0;
@@ -138,7 +174,9 @@ class MissionRuntime {
     );
 
     if ((result.rowCount || 0) === 1 && this._eventRuntime) {
-      await this._eventRuntime.emit('MISSION_STARTED', 'mission-runtime', { missionId });
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_STARTED', 'mission-runtime', { missionId },
+        tenantId ? { tenant_id: tenantId } : {});
     }
   }
 
@@ -167,7 +205,9 @@ class MissionRuntime {
     );
 
     if ((updateResult.rowCount || 0) === 1 && this._eventRuntime) {
-      await this._eventRuntime.emit('MISSION_COMPLETED', 'mission-runtime', { missionId, result, duration_ms });
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_COMPLETED', 'mission-runtime', { missionId, result, duration_ms },
+        tenantId ? { tenant_id: tenantId } : {});
     }
   }
 
@@ -182,7 +222,9 @@ class MissionRuntime {
     );
 
     if ((result.rowCount || 0) >= 1 && this._eventRuntime) {
-      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error });
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error },
+        tenantId ? { tenant_id: tenantId } : {});
     }
   }
 
@@ -242,7 +284,9 @@ class MissionRuntime {
     }
 
     if (affectedRows >= 1 && this._eventRuntime) {
-      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error, retries: nextRetry });
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error, retries: nextRetry },
+        tenantId ? { tenant_id: tenantId } : {});
     }
 
     return nextRetry;
@@ -299,7 +343,9 @@ class MissionRuntime {
       console.log(`[MissionRuntime] Reclaimed ${reclaimed} expired lease(s)`);
       for (const row of result.rows) {
         if (this._eventRuntime) {
-          await this._eventRuntime.emit('MISSION_LEASE_EXPIRED', 'mission-runtime', { missionId: row.mission_id });
+          const tenantId = await this._missionTenant(row.mission_id);
+          await this._eventRuntime.emit('MISSION_LEASE_EXPIRED', 'mission-runtime', { missionId: row.mission_id },
+            tenantId ? { tenant_id: tenantId } : {});
         }
       }
     }
@@ -333,7 +379,9 @@ class MissionRuntime {
       console.log(`[MissionRuntime] Reclaimed ${reclaimed} due retries for redispatch`);
       for (const row of result.rows) {
         if (this._eventRuntime) {
-          await this._eventRuntime.emit('MISSION_RETRY_RECLAIMED', 'mission-runtime', { missionId: row.mission_id });
+          const tenantId = await this._missionTenant(row.mission_id);
+          await this._eventRuntime.emit('MISSION_RETRY_RECLAIMED', 'mission-runtime', { missionId: row.mission_id },
+            tenantId ? { tenant_id: tenantId } : {});
         }
       }
     }
@@ -373,22 +421,40 @@ class MissionRuntime {
    * retries stay bounded. Dispatching retry_pending rows directly bypassed
    * the claim guard and froze the retry counter — the F-01 infinite loop.
    */
-  async getPending(limit = 10) {
+  async getPending(limit = 10, tenantId = null) {
+    if (tenantId === null) {
+      const result = await this._pool.query(
+        `SELECT * FROM ping_missions
+         WHERE status = 'created'
+         ORDER BY priority DESC, created_at ASC LIMIT $1`,
+        [limit]
+      );
+      return result.rows;
+    }
+    const tenant = requireMissionTenantId(tenantId);
     const result = await this._pool.query(
       `SELECT * FROM ping_missions
-       WHERE status = 'created'
+       WHERE status = 'created' AND tenant_id = $2
        ORDER BY priority DESC, created_at ASC LIMIT $1`,
-      [limit]
+      [limit, tenant]
     );
     return result.rows;
   }
 
   /**
-   * Get active missions.
+   * Get active missions. tenantId scopes the query; null = all (system use).
    */
-  async getActive() {
+  async getActive(tenantId = null) {
+    if (tenantId === null) {
+      const result = await this._pool.query(
+        `SELECT * FROM ping_missions WHERE status IN ('assigned', 'running') ORDER BY priority DESC`
+      );
+      return result.rows;
+    }
+    const tenant = requireMissionTenantId(tenantId);
     const result = await this._pool.query(
-      `SELECT * FROM ping_missions WHERE status IN ('assigned', 'running') ORDER BY priority DESC`
+      `SELECT * FROM ping_missions WHERE status IN ('assigned', 'running') AND tenant_id = $1 ORDER BY priority DESC`,
+      [tenant]
     );
     return result.rows;
   }

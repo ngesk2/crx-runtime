@@ -133,6 +133,10 @@ class EventToMissionBridge {
       }, {
         priority: canonicalPriority(mapping.priority),
         createdBy: 'event-to-mission-bridge',
+        // W3 MISSION: tenant context threads from the triggering event through
+        // mission creation. Events carry tenant_id in options/column (W6); the
+        // bridge is trusted execution context, so it passes it explicitly.
+        tenant_id: event.tenant_id || 'UNKNOWN',
       });
 
       this._stats.missionsCreated++;
