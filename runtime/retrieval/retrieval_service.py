@@ -12,11 +12,11 @@ import sys
 import logging
 from typing import List, Dict, Optional
 from pathlib import Path
-from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from runtime.constitutional.secret_adapter import get_secret_adapter
 from runtime.authorities.embedding_authority import EmbeddingAuthority
+from runtime.authorities.projection_authority import ProjectionAuthority
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +35,8 @@ class RetrievalService:
         self.qdrant_api_key = qdrant_config["api_key"]
         self.qdrant_collection = qdrant_config["collection"]
         
-        self.qdrant_client = QdrantClient(
-            url=self.qdrant_url,
-            api_key=self.qdrant_api_key
-        )
+        # Single owned construction site: ProjectionAuthority.
+        self.qdrant_client = ProjectionAuthority.get_client()
         
         self.embedding_authority = EmbeddingAuthority(self.configuration)
         

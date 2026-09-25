@@ -38,7 +38,6 @@ import uuid
 import hashlib
 import psycopg2
 from psycopg2.extras import DictCursor
-from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 import json
 from typing import List, Dict, Optional
@@ -48,6 +47,7 @@ from pathlib import Path
 
 from runtime.configuration import get_configuration
 from runtime.authorities.embedding_authority import EmbeddingAuthority
+from runtime.authorities.projection_authority import ProjectionAuthority
 
 # Configure logging
 logging.basicConfig(
@@ -98,10 +98,8 @@ class QdrantProjectionWorker:
         logger.info("Initializing Qdrant Projection Worker")
         
         # Initialize Qdrant client
-        self.qdrant_client = QdrantClient(
-            url=self.qdrant_url,
-            api_key=self.qdrant_api_key
-        )
+        # Single owned construction site: ProjectionAuthority.
+        self.qdrant_client = ProjectionAuthority.get_client()
         
         # Initialize embedding model (768 dimensions for nomic-embed-text)
         logger.info(f"Loading embedding model: {self.embed_model}")

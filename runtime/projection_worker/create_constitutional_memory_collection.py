@@ -11,7 +11,7 @@ Dependency: pip install qdrant-client
 """
 
 try:
-    from qdrant_client import QdrantClient
+    import qdrant_client
     from qdrant_client.models import Distance, VectorParams, PointStruct
     QDRANT_AVAILABLE = True
 except ImportError:
@@ -22,6 +22,7 @@ import os
 import sys
 from pathlib import Path
 from runtime.config.configuration_authority import ConfigurationAuthority
+from runtime.authorities.projection_authority import ProjectionAuthority
 
 # Configuration - Single source via ConfigurationAuthority
 _qdrant_cfg = ConfigurationAuthority.current().get_qdrant_config()
@@ -38,7 +39,8 @@ def create_constitutional_memory_collection():
         print("Install with: pip install qdrant-client")
         return
     
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    # Single owned construction site: ProjectionAuthority.
+    client = ProjectionAuthority.get_client()
     
     # Check if collection exists
     collections = client.get_collections().collections

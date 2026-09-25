@@ -28,6 +28,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from runtime.config.configuration_authority import ConfigurationAuthority
+from runtime.authorities.projection_authority import ProjectionAuthority
 
 _config = ConfigurationAuthority.current()
 
@@ -44,7 +45,7 @@ except ImportError:
     SECRET_ADAPTER_AVAILABLE = False
 
 try:
-    from qdrant_client import QdrantClient
+    import qdrant_client
     from qdrant_client.models import Distance, VectorParams, PointStruct
     QDRANT_AVAILABLE = True
 except ImportError:
@@ -69,7 +70,8 @@ class ConstitutionalProjectionWorker:
         self.embedding_dimension = 768  # Default for nomic-embed-text
         
         if QDRANT_AVAILABLE:
-            self.qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+            # Single owned construction site: ProjectionAuthority.
+            self.qdrant_client = ProjectionAuthority.get_client()
         else:
             self.qdrant_client = None
             print("Qdrant client not available. Install with: pip install qdrant-client")

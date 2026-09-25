@@ -22,11 +22,12 @@ from datetime import datetime
 from typing import Dict, Any, List
 from pathlib import Path
 from runtime.config.configuration_authority import ConfigurationAuthority
+from runtime.authorities.projection_authority import ProjectionAuthority
 
 _config = ConfigurationAuthority.current()
 
 try:
-    from qdrant_client import QdrantClient
+    import qdrant_client
     from qdrant_client.models import Distance, VectorParams
     QDRANT_AVAILABLE = True
 except ImportError:
@@ -47,7 +48,8 @@ class ProjectionRebuildCertifier:
     
     def __init__(self):
         if QDRANT_AVAILABLE:
-            self.qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+            # Single owned construction site: ProjectionAuthority.
+            self.qdrant_client = ProjectionAuthority.get_client()
         else:
             self.qdrant_client = None
             print("Qdrant client not available")
