@@ -174,7 +174,7 @@ class QdrantProjectionWorker:
         cursor = self.postgres_conn.cursor()
         
         query = """
-            SELECT e.event_id, e.event_hash, e.event_type, e.payload, e.created_at
+            SELECT e.event_id, e.event_hash, e.event_type, e.payload, e.created_at, e.tenant_id
             FROM events e
             LEFT JOIN projection_status ps ON e.event_id = ps.event_id
             WHERE ps.projected_qdrant IS NULL OR ps.projected_qdrant = FALSE
@@ -187,6 +187,35 @@ class QdrantProjectionWorker:
         cursor.close()
         
         return events
+
+    @staticmethod
+    def _resolve_tenant_id(event: Dict) -> str:
+        """Resolve the tenant for a projected event.
+
+        Tenant identity is taken from the event row or its payload; it is
+        never invented and never guessed. A missing or invalid tenant is a
+        typed failure: the caller must refuse to project (fail closed)
+        rather than produce an unscoped Qdrant point. Historical database
+        rows may carry the UNKNOWN backfill marker, but new projection work
+        with absent tenant context is rejected.
+        """
+        tid = event.get("tenant_id")
+        if isinstance(tid, str) and tid.strip():
+            return tid.strip()
+        payload = event.get("payload")
+        if isinstance(payload, dict):
+            tid = payload.get("tenant_id")
+            if isinstance(tid, str) and tid.strip():
+                return tid.strip()
+            ed = payload.get("event_data")
+            if isinstance(ed, dict):
+                tid = ed.get("tenant_id")
+                if isinstance(tid, str) and tid.strip():
+                    return tid.strip()
+        raise ValueError(
+            f"missing tenant_id for event {event.get('event_id')}: "
+            "refusing to project without tenant context (fail closed)"
+        )
 
     def _ensure_projection_table(self):
         """Ensure projection_status table exists for traceability."""
@@ -226,6 +255,7 @@ class QdrantProjectionWorker:
     def _project_event(self, event: Dict) -> Optional[PointStruct]:
         """Project a single event to Qdrant with constitutional filtering."""
         try:
+            tenant_id = self._resolve_tenant_id(event)
             payload = event['payload']
             event_type = event['event_type']
             
@@ -269,7 +299,8 @@ class QdrantProjectionWorker:
                     'event_hash': event['event_hash'],
                     'event_type': event['event_type'],
                     'payload': payload,
-                    'created_at': event['created_at'].isoformat() if event['created_at'] else None
+                    'created_at': event['created_at'].isoformat() if event['created_at'] else None,
+                    'tenant_id': tenant_id
                 }
             )
             
@@ -282,6 +313,7 @@ class QdrantProjectionWorker:
     def _project_document_event(self, event: Dict) -> Optional[PointStruct]:
         """Project a document event to the memory collection."""
         try:
+            tenant_id = self._resolve_tenant_id(event)
             payload = event['payload']
             event_type = event['event_type']
             
@@ -314,7 +346,8 @@ class QdrantProjectionWorker:
                     'updated_at': payload.get('modified_time'),
                     'content_hash': content_hash,
                     'event_id': event['event_id'],
-                    'event_type': event_type
+                    'event_type': event_type,
+                    'tenant_id': tenant_id
                 }
             )
             
@@ -328,6 +361,7 @@ class QdrantProjectionWorker:
     def _project_repository_event(self, event: Dict) -> Optional[PointStruct]:
         """Project a repository event to the memory collection with content extraction and chunking."""
         try:
+            tenant_id = self._resolve_tenant_id(event)
             payload = event['payload']
             event_type = event['event_type']
             
@@ -357,7 +391,8 @@ class QdrantProjectionWorker:
                     'content_hash': metadata_hash,
                     'event_id': event['event_id'],
                     'event_type': event_type,
-                    'point_type': 'metadata'
+                    'point_type': 'metadata',
+                    'tenant_id': tenant_id
                 }
             )
             
@@ -398,7 +433,8 @@ class QdrantProjectionWorker:
                                 'content_hash': chunk_hash,
                                 'event_id': event['event_id'],
                                 'event_type': event_type,
-                                'point_type': 'chunk'
+                                'point_type': 'chunk',
+                                'tenant_id': tenant_id
                             }
                         )
                         chunk_points.append(chunk_point)
