@@ -69,9 +69,21 @@ class BaseWorker {
     } else {
       emitMetadata.confidence = null;
     }
+    // W4 WORKER tenant pin: the triggering event's tenant is pinned for the
+    // whole op. Downstream emissions inherit it by default (like namespace
+    // and correlation_id). An explicit options.tenant_id that CONTRADICTS the
+    // pinned tenant is a cross-tenant laundering attempt — fail closed.
+    // The worker never invents tenant context; it propagates the trusted one.
+    const pinnedTenant = this._event?.tenant_id;
+    const explicitTenant = options.tenant_id;
+    if (explicitTenant && pinnedTenant && explicitTenant !== pinnedTenant) {
+      throw new Error(`${this._name}: tenant pin violation — cannot emit as '${explicitTenant}' while handling event for tenant '${pinnedTenant}'`);
+    }
+    const tenant_id = explicitTenant || pinnedTenant;
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
       ...options,
       namespace,
+      tenant_id,
       correlation_id,
       causation_id,
       metadata: emitMetadata,

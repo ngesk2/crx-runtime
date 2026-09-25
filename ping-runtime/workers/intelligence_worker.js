@@ -50,8 +50,18 @@ class BaseWorker {
     } else {
       emitMetadata.confidence = null;
     }
+    // W4 WORKER tenant pin (mirrors canonical_workers.js BaseWorker._emit):
+    // the triggering event's tenant is pinned for the whole op. A
+    // contradicting explicit options.tenant_id fails closed — workers never
+    // launder events across tenant boundaries.
+    const pinnedTenant = this._event?.tenant_id;
+    const explicitTenant = options.tenant_id;
+    if (explicitTenant && pinnedTenant && explicitTenant !== pinnedTenant) {
+      throw new Error(`${this._name}: tenant pin violation — cannot emit as '${explicitTenant}' while handling event for tenant '${pinnedTenant}'`);
+    }
+    const tenant_id = explicitTenant || pinnedTenant;
     const result = await this._eventRuntime.emit(eventType, this._name, payload, {
-      ...options, namespace, correlation_id, metadata: emitMetadata,
+      ...options, namespace, tenant_id, correlation_id, metadata: emitMetadata,
     });
     if (result.status !== 'ok') throw new Error(`${this._name}: emit ${eventType} failed — ${result.error}`);
     return result;
