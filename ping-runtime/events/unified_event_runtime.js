@@ -15,6 +15,23 @@
  * - metadata (schema_version, causation_id, correlation_id)
  */
 
+
+// ─── Lane L tenant isolation ─────────────────────────────────────────────
+// tenant_id is the immutable logical partition key for ping_events. It is
+// never inferred: an explicit option wins, then the tenant::<slug> namespace
+// slug, else the UNKNOWN marker for unattributable history. The pattern
+// extends the FYD journal slug shape to admit the mandated UNKNOWN backfill.
+const TENANT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
+function isValidTenantId(t) {
+  return typeof t === 'string' && TENANT_ID_PATTERN.test(t);
+}
+function tenantIdForNamespace(namespace) {
+  if (typeof namespace === 'string' && namespace.startsWith('tenant::')) {
+    const slug = namespace.slice('tenant::'.length);
+    if (isValidTenantId(slug)) return slug;
+  }
+  return 'UNKNOWN';
+}
 const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
 // AUTH-CONV-06: event identity and canonicalization owned by the declared
 // authorities (shims delegating to runtime/kernel). No inline ID minting,
@@ -119,6 +136,12 @@ class UnifiedEventRuntime {
       CREATE INDEX IF NOT EXISTS idx_ping_events_timestamp ON ping_events(timestamp);
       CREATE INDEX IF NOT EXISTS idx_ping_events_causation ON ping_events ((metadata->>'causation_id'));
       CREATE INDEX IF NOT EXISTS idx_ping_events_correlation ON ping_events ((metadata->>'correlation_id'));
+      ALTER TABLE ping_events ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64);
+      -- Lane L: historical backfill is EXACTLY 'UNKNOWN'. Never infer tenant
+      -- from namespace; namespace is not a trusted execution context.
+      UPDATE ping_events SET tenant_id = 'UNKNOWN' WHERE tenant_id IS NULL;
+      ALTER TABLE ping_events ALTER COLUMN tenant_id SET DEFAULT 'UNKNOWN';
+      CREATE INDEX IF NOT EXISTS idx_ping_events_tenant_id ON ping_events(tenant_id);
     `);
   }
 
@@ -166,10 +189,19 @@ class UnifiedEventRuntime {
     //    keep their existing event IDs (idempotent retries preserved).
     //    logical_id is the timestamp-stripped logical identity — two emissions of the
     //    same logical event (even with different timestamps in payload) hash identically.
+    // Lane O authority repair: tenant_id is validated fail-closed here, then the
+    // event ID is minted through the declared IdentityAuthority (AUTH-CONV-06),
+    // never inline. tenant_id joins the identity material only when explicitly
+    // provided, so legacy callers keep byte-identical event IDs.
+    if (options.tenant_id !== undefined && options.tenant_id !== null && !isValidTenantId(options.tenant_id)) {
+      this._stats.failed++;
+      return { status: "error", error: `invalid tenant_id: ${options.tenant_id}` };
+    }
     const eventId = identityAuthority.generateSpineEventId(eventType, source, {
       namespace: options.namespace,
       logical_id: options.logical_id,
       payload,
+      tenant_id: (options.tenant_id !== undefined && options.tenant_id !== null) ? options.tenant_id : undefined,
     });
 
     // 2. Validate event type
@@ -203,6 +235,11 @@ class UnifiedEventRuntime {
     //    privacy boundary (core::<name> | tenant::<id>) is validated at this one
     //    choke point rather than re-derived by every downstream caller.
     const namespace = options.namespace || 'core::system';
+    // Lane L: immutable tenant partition. Explicit option wins, then the
+    // tenant::<slug> namespace slug, else UNKNOWN (never guessed).
+    const tenantId = (options.tenant_id !== undefined && options.tenant_id !== null)
+      ? options.tenant_id
+      : tenantIdForNamespace(namespace);
     if (this._eventGovernance && !options._skipGovernance) {
       const governance = this._eventGovernance.validateEvent({
         event_type: eventType,
@@ -226,6 +263,7 @@ class UnifiedEventRuntime {
       event_type: eventType,
       source,
       namespace,
+      tenant_id: tenantId,
       timestamp: constitutionalTimeAuthority.nowAsISOString(),
       payload,
       metadata: {
@@ -248,10 +286,10 @@ class UnifiedEventRuntime {
     {
       try {
         const result = await this._pool.query(
-          `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace)
-           VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (event_id) DO NOTHING`,
+          `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (event_id) DO NOTHING`,
           [event.event_id, event.event_type, event.source, event.timestamp,
-           JSON.stringify(event.payload), JSON.stringify(event.metadata), event.namespace]
+           JSON.stringify(event.payload), JSON.stringify(event.metadata), event.namespace, event.tenant_id]
         );
         // Only count actual inserts, not ON CONFLICT DO NOTHING no-ops
         if ((result.rowCount || 0) > 0) {
@@ -342,6 +380,10 @@ class UnifiedEventRuntime {
     if (options.unprocessed) {
       sql += ` AND processed = FALSE`;
     }
+    if (options.tenantId !== undefined && options.tenantId !== null) {
+      sql += ` AND tenant_id = $${idx++}`;
+      params.push(options.tenantId);
+    }
 
     sql += ` ORDER BY timestamp DESC`;
     if (options.limit) {
@@ -360,15 +402,21 @@ class UnifiedEventRuntime {
    * @param {number} [limit=50]
    * @returns {{ status: string, events: Array }}
    */
-  async getChildren(eventId, limit = 50) {
+  async getChildren(eventId, limit = 50, tenantId = null) {
     if (!this._pool) return { status: 'error', error: 'No pool' };
+    const params = [eventId, limit];
+    let tenantFilter = '';
+    if (tenantId !== null && tenantId !== undefined) {
+      tenantFilter = ' AND tenant_id = $3';
+      params.push(tenantId);
+    }
     const result = await this._pool.query(
-      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace
+      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id
        FROM ping_events
-       WHERE metadata->>'causation_id' = $1
+       WHERE metadata->>'causation_id' = $1${tenantFilter}
        ORDER BY created_at ASC
        LIMIT $2`,
-      [eventId, limit]
+      params
     );
     return { status: 'ok', events: result.rows };
   }
@@ -381,27 +429,28 @@ class UnifiedEventRuntime {
    * @param {number} [limit=200] — total event limit
    * @returns {{ status: string, events: Array }}
    */
-  async getDescendants(eventId, maxDepth = 10, limit = 200) {
+  async getDescendants(eventId, maxDepth = 10, limit = 200, tenantId = null) {
     if (!this._pool) return { status: 'error', error: 'No pool' };
     const result = await this._pool.query(
       `WITH RECURSIVE causal_tree AS (
-        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace,
+        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id,
                0 AS depth, ARRAY[event_id] AS path
         FROM ping_events
         WHERE event_id = $1
         UNION ALL
-        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace,
+        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace, e.tenant_id,
                ct.depth + 1, ct.path || e.event_id
         FROM ping_events e
         JOIN causal_tree ct ON e.metadata->>'causation_id' = ct.event_id
         WHERE ct.depth < $3
           AND NOT e.event_id = ANY(ct.path)
       )
-      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, depth, path
+      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id, depth, path
       FROM causal_tree
+      WHERE ($4::text IS NULL OR tenant_id = $4)
       ORDER BY depth ASC, created_at ASC
       LIMIT $2`,
-      [eventId, limit, maxDepth]
+      [eventId, limit, maxDepth, tenantId]
     );
     return { status: 'ok', events: result.rows };
   }
@@ -413,26 +462,27 @@ class UnifiedEventRuntime {
    * @param {number} [maxDepth=20] — safety limit
    * @returns {{ status: string, events: Array }}
    */
-  async getAncestors(eventId, maxDepth = 20) {
+  async getAncestors(eventId, maxDepth = 20, tenantId = null) {
     if (!this._pool) return { status: 'error', error: 'No pool' };
     const result = await this._pool.query(
       `WITH RECURSIVE causal_chain AS (
-        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace,
+        SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id,
                0 AS depth, ARRAY[event_id] AS path
         FROM ping_events
         WHERE event_id = $1
         UNION ALL
-        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace,
+        SELECT e.event_id, e.event_type, e.source, e.timestamp, e.payload, e.metadata, e.namespace, e.tenant_id,
                cc.depth + 1, cc.path || e.event_id
         FROM ping_events e
         JOIN causal_chain cc ON e.event_id = cc.metadata->>'causation_id'
         WHERE cc.depth < $2
           AND NOT e.event_id = ANY(cc.path)
       )
-      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, depth, path
+      SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id, depth, path
       FROM causal_chain
+      WHERE ($3::text IS NULL OR tenant_id = $3)
       ORDER BY depth ASC`,
-      [eventId, maxDepth]
+      [eventId, maxDepth, tenantId]
     );
     return { status: 'ok', events: result.rows };
   }
@@ -444,15 +494,16 @@ class UnifiedEventRuntime {
    * @param {number} [limit=200]
    * @returns {{ status: string, events: Array }}
    */
-  async getCorrelationGroup(correlationId, limit = 200) {
+  async getCorrelationGroup(correlationId, limit = 200, tenantId = null) {
     if (!this._pool) return { status: 'error', error: 'No pool' };
     const result = await this._pool.query(
-      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace
+      `SELECT event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id
        FROM ping_events
        WHERE metadata->>'correlation_id' = $1
+         AND ($3::text IS NULL OR tenant_id = $3)
        ORDER BY created_at ASC
        LIMIT $2`,
-      [correlationId, limit]
+      [correlationId, limit, tenantId]
     );
     return { status: 'ok', events: result.rows };
   }

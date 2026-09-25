@@ -146,7 +146,9 @@ class WorkerRuntime {
 
   async _poll() {
     try {
-      const response = await fetch(`${this._gatewayUrl}/events/unprocessed`);
+      // Lane L: /events/unprocessed requires explicit tenant context. The worker
+      // plane is unattributed system work, so it polls under UNKNOWN.
+      const response = await fetch(`${this._gatewayUrl}/events/unprocessed?tenant=UNKNOWN`);
       if (!response.ok) return;
       
       const data = await response.json();

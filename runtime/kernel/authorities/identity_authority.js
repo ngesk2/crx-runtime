@@ -285,12 +285,16 @@ class IdentityAuthority {
    *
    * @param {string} eventType - Event type, e.g. 'REVIEW_RECEIVED'
    * @param {string} source - Producer source, e.g. 'email-connector'
-   * @param {object} options - { namespace, logical_id, payload }
+   * @param {object} options - { namespace, logical_id, payload, tenant_id }
    * @returns {string} 64-char hex event ID
+   * tenant_id joins the identity material only when explicitly provided, so
+   * legacy callers keep byte-identical event IDs. When provided, the same
+   * logical event in two tenants mints two distinct IDs.
    */
   generateSpineEventId(eventType, source, options = {}) {
     const identity = { eventType, source };
     if (options.namespace) identity.namespace = options.namespace;
+    if (options.tenant_id !== undefined && options.tenant_id !== null) identity.tenant_id = options.tenant_id;
     identity[options.logical_id ? 'logical_id' : 'payload'] = options.logical_id || options.payload;
     return crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex');
   }
