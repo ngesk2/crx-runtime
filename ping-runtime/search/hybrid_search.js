@@ -10,9 +10,9 @@
  * Every result obeys RETRIEVAL_INTELLIGENCE_REPORT.md law #1 (trace on every
  * result): `{ canonical_hash, namespace, confidence, evidence:[eventIds], verified, source }`.
  *
- * ADD-only — reads Qdrant/Postgres, never writes. Namespace filtering happens
- * after the embedding search because the Qdrant adapter has no server-side filter;
- * results from a different namespace are structurally dropped.
+ * ADD-only — reads Qdrant/Postgres, never writes. The namespace is enforced
+ * server-side by the Qdrant adapter (fail-closed when absent); the post-search
+ * payload check below stays as defense in depth.
  */
 
 class HybridSearch {
@@ -40,6 +40,10 @@ class HybridSearch {
     if (!query || typeof query !== 'string') {
       return { status: 'ok', results: [], total: 0, stats: this.getStats(), error: 'query required' };
     }
+    if (!namespace || typeof namespace !== 'string') {
+      // Fail closed: a search with no namespace must never run unfiltered.
+      return { status: 'ok', results: [], total: 0, stats: this.getStats(), error: 'namespace required (privacy boundary)' };
+    }
 
     const results = [];
 
@@ -47,14 +51,14 @@ class HybridSearch {
     if (this._embedding) {
       let hits = [];
       try {
-        hits = await this._embedding.search(query, { limit: limit * 3 });
+        hits = await this._embedding.search(query, { limit: limit * 3, namespace });
       } catch (err) {
         this._stats.rejected++;
         console.error(`[HybridSearch] embedding search failed: ${err.message}`);
       }
       for (const hit of hits || []) {
         const payload = hit.payload || {};
-        if (namespace && payload.namespace !== namespace) continue; // privacy boundary
+        if (payload.namespace !== namespace) continue; // privacy boundary (defense in depth)
         let verified = null;
         if (this._evidence) {
           const verification = await this._evidence.verify(hit);

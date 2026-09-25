@@ -232,11 +232,21 @@ class EmbeddingService {
     return point;
   }
 
-  /** Semantic search over the projected collection. */
+  /**
+   * Semantic search over the projected collection.
+   * Tenant isolation: options.namespace is REQUIRED and is forwarded to the
+   * adapter, which enforces it server-side. No namespace = fail closed.
+   */
   async search(text, options = {}) {
     if (!this._qdrant) throw new Error('EmbeddingService: no qdrantAdapter');
+    const namespace = options.namespace;
+    if (typeof namespace !== 'string' || namespace.length === 0) {
+      throw new Error(
+        'EmbeddingService.search: options.namespace is required (tenant isolation fail-closed)',
+      );
+    }
     const { embedding } = await this.embed(text, { model: options.model });
-    return this._qdrant.search(this._collection, embedding, options.limit || 10);
+    return this._qdrant.search(this._collection, embedding, options.limit || 10, { namespace });
   }
 
   /** Diagnostic counters. */
