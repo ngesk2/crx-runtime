@@ -21,6 +21,18 @@ from runtime.authorities.embedding_authority import EmbeddingAuthority
 logger = logging.getLogger(__name__)
 
 
+def _require_tenant_id(tenant_id: str) -> str:
+    """Fail-closed tenant guard for every Qdrant read path.
+
+    A missing, empty, or non-string tenant raises before any Qdrant request
+    is issued, so an unscoped query can never execute. Tenant identity is
+    never defaulted or inferred here.
+    """
+    if not isinstance(tenant_id, str) or not tenant_id.strip():
+        raise ValueError("tenant_id is required for tenant-isolated retrieval")
+    return tenant_id.strip()
+
+
 class RetrievalService:
     """Retrieval service for semantic search and context packing."""
     
@@ -54,7 +66,7 @@ class RetrievalService:
         """Embed query text."""
         return self.embedding_model.encode(query).tolist()
     
-    def semantic_search(self, query: str, limit: int = 10, point_type: str = "chunk") -> List[Dict]:
+    def semantic_search(self, query: str, tenant_id: str, limit: int = 10, point_type: str = "chunk") -> List[Dict]:
         """
         Perform semantic search on Qdrant.
         
@@ -67,11 +79,17 @@ class RetrievalService:
             List of search results with scores and payloads
         """
         # Embed query
+        tenant_id = _require_tenant_id(tenant_id)
+
         query_embedding = self.embed_query(query)
         
         # Build filter
         search_filter = Filter(
             must=[
+                FieldCondition(
+                    key="tenant_id",
+                    match=MatchValue(value=tenant_id)
+                ),
                 FieldCondition(
                     key="point_type",
                     match=MatchValue(value=point_type)
@@ -101,7 +119,7 @@ class RetrievalService:
         logger.info(f"Semantic search returned {len(formatted_results)} results")
         return formatted_results
     
-    def metadata_lookup(self, repository: str, path: str) -> Optional[Dict]:
+    def metadata_lookup(self, repository: str, path: str, tenant_id: str) -> Optional[Dict]:
         """
         Lookup metadata for a specific repository file.
         
@@ -112,9 +130,12 @@ class RetrievalService:
         Returns:
             Metadata payload or None
         """
-        # Build filter
+        tenant_id = _require_tenant_id(tenant_id)
+
+        # Build filter: tenant isolation is mandatory
         search_filter = Filter(
             must=[
+                FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id)),
                 FieldCondition(key="repository", match=MatchValue(value=repository)),
                 FieldCondition(key="path", match=MatchValue(value=path)),
                 FieldCondition(key="point_type", match=MatchValue(value="metadata"))
@@ -230,7 +251,7 @@ class RetrievalService:
         
         return citations
     
-    def retrieve(self, query: str, limit: int = 10, verified_only: bool = True, max_tokens: int = 4000) -> Dict:
+    def retrieve(self, query: str, tenant_id: str, limit: int = 10, verified_only: bool = True, max_tokens: int = 4000) -> Dict:
         """
         Complete retrieval pipeline: search, filter, pack context, generate citations.
         
@@ -244,7 +265,8 @@ class RetrievalService:
             Dictionary with context, citations, and metadata
         """
         # Semantic search
-        results = self.semantic_search(query, limit=limit, point_type='chunk')
+        tenant_id = _require_tenant_id(tenant_id)
+        results = self.semantic_search(query, tenant_id, limit=limit, point_type='chunk')
         
         # Authority filter
         if verified_only:
@@ -274,7 +296,7 @@ def main():
     
     # Test retrieval
     query = "What is the constitutional identity law?"
-    result = retriever.retrieve(query, limit=5)
+    result = retriever.retrieve(query, "UNKNOWN", limit=5)
     
     print(f"Query: {result['query']}")
     print(f"Results: {result['result_count']}")
