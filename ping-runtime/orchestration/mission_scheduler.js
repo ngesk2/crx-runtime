@@ -286,10 +286,16 @@ class MissionScheduler {
         // Namespace is set by the bridge from the spine event (always resolved);
         // the 'core::system' default is owned by UnifiedEventRuntime.emit() only.
         namespace: payload.namespace,
+        // LANE B (TenantOS): the mission row's immutable tenant_id (W3) is the
+        // authoritative ownership context for this execution. Workers — including
+        // the Orca/headless-agent adapter — and W4's tenant pin read it from here,
+        // never from payload.namespace (caller-claimed at creation).
+        tenant_id: mission.tenant_id || null,
         mission_id: mission.mission_id,
         payload: payload.payload || payload,
         metadata: {
           mission_type: mission.mission_type,
+          tenant_id: mission.tenant_id || null,
           priority: mission.priority,
           assigned_to: workerName,
           canonical_hash: payload.canonical_hash || null,
