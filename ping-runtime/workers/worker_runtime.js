@@ -65,17 +65,45 @@ class WorkerRuntime {
 
   /**
    * Process a single event through the appropriate worker.
+   *
+   * Fail-closed dispatch receipt (WR fail-closed repair, 2026-09-26).
+   *
+   * The return is a structured receipt carrying OBSERVED routing evidence,
+   * so the coordinator never has to infer a routing fact from a falsy value:
+   *
+   *   { matched: true, worker, routeExists: true, result }
+   *     A registered worker's eventTypes included the event type and its
+   *     handle() settled. `result` is the handler's RAW return value, which
+   *     may be undefined. A falsy `result` is NOT evidence the worker did
+   *     nothing: the handler may have performed an external effect and
+   *     returned nothing. Absence of return value is not evidence of absence
+   *     of effect.
+   *
+   *   { matched: false, worker: null, routeExists: false, result: null }
+   *     EXPLICIT NO-MATCH, observed: no registered worker's eventTypes
+   *     included the event type, so no handler ran.
+   *
+   *   { matched: false, worker: null, routeExists: true, result: null }
+   *     A worker IS registered for the event type but was at maxConcurrent,
+   *     so no handler ran for this dispatch. No effect could have occurred.
+   *
+   * A handler that throws still propagates to the caller (P0-2), unchanged:
+   * an error before proven effect is FAILED per the existing contract.
    */
   async dispatch(event) {
     const eventType = event.event_type;
+    let matched = false;
+    let matchedWorker = null;
+    let routeExists = false;
     let lastResult = null;
-    
+
     // Find workers that handle this event type
     for (const [name, entry] of this._workers) {
       // Workers with empty eventTypes are dormant — they do not match any events.
       // Previously, empty eventTypes was treated as a catch-all (match everything),
       // which meant a dormant worker would silently process all dispatched events.
       if (entry.eventTypes.length > 0 && entry.eventTypes.includes(eventType)) {
+        routeExists = true;
         if (entry.running < entry.maxConcurrent) {
           this._stats.dispatched++;
           entry.running++;
@@ -88,6 +116,8 @@ class WorkerRuntime {
             entry.worker._event = null;
             entry.totalProcessed++;
             this._stats.completed++;
+            matched = true;
+            matchedWorker = name;
           } catch (err) {
             entry.worker._event = null;
             entry.totalFailed++;
@@ -102,7 +132,7 @@ class WorkerRuntime {
         }
       }
     }
-    return lastResult;
+    return { matched, worker: matchedWorker, routeExists, result: lastResult };
   }
 
   /**

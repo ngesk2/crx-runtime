@@ -40,8 +40,10 @@ const { deriveFailureRecord } = require('./failure_record.js');
 // is consumed only for (a) the `assigned_to` label (below) and (b) the
 // registered-worker guard. The scheduler dispatches on the ORIGINAL business
 // event_type (mission.payload.event_type), never mission_type, so a mission
-// whose label-worker does not match the event type yields dispatch() = null →
-// the mission is skipped/failed (phantom-complete prevention), not misrouted.
+// whose label-worker does not match the event type yields a dispatch receipt
+// with matched=false, routeExists=false (EXPLICIT NO_MATCH, observed by
+// WorkerRuntime.dispatch()) → the mission fails terminally with no retry
+// (phantom-complete prevention), not misrouted.
 // Reference: docs/P3_CONTRADICTION_CONVERGENCE_LEDGER.md (audit A).
 const MISSION_WORKER_MAP = {
   // Event pipeline missions
@@ -123,6 +125,7 @@ class MissionScheduler {
       renewals: 0,
       reconciled: 0,
       watchdogScans: 0,
+      unknown: 0, // matched dispatches that returned no result (fail-closed UNKNOWN)
     };
   }
 
@@ -299,24 +302,53 @@ class MissionScheduler {
       // Dispatch to worker — P0-2: throws on worker failure. Bounded by the
       // dispatch timeout: a hung worker yields an UNKNOWN outcome, which the
       // watchdog reconciles as HOLD (never FAILED on timeout).
-      const dispatchResult = await this._dispatchWithTimeout(event);
+      const receipt = await this._dispatchWithTimeout(event);
       this._stats.dispatched++;
 
-      // P0-3: complete() only when worker returns verified ok.
-      // Three outcomes:
-      //   (a) dispatchResult.status === 'failed' → fail the mission (worker reported failure)
-      //   (b) dispatchResult is null/undefined → no worker matched → skip (phantom-complete prevention)
-      //   (c) dispatchResult.status === 'ok' (or truthy without status:'failed') → complete
-      if (dispatchResult && dispatchResult.status === 'failed') {
-        await this._failMission(mission, dispatchResult.error || 'worker returned failed status');
-      } else if (!dispatchResult) {
-        // No worker matched this event type — skip, do not phantom-complete.
-        // This prevents the null-dispatch→complete gap where MISSION_WORKER_MAP maps a
-        // mission type to a worker whose eventTypes don't include the dispatched event.
-        console.log(`[MissionScheduler] No worker matched ${mission.mission_id} (event_type=${event.event_type}) — skipping`);
+      // P0-3 / WR fail-closed repair (2026-09-26): complete() only on
+      // positive completion evidence; the receipt carries observed routing
+      // evidence from WorkerRuntime.dispatch(), so `matched` is true iff a
+      // worker actually ran for this event. Outcomes:
+      //   (a) dispatch threw                        -> FAILED per existing contract (catch below)
+      //   (b) matched=false, routeExists=false       -> EXPLICIT NO_MATCH, observed.
+      //        Terminal fail, NO retry: a retry could never route.
+      //   (c) matched=false, routeExists=true        -> worker at maxConcurrent; no
+      //        handler ran, so no effect could have occurred. fail-with-retry
+      //        preserves the pre-repair behavior for this transient case.
+      //   (d) matched, result.status === 'failed'    -> worker reported failure -> FAILED
+      //   (e) matched, result truthy                 -> SUCCEEDED: positive completion evidence
+      //   (f) matched, result falsy (undefined/null) -> UNKNOWN. Absence of a return
+      //        value is not evidence of absence of effect: the handler may have
+      //        performed an external effect and returned nothing. Reconcile as
+      //        HOLD via the existing unknown-outcome machinery. NEVER auto-retry
+      //        an external effect on ambiguous evidence.
+      //
+      // The pre-repair branch (b) narrated EVERY falsy dispatch as
+      // "no worker matched" and retried it — fabricating a routing fact to
+      // justify redispatching a possibly-effected mission. That inference is
+      // deleted: a falsy dispatch with matched=true is UNKNOWN, not NO_MATCH.
+      const result = receipt && typeof receipt === 'object' ? receipt.result : null;
+      if (!receipt || typeof receipt !== 'object') {
+        // No receipt at all — nothing observed. Fail closed to UNKNOWN.
+        this._stats.unknown++;
+        await this._reconcileUnknown(mission, workerName,
+          `dispatch returned no receipt for event_type=${event.event_type} — outcome unknown`);
+      } else if (!receipt.matched && !receipt.routeExists) {
+        // (b) EXPLICIT NO_MATCH — observed by WorkerRuntime.dispatch(), not inferred.
         this._stats.skipped++;
-        await this._failMission(mission, `no worker matched event_type=${event.event_type}`);
-      } else {
+        await this._failMission(mission,
+          `no worker matched event_type=${event.event_type} (dispatch receipt: matched=false, routeExists=false)`,
+          { max_attempts: 1 });
+      } else if (!receipt.matched) {
+        // (c) Route exists but worker at capacity — no handler ran, no effect possible.
+        this._stats.skipped++;
+        await this._failMission(mission,
+          `worker at max concurrency for event_type=${event.event_type} — no handler ran, safe to retry`);
+      } else if (result && result.status === 'failed') {
+        // (d) Worker reported failure.
+        await this._failMission(mission, result.error || 'worker returned failed status');
+      } else if (result) {
+        // (e) SUCCEEDED — positive completion evidence.
         await this._missionRuntime.complete(mission.mission_id, {
           worker: workerName,
           completed_at: constitutionalTimeAuthority.nowAsISOString(),
@@ -324,6 +356,11 @@ class MissionScheduler {
         this._stats.completed++;
         // Resolved: a future stuck episode for this mission may be reconciled again.
         this._reconciled.delete(mission.mission_id);
+      } else {
+        // (f) UNKNOWN — matched worker returned nothing.
+        this._stats.unknown++;
+        await this._reconcileUnknown(mission, workerName,
+          `worker '${receipt.worker}' matched event_type=${event.event_type} but returned no result — outcome unknown, effect may have occurred`);
       }
     } catch (err) {
       if (err && err.code === 'DISPATCH_TIMEOUT') {
@@ -350,17 +387,23 @@ class MissionScheduler {
    * NOTE: deriveFailureRecord is deliberately NOT wired into this path —
    * held for a human word. Reconciliation records are emitted only by the
    * stuck-running watchdog (_reconcileUnknown) for UNKNOWN outcomes.
+   *
+   * @param {object} [policyOverride] — WR fail-closed repair: replaces the
+   *   retry policy for this failure only. The EXPLICIT NO_MATCH branch passes
+   *   { max_attempts: 1 } so a mission that can never route fails terminally
+   *   on the first failure instead of burning retries.
    */
-  async _failMission(mission, error) {
+  async _failMission(mission, error, policyOverride) {
+    const policy = policyOverride || this._retryPolicy;
     try {
       const retries = await this._missionRuntime.failWithRetry(
         mission.mission_id,
         error,
-        this._retryPolicy,
+        policy,
       );
 
       // P0-5: after exhaustion, route to DLQ
-      if (retries >= this._retryPolicy.max_attempts && this._deadLetterAuthority) {
+      if (retries >= policy.max_attempts && this._deadLetterAuthority) {
         try {
           const payload = typeof mission.payload === 'string'
             ? JSON.parse(mission.payload)
