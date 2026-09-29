@@ -1,0 +1,16 @@
+{
+  "path": "gateway/replay_authority.js",
+  "lines": 320,
+  "authority_score": 80,
+  "replay_score": 90,
+  "dependency_score": 100,
+  "deletion_confidence": 0,
+  "migration_candidate": true,
+  "resurrection_candidate": true,
+  "dependent_modules": 5,
+  "git_commits": 3,
+  "git_churn": 0,
+  "entropy_score": 0,
+  "recommendation": "migrate",
+  "classified_at": "2026-09-21T18:44:00.811Z"
+}

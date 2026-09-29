@@ -1,0 +1,16 @@
+{
+  "path": "gateway/replay_rule_set.js",
+  "lines": 237,
+  "authority_score": 20,
+  "replay_score": 90,
+  "dependency_score": 40,
+  "deletion_confidence": 5,
+  "migration_candidate": false,
+  "resurrection_candidate": true,
+  "dependent_modules": 2,
+  "git_commits": 2,
+  "git_churn": 0,
+  "entropy_score": 4,
+  "recommendation": "keep_dormant",
+  "classified_at": "2026-09-21T18:44:00.811Z"
+}

@@ -40,8 +40,75 @@ OWNER_IDS = {
     "coppersmith-plumbing": "website-business-2f1327c09d622175",
 }
 
+# FYD-037: journal identity. The overlay journal asserts a live-derived
+# identity marker on its base URL (FYD demo journal: GET / -> {"journal":
+# "fyd-demo-journal@<derived>"}; main PING journal: GET /health ->
+# {"journal": "ping-main-journal@<derived>"}). emit() performs exactly one
+# pre-flight GET before POSTing, compares the asserted marker against
+# EXPECTED_OVERLAY_JOURNAL_MARKER, and fails closed with the typed
+# WRONG_JOURNAL error on mismatch OR on an unreadable marker. Zero POSTs
+# happen before this check passes, so a misconfigured FYD_GATEWAY_URL can
+# never silently write an FYD overlay into the wrong journal (2026-09-21
+# incident class). FYD overlays belong in the FYD demo journal: the main
+# PING journal does not accept FYD_SITE_OVERLAY (FL-20260921-231), and its
+# /health journal field is pending the gateway cutover HOLD, so main-mode
+# emits fail closed until that field exists.
+EXPECTED_OVERLAY_JOURNAL_MARKER = os.environ.get(
+    "FYD_EXPECTED_OVERLAY_JOURNAL", "fyd-demo-journal")
+
+
+class WrongJournalError(RuntimeError):
+    """Typed FYD-037 failure: the target journal did not prove the expected
+    overlay-journal identity (marker mismatch or unreadable marker).
+    Always fail closed: never POST, never retry against another journal."""
+
+
+def _journal_marker_ok(asserted, expected):
+    """The derived suffix after '@' is allowed to vary (the journal
+    re-derives it live from its store); the marker name must match."""
+    return (isinstance(asserted, str)
+            and (asserted == expected
+                 or asserted.startswith(expected + "@")))
+
+
+def _preflight_journal():
+    """One pre-flight GET against the target journal's identity endpoint.
+
+    Runs on the Pig via the bridge (the same path as the POST): the
+    journals are Pig-loopback. Raises WrongJournalError on mismatch or on
+    any unreadable marker. Must be called before any POST is attempted.
+    """
+    base = GATEWAY_URL
+    if base.endswith("/events"):
+        base = base[: -len("/events")]
+    expected = EXPECTED_OVERLAY_JOURNAL_MARKER
+    # The main PING journal asserts its identity on /health; the FYD demo
+    # journal asserts on /.
+    probe_url = base.rstrip("/") + (
+        "/health" if expected.startswith("ping-main-journal") else "/")
+    pig_cmd = "curl -s -m 20 '%s'; ec=$?; echo; exit $ec" % probe_url
+    p = subprocess.run([BRIDGE, pig_cmd], stdin=subprocess.DEVNULL,
+                       capture_output=True, text=True, timeout=60)
+    out = (p.stdout or "").strip()
+    if p.returncode != 0:
+        raise WrongJournalError(
+            "WRONG_JOURNAL: journal identity unreadable at %s "
+            "(pre-flight GET failed, rc=%d)" % (probe_url, p.returncode))
+    try:
+        doc = json.loads(out)
+    except Exception:
+        raise WrongJournalError(
+            "WRONG_JOURNAL: journal identity unreadable at %s "
+            "(non-JSON response)" % probe_url)
+    asserted = doc.get("journal") if isinstance(doc, dict) else None
+    if not _journal_marker_ok(asserted, expected):
+        raise WrongJournalError(
+            "WRONG_JOURNAL: expected overlay journal marker %r at %s, "
+            "got %r" % (expected, probe_url, asserted))
+
 
 def emit(site, ops):
+    _preflight_journal()  # FYD-037: fail closed before any POST.
     envelope = {
         "event_type": EVENT_TYPE,
         "aggregate_id": "fyd-site:" + site,
@@ -117,6 +184,16 @@ def add_service_ops(site, title, desc):
 
 
 def main(argv):
+    try:
+        return _main(argv)
+    except WrongJournalError as e:
+        # FYD-037: typed fail-closed. The message names the expected marker
+        # and what the journal asserted, so the misconfiguration is visible.
+        sys.stderr.write("%s\n" % e)
+        return 3
+
+
+def _main(argv):
     if len(argv) == 5 and argv[1] == "--add-service":
         site, title, desc = argv[2], argv[3], argv[4]
         if site not in OWNER_IDS:

@@ -1,0 +1,16 @@
+{
+  "path": "gateway/test_social_ingest_adapter.js",
+  "lines": 176,
+  "authority_score": 50,
+  "replay_score": 30,
+  "dependency_score": 0,
+  "deletion_confidence": 35,
+  "migration_candidate": false,
+  "resurrection_candidate": true,
+  "dependent_modules": 0,
+  "git_commits": 1,
+  "git_churn": 1,
+  "entropy_score": 0,
+  "recommendation": "keep_dormant",
+  "classified_at": "2026-09-21T18:44:00.811Z"
+}

@@ -1,0 +1,16 @@
+{
+  "path": "gateway/github_snapshot.js",
+  "lines": 437,
+  "authority_score": 20,
+  "replay_score": 10,
+  "dependency_score": 80,
+  "deletion_confidence": 14,
+  "migration_candidate": false,
+  "resurrection_candidate": true,
+  "dependent_modules": 4,
+  "git_commits": 4,
+  "git_churn": 0,
+  "entropy_score": 0,
+  "recommendation": "keep_dormant",
+  "classified_at": "2026-09-21T18:44:00.811Z"
+}

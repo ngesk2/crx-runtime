@@ -77,6 +77,9 @@ class MissionRuntime {
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64);
       UPDATE ping_missions SET tenant_id = 'UNKNOWN' WHERE tenant_id IS NULL;
       CREATE INDEX IF NOT EXISTS idx_pm_tenant_id ON ping_missions(tenant_id);
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS hold_at TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS hold_reason TEXT;
+      CREATE INDEX IF NOT EXISTS idx_pm_hold_at ON ping_missions(hold_at);
     `);
   }
 
@@ -145,7 +148,7 @@ class MissionRuntime {
    */
   async assign(missionId, workerName) {
     const result = await this._pool.query(
-      `UPDATE ping_missions SET status = 'assigned', assigned_to = $1, claimed_at = NOW(), lease_until = NOW() + INTERVAL '60 seconds' WHERE mission_id = $2 AND status = 'created' RETURNING mission_id`,
+      `UPDATE ping_missions SET status = 'assigned', assigned_to = $1, claimed_at = NOW(), lease_until = NOW() + INTERVAL '60 seconds' WHERE mission_id = $2 AND status = 'created' AND hold_at IS NULL RETURNING mission_id`,
       [workerName, missionId]
     );
 
@@ -183,8 +186,21 @@ class MissionRuntime {
   /**
    * Complete a mission.
    *
-   * Conditional: only transitions from 'running' to 'completed'. A mission
-   * that is failed, retry_pending, or already completed is never overwritten.
+   * Conditional: transitions from 'running' to 'completed', and also
+   * completes a HELD mission in a holdable non-running status ('assigned',
+   * 'created'). A mission that is failed, retry_pending, or already
+   * completed is never overwritten, and a mission whose hold was already
+   * resolved is not touched by the held-row disjunct.
+   *
+   * E3 H3 repair (2026-09-27): the held-row disjunct lets a late worker ack
+   * land on a mission the C1-recovery path re-held as 'created' (or held in
+   * 'assigned'). Without it the ack matched 0 rows and the hold was
+   * permanent by construction: the held-resolution sweep only resolves
+   * status='completed' rows. `hold_at IS NOT NULL` scopes the disjunct to
+   * the live hold episode (only resolveHold clears hold_at), so a stale ack
+   * can never complete a mission an operator already released: after
+   * PROVEN_NOT_OCCURRED the row is 'created' with hold_at NULL and the ack
+   * still matches 0 rows, exactly as before.
    */
   async complete(missionId, result = {}) {
     // Calculate duration from started_at
@@ -200,7 +216,7 @@ class MissionRuntime {
     } catch (_) {}
 
     const updateResult = await this._pool.query(
-      `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2 AND status = 'running'`,
+      `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2 AND (status = 'running' OR (hold_at IS NOT NULL AND status IN ('assigned', 'created')))`,
       [JSON.stringify({ ...result, duration_ms }), missionId]
     );
 
@@ -326,6 +342,12 @@ class MissionRuntime {
    * scheduler (orphans from crashed schedulers or stuck workers beyond the
    * lease renewal window).
    *
+   * HOLD CONSTITUTIONAL (locked 2026-09-27): missions with hold_at IS NOT
+   * NULL are NEVER reclaimed. A lease expiring is evidence that ownership of
+   * execution became stale — it is not evidence that an external effect did
+   * not occur. UNKNOWN EFFECT -> HOLD -> RECONCILE -> NEVER LEASE-EXPIRY
+   * REDISPATCH. Only the reconciler moves a mission out of HOLD (resolveHold).
+   *
    * @returns {Promise<number>} count of reclaimed missions
    */
   async reapExpiredLeases() {
@@ -335,6 +357,7 @@ class MissionRuntime {
        WHERE status IN ('running', 'assigned')
          AND lease_until IS NOT NULL
          AND lease_until < NOW()
+         AND hold_at IS NULL
        RETURNING mission_id`
     );
 
@@ -351,6 +374,105 @@ class MissionRuntime {
     }
 
     return reclaimed;
+  }
+
+  /**
+   * Mark a mission HOLD — durable record of an unknown-outcome reconciliation.
+   *
+   * Written by the reconciler (MissionScheduler._reconcileUnknown) when an
+   * attempt's outcome is UNKNOWN (dispatch timeout, no result, stuck worker).
+   * Sets hold_at, which makes the mission non-dispatchable across the whole
+   * dispatch-eligibility surface: reapExpiredLeases, reclaimRetryPending,
+   * getPending and assign all exclude held missions.
+   *
+   * Conditional and idempotent: only matches un-held rows in a holdable
+   * status. HOLD is an overlay on dispatch eligibility, not a lifecycle
+   * status — the row keeps its status. HOLD's meaning is unchanged
+   * (UNKNOWN EFFECT -> HOLD -> RECONCILE); this only makes the record durable
+   * so the reaper can honor it.
+   *
+   * E2 RACE REPAIR (2026-09-27): the holdable statuses include 'created' so
+   * the hold still lands when reapExpiredLeases() won the commit race and
+   * already reclaimed the row to 'created' before this UPDATE ran. Without
+   * this, the reaper-wins interleaving matched 0 rows and the mission was
+   * silently re-dispatched (C1 falsification). markHold remains the ONLY
+   * writer of hold_at.
+   *
+   * @returns {Promise<number>} 1 if the hold was recorded, 0 if already held or not holdable
+   */
+  async markHold(missionId, reason) {
+    const result = await this._pool.query(
+      `UPDATE ping_missions SET hold_at = NOW(), hold_reason = $2
+       WHERE mission_id = $1 AND status IN ('running', 'assigned', 'created') AND hold_at IS NULL`,
+      [missionId, reason || null]
+    );
+    return result.rowCount || 0;
+  }
+
+  /**
+   * Resolve a HOLD — the ONLY way a mission leaves HOLD.
+   *
+   * Owned by the reconciler. Callers: the reconciler's held-resolution sweep
+   * (MissionScheduler.reconcileHeldMissions) for PROVEN_OCCURRED, and
+   * operator/external-verifier callers holding genuine proof for
+   * PROVEN_NOT_OCCURRED / MANUAL_RESOLUTION. Resolutions (anything else
+   * throws, fail closed):
+   *   PROVEN_OCCURRED     — the external effect did occur: adopt the durable
+   *                         result and move to 'completed'. Never re-dispatches.
+   *   PROVEN_NOT_OCCURRED — the effect provably did not occur: clear the hold
+   *                         and return to 'created' for exactly one new safe
+   *                         attempt through the normal conditional claim. All
+   *                         attempt-clock fields are reset (started_at,
+   *                         claimed_at, lease_until, assigned_to, retry_at):
+   *                         without the started_at reset, findStuckRunning's
+   *                         COALESCE(started_at, claimed_at, created_at) would
+   *                         flag the freshly re-claimed mission as stuck on
+   *                         the stale started_at and spuriously re-hold it
+   *                         (E2 STARTED_AT repair).
+   *   MANUAL_RESOLUTION   — operator-determined terminal state; recorded in
+   *                         result, never re-dispatched.
+   * Each branch is conditional on hold_at IS NOT NULL: resolving a mission
+   * that is not held is a no-op. Emits no events: the reconciler's own
+   * MISSION_RECONCILE_HOLD record plus its resolution record are the evidence
+   * trail; the row state is the dispatch-eligibility truth.
+   *
+   * HOLD LIFECYCLE: UNKNOWN EFFECT -> markHold (durable) ->
+   * MISSION_RECONCILE_HOLD -> held (invisible to reaper/reclaim/pending/
+   * assign/watchdog) -> resolveHold -> terminal, or exactly one new attempt.
+   *
+   * @returns {Promise<number>} 1 if a hold was resolved, 0 if the mission was not held
+   */
+  async resolveHold(missionId, resolution, result = {}) {
+    if (!['PROVEN_OCCURRED', 'PROVEN_NOT_OCCURRED', 'MANUAL_RESOLUTION'].includes(resolution)) {
+      throw new Error(`MissionRuntime.resolveHold: unknown resolution '${resolution}' (fail closed)`);
+    }
+    let sql;
+    let params;
+    if (resolution === 'PROVEN_OCCURRED') {
+      sql = `UPDATE ping_missions SET hold_at = NULL, hold_reason = NULL, status = 'completed',
+               result = $2, completed_at = NOW()
+             WHERE mission_id = $1 AND hold_at IS NOT NULL`;
+      params = [missionId, JSON.stringify({ ...result, hold_resolution: resolution })];
+    } else if (resolution === 'PROVEN_NOT_OCCURRED') {
+      // E2 STARTED_AT repair: started_at is an attempt-clock field. Without
+      // this reset, findStuckRunning's COALESCE(started_at, claimed_at,
+      // created_at) outranks the fresh claimed_at with the stale started_at,
+      // so the freshly re-claimed mission is immediately re-flagged stuck
+      // and spuriously re-held. The retries counter is deliberately NOT
+      // reset (F-01: retries stay bounded toward exhaustion).
+      sql = `UPDATE ping_missions SET hold_at = NULL, hold_reason = NULL, status = 'created',
+               assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NULL,
+               started_at = NULL
+             WHERE mission_id = $1 AND hold_at IS NOT NULL`;
+      params = [missionId];
+    } else {
+      sql = `UPDATE ping_missions SET hold_at = NULL, hold_reason = NULL, status = 'completed',
+               result = $2, completed_at = NOW()
+             WHERE mission_id = $1 AND hold_at IS NOT NULL`;
+      params = [missionId, JSON.stringify({ ...result, hold_resolution: resolution, manual: true })];
+    }
+    const r = await this._pool.query(sql, params);
+    return r.rowCount || 0;
   }
 
   /**
@@ -371,6 +493,7 @@ class MissionRuntime {
        WHERE status = 'retry_pending'
          AND retry_at IS NOT NULL
          AND retry_at <= NOW()
+         AND hold_at IS NULL
        RETURNING mission_id`
     );
 
@@ -405,8 +528,47 @@ class MissionRuntime {
       `SELECT * FROM ping_missions
        WHERE status IN ('running', 'assigned')
          AND COALESCE(started_at, claimed_at, created_at) < $1
+         AND hold_at IS NULL
        ORDER BY created_at ASC`,
       [olderThanIso]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Point-read a mission row by id — no state change.
+   *
+   * Used by the reconciler's race-recovery path (_reconcileUnknown): when
+   * markHold affects 0 rows, the reconciler re-reads the row to handle its
+   * ACTUAL state instead of acting on a stale snapshot. Read-only; never
+   * moves a mission.
+   *
+   * @returns {Promise<object|null>} the mission row, or null if absent
+   */
+  async getMission(missionId) {
+    const result = await this._pool.query(
+      `SELECT * FROM ping_missions WHERE mission_id = $1`,
+      [missionId]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Find held missions — feeds the reconciler's held-resolution sweep.
+   *
+   * Returns missions with hold_at IS NOT NULL, oldest hold first. Held
+   * missions are invisible to every dispatch-eligibility path (reap, reclaim,
+   * pending, assign, watchdog); this is the reconciler's work list for
+   * proving outcomes and resolving holds via resolveHold — the ONLY exit
+   * from HOLD.
+   *
+   * @param {number} [limit] — max rows (default 100)
+   * @returns {Promise<object[]>} held mission rows
+   */
+  async findHeld(limit = 100) {
+    const result = await this._pool.query(
+      `SELECT * FROM ping_missions WHERE hold_at IS NOT NULL ORDER BY hold_at ASC LIMIT $1`,
+      [limit]
     );
     return result.rows;
   }
@@ -420,12 +582,17 @@ class MissionRuntime {
    * the conditional claim (assign → start), so every attempt is counted and
    * retries stay bounded. Dispatching retry_pending rows directly bypassed
    * the claim guard and froze the retry counter — the F-01 infinite loop.
+   *
+   * HOLD CONSTITUTIONAL (locked 2026-09-27): held missions (hold_at IS NOT
+   * NULL) are never pending, even if a row ever sits in 'created' with a
+   * hold. Only resolveHold clears the hold.
    */
   async getPending(limit = 10, tenantId = null) {
     if (tenantId === null) {
       const result = await this._pool.query(
         `SELECT * FROM ping_missions
          WHERE status = 'created'
+           AND hold_at IS NULL
          ORDER BY priority DESC, created_at ASC LIMIT $1`,
         [limit]
       );
@@ -435,6 +602,7 @@ class MissionRuntime {
     const result = await this._pool.query(
       `SELECT * FROM ping_missions
        WHERE status = 'created' AND tenant_id = $2
+         AND hold_at IS NULL
        ORDER BY priority DESC, created_at ASC LIMIT $1`,
       [limit, tenant]
     );

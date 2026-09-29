@@ -1,0 +1,16 @@
+{
+  "path": "runtime/constitutional/dist/identity-authority.js",
+  "lines": 109,
+  "authority_score": 80,
+  "replay_score": 60,
+  "dependency_score": 80,
+  "deletion_confidence": 2,
+  "migration_candidate": true,
+  "resurrection_candidate": true,
+  "dependent_modules": 4,
+  "git_commits": 0,
+  "git_churn": 0,
+  "entropy_score": 0,
+  "recommendation": "migrate",
+  "classified_at": "2026-09-21T18:44:00.811Z"
+}
