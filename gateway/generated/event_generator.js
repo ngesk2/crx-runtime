@@ -337,6 +337,22 @@ class EventGenerator {
       // record per CLAIM_CREATED through the canonical event mechanism.
       // Shadow-only: zero execution authority.
       { event_type: 'JEV_DECISION_EVALUATED', authority_owner: 'JevShadowWorker', event_class: 'inference' },
+      // Human-approval vocabulary (forensics fix 2026-09-30, "forensics fix it"
+      // item 3): the durable operator-approval record. There is NO
+      // ApprovalAuthority by design (NONE-BY-DESIGN) — the human operator is
+      // the approval authority by standing directive; these types are
+      // vocabulary on the existing spine, emitted through
+      // UnifiedEventRuntime.emit by ping-runtime/approval/approval_events.js.
+      // No EFFECT_* types: zero EFFECT_* vocabulary exists in the runtime, so
+      // the effect lifecycle is design-only; no events are invented for it.
+      { event_type: 'PROPOSED_ACTION', authority_owner: 'Operator', event_class: 'decision' },
+      { event_type: 'ACTION_APPROVED', authority_owner: 'Operator', event_class: 'decision' },
+      { event_type: 'REJECTED', authority_owner: 'Operator', event_class: 'decision' },
+      // Bounded analysis behaviors (forensics fix 2026-09-30, item 5): worker
+      // behaviors, not authorities. authority_owner names the emitting
+      // behavior (worker precedent: ClaimWorker, LineageWorker) — it does not
+      // declare a new authority. Detection surfaces; it never decides.
+      { event_type: 'CONTRADICTION_SURFACED', authority_owner: 'ContradictionDetector', event_class: 'inference' },
     ];
 
     return pipelineEvents.map(e => ({

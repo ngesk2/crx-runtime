@@ -2,10 +2,42 @@
   "schema_version": "1.0.0",
   "generator": "EventGenerator",
   "generator_version": "1.0.0",
-  "generated_at": "2026-09-23T02:11:30.716Z",
-  "count": 235,
-  "hash": "487331b7eabdbfd8dd67bc9bc2609bb83fd6f77c8cb9daf91c4c133550820d7c",
+  "generated_at": "2026-09-30T17:41:50.108Z",
+  "count": 239,
+  "hash": "58ec6795710302c327e83eb6d84537f032542f202754932d22a5641903fa2941",
   "events": [
+    {
+      "event_type": "ACTION_APPROVED",
+      "schema_version": "1.0.0",
+      "authority_owner": "Operator",
+      "event_class": "decision",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
     {
       "event_type": "AI_RESPONSE_ACCEPTED",
       "schema_version": "1.0.0",
@@ -1087,6 +1119,38 @@
       "schema_version": "1.0.0",
       "authority_owner": "ContextAuthority",
       "event_class": "system",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "CONTRADICTION_SURFACED",
+      "schema_version": "1.0.0",
+      "authority_owner": "ContradictionDetector",
+      "event_class": "inference",
       "payload_schema": {
         "type": "object",
         "properties": {
@@ -4651,6 +4715,38 @@
       "source_file": "authorities/registry.yaml"
     },
     {
+      "event_type": "PROPOSED_ACTION",
+      "schema_version": "1.0.0",
+      "authority_owner": "Operator",
+      "event_class": "decision",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
       "event_type": "query.completed",
       "schema_version": "1.0.0",
       "authority_owner": "QueryAuthority",
@@ -4839,6 +4935,38 @@
       "schema_version": "1.0.0",
       "authority_owner": "RecommendationWorker",
       "event_class": "inference",
+      "payload_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "metadata_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "compatibility": "backward",
+      "source": "production",
+      "source_file": "database/fix_pipeline_blockers.sql"
+    },
+    {
+      "event_type": "REJECTED",
+      "schema_version": "1.0.0",
+      "authority_owner": "Operator",
+      "event_class": "decision",
       "payload_schema": {
         "type": "object",
         "properties": {

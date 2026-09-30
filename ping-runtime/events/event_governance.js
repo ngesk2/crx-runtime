@@ -65,6 +65,16 @@ const NAMESPACE_OWNERS = {
   knowledge: 'PING',
   object: 'PING',
 
+  // Human-approval + analysis vocabularies (forensics fix 2026-09-30):
+  // PROPOSED_ACTION -> 'proposed', ACTION_APPROVED -> 'action',
+  // REJECTED -> 'rejected', CONTRADICTION_SURFACED -> 'contradiction'.
+  // Owned by PING (the spine); the human operator is the approval
+  // authority by standing directive — no ApprovalAuthority exists.
+  proposed: 'PING',
+  action: 'PING',
+  rejected: 'PING',
+  contradiction: 'PING',
+
   // Business namespaces
   customer: 'HPP',
   review: 'HPP',
