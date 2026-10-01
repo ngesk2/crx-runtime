@@ -92,11 +92,26 @@ class JevShadowWorker extends BaseWorker {
       evaluatedAt: constitutionalTimeAuthority.nowAsISOString(),
     };
 
-    await this._emit(JEV_DECISION_EVALUATED, record, {
-      causation_id: event.event_id,
-    });
+    // Shadow-failure isolation (JEV-TRACE 2026-10-01): the shadow observation
+    // must never fail the parent mission. BaseWorker._emit throws on any emit
+    // rejection (e.g. governance defines no owner for the derived jev
+    // namespace), and WorkerRuntime.dispatch propagates a worker throw into
+    // the mission failure path. Per this worker's contract (ZERO execution
+    // authority; the canonical pipeline is never altered), an emit failure is
+    // recorded here as a visible SHADOW FAILURE on the returned result. The
+    // primary result stands; the mission completes on the primary worker's
+    // outcome.
+    let shadowEmit = { persisted: true, error: null };
+    try {
+      await this._emit(JEV_DECISION_EVALUATED, record, {
+        causation_id: event.event_id,
+      });
+    } catch (err) {
+      shadowEmit = { persisted: false, error: err.message };
+      console.error(`[JevShadowWorker] SHADOW FAILURE: emit ${JEV_DECISION_EVALUATED} failed (${err.message}); primary mission unaffected`);
+    }
 
-    return { status: 'ok', record };
+    return { status: 'ok', record, shadowEmit };
   }
 }
 
