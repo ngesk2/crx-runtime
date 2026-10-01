@@ -1,0 +1,49 @@
+name: Weekly Certification (adversarial + schema)
+
+on:
+  schedule:
+    - cron: '0 9 * * 0'   # Sunday 03:00 MDT
+  workflow_dispatch:
+
+jobs:
+  schemathesis-gate:
+    name: Schemathesis (only if gateway OpenAPI exists)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for a trustworthy gateway OpenAPI spec
+        id: spec
+        run: |
+          SPEC=$(find gateway -maxdepth 3 -iname 'openapi*.yaml' -o -iname 'openapi*.json' | grep -v node_modules | head -1 || true)
+          if [ -z "$SPEC" ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "NO GATEWAY OPENAPI SPEC FOUND (2026-09-30): Schemathesis tier stays PENDING. No spec will be reverse-engineered into a fake contract."
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "spec=$SPEC" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.spec.outputs.found == 'true'
+        with: { python-version: '3.13' }
+      - name: Run Schemathesis 4.24.x against the gateway spec
+        if: steps.spec.outputs.found == 'true'
+        run: |
+          pip install "schemathesis==4.24.*"
+          st run "${{ steps.spec.outputs.spec }}" --base-url http://localhost:3000 --checks all
+
+  adversarial:
+    name: Adversarial convergence review input
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Regression ledger summary (knowledge compounding check)
+        run: node tests/tools/regression_cli.js list
+        working-directory: .
+      - name: JEV shadow triage self-test
+        run: npm run test:nightly:selftest
+        working-directory: tests

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://stryker-mutator.io/schema/stryker-schema.json",
+  "_comment": "StrykerJS 10 trial, scoped to ONE small constitutional target (namespace_binding.js). Do NOT run stryker directly: the sandbox breaks the test files' ../../ping-runtime requires from tests/, and chokes on worktree symlinks from the repo root. Use npm run mutation:trial, which builds a minimal isolated copy preserving the tests/ + ping-runtime/ layout (tests/_scripts/mutation_trial.sh). command test runner because no Stryker node:test runner exists. Survivors are test-strength findings, not product defects, unless the mutant models a real attack. 2026-09-30 trial: 66/66 killed after survivor-driven test additions.",
+  "commandRunner": {
+    "command": "node --test tests/unit/namespace_binding.test.js tests/unit/grant_validation.test.js"
+  },
+  "concurrency": "50%",
+  "coverageAnalysis": "off",
+  "mutate": [
+    "ping-runtime/canonicalization/namespace_binding.js"
+  ],
+  "packageManager": "npm",
+  "reporters": [
+    "clear-text",
+    "html"
+  ],
+  "testRunner": "command",
+  "thresholds": {
+    "break": 0,
+    "high": 80,
+    "low": 60
+  },
+  "timeoutMS": 120000
+}

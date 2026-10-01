@@ -1,0 +1,14 @@
+{
+  "regression_id": "BUG-0004-model-mission-lifecycle",
+  "property": "model.mission-lifecycle",
+  "seed": 20260942,
+  "path": "13",
+  "ping_commit": "217294506b57b45598e0cd220d3137cfec346866",
+  "minimal_counterexample": "[[{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{__proto__:null,\"op\":\"create\",\"tenant\":\"acme\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":2},{\"op\":\"complete\"},{__proto__:null,\"op\":\"fail\"},{\"op\":\"fail\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:C\"},{\"op\":\"failWithRetry\",\"maxAttempts\":1},{\"op\":\"start\"},{\"op\":\"failWithRetry\",\"maxAttempts\":4},{\"op\":\"create\",\"tenant\":\"hpp\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:A\"},{__proto__:null,\"op\":\"create\",\"tenant\":\"hpp\"}]]",
+  "expected_invariant": "terminal remains terminal; claims exclusive; retries bounded+monotonic; every transition emits evidence",
+  "original_failure": "Property failed after 14 tests\n{ seed: 20260942, path: \"13\", endOnFailure: true }\nCounterexample: [[{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{__proto__:null,\"op\":\"create\",\"tenant\":\"acme\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":2},{\"op\":\"complete\"},{__proto__:null,\"op\":\"fail\"},{\"op\":\"fail\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:C\"},{\"op\":\"failWithRetry\",\"maxAttempts\":1},{\"op\":\"start\"},{\"op\":\"failWithRetry\",\"maxAttempts\":4},{\"op\":\"create\",\"tenant\":\"hpp\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:A\"},{__proto__:null,\"op\":\"create\",\"tenant\":\"hpp\"}]]\nShrunk 0 time(s)\n\nHint: Enable verbose mode in order to have the list of all failing values encountered during the run",
+  "test_owner": "ping-constitutional-ladder",
+  "recorded_at": "2026-10-01T00:59:06.679Z",
+  "status": "fixed",
+  "resolution": "Test-harness bug, not a product bug: the global invariant checked the stale model entry after create rebound missionId. Fixed in the test 2026-09-30; product MissionRuntime behavior was correct throughout."
+}

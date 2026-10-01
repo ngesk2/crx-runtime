@@ -1,0 +1,14 @@
+{
+  "regression_id": "BUG-0005-model-mission-lifecycle",
+  "property": "model.mission-lifecycle",
+  "seed": 20260942,
+  "path": "51",
+  "ping_commit": "217294506b57b45598e0cd220d3137cfec346866",
+  "minimal_counterexample": "[[{\"op\":\"failWithRetry\",\"maxAttempts\":3},{\"op\":\"fail\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{\"op\":\"assign\",\"worker\":\"worker:C\"},{\"op\":\"create\",\"tenant\":\"hpp\"},{\"op\":\"complete\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":1},{\"op\":\"create\",\"tenant\":\"acme\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{\"op\":\"complete\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":3},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":1},{__proto__:null,\"op\":\"fail\"},{\"op\":\"create\",\"tenant\":\"acme\"}]]",
+  "expected_invariant": "terminal remains terminal; claims exclusive; retries bounded+monotonic; every transition emits evidence",
+  "original_failure": "Property failed after 52 tests\n{ seed: 20260942, path: \"51\", endOnFailure: true }\nCounterexample: [[{\"op\":\"failWithRetry\",\"maxAttempts\":3},{\"op\":\"fail\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{\"op\":\"assign\",\"worker\":\"worker:C\"},{\"op\":\"create\",\"tenant\":\"hpp\"},{\"op\":\"complete\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":1},{\"op\":\"create\",\"tenant\":\"acme\"},{__proto__:null,\"op\":\"assign\",\"worker\":\"worker:B\"},{\"op\":\"complete\"},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":3},{__proto__:null,\"op\":\"failWithRetry\",\"maxAttempts\":1},{__proto__:null,\"op\":\"fail\"},{\"op\":\"create\",\"tenant\":\"acme\"}]]\nShrunk 0 time(s)\n\nHint: Enable verbose mode in order to have the list of all failing values encountered during the run",
+  "test_owner": "ping-constitutional-ladder",
+  "recorded_at": "2026-10-01T01:00:54.947Z",
+  "status": "fixed",
+  "resolution": "Test-harness bug, not a product bug: on exhaustion the model set retries=maxAttempts but the runtime stores retries=nextRetry (per-call max_attempts; counter can exceed it). Fixed in the test 2026-09-30."
+}

@@ -1,0 +1,33 @@
+{
+  "description": "PING constitutional test ladder T0-T9: static/unit/property/metamorphic/model/integration/replay/mutation over the existing PING semantic owners. No new testing authorities, stores, or frameworks.",
+  "devDependencies": {
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/html-reporter": "3.1.0",
+    "fast-check": "4.9.0",
+    "pg": "8.17.2"
+  },
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "name": "ping-constitutional-ladder",
+  "private": true,
+  "scripts": {
+    "causal-debug": "node tools/ping-causal-debug.js",
+    "jev:triage": "node nightly/jev_shadow_triage.js",
+    "ladder:deep": "npm run test:property:deep && npm run test:metamorphic:deep && npm run test:model && npm run test:replay:full",
+    "ladder:pr": "bash _scripts/ladder_pr.sh",
+    "mutation:trial": "bash _scripts/mutation_trial.sh",
+    "test:metamorphic:deep": "LADDER_DEEP=1 node --test metamorphic/*.test.js",
+    "test:metamorphic:pr": "node --test metamorphic/*.test.js",
+    "test:model": "node --test model/*.test.js",
+    "test:nightly:selftest": "node --test nightly/*.test.js",
+    "test:property:deep": "LADDER_DEEP=1 node --test properties/*.test.js",
+    "test:property:pr": "node --test properties/*.test.js",
+    "test:python": "python3 -m pytest python/ -q",
+    "test:replay": "node replay/corpus_verify.js && node --test replay/*.test.js",
+    "test:replay:full": "node replay/corpus_verify.js && node --test replay/*.test.js && node replay/run_certification_js.js",
+    "test:static": "node _scripts/static_check.js",
+    "test:unit": "node --test unit/*.test.js"
+  },
+  "version": "1.0.0"
+}

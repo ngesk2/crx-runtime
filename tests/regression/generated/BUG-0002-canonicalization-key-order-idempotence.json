@@ -1,0 +1,25 @@
+{
+  "regression_id": "BUG-0002-canonicalization-key-order-idempotence",
+  "property": "canonicalization.key-order-idempotence",
+  "seed": 20260930,
+  "path": "0",
+  "ping_commit": "217294506b57b45598e0cd220d3137cfec346866",
+  "minimal_counterexample": [
+    {
+      "b": [
+        [
+          false,
+          512988,
+          false
+        ]
+      ],
+      "label": "rR@gNb$\""
+    },
+    601667575
+  ],
+  "expected_invariant": "canonical(x)==canonical(key-permuted(x)) and canonical(x)==canonical(deserialize(canonical(x)))",
+  "original_failure": "Property failed after 1 tests\n{ seed: 20260930, path: \"0\", endOnFailure: true }\nCounterexample: [{\"b\":[[false,512988,false]],\"label\":\"rR@gNb$\\\"\"},601667575]\nShrunk 0 time(s)\n\nHint: Enable verbose mode in order to have the list of all failing values encountered during the run",
+  "test_owner": "ping-constitutional-ladder",
+  "recorded_at": "2026-10-01T00:50:53.371Z",
+  "status": "open"
+}

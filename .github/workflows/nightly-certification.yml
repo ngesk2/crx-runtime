@@ -1,0 +1,110 @@
+name: Nightly Certification Ladder (deep)
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 02:00 MDT daily
+  workflow_dispatch:
+
+jobs:
+  deep-ladder:
+    name: T0-T5 deep + replay full
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: crx_runtime
+          POSTGRES_USER: crx_user
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      LADDER_DEEP: '1'
+      PING_TEST_PG: '1'
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: crx_runtime
+      POSTGRES_USER: crx_user
+      POSTGRES_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.13' }
+      - name: Install deps
+        run: npm install
+        working-directory: tests
+      - name: Install python deps
+        run: pip install hypothesis pytest pg8000 || pip install hypothesis pytest
+      - name: T0 static
+        run: npm run test:static
+        working-directory: tests
+      - name: T1 unit
+        run: npm run test:unit
+        working-directory: tests
+      - name: T2+T3+T5 deep (LADDER_DEEP=1)
+        run: npm run ladder:deep
+        working-directory: tests
+      - name: T4 replay full (certification js runners + corpus)
+        run: npm run test:replay:full
+        working-directory: tests
+      - name: T6 integration (real postgres, throwaway schema)
+        run: npm run test:integration
+        working-directory: tests
+      - name: JEV shadow triage self-test
+        run: npm run test:nightly:selftest
+        working-directory: tests
+      - name: Upload regression ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-ledger-nightly
+          path: tests/regression/generated/BUG-*.json
+
+  mutation-trial:
+    name: Stryker trial (namespace_binding only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Run Stryker trial on the single small constitutional target
+        run: npm run mutation:trial
+        working-directory: tests
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stryker-trial-report
+          path: tests/reports/mutation/
+
+  jev-live-triage:
+    name: JEV live shadow triage (budget 30, shadow only)
+    runs-on: ubuntu-latest
+    needs: deep-ladder
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect failures from regression ledger
+        run: |
+          node -e "const fs=require('fs');const d='tests/regression/generated';const rs=fs.readdirSync(d).filter(f=>f.endsWith('.json')&&!f.includes('BUG-0000')).map(f=>JSON.parse(fs.readFileSync(d+'/'+f,'utf8')));fs.writeFileSync('/tmp/failures.json',JSON.stringify(rs));console.log(rs.length+' failures to triage')"
+      - name: Run live shadow triage (JEV judges; nothing is marked fixed)
+        run: |
+          if [ "$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/failures.json','utf8')).length)")" -gt 0 ]; then
+            node tests/nightly/jev_shadow_triage.js --live /tmp/failures.json ambiguity-triage || echo "live triage unavailable: $(date -u +%FT%TZ)"
+          else
+            echo "no failures to triage: shadow lane idle"
+          fi
+      - name: Upload shadow judgments
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jev-shadow-judgments
+          path: tests/nightly/triage-*.jsonl

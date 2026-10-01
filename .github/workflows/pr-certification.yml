@@ -1,0 +1,123 @@
+# NOTE 2026-09-30: test tiers have NO needs: chains on purpose. The
+# BUG-0001 regression pins fail by design while the bug is open; chaining
+# would hide every downstream tier behind that one known failure.
+name: PR Certification Ladder (T0-T4 fast)
+
+on:
+  pull_request:
+    paths:
+      - 'ping-runtime/**'
+      - 'gateway/replay/**'
+      - 'runtime/kernel/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+  workflow_dispatch:
+
+jobs:
+  static:
+    name: T0 static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Run static checks
+        run: node tests/_scripts/static_check.js
+        working-directory: tests
+
+  unit:
+    name: T1 unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Run unit tests
+        run: npm run test:unit
+        working-directory: tests
+
+  property:
+    name: T2 property (PR budget)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Run property tests (PR budget, fixed seeds)
+        run: npm run test:property:pr
+        working-directory: tests
+
+  metamorphic:
+    name: T3 metamorphic (PR budget)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Run metamorphic tests (PR budget, fixed seeds)
+        run: npm run test:metamorphic:pr
+        working-directory: tests
+
+  model:
+    name: T5 state model
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Run mission lifecycle model
+        run: npm run test:model
+        working-directory: tests
+
+  replay:
+    name: T4 replay corpus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install test deps
+        run: npm install
+        working-directory: tests
+      - name: Verify golden replay corpus
+        run: npm run test:replay
+        working-directory: tests
+
+  jev-selftest:
+    name: JEV shadow seam self-test (stub)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Run JEV shadow triage self-test
+        run: npm run test:nightly:selftest
+        working-directory: tests
+
+  python:
+    name: Python worker contracts (Hypothesis, bounded)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.13' }
+      - name: Install hypothesis
+        run: pip install hypothesis pytest
+      - name: Run Python property tests
+        run: pytest python/test_worker_runtime_contracts.py python/test_js_python_differential.py
+        working-directory: tests

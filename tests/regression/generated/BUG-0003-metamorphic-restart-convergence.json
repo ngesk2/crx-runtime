@@ -1,0 +1,205 @@
+{
+  "regression_id": "BUG-0003-metamorphic-restart-convergence",
+  "property": "metamorphic.restart-convergence",
+  "seed": 20260940,
+  "path": "0",
+  "ping_commit": "217294506b57b45598e0cd220d3137cfec346866",
+  "minimal_counterexample": [
+    {
+      "defs": [
+        {
+          "event_id": "evt-000",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:00:00Z",
+          "payload": {
+            "artifact_id": "artifact-0",
+            "artifact_content": "r)ar"
+          },
+          "lineage": {
+            "parent_event_ids": []
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-001",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:01:00Z",
+          "payload": {
+            "artifact_id": "artifact-1",
+            "artifact_content": "Zm%{!H$x$~"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-002",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:02:00Z",
+          "payload": {
+            "artifact_id": "artifact-2",
+            "artifact_content": "name"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-1",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-003",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:03:00Z",
+          "payload": {
+            "artifact_id": "artifact-3",
+            "artifact_content": "pro"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-2",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-004",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:04:00Z",
+          "payload": {
+            "artifact_id": "artifact-4",
+            "artifact_content": "Z/ODpYhv[+5"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-3",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-005",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:05:00Z",
+          "payload": {
+            "artifact_id": "artifact-5",
+            "artifact_content": ")0yei;}:xM?"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-4",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-006",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:06:00Z",
+          "payload": {
+            "artifact_id": "artifact-6",
+            "artifact_content": "nG|kJRqsJM"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-5",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-007",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:07:00Z",
+          "payload": {
+            "artifact_id": "artifact-7",
+            "artifact_content": "2N}"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-6",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-008",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:08:00Z",
+          "payload": {
+            "artifact_id": "artifact-8",
+            "artifact_content": "pro"
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-7",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        },
+        {
+          "event_id": "evt-009",
+          "event_type": "artifact_commit",
+          "actor_id": "actor-001",
+          "timestamp": "2026-06-07T00:09:00Z",
+          "payload": {
+            "artifact_id": "artifact-9",
+            "artifact_content": "$K]~\""
+          },
+          "lineage": {
+            "parent_event_ids": [
+              "artifact-8",
+              "artifact-0"
+            ]
+          },
+          "schema_version": "1.0",
+          "replay_version": "1.0",
+          "policy_version": "1.0"
+        }
+      ],
+      "k": 3
+    }
+  ],
+  "expected_invariant": "crash+restart+continue produces byte-identical final state to uninterrupted execution",
+  "original_failure": "Property failed after 1 tests\n{ seed: 20260940, path: \"0\", endOnFailure: true }\nCounterexample: [{\"defs\":[{\"event_id\":\"evt-000\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:00:00Z\",\"payload\":{\"artifact_id\":\"artifact-0\",\"artifact_content\":\"r)ar\"},\"lineage\":{\"parent_event_ids\":[]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-001\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:01:00Z\",\"payload\":{\"artifact_id\":\"artifact-1\",\"artifact_content\":\"Zm%{!H$x$~\"},\"lineage\":{\"parent_event_ids\":[\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-002\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:02:00Z\",\"payload\":{\"artifact_id\":\"artifact-2\",\"artifact_content\":\"name\"},\"lineage\":{\"parent_event_ids\":[\"artifact-1\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-003\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:03:00Z\",\"payload\":{\"artifact_id\":\"artifact-3\",\"artifact_content\":\"pro\"},\"lineage\":{\"parent_event_ids\":[\"artifact-2\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-004\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:04:00Z\",\"payload\":{\"artifact_id\":\"artifact-4\",\"artifact_content\":\"Z/ODpYhv[+5\"},\"lineage\":{\"parent_event_ids\":[\"artifact-3\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-005\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:05:00Z\",\"payload\":{\"artifact_id\":\"artifact-5\",\"artifact_content\":\")0yei;}:xM?\"},\"lineage\":{\"parent_event_ids\":[\"artifact-4\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-006\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:06:00Z\",\"payload\":{\"artifact_id\":\"artifact-6\",\"artifact_content\":\"nG|kJRqsJM\"},\"lineage\":{\"parent_event_ids\":[\"artifact-5\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-007\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:07:00Z\",\"payload\":{\"artifact_id\":\"artifact-7\",\"artifact_content\":\"2N}\"},\"lineage\":{\"parent_event_ids\":[\"artifact-6\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-008\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:08:00Z\",\"payload\":{\"artifact_id\":\"artifact-8\",\"artifact_content\":\"pro\"},\"lineage\":{\"parent_event_ids\":[\"artifact-7\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"},{\"event_id\":\"evt-009\",\"event_type\":\"artifact_commit\",\"actor_id\":\"actor-001\",\"timestamp\":\"2026-06-07T00:09:00Z\",\"payload\":{\"artifact_id\":\"artifact-9\",\"artifact_content\":\"$K]~\\\"\"},\"lineage\":{\"parent_event_ids\":[\"artifact-8\",\"artifact-0\"]},\"schema_version\":\"1.0\",\"replay_version\":\"1.0\",\"policy_version\":\"1.0\"}],\"k\":3}]\nShrunk 0 time(s)\n\nHint: Enable verbose mode in order to have the list of all failing values encountered during the run",
+  "test_owner": "ping-constitutional-ladder",
+  "recorded_at": "2026-10-01T00:50:58.741Z",
+  "status": "open"
+}
