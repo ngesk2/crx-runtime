@@ -11,7 +11,7 @@
   "witness_id": null,
   "replay_certificate_id": null,
   "causation_id": null,
-  "correlation_id": "f8a29a5b6c33",
+  "correlation_id": "af00d4821463",
   "parent_event_id": null,
-  "global_sequence": 19
+  "global_sequence": 1
 }
