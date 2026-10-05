@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bell, CheckCircle2, AlertTriangle, OctagonAlert } from 'lucide-react';
+import { Bell, CheckCircle2, AlertTriangle, AlertOctagon } from 'lucide-react';
 import type { SystemState } from '@/lib/gateway';
 
 interface AttentionItem {
@@ -119,7 +119,7 @@ export function AttentionQueue({ state }: { state: SystemState }) {
               className="flex items-start gap-2 rounded-lg border border-historical-700 bg-historical-800/50 px-3 py-2"
             >
               {item.severity === 'critical' ? (
-                <OctagonAlert className="w-3.5 h-3.5 mt-0.5 text-production-400 shrink-0" aria-hidden="true" />
+                <AlertOctagon className="w-3.5 h-3.5 mt-0.5 text-production-400 shrink-0" aria-hidden="true" />
               ) : (
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 text-constitutional-400 shrink-0" aria-hidden="true" />
               )}

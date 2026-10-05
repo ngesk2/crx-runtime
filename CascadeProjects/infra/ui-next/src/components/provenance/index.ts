@@ -6,9 +6,11 @@
 export { ProvenanceBadge } from './ProvenanceBadge';
 export { ConfidenceIndicator } from './ConfidenceIndicator';
 export { EvidenceState } from './EvidenceState';
+export type { EvidenceLifecycleStage } from './EvidenceState';
 export { WitnessBadge } from './WitnessBadge';
 export { ReplayBadge } from './ReplayBadge';
 export { FreshnessBadge, DEFAULT_FRESHNESS_POLICY } from './FreshnessBadge';
+export type { FreshnessPolicy } from './FreshnessBadge';
 export { AgentBadge } from './AgentBadge';
 export { CapabilityBadge } from './CapabilityBadge';
 export {
@@ -23,6 +25,4 @@ export type {
   ReplayState,
   WitnessState,
   AgentPresenceState,
-  EvidenceLifecycleStage,
-  FreshnessPolicy,
 } from './types';
