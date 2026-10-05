@@ -80,6 +80,11 @@ class MissionRuntime {
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS hold_at TIMESTAMPTZ;
       ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS hold_reason TEXT;
       CREATE INDEX IF NOT EXISTS idx_pm_hold_at ON ping_missions(hold_at);
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS approved_by VARCHAR(255);
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS rejected_by VARCHAR(255);
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;
+      ALTER TABLE ping_missions ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
     `);
   }
 
@@ -242,6 +247,117 @@ class MissionRuntime {
       await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error },
         tenantId ? { tenant_id: tenantId } : {});
     }
+  }
+
+  /**
+   * Approve a proposed mission (Mission Control approval surface).
+   *
+   * Approval authority chain: the approver MUST be the authenticated caller
+   * identity (req.authenticatedAgent.agentId at the route layer) — never a
+   * body-claimed value. Conditional transition: only a mission still in
+   * status 'created' and not held can be approved. Emits MISSION_APPROVED.
+   *
+   * @param {string} missionId
+   * @param {string} approver - authenticated agent id (required)
+   * @returns {Promise<{mission_id, status, approved_by, approved_at}>}
+   * @throws {Error} code MISSION_NOT_FOUND / MISSION_NOT_APPROVABLE / APPROVER_REQUIRED
+   */
+  async approve(missionId, approver) {
+    if (!approver || typeof approver !== 'string') {
+      const err = new Error('approver_required: approver must be the authenticated caller identity');
+      err.code = 'APPROVER_REQUIRED';
+      throw err;
+    }
+    const existing = await this._pool.query(
+      `SELECT mission_id, status FROM ping_missions WHERE mission_id = $1`,
+      [missionId]
+    );
+    if (existing.rows.length === 0) {
+      const err = new Error(`mission not found: ${missionId}`);
+      err.code = 'MISSION_NOT_FOUND';
+      throw err;
+    }
+    const result = await this._pool.query(
+      `UPDATE ping_missions
+         SET status = 'approved', approved_by = $1, approved_at = NOW()
+       WHERE mission_id = $2 AND status = 'created' AND hold_at IS NULL
+       RETURNING approved_at`,
+      [approver, missionId]
+    );
+    if ((result.rowCount || 0) !== 1) {
+      const err = new Error(`mission ${missionId} is not approvable (status=${existing.rows[0].status})`);
+      err.code = 'MISSION_NOT_APPROVABLE';
+      err.currentStatus = existing.rows[0].status;
+      throw err;
+    }
+    if (this._eventRuntime) {
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_APPROVED', 'mission-runtime',
+        { missionId, approved_by: approver },
+        tenantId ? { tenant_id: tenantId } : {});
+    }
+    return {
+      mission_id: missionId,
+      status: 'approved',
+      approved_by: approver,
+      approved_at: result.rows[0].approved_at,
+    };
+  }
+
+  /**
+   * Reject a proposed mission (Mission Control approval surface).
+   *
+   * Same authority posture as approve(): rejecter is the authenticated caller
+   * identity. Records the human-readable reason. Conditional transition from
+   * 'created' only. Emits MISSION_REJECTED.
+   *
+   * @param {string} missionId
+   * @param {string} rejecter - authenticated agent id (required)
+   * @param {string|null} reason - optional human-readable reason
+   * @returns {Promise<{mission_id, status, rejected_by, rejected_at, reason}>}
+   * @throws {Error} code MISSION_NOT_FOUND / MISSION_NOT_REJECTABLE / REJECTER_REQUIRED
+   */
+  async reject(missionId, rejecter, reason = null) {
+    if (!rejecter || typeof rejecter !== 'string') {
+      const err = new Error('rejecter_required: rejecter must be the authenticated caller identity');
+      err.code = 'REJECTER_REQUIRED';
+      throw err;
+    }
+    const existing = await this._pool.query(
+      `SELECT mission_id, status FROM ping_missions WHERE mission_id = $1`,
+      [missionId]
+    );
+    if (existing.rows.length === 0) {
+      const err = new Error(`mission not found: ${missionId}`);
+      err.code = 'MISSION_NOT_FOUND';
+      throw err;
+    }
+    const result = await this._pool.query(
+      `UPDATE ping_missions
+         SET status = 'rejected', rejected_by = $1, rejected_at = NOW(), rejection_reason = $2
+       WHERE mission_id = $3 AND status = 'created' AND hold_at IS NULL
+       RETURNING rejected_at`,
+      [rejecter, reason, missionId]
+    );
+    if ((result.rowCount || 0) !== 1) {
+      const err = new Error(`mission ${missionId} is not rejectable (status=${existing.rows[0].status})`);
+      err.code = 'MISSION_NOT_REJECTABLE';
+      err.currentStatus = existing.rows[0].status;
+      throw err;
+    }
+    if (this._eventRuntime) {
+      const tenantId = await this._missionTenant(missionId);
+      await this._eventRuntime.emit('MISSION_REJECTED', 'mission-runtime',
+        { missionId, rejected_by: rejecter, reason },
+        tenantId ? { tenant_id: tenantId } : {});
+    }
+    return {
+      mission_id: missionId,
+      status: 'rejected',
+      rejected_by: rejecter,
+      rejected_at: result.rows[0].rejected_at,
+      reason,
+    };
   }
 
   /**
