@@ -87,10 +87,16 @@ SITES = {
         "generatedAt": "2026-09-21T12:01:10.844Z",
         "eventSequences": None,
     },
+    # SYNTHETIC FIXTURE ONLY (E2E proof lane 2026-10-04). Not a real business.
+    "clearwater-plumbing-demo": {
+        "fixture": REPO + "/src/fyd/proceduralize/__fixtures__/clearwater-plumbing-demo-graph.ts",
+        "generatedAt": "2026-10-04T21:00:00Z",
+        "eventSequences": None,
+    },
 }
 
 QUERY_JS = r"""
-const {Client}=require('/app/node_modules/pg');
+const {Client}=require('/app/gateway/node_modules/pg');
 (async()=>{
  const c=new Client({host:process.env.POSTGRES_HOST,
   port:parseInt(process.env.POSTGRES_PORT||'5432',10),
