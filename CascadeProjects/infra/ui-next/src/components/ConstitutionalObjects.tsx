@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/lib/gateway';
 
 interface Authority {
   name: string;
@@ -57,10 +58,9 @@ export default function ConstitutionalObjects() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetch('/api/v1/constitutional/objects')
-      .then(r => { if (!r.ok) throw new Error('Failed to fetch'); return r.json(); })
+    apiFetch('/api/v1/constitutional/objects')
       .then(d => { setData(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
+      .catch(e => { setError(e instanceof Error ? e.message : 'Failed to fetch'); setLoading(false); });
   }, []);
 
   const toggleExpand = (name: string) => setExpanded(prev => ({ ...prev, [name]: !prev[name] }));

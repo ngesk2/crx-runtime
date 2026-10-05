@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch, apiPost } from '@/lib/gateway';
 
 interface MissionCard {
   id: string;
@@ -13,36 +14,84 @@ interface MissionCard {
   status: 'pending' | 'approved' | 'rejected';
 }
 
+interface MutationError {
+  op: 'status' | 'reorder';
+  id?: string;
+  action?: 'approve' | 'reject';
+  index?: number;
+  dir?: -1 | 1;
+  message: string;
+}
+
 export default function MissionCards() {
   const [cards, setCards] = useState<MissionCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<MutationError | null>(null);
+
+  const loadCards = useCallback(async () => {
+    const d = await apiFetch('/api/v1/missions/cards');
+    return (d.cards ?? d) as MissionCard[];
+  }, []);
 
   useEffect(() => {
-    fetch('/api/v1/missions/cards')
-      .then(r => { if (!r.ok) throw new Error('Failed to fetch'); return r.json(); })
-      .then(d => { setCards(d.cards ?? d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+    loadCards()
+      .then(c => { setCards(c); setLoading(false); })
+      .catch(e => { setError(e instanceof Error ? e.message : 'Failed to fetch'); setLoading(false); });
+  }, [loadCards]);
 
   const moveCard = useCallback((index: number, dir: -1 | 1) => {
     const target = index + dir;
     if (target < 0 || target >= cards.length) return;
+    const prev = cards;
     const next = [...cards];
     [next[index], next[target]] = [next[target], next[index]];
+    const movingId = next[target].id;
     setCards(next);
-    fetch('/api/v1/missions/cards/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cardIds: next.map(c => c.id) }),
-    }).catch(() => {});
+    setPendingId(movingId);
+    setMutationError(null);
+    apiPost('/api/v1/missions/cards/reorder', { cardIds: next.map(c => c.id) })
+      .then(() => setPendingId(null))
+      .catch((e) => {
+        // ROLL BACK: the server never confirmed the reorder, so the UI must not keep it.
+        setCards(prev);
+        setPendingId(null);
+        setMutationError({
+          op: 'reorder', index, dir,
+          message: e instanceof Error ? e.message : 'Reorder failed',
+        });
+      });
   }, [cards]);
 
   const updateStatus = useCallback((id: string, action: 'approve' | 'reject') => {
-    fetch(`/api/v1/missions/cards/${id}/${action}`, { method: 'POST' })
-      .then(r => { if (r.ok) setCards(prev => prev.map(c => c.id === id ? { ...c, status: action === 'approve' ? 'approved' : 'rejected' } : c)); })
-      .catch(() => {});
+    setPendingId(id);
+    setMutationError(null);
+    apiPost(`/api/v1/missions/cards/${id}/${action}`)
+      .then(() => {
+        setCards(prev => prev.map(c => c.id === id ? { ...c, status: action === 'approve' ? 'approved' : 'rejected' } : c));
+        setPendingId(null);
+      })
+      .catch((e) => {
+        // No optimistic application: the card keeps its old status. The failure is shown, not swallowed.
+        setPendingId(null);
+        setMutationError({
+          op: 'status', id, action,
+          message: e instanceof Error ? e.message : 'Update failed',
+        });
+      });
   }, []);
+
+  const retryMutation = useCallback(() => {
+    const m = mutationError;
+    setMutationError(null);
+    if (!m) return;
+    if (m.op === 'status' && m.id && m.action) {
+      updateStatus(m.id, m.action);
+    } else if (m.op === 'reorder' && m.index !== undefined && m.dir !== undefined) {
+      moveCard(m.index, m.dir);
+    }
+  }, [mutationError, updateStatus, moveCard]);
 
   const roiColor = (score: number) => score >= 8 ? 'text-green-400' : score >= 6 ? 'text-yellow-400' : 'text-gray-400';
   const statusBadge = (s: string) => {
@@ -60,14 +109,29 @@ export default function MissionCards() {
   return (
     <div className="bg-historical-900 rounded-lg border border-historical-700 p-6">
       <h2 className="text-lg font-semibold text-historical-100 mb-4">Mission Cards</h2>
+      {mutationError && (
+        <div className="mb-4 flex items-center justify-between gap-3 text-xs text-production-400 bg-production-900/30 border border-production-700 rounded px-3 py-2">
+          <span>
+            {mutationError.op === 'status' ? 'Status not saved' : 'Reorder not saved'}: {mutationError.message}.
+            {mutationError.op === 'reorder' ? ' Order restored.' : ' Nothing changed.'}
+          </span>
+          <button onClick={retryMutation} className="shrink-0 px-2 py-1 rounded bg-production-800 text-production-100 hover:bg-production-700">
+            Retry
+          </button>
+        </div>
+      )}
       <div className="space-y-3 transition-all duration-300">
-        {cards.map((card, i) => (
-          <div key={card.id} className="bg-historical-800 border border-historical-700 rounded-lg p-4 transition-all duration-300">
+        {cards.map((card, i) => {
+          const pending = pendingId === card.id;
+          return (
+          <div key={card.id} className={`bg-historical-800 border border-historical-700 rounded-lg p-4 transition-all duration-300 ${pending ? 'opacity-60' : ''}`}>
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-historical-100 font-medium">{card.title}</h3>
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge(card.status)}`}>{card.status}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge(card.status)}`}>
+                    {pending ? 'saving…' : card.status}
+                  </span>
                 </div>
                 <div className="flex items-center gap-4 text-sm mt-2">
                   <span className={roiColor(card.roi_score)}>
@@ -95,25 +159,26 @@ export default function MissionCards() {
               </div>
               <div className="flex flex-col gap-1 ml-3">
                 <div className="flex gap-1">
-                  <button onClick={() => moveCard(i, -1)} disabled={i === 0} className="p-1.5 rounded bg-historical-700 text-historical-300 hover:bg-historical-600 disabled:opacity-30 disabled:cursor-not-allowed" title="Move up">
+                  <button onClick={() => moveCard(i, -1)} disabled={i === 0 || pending} className="p-1.5 rounded bg-historical-700 text-historical-300 hover:bg-historical-600 disabled:opacity-30 disabled:cursor-not-allowed" title="Move up">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                   </button>
-                  <button onClick={() => moveCard(i, 1)} disabled={i === cards.length - 1} className="p-1.5 rounded bg-historical-700 text-historical-300 hover:bg-historical-600 disabled:opacity-30 disabled:cursor-not-allowed" title="Move down">
+                  <button onClick={() => moveCard(i, 1)} disabled={i === cards.length - 1 || pending} className="p-1.5 rounded bg-historical-700 text-historical-300 hover:bg-historical-600 disabled:opacity-30 disabled:cursor-not-allowed" title="Move down">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                   </button>
                 </div>
                 <div className="flex gap-1 mt-1">
-                  <button onClick={() => updateStatus(card.id, 'approve')} className="p-1.5 rounded bg-green-800 text-green-200 hover:bg-green-700" title="Approve">
+                  <button onClick={() => updateStatus(card.id, 'approve')} disabled={pending} className="p-1.5 rounded bg-green-800 text-green-200 hover:bg-green-700 disabled:opacity-30 disabled:cursor-not-allowed" title="Approve">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
-                  <button onClick={() => updateStatus(card.id, 'reject')} className="p-1.5 rounded bg-red-800 text-red-200 hover:bg-red-700" title="Reject">
+                  <button onClick={() => updateStatus(card.id, 'reject')} disabled={pending} className="p-1.5 rounded bg-red-800 text-red-200 hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed" title="Reject">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
