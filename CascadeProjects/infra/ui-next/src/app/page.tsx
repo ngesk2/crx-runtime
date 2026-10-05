@@ -1,3 +1,5 @@
+import GatewayStatus from '@/components/GatewayStatus';
+
 export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-historical-950">
@@ -20,10 +22,7 @@ export default function Home() {
           </a>
         </div>
         <div className="mt-6 text-xs text-historical-600">
-          <span className="inline-flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-learning-400" />
-            All systems nominal
-          </span>
+          <GatewayStatus />
         </div>
       </div>
     </main>
