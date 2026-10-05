@@ -1,5 +1,9 @@
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 
+export function gatewayUrl(): string {
+  return GATEWAY_URL;
+}
+
 export interface SessionConfig {
   model: string;
   temperature?: number;
@@ -21,53 +25,70 @@ export interface SystemState {
   organizational_health: { authority_violations: number; capability_violations: number; intent_conflicts: number; confidence_decay: number };
 }
 
-export async function fetchSystemState(): Promise<SystemState> {
-  const response = await fetch(`${GATEWAY_URL}/system/state`);
-  if (!response.ok) throw new Error(`Gateway error: ${response.status}`);
+/**
+ * Typed gateway failure. Never silently swallowed: every apiFetch/apiPost
+ * rejection carries where it tried to reach and what the gateway said.
+ */
+export class GatewayError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'GatewayError';
+    this.status = status;
+  }
+}
+
+/**
+ * Canonical gateway GET/POST. All ui-next gateway traffic goes through here.
+ * Throws GatewayError on unreachable host or non-2xx — never returns null,
+ * never resolves to undefined data.
+ */
+export async function apiFetch(path: string, init?: RequestInit): Promise<any> {
+  let response: Response;
+  try {
+    response = await fetch(`${GATEWAY_URL}${path}`, init);
+  } catch (e) {
+    throw new GatewayError(
+      `Gateway unreachable at ${GATEWAY_URL} (${path}): ${e instanceof Error ? e.message : String(e)}`
+    );
+  }
+  if (!response.ok) {
+    throw new GatewayError(`Gateway error ${response.status} on ${path}`, response.status);
+  }
   return response.json();
+}
+
+export async function apiPost(path: string, body?: unknown): Promise<any> {
+  return apiFetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
+export async function fetchSystemState(): Promise<SystemState> {
+  return apiFetch('/system/state');
 }
 
 export async function fetchJson(path: string): Promise<any> {
-  const response = await fetch(`${GATEWAY_URL}${path}`);
-  if (!response.ok) throw new Error(`Gateway error: ${response.status}`);
-  return response.json();
+  return apiFetch(path);
 }
 
 export async function* streamChat(messages: Array<{role: string; content: string}>, config: SessionConfig): AsyncGenerator<string> {
-  const response = await fetch(`${GATEWAY_URL}/api/v1/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      stream: false,
-      temperature: config.temperature || 0.7
-    })
+  const data = await apiPost('/api/v1/chat', {
+    model: config.model,
+    messages,
+    stream: false,
+    temperature: config.temperature || 0.7,
   });
-
-  if (!response.ok) {
-    throw new Error(`Gateway error: ${response.status}`);
-  }
-
-  const data = await response.json();
   yield data.content;
 }
 
 export async function chat(messages: Array<{role: string; content: string}>, config: SessionConfig): Promise<{content: string; model: string; provider: string}> {
-  const response = await fetch(`${GATEWAY_URL}/api/v1/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      stream: false,
-      temperature: config.temperature || 0.7
-    })
+  return apiPost('/api/v1/chat', {
+    model: config.model,
+    messages,
+    stream: false,
+    temperature: config.temperature || 0.7,
   });
-
-  if (!response.ok) {
-    throw new Error(`Gateway error: ${response.status}`);
-  }
-
-  return response.json();
 }
