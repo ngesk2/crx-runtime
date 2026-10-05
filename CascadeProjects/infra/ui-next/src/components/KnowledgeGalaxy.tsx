@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { fetchJson } from '@/lib/gateway'
+import { EvidenceInspector, type InspectorNode } from './EvidenceInspector'
 
 interface KGNode {
   id: string
@@ -91,6 +92,7 @@ export default function KnowledgeGalaxy() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+  const [selectedNode, setSelectedNode] = useState<InspectorNode | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -144,6 +146,18 @@ export default function KnowledgeGalaxy() {
     if (!searchQuery) return positionedNodes
     return positionedNodes.filter(n => n.name.toLowerCase().includes(searchQuery.toLowerCase()))
   }, [positionedNodes, searchQuery])
+
+  const openInspector = useCallback((node: KGNode) => {
+    setSelectedNode({
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      color: node.color,
+      confidence: node.confidence,
+      authority: node.authority,
+      replay_verified: node.replay_verified,
+    })
+  }, [])
 
   const stats = useMemo(() => {
     if (!data) return { totalNodes: 0, totalEdges: 0, authorityCount: 0, capabilityCount: 0 }
@@ -294,6 +308,18 @@ export default function KnowledgeGalaxy() {
                   onMouseEnter={() => setHoveredNode({ name: node.name, type: node.type })}
                   onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}
                   onMouseLeave={() => setHoveredNode(null)}
+                  onFocus={() => setHoveredNode({ name: node.name, type: node.type })}
+                  onBlur={() => setHoveredNode(null)}
+                  onClick={() => openInspector(node)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openInspector(node)
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Inspect evidence for ${node.name} (${node.type})`}
                   style={{ cursor: 'pointer' }}
                 >
                   <circle cx={node.x} cy={node.y} r={sz / 2} fill={clr} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
@@ -332,6 +358,8 @@ export default function KnowledgeGalaxy() {
           <p className="text-historical-400">{hoveredNode.type}</p>
         </div>
       )}
+
+      <EvidenceInspector node={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
   )
 }
