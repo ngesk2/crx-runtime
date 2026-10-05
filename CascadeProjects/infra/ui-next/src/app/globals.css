@@ -1,3 +1,73 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ------------------------------------------------------------------
+ * Motion system (harvested from FYD Motion 3.0, CSS-first subset).
+ * Transform + opacity only. Every animation is gated by
+ * prefers-reduced-motion: reduce -> instant state, no motion.
+ * Motion is presentation only: it never carries truth, evidence, or
+ * authority. Content must be legible if these never run.
+ * ------------------------------------------------------------------ */
+
+@keyframes motion-reveal-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes motion-reveal-up-strong {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes motion-reveal-subtle {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes motion-stream-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes motion-view-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes motion-ambient-drift {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50%      { opacity: 0.9; transform: translateY(-4px); }
+}
+@keyframes motion-pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+@keyframes motion-change-pulse {
+  0%   { opacity: 1; }
+  30%  { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+.motion-reveal-up        { animation: motion-reveal-up 300ms cubic-bezier(0, 0, 0.2, 1) both; }
+.motion-reveal-up-strong { animation: motion-reveal-up-strong 400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-reveal-subtle    { animation: motion-reveal-subtle 200ms cubic-bezier(0, 0, 0.2, 1) both; }
+.motion-stream-in        { animation: motion-stream-in 220ms cubic-bezier(0, 0, 0.2, 1) both; }
+.motion-view-fade        { animation: motion-view-fade 350ms ease-out both; }
+.motion-ambient-drift    { animation: motion-ambient-drift 6s ease-in-out infinite; }
+.motion-pulse-subtle     { animation: motion-pulse-subtle 2000ms ease-in-out infinite; }
+/* Applied briefly when a live value changes: opacity dip, transform-free. */
+.motion-change-pulse     { animation: motion-change-pulse 600ms ease-out 1; }
+
+/* Stagger helper: set style={{ ['--motion-stagger' as any]: `${i * 60}ms` }} */
+.motion-stagger-item { animation-delay: var(--motion-stagger, 0ms); }
+
+/* Reduced motion: everything resolves to instant state. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal-up,
+  .motion-reveal-up-strong,
+  .motion-reveal-subtle,
+  .motion-stream-in,
+  .motion-view-fade,
+  .motion-ambient-drift,
+  .motion-pulse-subtle,
+  .motion-change-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
+}
