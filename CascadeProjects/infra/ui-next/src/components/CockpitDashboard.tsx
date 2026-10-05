@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { apiFetch } from '@/lib/gateway'
 import {
   Activity, Server, Database, Cpu, HardDrive, Network, GitBranch,
   BookOpen, FileText, Layers, Award, Shield, AlertTriangle, CheckCircle,
@@ -9,7 +10,6 @@ import {
 } from 'lucide-react'
 
 const POLL_INTERVAL = 30000
-const GATEWAY_URL = 'http://localhost:8080'
 
 interface SystemState {
   timestamp: string
@@ -72,9 +72,7 @@ export default function CockpitDashboard() {
 
   const fetchState = useCallback(async () => {
     try {
-      const response = await fetch(`${GATEWAY_URL}/system/state`)
-      if (!response.ok) throw new Error('Failed to fetch system state')
-      const data = await response.json()
+      const data = await apiFetch('/system/state')
       setState(data)
       setLastUpdate(new Date().toLocaleTimeString())
       setError(null)

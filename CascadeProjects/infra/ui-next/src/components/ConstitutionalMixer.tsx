@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { fetchJson } from '@/lib/gateway'
+import { fetchJson, apiPost } from '@/lib/gateway'
 
 interface ChannelConfig {
   key: string
@@ -21,35 +21,45 @@ const CHANNELS: ChannelConfig[] = [
 export default function ConstitutionalMixer() {
   const [values, setValues] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  const [commitError, setCommitError] = useState<string | null>(null)
+
+  const loadValues = useCallback(async () => {
+    const data = await fetchJson('/api/v1/mixer')
+    const initial: Record<string, number> = {}
+    for (const ch of CHANNELS) {
+      initial[ch.key] = data[ch.key] ?? 0.5
+    }
+    return initial
+  }, [])
 
   useEffect(() => {
-    fetchJson('/api/v1/mixer')
-      .then((data) => {
-        const initial: Record<string, number> = {}
-        for (const ch of CHANNELS) {
-          initial[ch.key] = data[ch.key] ?? 0.5
-        }
-        setValues(initial)
-      })
+    loadValues()
+      .then(setValues)
       .catch(() => {
         const fallback: Record<string, number> = {}
         for (const ch of CHANNELS) fallback[ch.key] = 0.5
         setValues(fallback)
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [loadValues])
 
   const handleChange = useCallback((key: string, val: number) => {
     setValues((prev) => ({ ...prev, [key]: val }))
   }, [])
 
   const handleCommit = useCallback((key: string, val: number) => {
-    fetch(`${process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080'}/api/v1/mixer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [key]: val }),
-    }).catch(() => {})
-  }, [])
+    apiPost('/api/v1/mixer', { [key]: val })
+      .then(() => setCommitError(null))
+      .catch(async (e) => {
+        setCommitError(e instanceof Error ? e.message : 'Commit failed')
+        // Roll back to server truth: the slider never represents uncommitted state.
+        try {
+          setValues(await loadValues())
+        } catch {
+          /* keep local values; error banner already explains the failure */
+        }
+      })
+  }, [loadValues])
 
   return (
     <div className="bg-historical-900 rounded-lg border border-historical-700 overflow-hidden">
@@ -62,6 +72,11 @@ export default function ConstitutionalMixer() {
         <h3 className="text-sm font-semibold text-historical-200 uppercase tracking-wider">Constitutional Mixer</h3>
       </div>
       <div className="p-4 space-y-4">
+        {commitError && (
+          <div className="text-xs text-production-400 bg-production-900/30 border border-production-700 rounded px-3 py-2">
+            Mixer not saved: {commitError}. Values restored from server.
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-5 h-5 border-2 border-historical-500 border-t-constitutional-400 rounded-full animate-spin" />

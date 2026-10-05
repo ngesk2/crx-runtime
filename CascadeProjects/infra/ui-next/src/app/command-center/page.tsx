@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/gateway'
 import ConstitutionalMixer from '@/components/ConstitutionalMixer'
 import DecisionEngine from '@/components/DecisionEngine'
 import KnowledgeGalaxy from '@/components/KnowledgeGalaxy'
@@ -25,20 +26,16 @@ export default function CommandCenterPage() {
   const [ollamaStatus, setOllamaStatus] = useState('idle')
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/system/nightshift')
-      .then(r => r.json())
-      .then(d => setNightShift(d.active))
-      .catch(() => {})
-    fetch('http://localhost:8080/api/v1/ollama/status')
-      .then(r => r.json())
-      .then(d => setOllamaStatus(d.status))
-      .catch(() => {})
-    const interval = setInterval(() => {
-      fetch('http://localhost:8080/api/v1/ollama/status')
-        .then(r => r.json())
-        .then(d => setOllamaStatus(d.status))
-        .catch(() => {})
-    }, 10000)
+    apiFetch('/api/v1/system/nightshift')
+      .then(d => setNightShift(!!d.active))
+      .catch(() => setNightShift(false))
+    const pollOllama = () => {
+      apiFetch('/api/v1/ollama/status')
+        .then(d => setOllamaStatus(d.status || 'unknown'))
+        .catch(() => setOllamaStatus('unknown'))
+    }
+    pollOllama()
+    const interval = setInterval(pollOllama, 10000)
     return () => clearInterval(interval)
   }, [])
 

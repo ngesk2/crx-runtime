@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { apiPost } from '@/lib/gateway'
 import MissionControlHeader from '@/components/MissionControlHeader'
 import PremiumChatBubble from '@/components/PremiumChatBubble'
 import ArchitectureView from '@/components/ArchitectureView'
@@ -30,35 +31,20 @@ export default function ChatPage() {
     setIsStreaming(true)
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage] })
-      })
+      const data = await apiPost('/api/v1/chat', { messages: [...messages, userMessage] })
 
-      if (response.ok) {
-        const data = await response.json()
-
-        const assistantMessage = {
-          role: 'assistant',
-          content: data.content,
-          metadata: {
-            model: data.model,
-            provider: data.provider,
-            generationTime: data.latency_ms / 1000
-          },
-          timestamp: new Date()
-        }
-
-        setMessages(prev => [...prev, assistantMessage])
-      } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: `Request failed: ${errorData.error || response.statusText}`,
-          timestamp: new Date()
-        }])
+      const assistantMessage = {
+        role: 'assistant',
+        content: data.content,
+        metadata: {
+          model: data.model,
+          provider: data.provider,
+          generationTime: data.latency_ms / 1000
+        },
+        timestamp: new Date()
       }
+
+      setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'assistant',
