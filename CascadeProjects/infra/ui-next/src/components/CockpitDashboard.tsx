@@ -1,30 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { apiFetch } from '@/lib/gateway'
+import { fetchSystemState, type SystemState } from '@/lib/gateway'
 import {
-  Activity, Server, Database, Cpu, HardDrive, Network, GitBranch,
-  BookOpen, FileText, Layers, Award, Shield, AlertTriangle, CheckCircle,
-  BarChart3, TrendingUp, Clock, RefreshCw, GitCommit,
-  Box, Archive, Zap, PieChart, Target, Users
+  Activity, Database, Layers, Clock, TrendingUp, RefreshCw,
+  Cpu, Zap, GitBranch, Target, Box, AlertTriangle
 } from 'lucide-react'
 import LiveOperations from './dashboard/LiveOperations'
 
 const POLL_INTERVAL = 30000
-
-interface SystemState {
-  timestamp: string
-  objects: { total: number }
-  graph: { nodes: number; edges: number; average_degree: number }
-  services: {
-    qdrant: { healthy: boolean; version?: string; error?: string }
-    postgresql: { healthy: boolean; error?: string }
-  }
-  lifecycle: {
-    active_lifecycles: number
-    completed_lifecycles: number
-  }
-}
 
 function Panel({ title, icon, children, className = '' }: { title: string; icon: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
@@ -65,6 +49,43 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h4 className="text-xs font-semibold text-historical-500 uppercase tracking-wider mb-2 mt-3 first:mt-0">{children}</h4>
 }
 
+/** Render a number honestly: digits when the backend sent one, "Unknown" otherwise. Never fabricated. */
+function fmtNum(v: number | undefined | null): string {
+  return typeof v === 'number' ? String(v) : 'Unknown'
+}
+
+/** Render a string honestly: the value when present and non-empty, "Unknown" otherwise. */
+function fmtStr(v: string | undefined | null): string {
+  return typeof v === 'string' && v.length > 0 ? v : 'Unknown'
+}
+
+function fmtUptime(seconds: number | undefined | null): string {
+  if (typeof seconds !== 'number') return 'Unknown'
+  if (seconds >= 3600) return `${(seconds / 3600).toFixed(1)}h`
+  if (seconds >= 60) return `${Math.floor(seconds / 60)}m`
+  return `${Math.floor(seconds)}s`
+}
+
+/**
+ * Map a backend section status ('available' | 'unavailable') to a display
+ * label + dot. A missing section is Unknown, never assumed healthy.
+ */
+function sectionStatus(status: string | undefined): { label: string; dot?: string } {
+  if (status === 'available') return { label: 'Connected', dot: 'healthy' }
+  if (status === 'unavailable') return { label: 'Unavailable', dot: 'unhealthy' }
+  return { label: 'Unknown' }
+}
+
+/** Body for a panel whose keys the backend does not return. */
+function NotReported() {
+  return (
+    <>
+      <StatRow label="State" value="Unknown" />
+      <p className="text-xs text-historical-500 mt-1">Not reported by the gateway.</p>
+    </>
+  )
+}
+
 export default function CockpitDashboard() {
   const [state, setState] = useState<SystemState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,7 +94,7 @@ export default function CockpitDashboard() {
 
   const fetchState = useCallback(async () => {
     try {
-      const data = await apiFetch('/system/state')
+      const data = await fetchSystemState()
       setState(data)
       setLastUpdate(new Date().toLocaleTimeString())
       setError(null)
@@ -117,6 +138,9 @@ export default function CockpitDashboard() {
   }
 
   const s = state!
+  const pg = sectionStatus(s.postgres?.status)
+  const qd = sectionStatus(s.qdrant?.status)
+  const rp = sectionStatus(s.replay?.status)
 
   return (
     <div className="p-6 space-y-6">
@@ -125,8 +149,8 @@ export default function CockpitDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-historical-100">Constitutional Operations Cockpit</h1>
           <p className="text-xs text-historical-500 mt-1">
-            Gateway · {lastUpdate ? `Last updated ${lastUpdate}` : ''}
-            {' '}· <span className="text-historical-400">{s.objects.total} objects</span>
+            Gateway{s.version ? ` v${s.version}` : ''} · {lastUpdate ? `Last updated ${lastUpdate}` : ''}
+            {' '}· <span className="text-historical-400">{fmtNum(s.repository?.total_nodes)} nodes · {fmtNum(s.repository?.total_edges)} edges</span>
           </p>
         </div>
         <button
@@ -144,95 +168,86 @@ export default function CockpitDashboard() {
       {/* Constitutional Dashboard Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
-        {/* 1. Object Counts */}
-        <Panel title="Object Counts" icon={<Box className="w-4 h-4" />}>
-          <StatRow label="Total Objects" value={s.objects.total} />
-          <StatRow label="Graph Nodes" value={s.graph.nodes} />
-          <StatRow label="Graph Edges" value={s.graph.edges} />
-          <StatRow label="Avg Degree" value={s.graph.average_degree.toFixed(2)} />
+        {/* 1. Repository */}
+        <Panel title="Repository" icon={<Box className="w-4 h-4" />}>
+          <StatRow label="Total Nodes" value={fmtNum(s.repository?.total_nodes)} />
+          <StatRow label="Total Edges" value={fmtNum(s.repository?.total_edges)} />
+          <StatRow label="Intents" value={fmtNum(s.repository?.intents)} />
+          <StatRow label="Authorities" value={fmtNum(s.repository?.authorities)} />
+          <StatRow label="Capabilities" value={fmtNum(s.repository?.capabilities)} />
+          <StatRow label="Specifications" value={fmtNum(s.repository?.specifications)} />
+          <StatRow label="Duplicate Warnings" value={fmtNum(s.repository?.duplicate_warnings)} />
         </Panel>
 
         {/* 2. PostgreSQL Status */}
         <Panel title="PostgreSQL" icon={<Database className="w-4 h-4" />}>
-          <StatRow label="Status" value={s.services.postgresql.healthy ? 'Connected' : 'Unavailable'} status={s.services.postgresql.healthy ? 'healthy' : 'unhealthy'} />
-          {s.services.postgresql.error && (
-            <StatRow label="Error" value={s.services.postgresql.error} status="unhealthy" />
-          )}
+          <StatRow label="Status" value={pg.label} status={pg.dot} />
+          <StatRow label="Total Events" value={fmtNum(s.postgres?.total_events)} />
+          <StatRow label="Streams" value={fmtNum(s.postgres?.streams)} />
+          <StatRow label="Event Types" value={fmtNum(s.postgres?.event_types)} />
         </Panel>
 
         {/* 3. Qdrant Status */}
         <Panel title="Qdrant" icon={<Layers className="w-4 h-4" />}>
-          <StatRow label="Status" value={s.services.qdrant.healthy ? 'Connected' : 'Unavailable'} status={s.services.qdrant.healthy ? 'healthy' : 'unhealthy'} />
-          {s.services.qdrant.version && (
-            <StatRow label="Version" value={s.services.qdrant.version} />
-          )}
-          {s.services.qdrant.error && (
-            <StatRow label="Error" value={s.services.qdrant.error} status="unhealthy" />
-          )}
+          <StatRow label="Status" value={qd.label} status={qd.dot} />
+          <StatRow label="Collections" value={fmtNum(s.qdrant?.collections)} />
+          <StatRow label="Total Points" value={fmtNum(s.qdrant?.total_points)} />
+          <StatRow label="Total Vectors" value={fmtNum(s.qdrant?.total_vectors)} />
         </Panel>
 
-        {/* 4. Lifecycle Status */}
+        {/* 4. Lifecycle Status — backend does not report lifecycle keys */}
         <Panel title="Lifecycles" icon={<Clock className="w-4 h-4" />}>
-          <StatRow label="Active" value={s.lifecycle.active_lifecycles} status={s.lifecycle.active_lifecycles > 0 ? 'healthy' : undefined} />
-          <StatRow label="Completed" value={s.lifecycle.completed_lifecycles} />
+          <NotReported />
         </Panel>
 
         {/* 5. System Health */}
         <Panel title="System Health" icon={<Activity className="w-4 h-4" />}>
           <StatRow label="Gateway" value="Healthy" status="healthy" />
-          <StatRow label="PostgreSQL" value={s.services.postgresql.healthy ? 'Healthy' : 'Unhealthy'} status={s.services.postgresql.healthy ? 'healthy' : 'unhealthy'} />
-          <StatRow label="Qdrant" value={s.services.qdrant.healthy ? 'Healthy' : 'Unhealthy'} status={s.services.qdrant.healthy ? 'healthy' : 'unhealthy'} />
+          <StatRow label="PostgreSQL" value={pg.label} status={pg.dot} />
+          <StatRow label="Qdrant" value={qd.label} status={qd.dot} />
+          <StatRow label="Replay" value={rp.label} status={rp.dot} />
+          <SectionTitle>Gateway Metrics</SectionTitle>
+          <StatRow label="Uptime" value={fmtUptime(s.metrics?.uptime_seconds)} />
+          <StatRow label="Total Requests" value={fmtNum(s.metrics?.total_requests)} />
         </Panel>
 
-        {/* 6. Knowledge Growth */}
-        <Panel title="Knowledge Growth" icon={<TrendingUp className="w-4 h-4" />}>
-          <StatRow label="Objects" value={s.objects.total} />
-          <StatRow label="Growth Rate" value="+" unit="0%" />
-          <SectionTitle>Graph Complexity</SectionTitle>
-          <StatRow label="Nodes" value={s.graph.nodes} />
-          <StatRow label="Edges" value={s.graph.edges} />
+        {/* 6. Knowledge */}
+        <Panel title="Knowledge" icon={<TrendingUp className="w-4 h-4" />}>
+          <StatRow label="Knowledge Objects" value={fmtNum(s.knowledge?.knowledge_objects)} />
+          <StatRow label="Reflections" value={fmtNum(s.knowledge?.reflections)} />
+          <StatRow label="Skills" value={fmtNum(s.knowledge?.skills)} />
+          <StatRow label="Policies" value={fmtNum(s.knowledge?.policies)} />
+          <StatRow label="Evidence" value={fmtNum(s.knowledge?.evidence)} />
+          <StatRow label="Proofs" value={fmtNum(s.knowledge?.proofs)} />
+          <StatRow label="Witnesses" value={fmtNum(s.knowledge?.witnesses)} />
+          <StatRow label="Replay Certificates" value={fmtNum(s.knowledge?.replay_certificates)} />
+          <StatRow label="Historical Snapshots" value={fmtNum(s.knowledge?.historical_snapshots)} />
         </Panel>
 
-        {/* 7. Compiler Status */}
+        {/* 7. Compiler Status — backend does not report compiler keys */}
         <Panel title="Compiler Status" icon={<Cpu className="w-4 h-4" />}>
-          <StatRow label="Status" value="Ready" status="healthy" />
-          <StatRow label="Passes" value="6" />
-          <SectionTitle>Passes</SectionTitle>
-          <div className="space-y-1 text-xs text-historical-400">
-            <div>✓ Acquisition</div>
-            <div>✓ Normalization</div>
-            <div>✓ Structural</div>
-            <div>✓ Semantic</div>
-            <div>✓ Verification</div>
-            <div>✓ Synthesis</div>
-          </div>
+          <NotReported />
         </Panel>
 
         {/* 8. Replay Status */}
         <Panel title="Replay Status" icon={<Zap className="w-4 h-4" />}>
-          <StatRow label="Status" value="Ready" status="healthy" />
-          <StatRow label="Log Entries" value="0" />
-          <SectionTitle>Witness Chain</SectionTitle>
-          <StatRow label="Blocks" value="0" />
-          <StatRow label="Genesis" value="Initialized" status="healthy" />
+          <StatRow label="Status" value={rp.label} status={rp.dot} />
+          <StatRow label="Total Runs" value={fmtNum(s.replay?.total_runs)} />
+          <StatRow label="Latest Replay" value={fmtStr(s.replay?.latest_replay)} />
         </Panel>
 
-        {/* 9. Git Snapshot Status */}
+        {/* 9. Git Snapshot — backend returns an empty git object */}
         <Panel title="Git Snapshot" icon={<GitBranch className="w-4 h-4" />}>
-          <StatRow label="Status" value="Immutable" status="healthy" />
-          <SectionTitle>Snapshot Data</SectionTitle>
-          <StatRow label="Commits" value="Stored" />
-          <StatRow label="Trees" value="Stored" />
-          <StatRow label="Blobs" value="Stored" />
+          <NotReported />
         </Panel>
 
         {/* 10. Mission Queue */}
         <Panel title="Mission Queue" icon={<Target className="w-4 h-4" />}>
-          <StatRow label="Queued" value="0" />
-          <StatRow label="Executing" value="0" />
-          <StatRow label="Completed" value="0" />
-          <SectionTitle>Reflection Feed</SectionTitle>
-          <StatRow label="Entries" value="0" />
+          <StatRow label="Queued" value={fmtNum(s.missions?.queued)} />
+          <StatRow label="Executing" value={fmtNum(s.missions?.executing)} />
+          <StatRow label="Completed" value={fmtNum(s.missions?.completed)} />
+          <StatRow label="Failed" value={fmtNum(s.missions?.failed)} />
+          <StatRow label="Blocked" value={fmtNum(s.missions?.blocked)} />
         </Panel>
 
       </div>
