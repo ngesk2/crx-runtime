@@ -8,6 +8,7 @@ import {
   BarChart3, TrendingUp, Clock, RefreshCw, GitCommit,
   Box, Archive, Zap, PieChart, Target, Users
 } from 'lucide-react'
+import LiveOperations from './dashboard/LiveOperations'
 
 const POLL_INTERVAL = 30000
 
@@ -136,6 +137,9 @@ export default function CockpitDashboard() {
           Refresh
         </button>
       </div>
+
+      {/* Live operations: real system state, honest unavailable states */}
+      <LiveOperations />
 
       {/* Constitutional Dashboard Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
