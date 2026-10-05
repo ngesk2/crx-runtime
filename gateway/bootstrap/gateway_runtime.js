@@ -96,6 +96,8 @@ const createMissionRoutes = require('../routes/missions');
 const createAIRoutes = require('../routes/ai');
 const createConnectorRoutes = require('../routes/connectors');
 const createMissionControlRoutes = require('../routes/mission_control');
+const createMissionCardRoutes = require('../routes/mission_cards');
+const ExteriorAuthMiddleware = require('../exterior_auth_middleware');
 const { CanonicalizationService } = require('../../ping-runtime/canonicalization/canonicalization_service');
 const { EmbeddingService } = require('../../ping-runtime/embeddings/embedding_service');
 const { EvidenceAuthority } = require('../../ping-runtime/evidence/evidence_authority');
@@ -361,6 +363,7 @@ class GatewayRuntime {
     let unifiedEventRuntime = null;
     let knowledgeGraph = null;
     let missionRuntime = null;
+    let exteriorAuthMiddleware = null;
     let workerRuntime = null;
     let eventBridge = null;
     let missionScheduler = null;
@@ -379,6 +382,12 @@ class GatewayRuntime {
     let deadLetterAuthority = null;
 
     if (pgAvailable) {
+      // Exterior-agent auth boundary: HTTP Bearer API key for guarded
+      // routes. initialize() degrades to in-memory credentials when the
+      // credential table is unreachable; guarded mounts fail closed.
+      exteriorAuthMiddleware = new ExteriorAuthMiddleware(this._pool);
+      await exteriorAuthMiddleware.initialize();
+      console.log('[GatewayRuntime] Exterior Auth Middleware initialized');
       try {
         eventReadAuthority = new EventReadAuthority(this._pool);
         await eventReadAuthority.initialize();
@@ -680,6 +689,8 @@ class GatewayRuntime {
       canonicalizationService, embeddingService,
       evidenceAuthority, hybridSearch,
       deadLetterAuthority,
+      // Exterior-agent auth boundary (mission-card approve/reject/reorder)
+      exteriorAuthMiddleware,
       // Capability + OAuth framework
       capabilityRegistry, oauthManager, tokenStore,
     });
@@ -705,6 +716,10 @@ class GatewayRuntime {
       this._app.use('/deployments', createDeploymentRoutes(services.deploymentRegistry));
       this._app.use('/runtime', createRuntimeRoutes(services.runtimeRegistry));
       this._app.use('/ingest', createIngestRoutes(services.canonicalizationService));
+      // Mission Control cards: approve / reject / reorder (auth-guarded).
+      this._app.use('/api/v1/missions',
+        services.exteriorAuthMiddleware.middleware(),
+        createMissionCardRoutes({ missionRuntime: services.missionRuntime, pool: services.pool }));
     } else {
       // Degraded mode stubs
       this._app.use('/events', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
@@ -716,6 +731,7 @@ class GatewayRuntime {
       this._app.use('/deployments', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
       this._app.use('/runtime', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
       this._app.use('/ingest', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
+      this._app.use('/api/v1/missions', (req, res) => res.status(503).json({ error: 'Postgres unavailable', degraded: true }));
     }
     
     // Constitution — filesystem only, always available
