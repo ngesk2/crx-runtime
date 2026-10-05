@@ -122,7 +122,13 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
         return res.status(400).json({ status: 'error', error: 'mission_id_required' });
       }
       const result = await missionRuntime.approve(missionId, caller);
-      res.json({ status: 'ok', ...result });
+      res.json({
+        status: 'ok',
+        mission_id: result.mission_id,
+        mission_status: result.status,
+        approved_by: result.approved_by,
+        approved_at: result.approved_at,
+      });
     } catch (err) {
       missionError(res, err, req.params.id);
     }
@@ -145,7 +151,14 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
         }
       }
       const result = await missionRuntime.reject(missionId, caller, reason == null ? null : reason);
-      res.json({ status: 'ok', ...result });
+      res.json({
+        status: 'ok',
+        mission_id: result.mission_id,
+        mission_status: result.status,
+        rejected_by: result.rejected_by,
+        rejected_at: result.rejected_at,
+        reason: result.reason,
+      });
     } catch (err) {
       missionError(res, err, req.params.id);
     }
