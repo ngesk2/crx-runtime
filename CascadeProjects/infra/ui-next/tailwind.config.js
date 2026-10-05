@@ -102,8 +102,13 @@ module.exports = {
           500: '#6B7280',
           600: '#4B5563',
           700: '#374151',
+          // 750 is the midpoint of 700/800 (used by hover states)
+          750: '#2B3544',
           800: '#1F2937',
           900: '#111827',
+          // 950 follows Tailwind's gray-950; 980 is the monotonic darker step
+          950: '#030712',
+          980: '#010409',
         },
       },
       fontFamily: {
