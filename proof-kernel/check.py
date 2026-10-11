@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -54,6 +55,9 @@ def run(command, json_result=False):
     log.write_text(result.stdout)
     item = {'command': command, 'exit_code': result.returncode,
             'seconds': time.monotonic() - start, 'log': str(log.relative_to(root))}
+    if command[:2] == ['cargo', 'test']:
+        item['test_summaries'] = [{'passed': int(p), 'failed': int(f)}
+            for p, f in re.findall(r'test result: \w+\. (\d+) passed; (\d+) failed', result.stdout)]
     if result.returncode == 0 and json_result:
         item['result'] = json.loads(result.stdout.strip().splitlines()[-1])
     report['commands'].append(item)

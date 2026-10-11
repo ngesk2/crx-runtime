@@ -3725,3 +3725,5 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 ### 2026-10-10 Isolated trust/proof lanes
 
 Optional exact-byte Rust verifier and native test adapter isolated from admission. Frozen Node/Rust vectors preserved; strict native UTF-16 rejection fixes a demonstrated mismatch. Reproducible offline proof runner added. No production callers; MERGE and production cutover HOLD.
+
+2026-10-10 | Rust proof passed on WSL x86-64: two unit tests, 52 historical vectors, 433 versioned/curve vectors and four raw UTF-16 native cases; zero observed parity differences. Windows/Oracle and production authorization remain HOLD. Final proof package records its local source SHA.
