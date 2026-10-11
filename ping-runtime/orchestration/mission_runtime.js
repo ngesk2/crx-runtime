@@ -230,6 +230,96 @@ class MissionRuntime {
   }
 
   /**
+   * Atomicity contract for processor state transitions — P2 write-authority
+   * closure (2026-10-11).
+   *
+   * Closes the reproduced mission write-before-event class: the conditional
+   * row UPDATE and the required MISSION_* evidence append share ONE bounded
+   * transaction. If the evidence append fails (or is not durably persisted),
+   * the transaction rolls back and this method throws — the business
+   * mutation can never silently succeed while required durable evidence
+   * fails. Post-commit the event is dispatched; a dispatch failure is
+   * reported as mission_dispatch_outcome_unknown (durable, delivery
+   * unknown), never as silent success.
+   *
+   * AUTHORIZATION BEFORE MUTATION: when the caller declares
+   * spec.tenantId, the mission row is locked (FOR UPDATE) and its tenant
+   * compared BEFORE the conditional UPDATE executes. A mismatch throws
+   * `tenant_mismatch` with no mutation and no evidence. When the caller
+   * declares nothing, the tenant is resolved server-side from the updated
+   * row (RETURNING tenant_id) — it is never taken from a request body.
+   *
+   * spec = { missionId, tenantId?, updateSql, updateParams, eventType,
+   *          eventPayload, prepare? }.
+   * updateSql MUST be a conditional UPDATE ... RETURNING tenant_id (plus any
+   * columns the caller needs back). eventType must be in the UER
+   * MISSION_TRANSITION_EVENTS whitelist. Alternatively, spec.prepare(client)
+   * may compute { updateSql, updateParams, eventPayload, extra } inside the
+   * transaction (for read-then-write transitions); `extra` is passed through
+   * on the outcome for the caller's own bookkeeping.
+   *
+   * Returns { matched:boolean, tenantId?, row?, event?, extra? }. matched=false means the
+   * conditional UPDATE matched zero rows: nothing mutated, nothing appended.
+   */
+  async _transitionInTransaction(spec) {
+    const { missionId, tenantId = null, eventType } = spec;
+    if (!this._pool || typeof this._pool.connect !== 'function') {
+      throw new Error('MissionRuntime: PostgreSQL transaction connection is required');
+    }
+    if (!this._eventRuntime || this._eventRuntime._pool !== this._pool ||
+        typeof this._eventRuntime.appendMissionTransitionInTransaction !== 'function' ||
+        typeof this._eventRuntime.dispatchMissionTransition !== 'function') {
+      throw new Error('MissionRuntime: same-pool transactional event runtime is required');
+    }
+    const outcome = await this._withCreateTransaction(async client => {
+      if (tenantId !== null && tenantId !== undefined) {
+        const locked = await client.query(
+          'SELECT tenant_id FROM ping_missions WHERE mission_id = $1 FOR UPDATE',
+          [missionId]
+        );
+        const rowTenant = locked.rows[0] && locked.rows[0].tenant_id;
+        if (!rowTenant || rowTenant !== tenantId) {
+          throw missionError('tenant_mismatch', 'Mission tenant does not match caller-declared tenant');
+        }
+      }
+      // Optional prepare step for read-then-write transitions (e.g.
+      // failWithRetry's attempt counter): runs inside the same transaction.
+      let updateSql = spec.updateSql;
+      let updateParams = spec.updateParams;
+      let eventPayload = spec.eventPayload;
+      let extra;
+      if (typeof spec.prepare === 'function') {
+        const p = await spec.prepare(client);
+        updateSql = p.updateSql; updateParams = p.updateParams;
+        eventPayload = p.eventPayload; extra = p.extra;
+      }
+      const updated = await client.query(updateSql, updateParams);
+      if ((updated.rowCount || 0) === 0) return { matched: false, extra };
+      const rowTenant = updated.rows[0] && updated.rows[0].tenant_id;
+      // Legacy tolerance: rows predating the W3 tenant model carry no
+      // tenant_id; their evidence is appended without a tenant scope exactly
+      // as before (the spine resolves UNKNOWN). Tenanted rows always carry
+      // their server-resolved tenant — never a caller claim.
+      const appended = await this._eventRuntime.appendMissionTransitionInTransaction(
+        client, eventType, eventPayload, rowTenant ? { tenant_id: rowTenant } : {});
+      if (!appended || appended.status !== 'ok' || !appended.event) {
+        throw missionError('mission_event_persist_failed',
+          `Evidence append failed for ${eventType}: ${(appended && appended.error) || 'unknown'}`);
+      }
+      return { matched: true, tenantId: rowTenant || null, row: updated.rows[0], event: appended, extra };
+    });
+    if (outcome.matched) {
+      try {
+        await this._eventRuntime.dispatchMissionTransition(outcome.event);
+      } catch (_) {
+        throw missionError('mission_dispatch_outcome_unknown',
+          'Transition is durable; post-commit delivery outcome is unknown');
+      }
+    }
+    return outcome;
+  }
+
+  /**
    * Initialize mission tables.
    */
   async initialize() {
@@ -440,24 +530,23 @@ class MissionRuntime {
    * status 'created'. A second claim on an already-claimed mission is rejected
    * (rowCount 0) — the assignment can never be stolen by a concurrent scheduler.
    *
+   * P2 write-authority closure (2026-10-11): the UPDATE and the
+   * MISSION_ASSIGNED evidence append share one transaction
+   * (_transitionInTransaction). options.tenantId, when declared by the
+   * caller, is verified against the row BEFORE the mutation.
+   *
    * @returns {Promise<number>} rowCount — 1 if claimed, 0 if not claimable
    */
-  async assign(missionId, workerName) {
-    const result = await this._pool.query(
-      `UPDATE ping_missions SET status = 'assigned', assigned_to = $1, claimed_at = NOW(), lease_until = NOW() + INTERVAL '60 seconds' WHERE mission_id = $2 AND status = 'created' AND hold_at IS NULL RETURNING mission_id`,
-      [workerName, missionId]
-    );
-
-    const claimed = (result.rowCount || 0) === 1;
-
-    if (claimed && this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_ASSIGNED', 'mission-runtime', {
-        missionId, assignedTo: workerName,
-      }, tenantId ? { tenant_id: tenantId } : {});
-    }
-
-    return result.rowCount || 0;
+  async assign(missionId, workerName, options = {}) {
+    const outcome = await this._transitionInTransaction({
+      missionId,
+      tenantId: options.tenantId,
+      updateSql: `UPDATE ping_missions SET status = 'assigned', assigned_to = $1, claimed_at = NOW(), lease_until = NOW() + INTERVAL '60 seconds' WHERE mission_id = $2 AND status = 'created' AND hold_at IS NULL RETURNING tenant_id`,
+      updateParams: [workerName, missionId],
+      eventType: 'MISSION_ASSIGNED',
+      eventPayload: { missionId, assignedTo: workerName },
+    });
+    return outcome.matched ? 1 : 0;
   }
 
   /**
@@ -465,18 +554,19 @@ class MissionRuntime {
    *
    * Conditional: only transitions from 'assigned' to 'running'. A mission
    * that is already completed, failed, or retry_pending is never restarted.
+   *
+   * P2 write-authority closure (2026-10-11): UPDATE + MISSION_STARTED
+   * evidence in one transaction (_transitionInTransaction).
    */
-  async start(missionId) {
-    const result = await this._pool.query(
-      `UPDATE ping_missions SET status = 'running', started_at = NOW() WHERE mission_id = $1 AND status = 'assigned'`,
-      [missionId]
-    );
-
-    if ((result.rowCount || 0) === 1 && this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_STARTED', 'mission-runtime', { missionId },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
+  async start(missionId, options = {}) {
+    await this._transitionInTransaction({
+      missionId,
+      tenantId: options.tenantId,
+      updateSql: `UPDATE ping_missions SET status = 'running', started_at = NOW() WHERE mission_id = $1 AND status = 'assigned' RETURNING tenant_id`,
+      updateParams: [missionId],
+      eventType: 'MISSION_STARTED',
+      eventPayload: { missionId },
+    });
   }
 
   /**
@@ -498,7 +588,7 @@ class MissionRuntime {
    * PROVEN_NOT_OCCURRED the row is 'created' with hold_at NULL and the ack
    * still matches 0 rows, exactly as before.
    */
-  async complete(missionId, result = {}) {
+  async complete(missionId, result = {}, options = {}) {
     // Calculate duration from started_at
     let duration_ms = null;
     try {
@@ -511,33 +601,34 @@ class MissionRuntime {
       }
     } catch (_) {}
 
-    const updateResult = await this._pool.query(
-      `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2 AND (status = 'running' OR (hold_at IS NOT NULL AND status IN ('assigned', 'created')))`,
-      [JSON.stringify({ ...result, duration_ms }), missionId]
-    );
-
-    if ((updateResult.rowCount || 0) === 1 && this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_COMPLETED', 'mission-runtime', { missionId, result, duration_ms },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
+    // P2 write-authority closure (2026-10-11): UPDATE + MISSION_COMPLETED
+    // evidence in one transaction (_transitionInTransaction).
+    await this._transitionInTransaction({
+      missionId,
+      tenantId: options.tenantId,
+      updateSql: `UPDATE ping_missions SET status = 'completed', result = $1, completed_at = NOW() WHERE mission_id = $2 AND (status = 'running' OR (hold_at IS NOT NULL AND status IN ('assigned', 'created'))) RETURNING tenant_id`,
+      updateParams: [JSON.stringify({ ...result, duration_ms }), missionId],
+      eventType: 'MISSION_COMPLETED',
+      eventPayload: { missionId, result, duration_ms },
+    });
   }
 
   /**
    * Fail a mission.
+   *
+   * P2 write-authority closure (2026-10-11): UPDATE + MISSION_FAILED
+   * evidence in one transaction (_transitionInTransaction).
    */
-  async fail(missionId, error) {
-    const result = await this._pool.query(
-      `UPDATE ping_missions SET status = 'failed', error = $1, completed_at = NOW()
-       WHERE mission_id = $2 AND status IN ('running', 'assigned', 'retry_pending')`,
-      [error, missionId]
-    );
-
-    if ((result.rowCount || 0) >= 1 && this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
+  async fail(missionId, error, options = {}) {
+    await this._transitionInTransaction({
+      missionId,
+      tenantId: options.tenantId,
+      updateSql: `UPDATE ping_missions SET status = 'failed', error = $1, completed_at = NOW()
+       WHERE mission_id = $2 AND status IN ('running', 'assigned', 'retry_pending') RETURNING tenant_id`,
+      updateParams: [error, missionId],
+      eventType: 'MISSION_FAILED',
+      eventPayload: { missionId, error },
+    });
   }
 
   /**
@@ -568,30 +659,31 @@ class MissionRuntime {
       err.code = 'MISSION_NOT_FOUND';
       throw err;
     }
-    const result = await this._pool.query(
-      `UPDATE ping_missions
+    // P2 write-authority closure (2026-10-11): UPDATE + MISSION_APPROVED
+    // evidence in one transaction (_transitionInTransaction). The approver
+    // identity stays the authenticated caller (route layer); the tenant
+    // scope is authorized at the route layer against the row's tenant.
+    const outcome = await this._transitionInTransaction({
+      missionId,
+      updateSql: `UPDATE ping_missions
          SET status = 'approved', approved_by = $1, approved_at = NOW()
        WHERE mission_id = $2 AND status = 'created' AND hold_at IS NULL
-       RETURNING approved_at`,
-      [approver, missionId]
-    );
-    if ((result.rowCount || 0) !== 1) {
+       RETURNING tenant_id, approved_at`,
+      updateParams: [approver, missionId],
+      eventType: 'MISSION_APPROVED',
+      eventPayload: { missionId, approved_by: approver },
+    });
+    if (!outcome.matched) {
       const err = new Error(`mission ${missionId} is not approvable (status=${existing.rows[0].status})`);
       err.code = 'MISSION_NOT_APPROVABLE';
       err.currentStatus = existing.rows[0].status;
       throw err;
     }
-    if (this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_APPROVED', 'mission-runtime',
-        { missionId, approved_by: approver },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
     return {
       mission_id: missionId,
       status: 'approved',
       approved_by: approver,
-      approved_at: result.rows[0].approved_at,
+      approved_at: outcome.row.approved_at,
     };
   }
 
@@ -623,30 +715,29 @@ class MissionRuntime {
       err.code = 'MISSION_NOT_FOUND';
       throw err;
     }
-    const result = await this._pool.query(
-      `UPDATE ping_missions
+    // P2 write-authority closure (2026-10-11): UPDATE + MISSION_REJECTED
+    // evidence in one transaction (_transitionInTransaction).
+    const outcome = await this._transitionInTransaction({
+      missionId,
+      updateSql: `UPDATE ping_missions
          SET status = 'rejected', rejected_by = $1, rejected_at = NOW(), rejection_reason = $2
        WHERE mission_id = $3 AND status = 'created' AND hold_at IS NULL
-       RETURNING rejected_at`,
-      [rejecter, reason, missionId]
-    );
-    if ((result.rowCount || 0) !== 1) {
+       RETURNING tenant_id, rejected_at`,
+      updateParams: [rejecter, reason, missionId],
+      eventType: 'MISSION_REJECTED',
+      eventPayload: { missionId, rejected_by: rejecter, reason },
+    });
+    if (!outcome.matched) {
       const err = new Error(`mission ${missionId} is not rejectable (status=${existing.rows[0].status})`);
       err.code = 'MISSION_NOT_REJECTABLE';
       err.currentStatus = existing.rows[0].status;
       throw err;
     }
-    if (this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_REJECTED', 'mission-runtime',
-        { missionId, rejected_by: rejecter, reason },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
     return {
       mission_id: missionId,
       status: 'rejected',
       rejected_by: rejecter,
-      rejected_at: result.rows[0].rejected_at,
+      rejected_at: outcome.row.rejected_at,
       reason,
     };
   }
@@ -674,45 +765,54 @@ class MissionRuntime {
     const maxAttempts = options.max_attempts || 3;
     const backoffMs = options.backoff_delay_ms || 5000;
 
-    // Read current retries
+    // P2 write-authority closure (2026-10-11): the attempt-count read, the
+    // conditional UPDATE and the MISSION_FAILED evidence append share one
+    // transaction. The SELECT ... FOR UPDATE serializes concurrent failures
+    // against the same mission, so the retries counter cannot lose an
+    // increment; the F-01 bounded-exhaustion invariant is preserved exactly.
+    const outcome = await this._transitionInTransaction({
+      missionId,
+      tenantId: options.tenantId,
+      eventType: 'MISSION_FAILED',
+      prepare: async (client) => {
+        const row = await client.query(
+          'SELECT retries FROM ping_missions WHERE mission_id = $1 FOR UPDATE',
+          [missionId]
+        );
+        const nextRetry = ((row.rows[0] && row.rows[0].retries) || 0) + 1;
+        const eventPayload = { missionId, error, retries: nextRetry };
+        const extra = { nextRetry };
+        if (nextRetry >= maxAttempts) {
+          // Exhausted — mark failed permanently
+          return {
+            updateSql: `UPDATE ping_missions SET status = 'failed', error = $1, retries = $2, completed_at = NOW()
+             WHERE mission_id = $3 AND status IN ('running', 'assigned', 'retry_pending') RETURNING tenant_id`,
+            updateParams: [error, nextRetry, missionId],
+            eventPayload, extra,
+          };
+        }
+        // Schedule retry. The IN-list deliberately includes 'retry_pending': a
+        // failure recorded against an already-retry_pending row must still
+        // advance the attempt counter (state progress). Without it the UPDATE
+        // matches zero rows and the mission re-executes forever with retries
+        // frozen — the F-01 infinite loop.
+        const retryAt = new Date(Date.now() + backoffMs);
+        return {
+          updateSql: `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3
+           WHERE mission_id = $4 AND status IN ('running', 'assigned', 'retry_pending') RETURNING tenant_id`,
+          updateParams: [error, nextRetry, retryAt.toISOString(), missionId],
+          eventPayload, extra,
+        };
+      },
+    });
+    if (outcome.extra && typeof outcome.extra.nextRetry === 'number') {
+      return outcome.extra.nextRetry;
+    }
+    // No rows matched: preserve the legacy return contract (attempt count
+    // read without a state change).
     const row = await this._pool.query(
-      `SELECT retries FROM ping_missions WHERE mission_id = $1`,
-      [missionId]
-    );
-    const currentRetries = (row.rows[0] && row.rows[0].retries) || 0;
-    const nextRetry = currentRetries + 1;
-
-    let affectedRows = 0;
-    if (nextRetry >= maxAttempts) {
-      // Exhausted — mark failed permanently
-      const result = await this._pool.query(
-        `UPDATE ping_missions SET status = 'failed', error = $1, retries = $2, completed_at = NOW()
-         WHERE mission_id = $3 AND status IN ('running', 'assigned', 'retry_pending')`,
-        [error, nextRetry, missionId]
-      );
-      affectedRows = result.rowCount || 0;
-    } else {
-      // Schedule retry. The IN-list deliberately includes 'retry_pending': a
-      // failure recorded against an already-retry_pending row must still
-      // advance the attempt counter (state progress). Without it the UPDATE
-      // matches zero rows and the mission re-executes forever with retries
-      // frozen — the F-01 infinite loop.
-      const retryAt = new Date(Date.now() + backoffMs);
-      const result = await this._pool.query(
-        `UPDATE ping_missions SET status = 'retry_pending', error = $1, retries = $2, retry_at = $3
-         WHERE mission_id = $4 AND status IN ('running', 'assigned', 'retry_pending')`,
-        [error, nextRetry, retryAt.toISOString(), missionId]
-      );
-      affectedRows = result.rowCount || 0;
-    }
-
-    if (affectedRows >= 1 && this._eventRuntime) {
-      const tenantId = await this._missionTenant(missionId);
-      await this._eventRuntime.emit('MISSION_FAILED', 'mission-runtime', { missionId, error, retries: nextRetry },
-        tenantId ? { tenant_id: tenantId } : {});
-    }
-
-    return nextRetry;
+      'SELECT retries FROM ping_missions WHERE mission_id = $1', [missionId]);
+    return ((row.rows[0] && row.rows[0].retries) || 0) + 1;
   }
 
   /**
@@ -723,6 +823,10 @@ class MissionRuntime {
    * untouched. Called by the scheduler on each poll cycle for every mission
    * in its _processing set, preventing the reaper from resetting in-progress
    * missions while still catching orphaned ones from crashed schedulers.
+   *
+   * P2 write-authority note (2026-10-11): single conditional UPDATE, emits
+   * no evidence event — outside the UPDATE-then-emit divergence class.
+   * Internal scheduler callers only (PROCESSOR classification).
    *
    * @param {string} missionId
    * @param {number} durationSeconds — lease extension (default 60)
@@ -758,26 +862,40 @@ class MissionRuntime {
    * @returns {Promise<number>} count of reclaimed missions
    */
   async reapExpiredLeases() {
-    const result = await this._pool.query(
-      `UPDATE ping_missions
-       SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NOW()
+    // P2 write-authority closure (2026-10-11): each reclaimed row's UPDATE
+    // and its MISSION_LEASE_EXPIRED evidence share one transaction. Candidate
+    // discovery is a plain SELECT; the conditional UPDATE inside the
+    // transaction is the authority — a row that changed between discovery
+    // and claim is skipped (matched:false), never half-recorded.
+    const candidates = await this._pool.query(
+      `SELECT mission_id FROM ping_missions
        WHERE status IN ('running', 'assigned')
          AND lease_until IS NOT NULL
          AND lease_until < NOW()
-         AND hold_at IS NULL
-       RETURNING mission_id`
+         AND hold_at IS NULL`
     );
 
-    const reclaimed = result.rowCount || 0;
+    let reclaimed = 0;
+    for (const { mission_id } of candidates.rows) {
+      const outcome = await this._transitionInTransaction({
+        missionId: mission_id,
+        updateSql: `UPDATE ping_missions
+         SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NOW()
+         WHERE mission_id = $1
+           AND status IN ('running', 'assigned')
+           AND lease_until IS NOT NULL
+           AND lease_until < NOW()
+           AND hold_at IS NULL
+         RETURNING tenant_id`,
+        updateParams: [mission_id],
+        eventType: 'MISSION_LEASE_EXPIRED',
+        eventPayload: { missionId: mission_id },
+      });
+      if (outcome.matched) reclaimed++;
+    }
+
     if (reclaimed > 0) {
       console.log(`[MissionRuntime] Reclaimed ${reclaimed} expired lease(s)`);
-      for (const row of result.rows) {
-        if (this._eventRuntime) {
-          const tenantId = await this._missionTenant(row.mission_id);
-          await this._eventRuntime.emit('MISSION_LEASE_EXPIRED', 'mission-runtime', { missionId: row.mission_id },
-            tenantId ? { tenant_id: tenantId } : {});
-        }
-      }
     }
 
     return reclaimed;
@@ -806,6 +924,11 @@ class MissionRuntime {
    * writer of hold_at.
    *
    * @returns {Promise<number>} 1 if the hold was recorded, 0 if already held or not holdable
+   *
+   * P2 write-authority note (2026-10-11): single conditional UPDATE, emits
+   * no events by design (the reconciler's own MISSION_RECONCILE_HOLD record
+   * is the evidence trail) — outside the UPDATE-then-emit divergence class.
+   * Internal reconciler callers only (PROCESSOR classification).
    */
   async markHold(missionId, reason) {
     const result = await this._pool.query(
@@ -848,6 +971,10 @@ class MissionRuntime {
    * assign/watchdog) -> resolveHold -> terminal, or exactly one new attempt.
    *
    * @returns {Promise<number>} 1 if a hold was resolved, 0 if the mission was not held
+   *
+   * P2 write-authority note (2026-10-11): single conditional UPDATE, emits
+   * no events by design — outside the UPDATE-then-emit divergence class.
+   * Reconciler/operator callers only (PROCESSOR classification).
    */
   async resolveHold(missionId, resolution, result = {}) {
     if (!['PROVEN_OCCURRED', 'PROVEN_NOT_OCCURRED', 'MANUAL_RESOLUTION'].includes(resolution)) {
@@ -894,26 +1021,38 @@ class MissionRuntime {
    * @returns {Promise<number>} count of reclaimed missions
    */
   async reclaimRetryPending() {
-    const result = await this._pool.query(
-      `UPDATE ping_missions
-       SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NULL
+    // P2 write-authority closure (2026-10-11): per-row transaction — the
+    // UPDATE and its MISSION_RETRY_RECLAIMED evidence are atomic, same
+    // contract as reapExpiredLeases above.
+    const candidates = await this._pool.query(
+      `SELECT mission_id FROM ping_missions
        WHERE status = 'retry_pending'
          AND retry_at IS NOT NULL
          AND retry_at <= NOW()
-         AND hold_at IS NULL
-       RETURNING mission_id`
+         AND hold_at IS NULL`
     );
 
-    const reclaimed = result.rowCount || 0;
+    let reclaimed = 0;
+    for (const { mission_id } of candidates.rows) {
+      const outcome = await this._transitionInTransaction({
+        missionId: mission_id,
+        updateSql: `UPDATE ping_missions
+         SET status = 'created', assigned_to = NULL, lease_until = NULL, claimed_at = NULL, retry_at = NULL
+         WHERE mission_id = $1
+           AND status = 'retry_pending'
+           AND retry_at IS NOT NULL
+           AND retry_at <= NOW()
+           AND hold_at IS NULL
+         RETURNING tenant_id`,
+        updateParams: [mission_id],
+        eventType: 'MISSION_RETRY_RECLAIMED',
+        eventPayload: { missionId: mission_id },
+      });
+      if (outcome.matched) reclaimed++;
+    }
+
     if (reclaimed > 0) {
       console.log(`[MissionRuntime] Reclaimed ${reclaimed} due retries for redispatch`);
-      for (const row of result.rows) {
-        if (this._eventRuntime) {
-          const tenantId = await this._missionTenant(row.mission_id);
-          await this._eventRuntime.emit('MISSION_RETRY_RECLAIMED', 'mission-runtime', { missionId: row.mission_id },
-            tenantId ? { tenant_id: tenantId } : {});
-        }
-      }
     }
 
     return reclaimed;

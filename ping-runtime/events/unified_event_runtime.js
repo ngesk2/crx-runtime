@@ -64,6 +64,21 @@ const VERDICT_PRODUCERS = Object.freeze({
   JEV_DECISION_EVALUATED: 'jev-shadow', // registry authority_owner: JevShadowWorker
 });
 
+// P2 write-authority closure (2026-10-11): the only MISSION_* transition
+// events the internal processor may append through the transactional seam.
+// The set is closed: MissionRuntime selects the type from its own control
+// flow, never from a request body or wire field.
+const MISSION_TRANSITION_EVENTS = new Set([
+  'MISSION_ASSIGNED',
+  'MISSION_STARTED',
+  'MISSION_COMPLETED',
+  'MISSION_FAILED',
+  'MISSION_APPROVED',
+  'MISSION_REJECTED',
+  'MISSION_LEASE_EXPIRED',
+  'MISSION_RETRY_RECLAIMED',
+]);
+
 // Verdict-shaped events must also carry qualifying provenance — the evidence
 // the genuine producer always attaches. These are structural (shape) checks,
 // not truth checks: they reject hand-built forgeries at admission while
@@ -398,6 +413,31 @@ class UnifiedEventRuntime {
 
   async dispatchMissionCreated(result) {
     if(result?.status!=='ok' || result.event?.event_type!=='MISSION_CREATED') throw new Error('invalid_mission_evidence');
+    if(result.inserted) {
+      this._stats.persisted++;
+      await this._dispatchCommitted(result.event);
+    }
+  }
+
+  // P2 write-authority closure (2026-10-11): fixed evidence seam for the
+  // internal mission processor's state transitions. This supplies
+  // transaction atomicity — the MISSION_* transition event is appended on
+  // the SAME pg client/transaction as the mission row UPDATE, so required
+  // durable evidence cannot fail while the business mutation silently
+  // succeeds. Like appendMissionCreatedInTransaction it is atomicity only,
+  // not owner entitlement or object permission: the event type comes from a
+  // hardcoded whitelist chosen by MissionRuntime, never from a request, and
+  // the source is fixed to 'mission-runtime'.
+  async appendMissionTransitionInTransaction(client,eventType,payload,options={}) {
+    if(!client || typeof client.query!=='function') throw new Error('mission_transaction_required');
+    if(!MISSION_TRANSITION_EVENTS.has(eventType)) throw new Error('mission_transition_not_admitted');
+    return this.emit(eventType,'mission-runtime',payload,{
+      tenant_id:options.tenant_id,[COMMISSIONING_TRANSACTION]:{client},
+    });
+  }
+
+  async dispatchMissionTransition(result) {
+    if(result?.status!=='ok' || !MISSION_TRANSITION_EVENTS.has(result.event?.event_type)) throw new Error('invalid_mission_transition_evidence');
     if(result.inserted) {
       this._stats.persisted++;
       await this._dispatchCommitted(result.event);

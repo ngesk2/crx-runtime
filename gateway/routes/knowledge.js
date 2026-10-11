@@ -4,8 +4,45 @@
 
 function createKnowledgeRoutes(knowledgeGraph, options = {}) {
   const express = require('express');
+  // NOTE: per-call router (see reviews.js) — never module-level.
   const router = express.Router();
+  const { requireTenantScope, denyAuthUnconfigured } = require('../route_middleware');
   const hybridSearch = options.hybridSearch || null;
+  const auth = options.auth || null;
+
+  // P2 write-authority closure (2026-10-11): graph mutations run behind
+  // exterior authentication plus the tenant-scope gate. The knowledge
+  // graph's privacy boundary is the namespace, so the scope checked against
+  // the agent's operator-provisioned allow-list is the namespace: declared
+  // in the body for nodes, resolved server-side from the source node for
+  // edges (an edge can never smuggle a cross-namespace link past the gate).
+  const authenticate = auth && typeof auth.middleware === 'function'
+    ? auth.middleware()
+    : denyAuthUnconfigured;
+
+  // Resolve the source node's namespace server-side. The edge's scope is a
+  // stored fact, never a body claim.
+  async function resolveEdgeNamespace(req, res, next) {
+    try {
+      const sourceId = req.body && req.body.sourceId;
+      if (!sourceId) {
+        return res.status(400).json({ status: 'error', error: 'sourceId required' });
+      }
+      const pool = knowledgeGraph && knowledgeGraph._pool;
+      if (!pool) {
+        return res.status(503).json({ status: 'error', error: 'knowledge_store_unavailable' });
+      }
+      const r = await pool.query(
+        'SELECT namespace FROM knowledge_nodes WHERE node_id = $1', [sourceId]);
+      if (!r.rows.length) {
+        return res.status(404).json({ status: 'error', error: 'edge_source_not_found' });
+      }
+      req.edgeNamespace = r.rows[0].namespace;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  }
 
   // Get knowledge stats
   router.get('/stats', async (req, res) => {
@@ -61,7 +98,10 @@ function createKnowledgeRoutes(knowledgeGraph, options = {}) {
   });
 
   // Add a node
-  router.post('/nodes', async (req, res) => {
+  router.post('/nodes',
+    authenticate,
+    requireTenantScope((req) => req.body && req.body.namespace),
+    async (req, res) => {
     try {
       const { nodeType, label, data, entityType, entityId, namespace, status, confidence } = req.body;
       const nodeId = await knowledgeGraph.addNode(nodeType, label, data, { entityType, entityId, namespace, status, confidence });
@@ -83,7 +123,11 @@ function createKnowledgeRoutes(knowledgeGraph, options = {}) {
   });
 
   // Add an edge
-  router.post('/edges', async (req, res) => {
+  router.post('/edges',
+    authenticate,
+    resolveEdgeNamespace,
+    requireTenantScope((req) => req.edgeNamespace),
+    async (req, res) => {
     try {
       const { sourceId, targetId, edgeType, weight, data } = req.body;
       const edgeId = await knowledgeGraph.addEdge(sourceId, targetId, edgeType, data, weight);

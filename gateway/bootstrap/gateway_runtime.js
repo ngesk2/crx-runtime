@@ -864,17 +864,26 @@ class GatewayRuntime {
     this._app.use('/governance', createGovernanceRoutes(services.eventGovernance));
 
     // HPP authorities — conditional
+    //
+    // P2 write-authority closure (2026-10-11): the mutating HPP routes mount
+    // behind exterior authentication + the tenant-scope gate. The auth
+    // instance is threaded into the route factories; when it is unavailable
+    // (no PG) the mutations fail closed (503) instead of running bare.
+    // /customers and /missions stay on the admitted command path
+    // (admittedCommandHandler -> executeLockedGrant), which is strictly
+    // stronger: trust-root admission with durable receipts.
+    const exteriorAuth = services.exteriorAuthMiddleware || null;
     if (services.aiWorkspaceAuthority) {
       this._app.use('/ai-workspace', createAiWorkspaceRoutes(services.aiWorkspaceAuthority));
     }
     if (services.reviewAuthority) {
-      this._app.use('/reviews', createReviewRoutes(services.reviewAuthority));
+      this._app.use('/reviews', createReviewRoutes(services.reviewAuthority, exteriorAuth));
     }
     if (services.customerAuthority) {
       this._app.use('/customers', createCustomerRoutes(services.customerAuthority));
     }
     if (services.projectAuthority) {
-      this._app.use('/projects', createProjectRoutes(services.projectAuthority));
+      this._app.use('/projects', createProjectRoutes(services.projectAuthority, exteriorAuth));
     }
     if (services.executionEngine) {
       this._app.use('/orchestration', createOrchestrationRoutes(services.executionEngine));
@@ -884,6 +893,7 @@ class GatewayRuntime {
     if (services.knowledgeGraph) {
       this._app.use('/knowledge', createKnowledgeRoutes(services.knowledgeGraph, {
         hybridSearch: services.hybridSearch,
+        auth: exteriorAuth,
       }));
     }
     if (services.missionRuntime) {

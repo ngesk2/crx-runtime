@@ -16,6 +16,13 @@
  *                    invalid credential -> 401, fail closed. The route also
  *                    refuses to run without an authenticated identity even if
  *                    mounted without the middleware (defense in depth).
+ *   TENANT SCOPE:    (P2 write-authority closure, 2026-10-11) the mission row's
+ *                    tenant is resolved server-side and must sit inside the
+ *                    agent's operator-provisioned tenant allow-list
+ *                    (req.authenticatedAgent.tenantAllowlist). A valid key
+ *                    alone no longer decides another tenant's missions:
+ *                    unbound agents -> 403 tenant_scope_unconfigured,
+ *                    out-of-scope tenant -> 403 tenant_not_authorized.
  *   CAPABILITY:      the gateway's existing authorization boundary: only
  *                    authenticated exterior agents reach these routes, the same
  *                    posture as every other guarded mutation route.
@@ -93,11 +100,39 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
     return false;
   }
 
+  // P2 write-authority closure (2026-10-11): tenant authorization for card
+  // decisions. The mission's tenant is resolved server-side from
+  // ping_missions — never from the request — and must sit inside the
+  // authenticated agent's operator-provisioned allow-list. Returns the
+  // verified tenant_id, or null after sending the denial response.
+  async function requireTenantForMission(req, res, missionId) {
+    const agent = req.authenticatedAgent;
+    const allow = agent && Array.isArray(agent.tenantAllowlist) ? agent.tenantAllowlist : [];
+    let tenantId = null;
+    try {
+      const r = await pool.query(
+        'SELECT tenant_id FROM ping_missions WHERE mission_id = $1', [missionId]);
+      tenantId = r.rows.length ? r.rows[0].tenant_id : null;
+    } catch (_) { tenantId = null; }
+    if (!tenantId) {
+      res.status(404).json({ status: 'error', error: 'mission_not_found', mission_id: missionId });
+      return null;
+    }
+    if (allow.length === 0) {
+      res.status(403).json({ status: 'error', error: 'tenant_scope_unconfigured' });
+      return null;
+    }
+    if (!allow.includes(tenantId) && !allow.includes('*')) {
+      res.status(403).json({ status: 'error', error: 'tenant_not_authorized' });
+      return null;
+    }
+    return tenantId;
+  }
+
   function missionError(res, err, missionId) {
     if (err.code === 'MISSION_NOT_FOUND') {
       return res.status(404).json({ status: 'error', error: 'mission_not_found', mission_id: missionId });
-    }
-    if (err.code === 'MISSION_NOT_APPROVABLE' || err.code === 'MISSION_NOT_REJECTABLE') {
+    }    if (err.code === 'MISSION_NOT_APPROVABLE' || err.code === 'MISSION_NOT_REJECTABLE') {
       return res.status(409).json({
         status: 'error',
         error: err.code === 'MISSION_NOT_APPROVABLE' ? 'mission_not_approvable' : 'mission_not_rejectable',
@@ -121,6 +156,7 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
       if (!missionId || typeof missionId !== 'string') {
         return res.status(400).json({ status: 'error', error: 'mission_id_required' });
       }
+      if (!await requireTenantForMission(req, res, missionId)) return;
       const result = await missionRuntime.approve(missionId, caller);
       res.json({
         status: 'ok',
@@ -150,6 +186,7 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
           return res.status(400).json({ status: 'error', error: 'reason_invalid' });
         }
       }
+      if (!await requireTenantForMission(req, res, missionId)) return;
       const result = await missionRuntime.reject(missionId, caller, reason == null ? null : reason);
       res.json({
         status: 'ok',
@@ -165,6 +202,9 @@ function createMissionCardRoutes({ missionRuntime, pool }) {
   });
 
   // POST /cards/reorder  (body: { cardIds: string[] })
+  // P2 note (2026-10-11): card order is UI-global state (single ORDER_KEY
+  // row), not tenant business data, so no tenant scope applies. It stays
+  // behind exterior authentication with the decider identity recorded.
   router.post('/cards/reorder', async (req, res) => {
     try {
       const caller = requireAuth(req, res);

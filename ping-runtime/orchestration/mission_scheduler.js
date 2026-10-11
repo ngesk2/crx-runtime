@@ -287,7 +287,10 @@ class MissionScheduler {
       // gate into dispatch. If the row is no longer claimable (claimed
       // elsewhere, stale pending snapshot, retry_pending not yet reclaimed),
       // the worker is NEVER invoked for it.
-      const claimed = await this._missionRuntime.assign(mission.mission_id, workerName);
+      // P2 write-authority closure (2026-10-11): the scheduler declares the
+      // tenant it is operating on; the runtime verifies it against the row
+      // BEFORE mutating (tenant_mismatch -> no mutation, no evidence).
+      const claimed = await this._missionRuntime.assign(mission.mission_id, workerName, { tenantId: mission.tenant_id });
       if (claimed < 1) {
         console.log(`[MissionScheduler] Mission ${mission.mission_id} not claimable (status changed since poll) - skipping dispatch`);
         this._stats.skipped++;
@@ -295,7 +298,7 @@ class MissionScheduler {
       }
 
       // Start mission
-      await this._missionRuntime.start(mission.mission_id);
+      await this._missionRuntime.start(mission.mission_id, { tenantId: mission.tenant_id });
 
       // Build event for worker - dispatch on the ORIGINAL business event type
       // (mission.payload.event_type, stored by EventToMissionBridge), not the
@@ -388,7 +391,7 @@ class MissionScheduler {
         await this._missionRuntime.complete(mission.mission_id, {
           worker: workerName,
           completed_at: constitutionalTimeAuthority.nowAsISOString(),
-        });
+        }, { tenantId: mission.tenant_id });
         this._stats.completed++;
         // Resolved: a future stuck episode for this mission may be reconciled again.
         this._reconciled.delete(mission.mission_id);
@@ -435,7 +438,9 @@ class MissionScheduler {
       const retries = await this._missionRuntime.failWithRetry(
         mission.mission_id,
         error,
-        policy,
+        // P2 write-authority closure (2026-10-11): tenant declared by the
+        // scheduler, verified against the row before mutation.
+        { ...policy, tenantId: mission.tenant_id },
       );
 
       // P0-5: after exhaustion, route to DLQ

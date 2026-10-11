@@ -11,11 +11,26 @@
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, requireTenantScope, denyAuthUnconfigured } = require('../route_middleware');
 
-function createReviewRoutes(reviewAuthority) {
-  router.post('/sync', asyncHandler('POST /reviews/sync', async (req) => {
+function createReviewRoutes(reviewAuthority, auth) {
+  // NOTE: the router is created per factory call (not at module level) so
+  // repeated invocations (tests, remounts) never stack duplicate handlers.
+  const router = express.Router();
+  // P2 write-authority closure (2026-10-11): the mutating routes run behind
+  // exterior authentication AND the tenant-scope gate. A valid key alone is
+  // not enough — the declared tenant_id must be inside the agent's
+  // operator-provisioned allow-list, or the request never reaches the
+  // authority. Without an auth instance the mutations fail closed (503).
+  const authenticate = auth && typeof auth.middleware === 'function'
+    ? auth.middleware()
+    : denyAuthUnconfigured;
+  const scoped = (getScope, label, handler) =>
+    [authenticate, requireTenantScope(getScope), asyncHandler(label, handler)];
+
+  router.post('/sync', ...scoped(
+    (req) => req.body && (req.body.tenant_id || req.body.tenantId),
+    'POST /reviews/sync', async (req) => {
     const { tenant_id, location_id } = req.body;
 
     if (!tenant_id || !location_id) {
@@ -78,7 +93,9 @@ function createReviewRoutes(reviewAuthority) {
     return { review };
   }));
 
-  router.post('/:id/reply', asyncHandler('POST /reviews/:id/reply', async (req) => {
+  router.post('/:id/reply', ...scoped(
+    (req) => req.body && (req.body.tenant_id || req.body.tenantId),
+    'POST /reviews/:id/reply', async (req) => {
     const { id } = req.params;
     const { tenant_id, location_id, reply_text } = req.body;
 

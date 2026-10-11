@@ -61,6 +61,61 @@ function denyLegacyMutation(req, res) {
   return res.status(403).json({status:'error',error:'legacy_command_not_admitted'});
 }
 
+/**
+ * Fail-closed stub used when the exterior auth middleware is unavailable
+ * (e.g. gateway booted without Postgres). Mutating routes mounted with this
+ * deny everything instead of running unauthenticated.
+ */
+function denyAuthUnconfigured(req, res) {
+  return res.status(503).json({ status: 'error', error: 'exterior_auth_unconfigured' });
+}
+
+/**
+ * Tenant-scope authorization gate — P2 write-authority closure (2026-10-11).
+ *
+ * Completes the chain the exterior auth middleware starts: the middleware
+ * authenticates the caller (who), this gate authorizes the tenant scope
+ * (what tenant's business state the caller may touch).
+ *
+ * Contract:
+ * - 401 MISSING_AUTH when req.authenticatedAgent is absent (defense in
+ *   depth: the route refuses to run even if mounted without the middleware).
+ * - 400 tenant_scope_required when the request declares no scope. A mutation
+ *   with no declared tenant/namespace never reaches business SQL.
+ * - 403 tenant_scope_unconfigured when the agent has no operator-provisioned
+ *   allow-list. No binding installed -> fail closed, never open.
+ * - 403 tenant_not_authorized when the declared scope is outside the agent's
+ *   allow-list. The special entry '*' is an explicit operator grant for all
+ *   scopes; it is never a default.
+ * - On success stamps req.authorizedTenant (the verified scope) for handlers.
+ *
+ * The scope is a tenant_id or, for the knowledge graph, a namespace — both
+ * are opaque scope strings the operator binds per credential.
+ */
+function requireTenantScope(getScope) {
+  if (typeof getScope !== 'function') throw new Error('requireTenantScope: getScope(req) is required');
+  return (req, res, next) => {
+    const agent = req.authenticatedAgent;
+    if (!agent || !agent.agentId) {
+      return res.status(401).json({ status: 'denied', reason: 'Missing authentication', code: 'MISSING_AUTH' });
+    }
+    let scope = null;
+    try { scope = getScope(req); } catch (_) { scope = null; }
+    if (typeof scope !== 'string' || scope.length === 0) {
+      return res.status(400).json({ status: 'error', error: 'tenant_scope_required' });
+    }
+    const allow = Array.isArray(agent.tenantAllowlist) ? agent.tenantAllowlist : [];
+    if (allow.length === 0) {
+      return res.status(403).json({ status: 'error', error: 'tenant_scope_unconfigured' });
+    }
+    if (!allow.includes(scope) && !allow.includes('*')) {
+      return res.status(403).json({ status: 'error', error: 'tenant_not_authorized' });
+    }
+    req.authorizedTenant = scope;
+    next();
+  };
+}
+
 function admissionReceiptHandler(tenantRegistry) {
   return async (req, res) => {
     if (!tenantRegistry?._commissioningPool || typeof tenantRegistry?._commissioningTrust?.resolveActor !== 'function') {
@@ -150,5 +205,7 @@ module.exports = {
   admissionReceiptHandler,
   denyUnadmittedMutation,
   admittedCommandHandler,
-  denyLegacyMutation
+  denyLegacyMutation,
+  denyAuthUnconfigured,
+  requireTenantScope
 };

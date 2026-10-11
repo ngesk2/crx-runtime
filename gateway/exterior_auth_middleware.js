@@ -17,6 +17,18 @@
 
 const crypto = require('crypto');
 
+// P2 write-authority closure (2026-10-11): operator-installed tenant bindings
+// for the degraded in-memory credential path. Same EXTERIOR_TENANT_ALLOWLIST
+// JSON contract as the Postgres-backed _resolveTenantAllowlist.
+function _tenantAllowlistFromEnv(agentId) {
+  try {
+    const map = JSON.parse(process.env.EXTERIOR_TENANT_ALLOWLIST || '{}');
+    const list = map && map[agentId];
+    if (Array.isArray(list)) return list.filter(s => typeof s === 'string' && s.length > 0);
+  } catch (_) {}
+  return [];
+}
+
 class ExteriorAuthMiddleware {
   constructor(postgresPool) {
     this._pool = postgresPool;
@@ -64,6 +76,57 @@ class ExteriorAuthMiddleware {
     } catch (error) {
       // Column already VARCHAR(128) or table doesn't exist - ignore
     }
+
+    // P2 write-authority closure (2026-10-11): bind each exterior credential
+    // to an operator-managed tenant allow-list. Additive, non-destructive:
+    // existing rows keep working with NULL (env fallback) until the operator
+    // provisions bindings. A NULL/empty allow-list fails closed at the
+    // tenant-scope gate (route_middleware.requireTenantScope).
+    try {
+      await this._pool.query(`
+        ALTER TABLE exterior_agent_credentials
+        ADD COLUMN IF NOT EXISTS tenant_allowlist TEXT[] DEFAULT NULL
+      `);
+    } catch (error) {
+      // Older PG without IF NOT EXISTS on ADD COLUMN - ignore; env fallback applies
+    }
+  }
+
+  /**
+   * Resolve the operator-provisioned tenant allow-list for a credential.
+   *
+   * Precedence: (1) tenant_allowlist column on exterior_agent_credentials
+   * (operator-managed, authoritative when present); (2) EXTERIOR_TENANT_ALLOWLIST
+   * environment JSON mapping agent_id -> string[] (operator-installed);
+   * (3) empty list -> the tenant-scope gate fails closed.
+   *
+   * The special entry '*' grants all tenants. This is an explicit operator
+   * grant, never a default.
+   */
+  async _resolveTenantAllowlist(apiKey, agentId) {
+    try {
+      const r = await this._pool.query(
+        'SELECT tenant_allowlist FROM exterior_agent_credentials WHERE api_key = $1',
+        [apiKey]
+      );
+      const col = r.rows.length ? r.rows[0].tenant_allowlist : null;
+      if (Array.isArray(col) && col.length > 0) {
+        return col.filter(s => typeof s === 'string' && s.length > 0);
+      }
+    } catch (error) {
+      // Column absent (pre-migration table) or PG unreachable: env fallback.
+    }
+    try {
+      const raw = process.env.EXTERIOR_TENANT_ALLOWLIST || '{}';
+      const map = JSON.parse(raw);
+      const list = map && map[agentId];
+      if (Array.isArray(list)) {
+        return list.filter(s => typeof s === 'string' && s.length > 0);
+      }
+    } catch (_) {
+      // Malformed env JSON: fail closed (empty).
+    }
+    return [];
   }
 
   async _seedDefaultCredentials() {
@@ -109,14 +172,16 @@ class ExteriorAuthMiddleware {
       agentId: 'muse',
       agentName: 'Muse Level 1 (Observe)',
       isActive: true,
-      expiresAt: null
+      expiresAt: null,
+      tenantAllowlist: _tenantAllowlistFromEnv('muse'),
     });
 
     this._inMemoryCredentials.set(museLevel2Key, {
       agentId: 'muse-level-2',
       agentName: 'Muse Level 2 (Workspace Write)',
       isActive: true,
-      expiresAt: null
+      expiresAt: null,
+      tenantAllowlist: _tenantAllowlistFromEnv('muse-level-2'),
     });
 
     const source = process.env.MUSE_LEVEL_1_KEY ? 'environment' : 'generated';
@@ -190,9 +255,17 @@ class ExteriorAuthMiddleware {
         WHERE api_key = $1
       `, [apiKey]);
 
+      // P2 write-authority closure: bind the authenticated agent to its
+      // operator-provisioned tenant allow-list. Handlers must consult
+      // agent.tenantAllowlist via requireTenantScope before touching
+      // tenant business state; the middleware alone is authentication,
+      // not authorization.
+      const tenantAllowlist = await this._resolveTenantAllowlist(apiKey, credential.agent_id);
+
       return {
         agentId: credential.agent_id,
-        agentName: credential.agent_name
+        agentName: credential.agent_name,
+        tenantAllowlist
       };
     } catch (error) {
       // Postgres unavailable - fall back to in-memory
@@ -216,7 +289,8 @@ class ExteriorAuthMiddleware {
 
     return {
       agentId: credential.agentId,
-      agentName: credential.agentName
+      agentName: credential.agentName,
+      tenantAllowlist: Array.isArray(credential.tenantAllowlist) ? credential.tenantAllowlist : []
     };
   }
 

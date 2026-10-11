@@ -13,19 +13,37 @@
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, requireTenantScope, denyAuthUnconfigured } = require('../route_middleware');
 
-function createProjectRoutes(projectAuthority) {
-  router.post('/', asyncHandler('POST /projects', async (req, res) => {
-    const result = await projectAuthority.executeCreateProject(req.body);
+function createProjectRoutes(projectAuthority, auth) {
+  // NOTE: per-call router (see reviews.js) — never module-level.
+  const router = express.Router();
+  // P2 write-authority closure (2026-10-11): mutations require exterior
+  // authentication plus the tenant-scope gate. project writes previously
+  // accepted a raw body with no tenant at all; they now require a declared
+  // tenant inside the agent's operator-provisioned allow-list, and the
+  // recorded tenant is the gate-verified one (req.authorizedTenant), never
+  // a body value on trust.
+  const authenticate = auth && typeof auth.middleware === 'function'
+    ? auth.middleware()
+    : denyAuthUnconfigured;
+  const scoped = (getScope, label, handler) =>
+    [authenticate, requireTenantScope(getScope), asyncHandler(label, handler)];
+  const projectScope = (req) => req.body && (req.body.tenantId || req.body.tenant_id);
+
+  router.post('/', ...scoped(projectScope, 'POST /projects', async (req, res) => {
+    const result = await projectAuthority.executeCreateProject({
+      ...req.body,
+      tenantId: req.authorizedTenant,
+    });
     res.status(201).json(result);
   }));
 
-  router.put('/:id', asyncHandler('PUT /projects/:id', async (req, res) => {
+  router.put('/:id', ...scoped(projectScope, 'PUT /projects/:id', async (req, res) => {
     const result = await projectAuthority.executeUpdateProject({
       projectId: req.params.id,
       ...req.body,
+      tenantId: req.authorizedTenant,
     });
     res.json(result);
   }));
@@ -58,10 +76,11 @@ function createProjectRoutes(projectAuthority) {
     res.json(project);
   }));
 
-  router.post('/:id/artifacts', asyncHandler('POST /projects/:id/artifacts', async (req, res) => {
+  router.post('/:id/artifacts', ...scoped(projectScope, 'POST /projects/:id/artifacts', async (req, res) => {
     const result = await projectAuthority.executeAddArtifact({
       projectId: req.params.id,
       ...req.body,
+      tenantId: req.authorizedTenant,
     });
     res.status(201).json(result);
   }));
