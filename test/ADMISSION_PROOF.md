@@ -87,10 +87,10 @@ failures; a candidate pass is not an all-repository pass.
    or real HPP commissioning consent has been provisioned. FYD has real Google
    OIDC code, but login is not business entitlement; its current owner-mode demo
    identity is unverified. No real HPP grant has been issued.
-2. **All-writer convergence is UNPROVEN.** Three candidate HTTP journal entrances
-   now use the existing byte admission gate; four processing mutations reject
-   before SQL. Direct CanonicalEventEnvelope business callers, mission and registry
-   mutations, AppendOrchestrator, EventRepository, ConstitutionalEventBus and older
+2. **All-writer convergence is UNPROVEN.** Five candidate HTTP journal/command entrances
+   now use existing byte admission; eleven scoped legacy mutations reject before
+   SQL/provider effects. Other CanonicalEventEnvelope business callers, mission
+   processors, internal registry mutations, AppendOrchestrator, EventRepository, ConstitutionalEventBus and older
    Python/TS paths remain uncovered. Some business authorities mutate their rows
    before appending legacy events, so guarding that append alone is insufficient.
    Non-object shared-writer events remain outside this gate. Production is untouched;
@@ -203,6 +203,60 @@ storage do not count as authorization denials.
 No authorized legacy transition, receipt/replay guarantee or real FYD owner flow
 can be certified until an existing trusted command contract is reconciled before
 the first SQL/provider call, with the event and state mutation made consistent.
+
+## Authorized bounded command repair (current candidate)
+
+The preceding red checkpoint is historical evidence at 3f41538, not the status
+of the current command candidate. User authorization now permits the minimum
+compatibility contract documented before implementation in
+`test/LEGACY_COMMAND_CONTRACT.md`. No production configuration is installed.
+
+Customer and mission POSTs consume strict original bytes and resolve actor through
+the existing TenantRegistry trust root. CUSTOMER_UPSERT and MISSION_CREATE are
+separate exact granted actions; an object grant cannot authorize them. Raw bodies,
+ordinary public registry mutations and unsupported customer provider calls reject
+before effects. GET reads and existing internal processor behavior remain.
+
+Customer mutation, admitted PING event, legacy read mirror and immutable receipt
+share one transaction. The mirror is processed and points to the admitted event;
+its complete JSON is checked before and after marking. The full validated customer
+command is retained for evidence replay. Mission mutation and MISSION_CREATED share
+one transaction; missing or conflicting durable history remains UNKNOWN. Existing
+admitted missions require actor, all five scope fields and consistent anchor
+receipt evidence. No historical event or receipt is fabricated.
+
+The extracted shared grant helper accidentally dropped the signature binding;
+`signature` is now destructured before verification. Explicit valid/missing/invalid
+signature and payload-tamper tests cover this repair. Concurrent commands lock the
+logical operation before looking up its receipt; receipt collisions after effects
+roll back. Failed COMMIT acknowledgements remain UNKNOWN; original scoped receipt
+reads do not require a write grant to remain active.
+
+The command suites use fresh owned schemas in the marked disposable PostgreSQL
+cluster. They test original 12 negative HTTP probes, four customer failure stages,
+provider denial, signed command positives and scope/signature denials, shared-lock
+concurrent retries, replay, mission conflicts and ambiguous commit recovery. The
+canonical clean-SHA runner includes all these suites and retained regressions.
+The older eight-test mission lifecycle fixture had 1/8 passing at both baseline
+and candidate (missing tenant before lifecycle assertions); its fixture now
+supplies required tenant/transaction/evidence seams without changing assertions.
+The full gate includes that suite and retains the original baseline log.
+Final counts and SHA live in the recorded proof package, never inferred here.
+
+The 38-group census is bounded: 5 conditionally ADMITTED, 11 LEGACY-BLOCKED,
+4 PROCESSOR and 18 UNPROVEN. PROCESSOR is a role, not an entitlement certificate;
+all four processor groups remain unproven for source authority. ClaimMissionChainer
+is callable but not constructed in the inspected bootstrap, correcting the earlier
+claim that all 38 groups are boot-wired. Repository-wide caller discovery is incomplete.
+
+Oracle parity remains UNKNOWN: the user-designated hop script is absent from the
+attached WSL environment. No direct SSH bypass, live POST, provider call, production
+DB mutation, push, merge or deployment occurred. The supplied coordinator thread
+ID was not accessible to connected read/message tools, so no brief was delivered.
+
+FYD read-only findings are documented in `test/FYD_CUSTOMER_GAPS.md`. Real owner
+identity and production correction authority remain unproven; demo paths cannot
+supply them. Rust and the unrelated dirty FYD worktree are untouched.
 
 ## Lock evidence
 

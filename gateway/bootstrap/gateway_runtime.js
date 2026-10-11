@@ -430,14 +430,6 @@ class GatewayRuntime {
         reviewAuthority = new ReviewAuthority(this._storage, canonicalEventEnvelope, businessProfileAdapter);
         await reviewAuthority.initialize();
 
-        // HPP Customers
-        customerAuthority = new CustomerAuthority(this._storage, canonicalEventEnvelope, {
-          peopleAdapter,
-          gmailAdapter,
-          calendarAdapter,
-        });
-        await customerAuthority.initialize();
-
         // HPP Projects — Aggregate root
         projectAuthority = new ProjectAuthority(this._storage, canonicalEventEnvelope);
         await projectAuthority.initialize();
@@ -450,6 +442,15 @@ class GatewayRuntime {
           integrationManager,
         });
         await unifiedEventRuntime.initialize();
+        // HPP customer writes share the existing commissioning transaction pool.
+        customerAuthority = new CustomerAuthority(this._storage, canonicalEventEnvelope, {
+          tenantRegistry, eventRuntime: unifiedEventRuntime,
+          peopleAdapter,
+          gmailAdapter,
+          calendarAdapter,
+        });
+        await customerAuthority.initialize();
+        customerAuthority._admissionStorageIdentity = await this._verifyCustomerAdmissionStorage(this._storage, tenantRegistry);
         console.log('[GatewayRuntime] Unified Event Runtime initialized');
 
         // ─── Canonicalization Boundary (thin façade) ──────────────
@@ -486,7 +487,7 @@ class GatewayRuntime {
         await knowledgeGraph.initialize();
         console.log('[GatewayRuntime] Knowledge Graph initialized');
 
-        missionRuntime = new MissionRuntime({ pool: this._pool, eventRuntime: unifiedEventRuntime });
+        missionRuntime = new MissionRuntime({ pool: this._pool, eventRuntime: unifiedEventRuntime, tenantRegistry });
         await missionRuntime.initialize();
         console.log('[GatewayRuntime] Mission Runtime initialized');
 
@@ -726,6 +727,25 @@ class GatewayRuntime {
     const registry = new TenantRegistry(storage, { commissioningPool: this._pool, commissioningTrust: this._commissioningTrust });
     await registry.initializeCommissioning();
     return registry;
+  }
+
+  async _verifyCustomerAdmissionStorage(storage, registry) {
+    if (!this._pool || registry?._commissioningPool !== this._pool) return null;
+    // Preserve the legacy adapter's reads/initialization. Share admitted writes
+    // only when both connections resolve the same physical business relations.
+    const sql = `SELECT current_database() AS database, inet_server_addr()::text AS address,
+      inet_server_port() AS port,(SELECT system_identifier::text FROM pg_control_system()) AS cluster_identifier,
+      pg_postmaster_start_time()::text AS server_start,pg_is_in_recovery() AS replica,
+      current_setting('transaction_read_only') AS read_only,
+      to_regclass('customers')::oid AS customers_oid,to_regclass('canonical_events')::oid AS canonical_events_oid`;
+    try {
+      const [a,b] = await Promise.all([this._pool.query(sql),storage.query(sql)]);
+      const x=a.rows[0],y=b.rows[0];
+      const fields=['database','address','port','cluster_identifier','server_start','customers_oid','canonical_events_oid'];
+      if (!x?.customers_oid || !x.canonical_events_oid || !y?.customers_oid || !y.canonical_events_oid ||
+          x.replica || y.replica || x.read_only!=='off' || y.read_only!=='off' || !fields.every(k=>x[k]===y[k])) return null;
+      return Object.freeze({storage,admissionPool:this._pool,customers_oid:x.customers_oid,canonical_events_oid:x.canonical_events_oid});
+    } catch (_) { return null; }
   }
 
   _mountAdmissionRoutes(services) {

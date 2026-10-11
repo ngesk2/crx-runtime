@@ -19,6 +19,7 @@ function captureCommissioningBytes(req, res, bytes) {
 function admissionError(res, error) {
   const code = error.code || (error.message === 'malformed_input' ? error.message : null);
   if (!code || /^\d+$/.test(code)) return res.status(503).json({ status: 'UNKNOWN', error: 'admission_unavailable' });
+  if (/outcome_unknown|evidence_unproven/.test(code)) return res.status(503).json({status:'UNKNOWN',error:code});
   const status = /unconfigured|pool_mismatch/.test(code) ? 503 : code === 'unauthenticated_actor' ? 401
     : /^(invalid_|malformed_input|unsupported_protocol_version)/.test(code) ? 400 : 403;
   return res.status(status).json({ status: 'error', error: code });
@@ -38,6 +39,26 @@ function commissionedWriteHandler(eventRuntime, tenantRegistry) {
       return res.status(201).json({ status: 'ACCEPTED', eventId: result.receipt.event_id, receipt: result.receipt });
     } catch (error) { return admissionError(res, error); }
   };
+}
+
+function admittedCommandHandler(authority, method, operation) {
+  return async (req, res) => {
+    try {
+      const registry = authority?._tenantRegistry;
+      // Actor resolution belongs to the configured trust root, never body fields.
+      await require('../ping-runtime/runtime/commissioning_contract').actor(registry?._commissioningTrust, req);
+      if (!Buffer.isBuffer(req[COMMISSIONING_BYTES])) return res.status(400).json({status:'error',error:'original_bytes_required'});
+      if (!req.body?.intent) return res.status(403).json({status:'error',error:'legacy_command_not_admitted'});
+      const submission = require('../ping-runtime/runtime/commissioning_wire').parseCommandSubmission(req[COMMISSIONING_BYTES]);
+      if (submission.intent.operation !== operation) return res.status(403).json({status:'error',error:'command_operation_mismatch'});
+      const result = await authority[method](req, submission);
+      return res.status(201).json({status:'ACCEPTED', receipt:result.receipt, ...result.commandResult});
+    } catch (error) { return admissionError(res, error); }
+  };
+}
+
+function denyLegacyMutation(req, res) {
+  return res.status(403).json({status:'error',error:'legacy_command_not_admitted'});
 }
 
 function admissionReceiptHandler(tenantRegistry) {
@@ -127,5 +148,7 @@ module.exports = {
   captureCommissioningBytes,
   commissionedWriteHandler,
   admissionReceiptHandler,
-  denyUnadmittedMutation
+  denyUnadmittedMutation,
+  admittedCommandHandler,
+  denyLegacyMutation
 };

@@ -24,34 +24,8 @@ function createMissionRoutes(missionRuntime) {
     }
   });
 
-  // Create a mission (tenant_id required in body)
-  router.post('/', async (req, res) => {
-    try {
-      const { missionType, payload, priority, createdBy, tenant_id } = req.body;
-      if (!tenant_id) return res.status(400).json({ status: 'error', error: 'tenant_required' });
-      // LANE B (TenantOS): ownership binding at the dispatch entry. The namespace
-      // is DERIVED from the validated tenant_id, never trusted from the caller —
-      // a contradicting caller-supplied namespace fails closed (it would silently
-      // re-scope the execution into another tenant's context). The authorizing
-      // identity is the authenticated agent (this route sits behind the exterior
-      // auth middleware), never a body-claimed createdBy.
-      const boundNamespace = `tenant::${tenant_id}`;
-      const ownedPayload = { ...(payload || {}) };
-      if (ownedPayload.namespace && ownedPayload.namespace !== boundNamespace) {
-        return res.status(400).json({
-          status: 'error',
-          error: 'tenant_namespace_mismatch',
-          detail: `payload.namespace '${ownedPayload.namespace}' contradicts bound tenant '${tenant_id}' (expected '${boundNamespace}')`,
-        });
-      }
-      ownedPayload.namespace = boundNamespace;
-      const authorizedBy = (req.authenticatedAgent && req.authenticatedAgent.agentId) || createdBy || null;
-      const missionId = await missionRuntime.create(missionType, ownedPayload, { priority, createdBy: authorizedBy, tenant_id });
-      res.json({ status: 'ok', missionId });
-    } catch (err) {
-      res.status(400).json({ status: 'error', error: err.message });
-    }
-  });
+  // Signed MISSION_CREATE is distinct from object admission and processor creation.
+  router.post('/', require('../route_middleware').admittedCommandHandler(missionRuntime, 'createAdmitted', 'MISSION_CREATE'));
 
   // Get pending missions (tenant-scoped; Orca scheduler pins per tenant)
   router.get('/pending', async (req, res) => {

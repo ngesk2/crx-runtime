@@ -68,9 +68,46 @@ class MockPool {
     this._now = () => Date.now();
   }
 
+  async connect() {
+    let snapshot = null;
+    return {
+      query: async (sql, params = []) => {
+        const S = sql.trim().replace(/\s+/g, ' ');
+        if (S === 'BEGIN') { snapshot = structuredClone(this._tables); return { rows: [], rowCount: 0 }; }
+        if (S === 'COMMIT') { snapshot = null; return { rows: [], rowCount: 0 }; }
+        if (S === 'ROLLBACK') {
+          if (snapshot) this._tables = snapshot;
+          snapshot = null;
+          return { rows: [], rowCount: 0 };
+        }
+        if (S.startsWith('SELECT set_config(')) return { rows: [], rowCount: 1 };
+        return this.query(sql, params);
+      },
+      release() {},
+    };
+  }
+
   async query(sql, params = []) {
     const S = sql.trim().replace(/\s+/g, ' ');
     if (S.startsWith('CREATE')) return { rows: [], rowCount: 0 };
+    if (S.startsWith('SELECT set_config(')) return { rows: [], rowCount: 1 };
+
+    // Durable MISSION_CREATED lookup used when create observes an existing row.
+    if (S.includes('FROM ping_events') && S.includes("event_type = 'MISSION_CREATED'")) {
+      const rows = this._tables.ping_events.filter(event => event.tenant_id === params[0] &&
+        event.event_type === 'MISSION_CREATED' && event.source === 'mission-runtime' &&
+        event.payload.missionId === params[1]).slice(0, 2);
+      return { rows, rowCount: rows.length };
+    }
+
+    // Transactional event insert used only by the fixed mission evidence seam.
+    if (S.includes('INSERT INTO ping_events')) {
+      const existing = this._tables.ping_events.find(event => event.event_id === params[0]);
+      if (existing) return { rows: [], rowCount: 0 };
+      this._tables.ping_events.push({ event_id: params[0], event_type: params[1], source: params[2],
+        tenant_id: params[3], payload: JSON.parse(params[4]) });
+      return { rows: [], rowCount: 1 };
+    }
 
     // getPending — created + retry_pending with retry_at <= NOW()
     if (S.includes('WHERE status =') && S.includes('LIMIT')) {
@@ -105,6 +142,7 @@ class MockPool {
       const mission = {
         mission_id: params[0], mission_type: params[1], payload: params[2],
         priority: params[3] || 0, created_by: params[4] || null,
+        tenant_id: params[5],
         status: 'created', result: null, assigned_to: null,
         created_at: new Date().toISOString(),
         started_at: null, completed_at: null, error: null, retries: 0,
@@ -194,14 +232,33 @@ class MockPool {
   }
 }
 
-/** Fake eventRuntime recording emitted events (for MISSION_* emissions). */
-function fakeEventRuntime() {
+/** Fake same-pool event runtime for the in-memory transaction fixture only. */
+function fakeEventRuntime(pool) {
   const emitted = [];
+  const handlers = new Map();
   return {
+    _pool: pool,
     emitted,
+    on(eventType, handler) {
+      if (!handlers.has(eventType)) handlers.set(eventType, []);
+      handlers.get(eventType).push(handler);
+    },
     async emit(eventType, source, payload = {}) {
       emitted.push({ event_type: eventType, payload });
       return { status: 'ok', eventId: `evt-${emitted.length}` };
+    },
+    async appendMissionCreatedInTransaction(client, payload, options = {}) {
+      const eventId = `evt-${emitted.length + 1}`;
+      const inserted = await client.query(`INSERT INTO ping_events
+        (event_id,event_type,source,tenant_id,payload) VALUES($1,$2,$3,$4,$5) ON CONFLICT(event_id) DO NOTHING`,
+      [eventId, 'MISSION_CREATED', 'mission-runtime', options.tenant_id, JSON.stringify(payload)]);
+      const event = { event_id: eventId, event_type: 'MISSION_CREATED', source: 'mission-runtime',
+        tenant_id: options.tenant_id, payload };
+      return { status: 'ok', eventId, event, inserted: inserted.rowCount === 1 };
+    },
+    async dispatchMissionCreated(result) {
+      emitted.push({ event_type: result.event.event_type, payload: result.event.payload });
+      for (const handler of handlers.get('MISSION_CREATED') || []) await handler(result.event);
     },
   };
 }
@@ -216,15 +273,18 @@ function throwingWorker(message = 'boom') {
 
 function makeMr(overrides = {}) {
   const pool = new MockPool();
-  const mr = new MissionRuntime({ pool, eventRuntime: fakeEventRuntime(), ...overrides });
+  const eventRuntime = fakeEventRuntime(pool);
+  const mr = new MissionRuntime({ pool, eventRuntime, ...overrides });
   return { pool, mr };
 }
+
+const TEST_TENANT_ID = 'lifecycle-test';
 
 // ─── G2: Baseline happy path (green today, must stay green) ──────────
 
 test('G2-T4: created → assigned → running → completed (verified ok)', async () => {
   const { pool, mr } = makeMr();
-  const id = await mr.create('REVIEW_RESPONSE', { event_type: 'REVIEW_RECEIVED', review_id: 'r1' });
+  const id = await mr.create('REVIEW_RESPONSE', { event_type: 'REVIEW_RECEIVED', review_id: 'r1' }, { tenant_id: TEST_TENANT_ID });
   assert.ok(id, 'mission id returned');
 
   const rows1 = await mr.getPending(5);
@@ -260,12 +320,12 @@ test('G1-T1: dispatch() REJECTS when a worker throws (P0-2)', async () => {
 
 test('G1-T2: scheduler does NOT phantom-complete on worker failure (P0-3)', async () => {
   const { mr } = makeMr();
-  const id = await mr.create('REVIEW_RESPONSE', { event_type: 'REVIEW_RECEIVED', review_id: 'r1' });
+  const id = await mr.create('REVIEW_RESPONSE', { event_type: 'REVIEW_RECEIVED', review_id: 'r1' }, { tenant_id: TEST_TENANT_ID });
 
   const wr = new WorkerRuntime();
   wr.register('observation', throwingWorker('worker exploded'), { eventTypes: ['REVIEW_RECEIVED'] });
 
-  const scheduler = new MissionScheduler({ missionRuntime: mr, workerRuntime: wr, eventRuntime: fakeEventRuntime() });
+  const scheduler = new MissionScheduler({ missionRuntime: mr, workerRuntime: wr, eventRuntime: fakeEventRuntime(mr._pool) });
   const mission = (await mr.getPending(5))[0];
   await scheduler._dispatch(mission);
 
@@ -287,7 +347,7 @@ async function _findMission(mr, id) {
 
 test('G1-T3: a second claim on an assigned mission is rejected (P0-1)', async () => {
   const { mr } = makeMr();
-  const id = await mr.create('CUSTOMER_ONBOARD', { event_type: 'CUSTOMER_CREATED' });
+  const id = await mr.create('CUSTOMER_ONBOARD', { event_type: 'CUSTOMER_CREATED' }, { tenant_id: TEST_TENANT_ID });
   await mr.assign(id, 'scheduler-A');
 
   // P0-1: assign() must be a conditional transition — a second claim on the
@@ -304,7 +364,7 @@ test('G1-T3: a second claim on an assigned mission is rejected (P0-1)', async ()
 
 test('G3-T5: failWithRetry increments retries, sets retry_pending + retry_at, re-available after backoff', async () => {
   const { pool, mr } = makeMr();
-  const id = await mr.create('LEAD_FOLLOWUP', { event_type: 'LEAD_CREATED' });
+  const id = await mr.create('LEAD_FOLLOWUP', { event_type: 'LEAD_CREATED' }, { tenant_id: TEST_TENANT_ID });
   await mr.assign(id, 'observation');
 
   if (typeof mr.failWithRetry !== 'function') {
@@ -332,7 +392,7 @@ test('G3-T5: failWithRetry increments retries, sets retry_pending + retry_at, re
 
 test('G3-T6: exhaustion (max_attempts reached) → status failed', async () => {
   const { pool, mr } = makeMr();
-  const id = await mr.create('INVOICE_FOLLOWUP', { event_type: 'INVOICE_SENT' });
+  const id = await mr.create('INVOICE_FOLLOWUP', { event_type: 'INVOICE_SENT' }, { tenant_id: TEST_TENANT_ID });
 
   if (typeof mr.failWithRetry !== 'function') {
     throw new Error('P0-4 not implemented: MissionRuntime.failWithRetry() missing');
@@ -357,7 +417,7 @@ test('G3-T6: exhaustion (max_attempts reached) → status failed', async () => {
 
 test('G4-T7: exhausted mission routes to a dead-letter store with mission fields', async () => {
   const { mr } = makeMr();
-  const id = await mr.create('ESTIMATE_FOLLOWUP', { event_type: 'ESTIMATE_SENT', estimate_id: 'e9' });
+  const id = await mr.create('ESTIMATE_FOLLOWUP', { event_type: 'ESTIMATE_SENT', estimate_id: 'e9' }, { tenant_id: TEST_TENANT_ID });
 
   const wr = new WorkerRuntime();
   wr.register('observation', throwingWorker('permanent failure'), { eventTypes: ['ESTIMATE_SENT'] });
@@ -373,7 +433,7 @@ test('G4-T7: exhausted mission routes to a dead-letter store with mission fields
   const scheduler = new MissionScheduler({
     missionRuntime: mr,
     workerRuntime: wr,
-    eventRuntime: fakeEventRuntime(),
+    eventRuntime: fakeEventRuntime(mr._pool),
     deadLetterAuthority: dlq,          // P0-5 wiring point
     retryPolicy: { max_attempts: 1, backoff_delay_ms: 0 },  // P0-4 exhaustion on first failure
   });
@@ -393,7 +453,7 @@ test('G4-T7: exhausted mission routes to a dead-letter store with mission fields
 
 test('G5-T8: expired lease running/assigned mission is reclaimed to AVAILABLE by reaper', async () => {
   const { pool, mr } = makeMr();
-  const id = await mr.create('PROJECT_CLOSEOUT', { event_type: 'PROJECT_COMPLETED' });
+  const id = await mr.create('PROJECT_CLOSEOUT', { event_type: 'PROJECT_COMPLETED' }, { tenant_id: TEST_TENANT_ID });
   await mr.assign(id, 'crashing-scheduler');
   await mr.start(id);
 

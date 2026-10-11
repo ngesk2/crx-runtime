@@ -1,6 +1,5 @@
 'use strict';
-// Security requirements, deliberately failing until the existing authorities
-// have a compatible before-effect contract. Never treat these as TODO/pass.
+// Real persisted-state requirements for bounded legacy and signed command entrances.
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
@@ -43,10 +42,10 @@ const trust = {
 const registry = new TenantRegistry(pool, { commissioningPool: pool, commissioningTrust: trust });
 const runtime = new UnifiedEventRuntime({ pool });
 const envelope = new CanonicalEventEnvelope(pool);
-const customers = new CustomerAuthority(pool, envelope);
-const missions = new MissionRuntime({ pool, eventRuntime: runtime });
-const evidence = { scope: 'Disposable PostgreSQL; synthetic object grants only; no production entitlement',
-  runtime_patch: false, merge: 'HOLD', production: 'HOLD', cases: [] };
+const customers = new CustomerAuthority(pool, envelope, {tenantRegistry:registry,eventRuntime:runtime});
+const missions = new MissionRuntime({ pool, eventRuntime: runtime, tenantRegistry:registry });
+const evidence = { scope: 'Disposable PostgreSQL; synthetic object and typed command grants only; no production entitlement',
+  runtime_patch: true, merge: 'HOLD', production: 'HOLD', cases: [] };
 let server, url, sequence = 0, schemasOwned = false;
 function record(value) {
   const digest = C.digest(C.bytes(value)); records.set(digest, { ...value, digest, verified: true }); return digest;
@@ -55,7 +54,7 @@ function signed(action, body) {
   const issuer_id = 'synthetic-issuer';
   return { issuer_id, body, signature: crypto.sign(null, C.bytes({ action, issuer_id, body }), issuer.privateKey).toString('base64') };
 }
-async function fixture() {
+async function fixture(operation, customerId) {
   const suffix = String(++sequence), tenant = 'legacy-proof-' + suffix;
   await registry.executeRegisterTenant({ tenantId: tenant, name: 'Synthetic fixture' });
   const identity = record({ issuer: 'https://synthetic-oidc.invalid', subject: 'synthetic-subject', actor_id: 'synthetic-owner' });
@@ -66,9 +65,9 @@ async function fixture() {
     identity_evidence_digest: identity, business_evidence_digest: business,
   }));
   const scope = { tenant_id: tenant, controller_id: binding.controller_id,
-    commissioning_project_id: 'project-' + suffix, site_id: 'site-' + suffix, resource_id: 'object-' + suffix,
+    commissioning_project_id: 'project-' + suffix, site_id: 'site-' + suffix, resource_id: operation==='CUSTOMER_UPSERT'?`customer://${tenant}/${customerId}`:'object-' + suffix,
     delegated_actor: 'synthetic-agent', authorized_signer: C.keyId(pem(signer)),
-    operations: ['OBJECT_CREATED', 'OBJECT_UPDATED'], purpose: 'harvest-test',
+    operations: operation?[operation]:['OBJECT_CREATED', 'OBJECT_UPDATED'], purpose: 'harvest-test',
     valid_from: new Date(Date.now() - 60000).toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString() };
   const consent = record({ owner_binding_id: binding.binding_id, owner_actor_id: 'synthetic-owner', scope_digest: C.digest(C.bytes(scope)) });
   const grant = await registry.executeIssueCommissioningGrant(operator, signed('issue_grant', {
@@ -103,7 +102,7 @@ before(async () => {
   schemasOwned = true;
   await envelope.initialize(); await runtime.initialize(); await registry.initializeCommissioning();
   await customers.initialize(); await missions.initialize();
-  const app = express(); app.use(express.json());
+  const app = express(); app.use(express.json({verify:require('../gateway/route_middleware').captureCommissioningBytes}));
   // Mirrors the three actual bootstrap mounts. No invented entitlement middleware.
   // This server-side identity fixture lets negative cases remain authenticated;
   // a bearer label alone never grants a business, mission or registry operation.
@@ -148,39 +147,61 @@ for (const route of ['/customers', '/missions', '/tenants']) {
         missionType: 'security-probe', payload: { event_id: 'event-' + sequence },
         name: 'Unauthorized registry change', operation: 'LEGACY_COMMAND_NOT_ADMITTED' };
       const beforeRows = await snapshot();
+      const dispatchedBefore=runtime._stats.dispatched;
       const response = await post(route, body, reason !== 'missing permission');
       await response.text();
       const changed = changes(beforeRows, await snapshot());
       const receiptChange = changed.find(x => x.table === 'tenant_admission_receipts');
       evidence.cases.push({ entrance: route, reason, http_status: response.status, changed_tables: changed,
         grant_fixture: 'Synthetic OBJECT_CREATED/OBJECT_UPDATED only',
-        admitted_receipts_added: receiptChange ? receiptChange.after - receiptChange.before : 0 });
+        admitted_receipts_added: receiptChange ? receiptChange.after - receiptChange.before : 0,
+        downstream_dispatches: runtime._stats.dispatched-dispatchedBefore });
+      assert.equal(runtime._stats.dispatched,dispatchedBefore);
       assert.deepEqual(changed, [], 'Unauthorized persisted mutation: ' + JSON.stringify(changed));
       assert.ok(response.status >= 400 && response.status < 500, 'Expected authorization denial, got ' + response.status);
     });
   }
 }
 
-test('customer event-store failure cannot leave a committed business row', async () => {
-  const f = await fixture(), beforeRows = await snapshot();
-  const customerAuthority = new CustomerAuthority(pool, new CanonicalEventEnvelope(brokenPool));
-  await assert.rejects(() => customerAuthority.executeUpsertCustomer({ tenantId: f.tenant,
-    customer: { customer_id: 'append-failure', display_name: 'Synthetic failure probe' } }), /canonical_events/);
-  const changed = changes(beforeRows, await snapshot());
-  evidence.cases.push({ entrance: 'CustomerAuthority.executeUpsertCustomer', reason: 'Real PostgreSQL event table absent', changed_tables: changed });
-  assert.deepEqual(changed, [], 'Business row survived failed event append: ' + JSON.stringify(changed));
-});
-
+function command(f, operation, payload) {
+  const metadata={scope:Object.fromEntries(C.SCOPE.map(k=>[k,f.grant[k]]))};
+  const intent={protocol_version:C.PROTOCOL,authenticated_actor:'synthetic-agent',authorized_signer:f.grant.authorized_signer,
+    grant_id:f.grant.grant_id,grant_revision:f.grant.revision,...metadata.scope,operation,purpose:f.grant.purpose,
+    payload_digest:C.payloadDigest(payload,metadata),logical_operation_id:'logical-'+sequence};
+  return {intent,payload,metadata,signature:crypto.sign(null,C.bytes(intent),signer.privateKey).toString('base64')};
+}
+async function failTable(table, run) {
+  assert.ok(['canonical_events','ping_events','customers','tenant_admission_receipts'].includes(table));
+  await pool.query(`CREATE FUNCTION injected_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected append failure'; END $$`);
+  await pool.query(`CREATE TRIGGER injected_failure BEFORE INSERT ON ${table} FOR EACH ROW EXECUTE FUNCTION injected_failure()`);
+  try { await run(); }
+  finally { await pool.query(`DROP TRIGGER injected_failure ON ${table}`); await pool.query('DROP FUNCTION injected_failure()'); }
+}
+for (const table of ['customers','ping_events','canonical_events','tenant_admission_receipts']) {
+  test('customer '+table+' failure rolls back business, events, mirror and receipt', async () => {
+    const f=await fixture('CUSTOMER_UPSERT','append-failure-'+sequence);
+    const submission=command(f,'CUSTOMER_UPSERT',{tenant_id:f.tenant,customer:{customer_id:f.grant.resource_id.split('/').pop(),display_name:'Synthetic failure probe'}});
+    const beforeRows=await snapshot(); let dispatches=0;
+    const handler=()=>{dispatches++;};runtime.on('CUSTOMER_CREATED',handler);
+    try {
+      await failTable(table,async()=>{
+        const response=await post('/customers',submission,true);const outcome=await response.json();
+        assert.ok(response.status>=400); assert.notEqual(outcome.status,'ACCEPTED');
+      });
+      const changed=changes(beforeRows,await snapshot());
+      evidence.cases.push({entrance:'CustomerAuthority.executeAdmittedUpsert',reason:table+' insert trigger fails',changed_tables:changed,downstream_dispatches:dispatches});
+      assert.deepEqual(changed,[]); assert.equal(dispatches,0);
+    } finally {runtime._handlers.delete('CUSTOMER_CREATED');}
+  });
+}
 test('mission event-store failure cannot acknowledge an unrecorded mission', async () => {
-  const f = await fixture(), beforeRows = await snapshot();
-  const missionRuntime = new MissionRuntime({ pool, eventRuntime: new UnifiedEventRuntime({ pool: brokenPool }) });
-  let outcome;
-  try { outcome = await missionRuntime.create('security-probe', { event_id: 'append-failure' }, { tenant_id: f.tenant }); }
-  catch (error) { outcome = { error: error.message }; }
-  const changed = changes(beforeRows, await snapshot());
-  evidence.cases.push({ entrance: 'MissionRuntime.create', reason: 'Real PostgreSQL event table absent',
-    acknowledged: typeof outcome === 'string', changed_tables: changed });
-  assert.deepEqual(changed, [], 'Mission survived failed event append: ' + JSON.stringify(changed));
+  const f=await fixture(),beforeRows=await snapshot();let acknowledged=false;
+  await failTable('ping_events',async()=>{
+    await assert.rejects(async()=>{await missions.create('security-probe',{event_id:'append-failure'},{tenant_id:f.tenant});acknowledged=true;},error=>error.code==='mission_event_persist_failed');
+  });
+  const changed=changes(beforeRows,await snapshot());
+  evidence.cases.push({entrance:'MissionRuntime.create',reason:'Real PostgreSQL event trigger fails',acknowledged,changed_tables:changed});
+  assert.equal(acknowledged,false);assert.deepEqual(changed,[]);
 });
 
 test('unauthorized customer import must not call the provider', async () => {

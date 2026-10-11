@@ -360,6 +360,50 @@ class UnifiedEventRuntime {
     return result;
   }
 
+  async admitCommand(tenantRegistry, context, submission, execute) {
+    const C=require('../runtime/commissioning_contract');
+    C.requireThat(tenantRegistry?._commissioningPool===this._pool && this._pool, 'commissioning_pool_mismatch');
+    const result=await tenantRegistry.executeWithCommandGrant(context,submission,async(client,data)=>{
+      const allowed=data.intent.operation==='CUSTOMER_UPSERT'?['CUSTOMER_CREATED','CUSTOMER_UPDATED']:['MISSION_CREATED'];
+      const append=async(eventType,payload)=>{
+        C.requireThat(allowed.includes(eventType),'invalid_command_event');
+        return this.emit(eventType,data.intent.operation==='CUSTOMER_UPSERT'?'customer-authority':'mission-runtime',payload,{
+          tenant_id:data.intent.tenant_id,namespace:`tenant::${data.intent.tenant_id}`,
+          ...(data.intent.operation==='CUSTOMER_UPSERT'?{logical_id:`${data.intent.authenticated_actor}:${data.intent.logical_operation_id}`}:{ }),
+          metadata:{...data.metadata,authenticated_actor:data.intent.authenticated_actor,
+            commissioning:{grant_id:data.intent.grant_id,grant_revision:data.intent.grant_revision,operation_digest:data.operationDigest}},
+          [COMMISSIONING_TRANSACTION]:{client},
+        });
+      };
+      return execute(client,data,append);
+    });
+    // A new receipt may reference an already admitted mission. Never redispatch
+    // that durable event merely because another logical command observed it.
+    if(!result.duplicate && result.inserted) {
+      this._stats.persisted++;
+      await this._dispatchCommitted(result.event);
+    } else this._stats.deduplicated++;
+    return result;
+  }
+
+  // Fixed mission evidence seam for the existing internal processor. This
+  // supplies transaction atomicity, not owner entitlement or object permission.
+  // No event type/source is accepted from a request or manufactured here.
+  async appendMissionCreatedInTransaction(client,payload,options={}) {
+    if(!client || typeof client.query!=='function') throw new Error('mission_transaction_required');
+    return this.emit('MISSION_CREATED','mission-runtime',payload,{
+      tenant_id:options.tenant_id,[COMMISSIONING_TRANSACTION]:{client},
+    });
+  }
+
+  async dispatchMissionCreated(result) {
+    if(result?.status!=='ok' || result.event?.event_type!=='MISSION_CREATED') throw new Error('invalid_mission_evidence');
+    if(result.inserted) {
+      this._stats.persisted++;
+      await this._dispatchCommitted(result.event);
+    }
+  }
+
   async _dispatchCommitted(event) {
     const eventType = event.event_type;
     // 6. Dispatch to handlers

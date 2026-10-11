@@ -12,35 +12,12 @@
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, denyLegacyMutation } = require('../route_middleware');
 
 function createTenantRoutes(tenantRegistry) {
-  router.post('/', asyncHandler('POST /tenants', async (req) => {
-    const {
-      tenant_id, name, domains, health_endpoint, metrics_endpoint,
-      logs_endpoint, traces_endpoint, events_endpoint, capabilities, metadata,
-    } = req.body;
-
-    if (!tenant_id || !name) {
-      throw new Error('tenant_id and name are required');
-    }
-
-    const tenant = await tenantRegistry.executeRegisterTenant({
-      tenantId: tenant_id,
-      name,
-      domains,
-      healthEndpoint: health_endpoint,
-      metricsEndpoint: metrics_endpoint,
-      logsEndpoint: logs_endpoint,
-      tracesEndpoint: traces_endpoint,
-      eventsEndpoint: events_endpoint,
-      capabilities,
-      metadata,
-    });
-
-    return { tenant };
-  }));
+  const router = express.Router();
+  // No compatible trusted registration contract exists at this public entrance.
+  router.post('/', denyLegacyMutation);
 
   router.get('/', asyncHandler('GET /tenants', async (req) => {
     const { status } = req.query;
@@ -55,25 +32,9 @@ function createTenantRoutes(tenantRegistry) {
     return { tenant };
   }));
 
-  router.put('/:id', asyncHandler('PUT /tenants/:id', async (req) => {
-    const { id } = req.params;
-    const updates = req.body;
-    const tenant = await tenantRegistry.executeUpdateTenant(id, updates);
-    if (!tenant) throw new Error(`Tenant ${id} not found`);
-    return { tenant };
-  }));
-
-  router.delete('/:id', asyncHandler('DELETE /tenants/:id', async (req) => {
-    const { id } = req.params;
-    await tenantRegistry.executeRemoveTenant(id);
-    return { removed: true, tenant_id: id };
-  }));
-
-  router.post('/:id/heartbeat', asyncHandler('POST /tenants/:id/heartbeat', async (req) => {
-    const { id } = req.params;
-    await tenantRegistry.executeRecordHeartbeat(id);
-    return { heartbeat: true, tenant_id: id };
-  }));
+  router.put('/:id', denyLegacyMutation);
+  router.delete('/:id', denyLegacyMutation);
+  router.post('/:id/heartbeat', denyLegacyMutation);
 
   return router;
 }

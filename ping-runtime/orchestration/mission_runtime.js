@@ -21,12 +21,41 @@
 // idempotency key so the same event_id in two tenants never collides into
 // ON CONFLICT DO NOTHING silence.
 const MISSION_TENANT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
+const { isDeepStrictEqual } = require('node:util');
 
 function requireMissionTenantId(tenantId) {
   if (typeof tenantId !== 'string' || !MISSION_TENANT_ID_PATTERN.test(tenantId)) {
     throw new Error('MissionRuntime: valid options.tenant_id is required (tenant isolation fail-closed)');
   }
   return tenantId;
+}
+
+function missionError(code, message = code, status = 'UNKNOWN') {
+  const error = new Error(message);
+  error.code = code;
+  error.status = status;
+  return error;
+}
+
+function jsonValue(value) {
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch (_) { return value; }
+  }
+  return value;
+}
+
+function sameMissionSemantics(row, expected) {
+  return row && row.tenant_id === expected.tenant_id &&
+    row.mission_type === expected.mission_type &&
+    row.priority === expected.priority &&
+    row.created_by === expected.created_by &&
+    isDeepStrictEqual(jsonValue(row.payload), expected.payload);
+}
+
+function sameCreatedEvent(event, expected) {
+  return event && event.event_type === 'MISSION_CREATED' &&
+    event.source === 'mission-runtime' && event.tenant_id === expected.tenant_id &&
+    isDeepStrictEqual(jsonValue(event.payload), expected.eventPayload);
 }
 
 class MissionRuntime {
@@ -38,7 +67,166 @@ class MissionRuntime {
   constructor(options = {}) {
     this._pool = options.pool || null;
     this._eventRuntime = options.eventRuntime || null;
+    this._tenantRegistry = options.tenantRegistry || null;
     this._activeMissions = new Map();
+  }
+
+  /** Preserve the existing durable mission identity rule exactly. */
+  static missionIdFor(tenantId, missionType, payload = {}) {
+    const tenant = requireMissionTenantId(tenantId);
+    const crypto = require('crypto');
+    const idempotencyKey = payload.event_id
+      ? `${tenant}:${missionType}:${payload.event_id}`
+      : `${tenant}:${missionType}:${JSON.stringify(payload)}`;
+    return crypto.createHash('sha256').update(idempotencyKey).digest('hex').slice(0, 16);
+  }
+
+  async _withCreateTransaction(action) {
+    if (!this._pool || typeof this._pool.connect !== 'function') {
+      throw new Error('MissionRuntime: PostgreSQL transaction connection is required');
+    }
+    const client = await this._pool.connect();
+    let began = false;
+    let broken = false;
+    let committing = false;
+    try {
+      await client.query('BEGIN');
+      began = true;
+      await client.query(`SELECT set_config('statement_timeout','5000ms',true),
+        set_config('lock_timeout','5000ms',true),
+        set_config('idle_in_transaction_session_timeout','5000ms',true)`);
+      const result = await action(client);
+      committing = true;
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      if (committing) {
+        // A failed COMMIT acknowledgement cannot distinguish rollback from a
+        // commit whose response was lost. Evict this connection and expose UNKNOWN.
+        broken = true;
+        throw missionError('mission_outcome_unknown', 'Mission creation commit outcome is unknown');
+      }
+      if (!began) broken = true;
+      if (began) {
+        let timer;
+        try {
+          const rolledBack = await Promise.race([
+            client.query('ROLLBACK').then(() => true, () => false),
+            new Promise(resolve => { timer = setTimeout(() => resolve(false), 1000); }),
+          ]);
+          if (!rolledBack) broken = true;
+        } catch (_) { broken = true; }
+        finally { if (timer) clearTimeout(timer); }
+      }
+      throw error;
+    } finally {
+      try { client.release(broken); }
+      catch (releaseError) {
+        // Preserve the operation's commit/rollback result; a pool release
+        // fault must not turn a known commit into a retryable create failure.
+        console.error('[MissionRuntime] Transaction client release failed:', releaseError.message);
+      }
+    }
+  }
+
+  async _readMission(client, missionId) {
+    const result = await client.query(
+      `SELECT mission_id, mission_type, payload, priority, created_by, tenant_id
+       FROM ping_missions WHERE mission_id = $1 FOR UPDATE`,
+      [missionId]
+    );
+    return result.rows[0] || null;
+  }
+
+  async _findCreatedEvent(client, expected) {
+    const result = await client.query(
+      `SELECT event_id, event_type, source, tenant_id, payload
+       FROM ping_events
+       WHERE tenant_id = $1 AND event_type = 'MISSION_CREATED'
+         AND source = 'mission-runtime' AND payload->>'missionId' = $2
+       ORDER BY event_id LIMIT 2`,
+      [expected.tenant_id, expected.mission_id]
+    );
+    if (result.rows.length !== 1 || !sameCreatedEvent(result.rows[0], expected)) {
+      throw missionError('mission_evidence_unproven', 'Existing mission lacks one matching durable MISSION_CREATED event');
+    }
+    return result.rows[0];
+  }
+
+  async _findAdmittedMissionEvidence(client, expected, intent) {
+    const actorId = intent.authenticated_actor;
+    const result = await client.query(
+      `SELECT r.tenant_id AS receipt_tenant_id, r.actor_id AS receipt_actor_id,
+              r.logical_operation_id AS receipt_logical_operation_id,
+              r.operation_digest AS receipt_operation_digest, r.grant_id AS receipt_grant_id,
+              r.grant_revision AS receipt_grant_revision,
+              r.authorization_decision_at AS receipt_decision_at,
+              r.event_id, r.receipt,
+              e.event_type, e.source, e.tenant_id, e.payload, e.metadata
+       FROM tenant_admission_receipts r
+       JOIN ping_events e ON e.event_id = r.event_id
+       WHERE r.tenant_id = $1 AND r.actor_id = $2
+         AND r.receipt->>'operation' = 'MISSION_CREATE'
+         AND r.receipt->>'resource_id' = $3
+         AND r.receipt->>'controller_id' = $4
+         AND r.receipt->>'commissioning_project_id' = $5
+         AND r.receipt->>'site_id' = $6
+         AND r.receipt->>'tenant_id' = $1
+         AND r.receipt->>'authenticated_actor' = $2
+         AND e.event_type = 'MISSION_CREATED' AND e.source = 'mission-runtime'
+         AND e.tenant_id = $1 AND e.payload->>'missionId' = $7
+         AND EXISTS (
+           SELECT 1 FROM tenant_admission_receipts anchor
+           WHERE anchor.tenant_id = $1 AND anchor.actor_id = $2 AND anchor.event_id = e.event_id
+             AND anchor.receipt->>'schema' = 'commissioning-admission-receipt@2'
+             AND anchor.receipt->>'operation' = 'MISSION_CREATE'
+             AND anchor.receipt->>'authenticated_actor' = $2
+             AND anchor.receipt->>'tenant_id' = $1
+             AND anchor.receipt->>'controller_id' = $4
+             AND anchor.receipt->>'commissioning_project_id' = $5
+             AND anchor.receipt->>'site_id' = $6
+             AND anchor.receipt->>'resource_id' = $3
+             AND anchor.receipt->>'event_id' = anchor.event_id
+             AND anchor.receipt->>'operation_digest' = anchor.operation_digest
+             AND anchor.receipt->>'grant_id' = anchor.grant_id
+             AND anchor.receipt->>'grant_revision' = anchor.grant_revision::text
+             AND anchor.grant_id = e.metadata->'commissioning'->>'grant_id'
+             AND anchor.grant_revision::text = e.metadata->'commissioning'->>'grant_revision'
+             AND anchor.operation_digest = e.metadata->'commissioning'->>'operation_digest'
+         )
+       ORDER BY r.authorization_decision_at DESC LIMIT 2`,
+      [expected.tenant_id, actorId, expected.resource_id, intent.controller_id,
+        intent.commissioning_project_id, intent.site_id, expected.mission_id]
+    );
+    const matching = result.rows.filter(row => {
+      const receipt = jsonValue(row.receipt);
+      const commissioning = row.metadata && row.metadata.commissioning;
+      const decisionTime = receipt && Date.parse(receipt.authorization_decision_at);
+      const storedDecisionTime = row.receipt_decision_at && new Date(row.receipt_decision_at).getTime();
+      return receipt && receipt.schema === 'commissioning-admission-receipt@2' &&
+        receipt.operation === 'MISSION_CREATE' &&
+        receipt.authenticated_actor === actorId &&
+        ['tenant_id', 'controller_id', 'commissioning_project_id', 'site_id', 'resource_id']
+          .every(key => receipt[key] === intent[key]) &&
+        row.receipt_tenant_id === receipt.tenant_id && row.receipt_actor_id === receipt.authenticated_actor &&
+        row.receipt_logical_operation_id === receipt.logical_operation_id &&
+        row.receipt_grant_id === receipt.grant_id && row.receipt_grant_revision === receipt.grant_revision &&
+        receipt.event_id === row.event_id &&
+        /^[a-f0-9]{64}$/.test(row.receipt_operation_digest || '') &&
+        receipt.operation_digest === row.receipt_operation_digest &&
+        Number.isFinite(decisionTime) && decisionTime === storedDecisionTime &&
+        receipt.command_result?.mission_id === expected.mission_id &&
+        row.metadata?.authenticated_actor === actorId &&
+        typeof commissioning?.grant_id === 'string' &&
+        Number.isSafeInteger(commissioning?.grant_revision) &&
+        /^[a-f0-9]{64}$/.test(commissioning?.operation_digest || '') &&
+        sameCreatedEvent(row, expected);
+    });
+    if (matching.length !== result.rows.length || matching.length === 0 ||
+        new Set(matching.map(row => row.event_id)).size !== 1) {
+      throw missionError('mission_evidence_unproven', 'Existing mission lacks matching admitted MISSION_CREATE receipt and event');
+    }
+    return matching[0];
   }
 
   /**
@@ -114,31 +302,134 @@ class MissionRuntime {
    */
   async create(missionType, payload = {}, options = {}) {
     const tenantId = requireMissionTenantId(options.tenant_id);
-    const crypto = require('crypto');
-    const { constitutionalTimeAuthority } = require('../authorities/constitutional_time_authority.js');
-    const idempotencyKey = payload.event_id
-      ? `${tenantId}:${missionType}:${payload.event_id}`
-      : `${tenantId}:${missionType}:${JSON.stringify(payload)}`;
-    const missionId = crypto.createHash('sha256')
-      .update(idempotencyKey)
-      .digest('hex').slice(0, 16);
-
-    const result = await this._pool.query(
-      `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by, tenant_id)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (mission_id) DO NOTHING`,
-      [missionId, missionType, JSON.stringify(payload), options.priority || 0, options.createdBy || null, tenantId]
-    );
-
-    const created = (result.rowCount || 0) === 1;
-
-    if (created && this._eventRuntime) {
-      await this._eventRuntime.emit('MISSION_CREATED', 'mission-runtime', {
-        missionId, missionType, payload, priority: options.priority || 0,
-      }, { tenant_id: tenantId });
+    if (!this._eventRuntime || this._eventRuntime._pool !== this._pool ||
+        typeof this._eventRuntime.appendMissionCreatedInTransaction !== 'function' ||
+        typeof this._eventRuntime.dispatchMissionCreated !== 'function') {
+      throw new Error('MissionRuntime: same-pool transactional event runtime is required');
     }
+    const priority = options.priority || 0;
+    const createdBy = options.createdBy || null;
+    const missionId = MissionRuntime.missionIdFor(tenantId, missionType, payload);
+    const expected = {
+      mission_id: missionId,
+      mission_type: missionType,
+      payload,
+      priority,
+      created_by: createdBy,
+      tenant_id: tenantId,
+      eventPayload: { missionId, missionType, payload, priority },
+    };
 
-    return missionId;
+    const outcome = await this._withCreateTransaction(async client => {
+      const inserted = await client.query(
+        `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by, tenant_id)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (mission_id) DO NOTHING RETURNING mission_id`,
+        [missionId, missionType, JSON.stringify(payload), priority, createdBy, tenantId]
+      );
+      if ((inserted.rowCount || 0) === 0) {
+        const existing = await this._readMission(client, missionId);
+        if (!sameMissionSemantics(existing, expected)) {
+          throw missionError('mission_id_conflict', 'Existing mission has different persisted semantics');
+        }
+        await this._findCreatedEvent(client, expected);
+        return { missionId, inserted: false, event: null };
+      }
+
+      const event = await this._eventRuntime.appendMissionCreatedInTransaction(
+        client, expected.eventPayload, { tenant_id: tenantId }
+      );
+      if (!event || event.status !== 'ok' || !event.eventId || !event.event || !event.inserted) {
+        throw missionError('mission_event_persist_failed', 'MISSION_CREATED was not durably appended');
+      }
+      return { missionId, inserted: true, event };
+    });
+
+    if (outcome.inserted) {
+      try { await this._eventRuntime.dispatchMissionCreated(outcome.event); }
+      catch (_) { throw missionError('mission_dispatch_outcome_unknown', 'Mission is durable; post-commit delivery outcome is unknown'); }
+    }
+    return outcome.missionId;
+  }
+
+  /** Execute a signed, tenant-scoped MISSION_CREATE command in the existing
+   * commissioning transaction. Object commands remain a separate operation.
+   */
+  async createAdmitted(context, submission) {
+    if (!this._tenantRegistry || !this._eventRuntime ||
+        this._tenantRegistry._commissioningPool !== this._pool ||
+        this._eventRuntime._pool !== this._pool ||
+        typeof this._eventRuntime.admitCommand !== 'function') {
+      throw new Error('MissionRuntime: admitted command authorities must share the mission pool');
+    }
+    return this._eventRuntime.admitCommand(this._tenantRegistry, context, submission,
+      async (client, data, append) => {
+        const intent = data && data.intent;
+        const typed = data && data.payload;
+        const actorId = intent && intent.authenticated_actor;
+        if (!intent || intent.operation !== 'MISSION_CREATE' || !actorId) {
+          throw missionError('admission_denied', 'Verified MISSION_CREATE intent is required', 'REJECTED');
+        }
+        const tenantId = requireMissionTenantId(intent.tenant_id);
+        if (!typed || typed.tenant_id !== tenantId || typeof typed.missionType !== 'string' ||
+            !typed.missionType || !typed.payload || typeof typed.payload !== 'object' ||
+            Array.isArray(typed.payload) || typed.payload.namespace !== `tenant::${tenantId}` ||
+            !Number.isSafeInteger(typed.priority) || intent.resource_id == null) {
+          throw missionError('invalid_mission_command', 'Typed mission command is invalid', 'REJECTED');
+        }
+        const missionId = MissionRuntime.missionIdFor(tenantId, typed.missionType, typed.payload);
+        const resourceId = `mission://${tenantId}/${missionId}`;
+        if (intent.resource_id !== resourceId) {
+          throw missionError('resource_scope_mismatch', 'MISSION_CREATE resource does not match mission identity', 'REJECTED');
+        }
+        const expected = {
+          mission_id: missionId,
+          mission_type: typed.missionType,
+          payload: typed.payload,
+          priority: typed.priority,
+          created_by: actorId,
+          tenant_id: tenantId,
+          resource_id: resourceId,
+          eventPayload: {
+            missionId,
+            missionType: typed.missionType,
+            payload: typed.payload,
+            priority: typed.priority,
+          },
+        };
+
+        const inserted = await client.query(
+          `INSERT INTO ping_missions (mission_id, mission_type, payload, priority, created_by, tenant_id)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (mission_id) DO NOTHING RETURNING mission_id`,
+          [missionId, typed.missionType, JSON.stringify(typed.payload), typed.priority, actorId, tenantId]
+        );
+        if ((inserted.rowCount || 0) === 0) {
+          const existing = await this._readMission(client, missionId);
+          if (!sameMissionSemantics(existing, expected)) {
+            throw missionError('mission_id_conflict', 'Existing mission has different persisted semantics');
+          }
+          const evidence = await this._findAdmittedMissionEvidence(client, expected, intent);
+          return {
+            status: 'ok',
+            eventId: evidence.event_id,
+            inserted: false,
+            commandResult: { mission_id: missionId },
+          };
+        }
+
+        const evidence = await append('MISSION_CREATED', expected.eventPayload);
+        if (!evidence || evidence.status !== 'ok' || !evidence.eventId || !evidence.event || !evidence.inserted) {
+          throw missionError('mission_event_persist_failed', 'MISSION_CREATED was not durably appended');
+        }
+        return {
+          status: 'ok',
+          eventId: evidence.eventId,
+          event: evidence.event,
+          inserted: true,
+          commandResult: { mission_id: missionId },
+        };
+      });
   }
 
   /**

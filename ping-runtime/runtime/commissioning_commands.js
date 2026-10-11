@@ -3,13 +3,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { performance } = require('node:perf_hooks');
+const { isDeepStrictEqual } = require('node:util');
 const C = require('./commissioning_contract');
 
 async function transaction(registry, action) {
   C.requireThat(registry._commissioningPool, 'commissioning_unconfigured');
   const client = await registry._commissioningPool.connect();
   const started = performance.now();
-  let broken = false;
+  let broken = false, committing = false;
   const onClientError = () => { broken = true; };
   client.on('error', onClientError);
   const bounded = {query: async (...args) => {
@@ -24,13 +25,23 @@ async function transaction(registry, action) {
   try {
     await client.query('BEGIN');
     const value = await action(bounded);
+    committing = true;
     await bounded.query('COMMIT');
     return value;
   } catch (e) {
-    try { await client.query('ROLLBACK'); } catch (_) { broken = true; }
+    if(committing) { broken=true; C.deny('admission_outcome_unknown'); }
+    let timer;
+    try {
+      const ok=await Promise.race([client.query('ROLLBACK').then(()=>true,()=>false),
+        new Promise(resolve=>{timer=setTimeout(()=>resolve(false),1000);})]);
+      if(!ok) broken=true;
+    } finally { if(timer) clearTimeout(timer); }
     throw e;
   }
-  finally { client.removeListener('error',onClientError); client.release(broken); }
+  finally {
+    client.removeListener('error',onClientError);
+    try { client.release(broken); } catch (_) { console.error('[Commissioning] Transaction client release failed'); }
+  }
 }
 async function lockBinding(client, bindingId, mode='update') {
   const r = await client.query('SELECT * FROM tenant_owner_bindings WHERE binding_id=$1 '+(mode==='share'?'FOR SHARE':'FOR UPDATE'), [bindingId]);
@@ -55,6 +66,66 @@ async function evidence(trust, resolver, digest) {
   const record = await trust[resolver](digest);
   C.requireThat(record && record.verified === true && record.digest === digest, 'missing_verified_evidence');
   return record;
+}
+
+async function executeLockedGrant(registry,actorId,submission,writeEvent) {
+  const {intent,payload,metadata={},signature}=submission;
+  const operationDigest = C.digest(C.bytes(intent));
+  return transaction(registry, async client => {
+    const { grant } = await lockGrant(registry, client, intent.grant_id, intent.tenant_id, true);
+    C.requireThat(grant.status === 'active' && grant.revision === intent.grant_revision &&
+      C.SCOPE.every(k=>grant[k]===intent[k]) && grant.delegated_actor===actorId &&
+      grant.authorized_signer===intent.authorized_signer && grant.purpose===intent.purpose &&
+      grant.operations.includes(intent.operation), 'admission_denied');
+    C.verify(grant.signer_public_key, signature, C.bytes(intent));
+    if(intent.operation==='OBJECT_UPDATED'){
+      const owners=await client.query("SELECT DISTINCT payload->>'controller' AS controller FROM ping_events WHERE tenant_id=$1 AND event_type='OBJECT_CREATED' AND payload->>'object_id'=$2",[intent.tenant_id,intent.resource_id]);
+      C.requireThat(owners.rows.length===1&&owners.rows[0].controller===intent.controller_id,'object_control_unproven');
+    }
+    // Compatible grant locks permit concurrency. Serialize the logical
+    // request BEFORE receipt lookup and before any callback mutation.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',
+      ['commissioning-logical-operation',JSON.stringify([intent.tenant_id,actorId,intent.logical_operation_id])]);
+    // clock_timestamp() is evaluated after owner, grant and logical-operation lock acquisition, not at transaction start.
+    const now = (await client.query('SELECT clock_timestamp() AS now')).rows[0].now.getTime();
+    C.requireThat(new Date(grant.valid_from).getTime()<=now && now<new Date(grant.expires_at).getTime(), 'admission_denied');
+    const params = [intent.tenant_id,actorId,intent.logical_operation_id];
+    const prior = await client.query('SELECT operation_digest,receipt FROM tenant_admission_receipts WHERE tenant_id=$1 AND actor_id=$2 AND logical_operation_id=$3',params);
+    if (prior.rows.length) {
+      C.requireThat(prior.rows[0].operation_digest===operationDigest, 'idempotency_conflict');
+      return {receipt:prior.rows[0].receipt,duplicate:true,commandResult:prior.rows[0].receipt.command_result};
+    }
+    const result = await writeEvent(client, {intent,payload,metadata,operationDigest});
+    C.requireThat(result.status==='ok', 'event_persistence_failed');
+    if(C.COMMAND_OPERATIONS.has(intent.operation)) {
+      const key=intent.operation==='CUSTOMER_UPSERT'?'customer_id':'mission_id';
+      const expected=intent.operation==='CUSTOMER_UPSERT'?payload.customer.customer_id:require('../orchestration/mission_runtime').MissionRuntime.missionIdFor(intent.tenant_id,payload.missionType,payload.payload);
+      C.requireThat(result.commandResult && Object.keys(result.commandResult).length===1 && result.commandResult[key]===expected,'invalid_command_result');
+      const persisted=await client.query('SELECT event_id,event_type,source,tenant_id,payload FROM ping_events WHERE event_id=$1',[result.eventId]);
+      const event=persisted.rows[0];
+      const customer=intent.operation==='CUSTOMER_UPSERT';
+      const expectedPayload=customer?{customer_id:payload.customer.customer_id,display_name:payload.customer.display_name||null,email:payload.customer.email||null,command:payload}:
+        {missionId:expected,missionType:payload.missionType,payload:payload.payload,priority:payload.priority};
+      C.requireThat(persisted.rows.length===1 && event.tenant_id===intent.tenant_id &&
+        event.source===(customer?'customer-authority':'mission-runtime') &&
+        (customer?['CUSTOMER_CREATED','CUSTOMER_UPDATED'].includes(event.event_type):event.event_type==='MISSION_CREATED') &&
+        isDeepStrictEqual(event.payload,expectedPayload),'event_persistence_failed');
+    }
+    const decisionAt = new Date(now).toISOString();
+    const receipt = { schema:'commissioning-admission-receipt@2', ...intent, operation_digest:operationDigest,
+      authorization_decision_at:decisionAt, event_id:result.eventId,
+      ...(C.COMMAND_OPERATIONS.has(intent.operation)?{command_result:result.commandResult}:{}),
+      ...(result.compatibilityEventId?{compatibility_event_id:result.compatibilityEventId}:{}) };
+    const stored = await client.query(`INSERT INTO tenant_admission_receipts
+      (tenant_id,actor_id,logical_operation_id,operation_digest,grant_id,grant_revision,event_id,receipt,authorization_decision_at)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(tenant_id,actor_id,logical_operation_id) DO NOTHING RETURNING receipt`,
+    [...params,operationDigest,intent.grant_id,intent.grant_revision,result.eventId,JSON.stringify(receipt),decisionAt]);
+    // A conflict after this lock cannot be a legitimate concurrent retry.
+    // Roll back callback effects rather than commit behind another receipt.
+    C.requireThat(stored.rows.length===1,'idempotency_conflict');
+    C.requireThat(isDeepStrictEqual(stored.rows[0].receipt,receipt),'receipt_persistence_failed');
+    return {receipt:stored.rows[0].receipt,duplicate:false,event:result.event,inserted:result.inserted,commandResult:result.commandResult};
+  });
 }
 
 module.exports = {
@@ -94,7 +165,7 @@ module.exports = {
     const b = command.body;
     C.checkScope(b);
     C.requireThat(C.text(b.delegated_actor) && C.text(b.purpose), 'invalid_delegation');
-    C.requireThat(Array.isArray(b.operations) && b.operations.length > 0 && b.operations.every(x => C.OPERATIONS.has(x)), 'invalid_operation');
+    C.requireThat(Array.isArray(b.operations) && b.operations.length > 0 && b.operations.every(x => C.OPERATIONS.has(x)||C.COMMAND_OPERATIONS.has(x)), 'invalid_operation');
     C.requireThat(C.keyId(b.signer_public_key) === b.authorized_signer, 'invalid_signer');
     const consent = await evidence(this._commissioningTrust, 'resolveCommissioningConsentEvidence', b.consent_evidence_digest);
     // Consent is a server-resolved immutable record, not caller prose or a checkbox.
@@ -179,7 +250,7 @@ module.exports = {
   async executeWithCommissioningGrant(context, submission, writeEvent) {
     submission = structuredClone(submission);
     const actorId = await C.actor(this._commissioningTrust, context);
-    const { intent, payload, metadata = {}, signature } = submission;
+    const { intent, payload, metadata = {} } = submission;
     C.checkIntent(intent);
     C.requireThat(intent.authenticated_actor === actorId, 'admission_denied');
     C.requireThat(C.payloadDigest(payload,metadata) === intent.payload_digest, 'payload_digest_mismatch');
@@ -192,42 +263,16 @@ module.exports = {
     C.requireThat(payload.payload_hash===computePayloadHash(payload),'invalid_payload_hash');
     // This first candidate admits object writes only; relationship endpoint ownership is a separate scope proof.
     C.requireThat(intent.operation !== 'RELATIONSHIP_CREATED', 'operation_not_implemented');
-    const operationDigest = C.digest(C.bytes(intent));
-    return transaction(this, async client => {
-      const { grant } = await lockGrant(this, client, intent.grant_id, intent.tenant_id, true);
-      C.requireThat(grant.status === 'active' && grant.revision === intent.grant_revision &&
-        C.SCOPE.every(k=>grant[k]===intent[k]) && grant.delegated_actor===actorId &&
-        grant.authorized_signer===intent.authorized_signer && grant.purpose===intent.purpose &&
-        grant.operations.includes(intent.operation), 'admission_denied');
-      // clock_timestamp() is evaluated after lock acquisition, not at transaction start.
-      const now = (await client.query('SELECT clock_timestamp() AS now')).rows[0].now.getTime();
-      C.requireThat(new Date(grant.valid_from).getTime()<=now && now<new Date(grant.expires_at).getTime(), 'admission_denied');
-      C.verify(grant.signer_public_key, signature, C.bytes(intent));
-      if(intent.operation==='OBJECT_UPDATED'){
-        const owners=await client.query("SELECT DISTINCT payload->>'controller' AS controller FROM ping_events WHERE tenant_id=$1 AND event_type='OBJECT_CREATED' AND payload->>'object_id'=$2",[intent.tenant_id,intent.resource_id]);
-        C.requireThat(owners.rows.length===1&&owners.rows[0].controller===intent.controller_id,'object_control_unproven');
-      }
-      const params = [intent.tenant_id,actorId,intent.logical_operation_id];
-      const prior = await client.query('SELECT operation_digest,receipt FROM tenant_admission_receipts WHERE tenant_id=$1 AND actor_id=$2 AND logical_operation_id=$3',params);
-      if (prior.rows.length) {
-        C.requireThat(prior.rows[0].operation_digest===operationDigest, 'idempotency_conflict');
-        return {receipt:prior.rows[0].receipt,duplicate:true};
-      }
-      const result = await writeEvent(client, {intent,payload,metadata,operationDigest});
-      C.requireThat(result.status==='ok', 'event_persistence_failed');
-      const decisionAt = new Date(now).toISOString();
-      const receipt = { schema:'commissioning-admission-receipt@2', ...intent, operation_digest:operationDigest,
-        authorization_decision_at:decisionAt, event_id:result.eventId };
-      const stored = await client.query(`INSERT INTO tenant_admission_receipts
-        (tenant_id,actor_id,logical_operation_id,operation_digest,grant_id,grant_revision,event_id,receipt,authorization_decision_at)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(tenant_id,actor_id,logical_operation_id) DO NOTHING RETURNING receipt`,
-      [...params,operationDigest,intent.grant_id,intent.grant_revision,result.eventId,JSON.stringify(receipt),decisionAt]);
-      if (!stored.rows.length) {
-        const collision = await client.query('SELECT operation_digest,receipt FROM tenant_admission_receipts WHERE tenant_id=$1 AND actor_id=$2 AND logical_operation_id=$3',params);
-        C.requireThat(collision.rows[0]?.operation_digest===operationDigest, 'idempotency_conflict');
-        return {receipt:collision.rows[0].receipt,duplicate:true};
-      }
-      return {receipt:stored.rows[0].receipt,duplicate:false,event:result.event,inserted:result.inserted};
-    });
+    return executeLockedGrant(this,actorId,submission,writeEvent);
+  },
+  async executeWithCommandGrant(context,submission,writeCommand) {
+    submission=structuredClone(submission);
+    const actorId=await C.actor(this._commissioningTrust,context);
+    const {intent,payload,metadata={}}=submission;
+    C.checkCommandIntent(intent);
+    C.requireThat(intent.authenticated_actor===actorId,'admission_denied');
+    C.checkCommandPayload(intent,payload,metadata);
+    C.requireThat(C.payloadDigest(payload,metadata)===intent.payload_digest,'payload_digest_mismatch');
+    return executeLockedGrant(this,actorId,submission,writeCommand);
   },
 };

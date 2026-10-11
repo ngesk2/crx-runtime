@@ -13,84 +13,17 @@
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, admittedCommandHandler, denyLegacyMutation } = require('../route_middleware');
 
 function createCustomerRoutes(customerAuthority) {
+  const router = express.Router();
   /**
    * POST /customers/import
    * Import customers from Google People API.
    */
-  router.post('/import', asyncHandler('POST /customers/import', async (req) => {
-    const { tenant_id, page_size, page_token, sync_token } = req.body;
-
-    if (!tenant_id) {
-      throw new Error('tenant_id is required');
-    }
-
-    const result = await customerAuthority.executeImportCustomers({
-      tenantId: tenant_id,
-      options: {
-        pageSize: page_size,
-        pageToken: page_token,
-        syncToken: sync_token,
-      },
-    });
-
-    return result;
-  }));
-
-  /**
-   * POST /customers/:id/sync-email
-   * Sync Gmail threads for a customer.
-   */
-  router.post('/:id/sync-email', asyncHandler('POST /customers/:id/sync-email', async (req) => {
-    const { id } = req.params;
-    const { tenant_id, email, max_results, after, before } = req.body;
-
-    if (!tenant_id || !email) {
-      throw new Error('tenant_id and email are required');
-    }
-
-    const result = await customerAuthority.executeSyncCustomerEmail({
-      tenantId: tenant_id,
-      customerId: id,
-      email,
-      options: {
-        maxResults: max_results,
-        after,
-        before,
-      },
-    });
-
-    return result;
-  }));
-
-  /**
-   * POST /customers/:id/sync-calendar
-   * Sync Calendar events for a customer.
-   */
-  router.post('/:id/sync-calendar', asyncHandler('POST /customers/:id/sync-calendar', async (req) => {
-    const { id } = req.params;
-    const { tenant_id, email, time_min, time_max, max_results } = req.body;
-
-    if (!tenant_id || !email) {
-      throw new Error('tenant_id and email are required');
-    }
-
-    const result = await customerAuthority.executeSyncCustomerCalendar({
-      tenantId: tenant_id,
-      customerId: id,
-      email,
-      options: {
-        timeMin: time_min,
-        timeMax: time_max,
-        maxResults: max_results,
-      },
-    });
-
-    return result;
-  }));
+  router.post('/import', denyLegacyMutation);
+  router.post('/:id/sync-email', denyLegacyMutation);
+  router.post('/:id/sync-calendar', denyLegacyMutation);
 
   /**
    * GET /customers/stats
@@ -161,20 +94,7 @@ function createCustomerRoutes(customerAuthority) {
    * POST /customers
    * Manually create or update a customer.
    */
-  router.post('/', asyncHandler('POST /customers', async (req) => {
-    const { tenant_id, customer } = req.body;
-
-    if (!tenant_id || !customer) {
-      throw new Error('tenant_id and customer are required');
-    }
-
-    const result = await customerAuthority.executeUpsertCustomer({
-      tenantId: tenant_id,
-      customer,
-    });
-
-    return { customer: result };
-  }));
+  router.post('/', admittedCommandHandler(customerAuthority, 'executeAdmittedUpsert', 'CUSTOMER_UPSERT'));
 
   return router;
 }

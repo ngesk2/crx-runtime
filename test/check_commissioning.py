@@ -40,7 +40,10 @@ paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-run
          *sorted((root / 'ping-runtime/runtime').glob('commissioning_*')),
          root / 'ping-runtime/runtime/strict_wire_json.js',
          root / 'test/commissioning_admission.test.js', root / 'test/commissioning_crash_child.js',
-         root / 'test/legacy_write_authority.test.js',
+         root / 'test/legacy_write_authority.test.js', root / 'test/admitted_commands.test.js',
+         root / 'test/mission_atomicity.test.js', root / 'test/LEGACY_COMMAND_CONTRACT.md',
+         root / 'test/writer_entrances.json', root / 'test/FYD_CUSTOMER_GAPS.md',
+         root / 'gateway/test_durable_mission_lifecycle.js',
          root / 'ping-runtime/business/customer_authority.js',
          root / 'ping-runtime/orchestration/mission_runtime.js', root / 'gateway/canonical_event_envelope.js',
          root / 'database/canonical_events.sql',
@@ -105,10 +108,15 @@ try:
     if legacy_evidence.exists():
         report['legacy_write_authority_evidence'] = str(legacy_evidence.relative_to(root))
         report['legacy_write_authority_evidence_sha256'] = hashlib.sha256(legacy_evidence.read_bytes()).hexdigest()
+    report['command_result'] = 'PASS'
+    for name in ['admitted_commands', 'mission_atomicity']:
+        code, text = run(['node', '--test', 'test/' + name + '.test.js'], 'proof-' + name)
+        if code: report['command_result'] = 'FAIL'
     report['regression_result'] = 'PASS'
     for name in ['test_verdict_authority.js', 'test_confidence_spine.js', 'test_event_spine_time_authority.js',
                  'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js', 'test_events_routes.js',
-                 'test_tenant_spoof_ingress.js', 'test_events_recent.js', 'test_events_time_authority.js']:
+                 'test_tenant_spoof_ingress.js', 'test_events_recent.js', 'test_events_time_authority.js',
+                 'test_durable_mission_lifecycle.js']:
         code, text = run(['node', 'gateway/' + name], 'proof-' + name)
         if code: report['regression_result'] = 'FAIL'
     baseline = evidence / 'ingest-baseline.log'
@@ -116,7 +124,7 @@ try:
         report['ingest_baseline_failure_names'] = re.findall(r'^✗ (.+)$', baseline.read_text(), re.M)
         ingest = next(item for item in report['commands'] if item['log'] == 'artifacts/proof-test_ingest_boundary.js.log')
         report['ingest_failures_match_prior_baseline'] = ingest['failure_names'] == report['ingest_baseline_failure_names']
-    report['exit_code'] = 0 if report['regression_result'] == 'PASS' and report['legacy_write_authority_result'] == 'PASS' else 1
+    report['exit_code'] = 0 if report['regression_result'] == 'PASS' and report['legacy_write_authority_result'] == 'PASS' and report['command_result'] == 'PASS' else 1
     report['result'] = 'Admission and gateway regression gate passed; merge remains HOLD' if report['exit_code'] == 0 else 'FAIL'
 except Exception as error:
     report['result'] = 'FAIL'

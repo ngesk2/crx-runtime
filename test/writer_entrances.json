@@ -1,0 +1,715 @@
+{
+  "scope": "Bounded 33 HTTP action groups plus 5 callable/internal groups, not repository completeness or deployed equivalence",
+  "entrances": [
+    {
+      "entrance": "POST /events",
+      "actor": "Trusted actor resolver",
+      "tenant": "Exact server-resolved grant scope",
+      "capability": "OBJECT_CREATED/OBJECT_UPDATED",
+      "policy": "Locked owner/consent/signer/scope/revision/expiry checks",
+      "first_mutation_or_effect": "ping_events INSERT in admitted transaction",
+      "event": "Admitted object event",
+      "receipt": "Immutable tenant_admission_receipts row",
+      "source_paths": [
+        "gateway/route_middleware.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "ping-runtime/runtime/commissioning_commands.js"
+      ],
+      "classification": "ADMITTED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /ingest",
+      "actor": "Trusted actor resolver",
+      "tenant": "Exact server-resolved grant scope",
+      "capability": "OBJECT_CREATED/OBJECT_UPDATED",
+      "policy": "Locked owner/consent/signer/scope/revision/expiry checks",
+      "first_mutation_or_effect": "ping_events INSERT in admitted transaction",
+      "event": "Admitted object event",
+      "receipt": "Immutable tenant_admission_receipts row",
+      "source_paths": [
+        "gateway/route_middleware.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "ping-runtime/runtime/commissioning_commands.js"
+      ],
+      "classification": "ADMITTED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /canonical-events",
+      "actor": "Trusted actor resolver",
+      "tenant": "Exact server-resolved grant scope",
+      "capability": "OBJECT_CREATED/OBJECT_UPDATED",
+      "policy": "Locked owner/consent/signer/scope/revision/expiry checks",
+      "first_mutation_or_effect": "ping_events INSERT in admitted transaction",
+      "event": "Admitted object event",
+      "receipt": "Immutable tenant_admission_receipts row",
+      "source_paths": [
+        "gateway/route_middleware.js",
+        "gateway/bootstrap/gateway_runtime.js",
+        "ping-runtime/runtime/commissioning_commands.js"
+      ],
+      "classification": "ADMITTED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /events/processed",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/events.js",
+        "gateway/routes/canonical_events.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /events/failed",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/events.js",
+        "gateway/routes/canonical_events.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /canonical-events/:id/processed",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/events.js",
+        "gateway/routes/canonical_events.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /canonical-events/:id/failed",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/events.js",
+        "gateway/routes/canonical_events.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /customers/import",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/customers.js",
+        "ping-runtime/business/customer_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /customers/:id/sync-email",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/customers.js",
+        "ping-runtime/business/customer_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /customers/:id/sync-calendar",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/customers.js",
+        "ping-runtime/business/customer_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /customers",
+      "actor": "Existing verified trust resolver",
+      "tenant": "Exact scoped owner/consent/grant",
+      "capability": "CUSTOMER_UPSERT",
+      "policy": "Signed typed command; actor/scope/revocation/expiry/logical-operation checks",
+      "first_mutation_or_effect": "Customer SQL in admitted transaction",
+      "event": "CUSTOMER_CREATED/UPDATED plus processed read mirror",
+      "receipt": "Same-client immutable tenant_admission_receipts",
+      "source_paths": [
+        "gateway/routes/customers.js",
+        "ping-runtime/business/customer_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "ADMITTED",
+      "reachability": "Bootstrap-wired candidate; configured trust required; not deployed proof"
+    },
+    {
+      "entrance": "POST /reviews/sync",
+      "actor": "No trusted command actor; later system/body actor",
+      "tenant": "Caller tenant; project may default hpp",
+      "capability": "No resolved command grant",
+      "policy": "Data/shape checks only",
+      "first_mutation_or_effect": "Review provider/local persistence",
+      "event": "Provider legacy event after first effect; no commissioning",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/reviews.js",
+        "ping-runtime/business/review_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /reviews/:id/reply",
+      "actor": "No trusted command actor; later system/body actor",
+      "tenant": "Caller tenant; project may default hpp",
+      "capability": "No resolved command grant",
+      "policy": "Data/shape checks only",
+      "first_mutation_or_effect": "Review provider reply",
+      "event": "Provider legacy event after first effect; no commissioning",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/reviews.js",
+        "ping-runtime/business/review_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /projects",
+      "actor": "No trusted command actor; later system/body actor",
+      "tenant": "Caller tenant; project may default hpp",
+      "capability": "No resolved command grant",
+      "policy": "Data/shape checks only",
+      "first_mutation_or_effect": "hpp_projects INSERT",
+      "event": "Legacy project event after first effect; no commissioning",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/projects.js",
+        "ping-runtime/business/project_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "PUT /projects/:id",
+      "actor": "No trusted command actor; later system/body actor",
+      "tenant": "Caller tenant; project may default hpp",
+      "capability": "No resolved command grant",
+      "policy": "Data/shape checks only",
+      "first_mutation_or_effect": "hpp_projects UPDATE",
+      "event": "Legacy project event after first effect; no commissioning",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/projects.js",
+        "ping-runtime/business/project_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /projects/:id/artifacts",
+      "actor": "No trusted command actor; later system/body actor",
+      "tenant": "Caller tenant; project may default hpp",
+      "capability": "No resolved command grant",
+      "policy": "Data/shape checks only",
+      "first_mutation_or_effect": "hpp_project_artifacts INSERT",
+      "event": "Legacy artifact event after first effect; no commissioning",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/projects.js",
+        "ping-runtime/business/project_authority.js",
+        "gateway/canonical_event_envelope.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /missions",
+      "actor": "Existing verified trust resolver",
+      "tenant": "Exact scoped owner/consent/grant",
+      "capability": "MISSION_CREATE",
+      "policy": "Signed typed command; actor/scope/revocation/expiry/logical-operation checks",
+      "first_mutation_or_effect": "Mission SQL in admitted transaction",
+      "event": "MISSION_CREATED",
+      "receipt": "Same-client immutable tenant_admission_receipts",
+      "source_paths": [
+        "gateway/routes/missions.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "ADMITTED",
+      "reachability": "Bootstrap-wired candidate; configured trust required; not deployed proof"
+    },
+    {
+      "entrance": "POST /api/v1/missions/cards/:id/approve",
+      "actor": "Exterior-auth caller",
+      "tenant": "Mission row / global order key",
+      "capability": "No resource entitlement established",
+      "policy": "Authentication/input/status checks",
+      "first_mutation_or_effect": "ping_missions UPDATE",
+      "event": "Lifecycle event after SQL",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/mission_cards.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /api/v1/missions/cards/:id/reject",
+      "actor": "Exterior-auth caller",
+      "tenant": "Mission row / global order key",
+      "capability": "No resource entitlement established",
+      "policy": "Authentication/input/status checks",
+      "first_mutation_or_effect": "ping_missions UPDATE",
+      "event": "Lifecycle event after SQL",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/mission_cards.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /api/v1/missions/cards/reorder",
+      "actor": "Exterior-auth caller",
+      "tenant": "Mission row / global order key",
+      "capability": "No resource entitlement established",
+      "policy": "Authentication/input/status checks",
+      "first_mutation_or_effect": "mission_card_order UPSERT",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/mission_cards.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /tenants",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/tenants.js",
+        "ping-runtime/runtime/tenant_registry.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "PUT /tenants/:id",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/tenants.js",
+        "ping-runtime/runtime/tenant_registry.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "DELETE /tenants/:id",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/tenants.js",
+        "ping-runtime/runtime/tenant_registry.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /tenants/:id/heartbeat",
+      "actor": "No actor needed for unconditional denial",
+      "tenant": "No inferred entitlement",
+      "capability": "Unsupported contract",
+      "policy": "Explicit rejection before first SQL/provider call",
+      "first_mutation_or_effect": "None",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/tenants.js",
+        "ping-runtime/runtime/tenant_registry.js"
+      ],
+      "classification": "LEGACY-BLOCKED",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /deployments",
+      "actor": "Absent",
+      "tenant": "Caller body/path/id",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "deployment_registry INSERT/UPSERT",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/deployments.js",
+        "ping-runtime/runtime/deployment_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "PUT /deployments/:id/status",
+      "actor": "Absent",
+      "tenant": "Caller body/path/id",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "deployment_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/deployments.js",
+        "ping-runtime/runtime/deployment_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /deployments/:id/complete",
+      "actor": "Absent",
+      "tenant": "Caller body/path/id",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "deployment_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/deployments.js",
+        "ping-runtime/runtime/deployment_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /deployments/:id/fail",
+      "actor": "Absent",
+      "tenant": "Caller body/path/id",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "deployment_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/deployments.js",
+        "ping-runtime/runtime/deployment_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /deployments/:id/rollback",
+      "actor": "Absent",
+      "tenant": "Caller body/path/id",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "deployment_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/deployments.js",
+        "ping-runtime/runtime/deployment_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /runtime",
+      "actor": "Absent",
+      "tenant": "Caller body/path",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "runtime_registry INSERT/UPSERT",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/runtime.js",
+        "ping-runtime/runtime/runtime_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "PUT /runtime/tenant/:tenantId/type/:type/name/:name/status",
+      "actor": "Absent",
+      "tenant": "Caller body/path",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "runtime_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/runtime.js",
+        "ping-runtime/runtime/runtime_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "POST /runtime/tenant/:tenantId/type/:type/name/:name/heartbeat",
+      "actor": "Absent",
+      "tenant": "Caller body/path",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "runtime_registry UPDATE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/runtime.js",
+        "ping-runtime/runtime/runtime_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "DELETE /runtime/tenant/:tenantId/type/:type/name/:name",
+      "actor": "Absent",
+      "tenant": "Caller body/path",
+      "capability": "No administrative grant",
+      "policy": "Required fields/allowlisted columns",
+      "first_mutation_or_effect": "runtime_registry DELETE",
+      "event": "None",
+      "receipt": "None",
+      "source_paths": [
+        "gateway/routes/runtime.js",
+        "ping-runtime/runtime/runtime_registry.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified"
+    },
+    {
+      "entrance": "EventToMissionBridge subscriber",
+      "actor": "Event source; no authenticated actor",
+      "tenant": "Source event tenant or UNKNOWN",
+      "capability": "No actor/tenant command grant established",
+      "policy": "Existing processor policy; source entitlement/recovery not certified",
+      "first_mutation_or_effect": "ping_missions INSERT",
+      "event": "MISSION_CREATED after SQL",
+      "receipt": "No commissioning receipt",
+      "source_paths": [
+        "ping-runtime/orchestration/event_to_mission_bridge.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "PROCESSOR",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified",
+      "authority_status": "UNPROVEN"
+    },
+    {
+      "entrance": "ClaimMissionChainer subscriber",
+      "actor": "Event source; no authenticated actor",
+      "tenant": "Source event tenant or UNKNOWN",
+      "capability": "No actor/tenant command grant established",
+      "policy": "Source/status/idempotency assumptions",
+      "first_mutation_or_effect": "ping_missions INSERT",
+      "event": "MISSION_CREATED after SQL",
+      "receipt": "No commissioning receipt",
+      "source_paths": [
+        "ping-runtime/analysis/claim_chaining.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "UNPROVEN",
+      "reachability": "Callable source; NOT constructed in inspected bootstrap; external deployed callers unproven"
+    },
+    {
+      "entrance": "MissionScheduler dispatch",
+      "actor": "Internal worker/scheduler",
+      "tenant": "Mission row tenant",
+      "capability": "No actor/tenant command grant established",
+      "policy": "Existing processor policy; source entitlement/recovery not certified",
+      "first_mutation_or_effect": "Claim/start/complete/fail SQL then worker effects",
+      "event": "Lifecycle events after SQL",
+      "receipt": "No commissioning receipt",
+      "source_paths": [
+        "ping-runtime/orchestration/mission_scheduler.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "PROCESSOR",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified",
+      "authority_status": "UNPROVEN"
+    },
+    {
+      "entrance": "MissionScheduler maintenance/recovery",
+      "actor": "Internal scheduler",
+      "tenant": "Mission row tenant",
+      "capability": "No actor/tenant command grant established",
+      "policy": "Existing processor policy; source entitlement/recovery not certified",
+      "first_mutation_or_effect": "Lease/retry/hold/reap SQL",
+      "event": "Lifecycle events after SQL",
+      "receipt": "No commissioning receipt",
+      "source_paths": [
+        "ping-runtime/orchestration/mission_scheduler.js",
+        "ping-runtime/orchestration/mission_runtime.js"
+      ],
+      "classification": "PROCESSOR",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified",
+      "authority_status": "UNPROVEN"
+    },
+    {
+      "entrance": "EventBridge dual-source poll",
+      "actor": "Source row fields",
+      "tenant": "Source row metadata; missing UNKNOWN",
+      "capability": "No actor/tenant command grant established",
+      "policy": "Existing processor policy; source entitlement/recovery not certified",
+      "first_mutation_or_effect": "ping_events INSERT then source processed/cursor SQL",
+      "event": "emit with _skipGovernance; existing object/verdict guards still apply",
+      "receipt": "No commissioning receipt",
+      "source_paths": [
+        "ping-runtime/events/event_bridge.js",
+        "ping-runtime/events/unified_event_runtime.js"
+      ],
+      "classification": "PROCESSOR",
+      "reachability": "Bootstrap-wired source; deployed equivalence not certified",
+      "authority_status": "UNPROVEN"
+    }
+  ],
+  "counts": {
+    "ADMITTED": 5,
+    "LEGACY-BLOCKED": 11,
+    "UNPROVEN": 18,
+    "PROCESSOR": 4
+  },
+  "additional_unquantified_callers": [
+    {
+      "entrance": "BaseWorker._emit and other shared-writer producers",
+      "classification": "UNPROVEN",
+      "reachability": "Boot starts workers; individual effect entrances not fully inventoried",
+      "gap": "Non-object events and provider effects lack established actor/tenant scoped admission receipts"
+    },
+    {
+      "entrance": "KnowledgeCompiler / ConstitutionalEventBus",
+      "classification": "UNPROVEN",
+      "reachability": "Executable caller; deployed reachability unproven",
+      "gap": "Different legacy events journal; no common admission established"
+    },
+    {
+      "entrance": "KernelGatewayAdapter / EventRepository",
+      "classification": "UNPROVEN",
+      "reachability": "Conditional source wiring; deployed reachability unproven",
+      "gap": "Repository journal authority not converged"
+    },
+    {
+      "entrance": "AppendOrchestrator",
+      "classification": "UNPROVEN",
+      "reachability": "Callable writer; deployed reachability unproven",
+      "gap": "repository_events plus witness/certificate SQL"
+    },
+    {
+      "entrance": "GitHubWorker.run_forever/poll",
+      "classification": "UNPROVEN",
+      "reachability": "Standalone executable entrypoint; deployment unproven",
+      "gap": "Provider requests precede direct events INSERT; no actor/tenant grant"
+    },
+    {
+      "entrance": "Google Drive ingestion adapter",
+      "classification": "UNPROVEN",
+      "reachability": "Standalone executable entrypoint; deployment unproven",
+      "gap": "Provider calls precede conditionally guarded append; fail-open import fallback"
+    },
+    {
+      "entrance": "Legacy PostgreSQL/BrainOS ingestion writers",
+      "classification": "UNPROVEN",
+      "reachability": "13 direct SQL sites in bounded scan; enabled entrance count unproven",
+      "gap": "Do not equate SQL site count with actual deployment or authority coverage"
+    }
+  ],
+  "admitted_scope": "Conditional supported object admission only; default trusted root absent",
+  "runtime_patch": "BLOCKED: compatible trusted legacy command contract absent",
+  "merge": "HOLD",
+  "production": "HOLD",
+  "rust": "FROZEN",
+  "source_hashes": {
+    "gateway/bootstrap/gateway_runtime.js": "557217c9b98aba71e6933a2ccc30598f82377f7ad4e352b64773298d80f87e22",
+    "gateway/canonical_event_envelope.js": "14282583c197eb72f882a82f4302c0c9e4792c90c800ea0cd296cd2f3caba0df",
+    "gateway/route_middleware.js": "c2f762f6dfbaf4338271b7c9ed6456bbc5cedca55fc378f0d16c575774235bdd",
+    "gateway/routes/canonical_events.js": "ed33694365c6bae99a25d963fed478a1f9f0d9489fc74acdaed8bdd2ecd6d824",
+    "gateway/routes/customers.js": "fb965d04d8c8e28ed636c27a0d1a9705ff80d6df3735726f36631f33c55d3a38",
+    "gateway/routes/deployments.js": "bd72509076fe4ac5d52e173e8132e3ffa32613b2e7f47fe1a9651db81ef0452e",
+    "gateway/routes/events.js": "9027f790d9f032cd0602b0191fc80b177b482c8c5e552c0760af2bd5f16320ce",
+    "gateway/routes/mission_cards.js": "b28b004e87d0da9b1c0aa729e39af180aad306f644c88afbdd3cc124745db758",
+    "gateway/routes/missions.js": "d0193d3ccd670acdc8b2b5358f9f674039d7537f7d4ddcf8a079fd6836e6bd9d",
+    "gateway/routes/projects.js": "f962119449ecc81e37ff7ea884fb82775d64725c7b3e47aa046f0d712ff68a0f",
+    "gateway/routes/reviews.js": "bdaad5a46027d0f5bda0609f30488b0dd72caf9bc07220614ca241d32d08366c",
+    "gateway/routes/runtime.js": "bd4d512e047ebe1cf32796d0eb67d5b5a1b06ec42833ac75a313b2620479a1b1",
+    "gateway/routes/tenants.js": "15ccbbfa62413a6b93f4c93f1273c193e60db27ef0bafd74a14dc8068ca6479c",
+    "ping-runtime/analysis/claim_chaining.js": "2b21a6a52da0fbe23a215c49c1cf36e44cfc7f0d6b8e4c9f9a91834f39627472",
+    "ping-runtime/business/customer_authority.js": "78b8294364d6964b93f9f096e72917c92f14e66c02c4a59f4fe2126a46ff2021",
+    "ping-runtime/business/project_authority.js": "260e149c06a7d3ff8480ceefc016a05009ba8880f14cb4907009b61f73440e9b",
+    "ping-runtime/business/review_authority.js": "0cb75b83cddb0d6e4519fb55b0dd2c6d9ad601cb554332481e8dacfa810c8ac3",
+    "ping-runtime/events/event_bridge.js": "20cb8d5e588fb15d99043351705da53d3d9fcc4c98448dec4cf53a3336f09e22",
+    "ping-runtime/events/unified_event_runtime.js": "1a03b5bc4d2b6b586021e535e386902c87a3a79c11d20b177ee3310d281c8efa",
+    "ping-runtime/orchestration/event_to_mission_bridge.js": "32789a241727a01370aafae978f761ea1b167e6f7a97f4bf712bf5d6b672a4bc",
+    "ping-runtime/orchestration/mission_runtime.js": "9dd609c66b95064a53455ed8058727bb6f69647135c1bd6c3a676937f3f54420",
+    "ping-runtime/orchestration/mission_scheduler.js": "205a624bed9e76354140b130e6ed81eaa5b12f8bc4ffd578a39de129f759f4da",
+    "ping-runtime/runtime/commissioning_commands.js": "e9925fcc0cb6359783d6863b25574008d5f39054a01a17ff7a5934b27cf86a41",
+    "ping-runtime/runtime/deployment_registry.js": "dd43efabd5868d93c752af8764a68c7b9bd2df5c45c8cac0a27f57a670be7bae",
+    "ping-runtime/runtime/runtime_registry.js": "2b1110c9c2538c02490d2415b43263e2b49f2e2e8955d586689df1c727e83503",
+    "ping-runtime/runtime/tenant_registry.js": "2a167fc309da0e210b32ec3718da33329185b36886000f03c2f68c620aaab551"
+  },
+  "source_checkpoint": "Current candidate; bind exact tested SHA in proof package",
+  "discovered_groups": 38,
+  "reads": "GET routes unchanged; excluded from mutating-group count, no read privacy certificate"
+}
