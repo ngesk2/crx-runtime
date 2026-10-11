@@ -33,13 +33,18 @@ def output(command):
 report = {'source_sha': output(['git', 'rev-parse', 'HEAD']),
           'branch': output(['git', 'branch', '--show-current']),
           'platform': platform.platform(), 'node': output(['node', '--version']),
-          'scope': 'Synthetic owner authority and disposable persisted-state tests only',
+          'scope': 'Synthetic owner authority, disposable persisted-state tests and legacy before-effect requirements only',
           'merge': 'HOLD', 'production_cutover': 'HOLD', 'commands': [], 'sources': {}}
 report['tracked_changes_before'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
 paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-runtime/runtime/tenant_registry.js',
          *sorted((root / 'ping-runtime/runtime').glob('commissioning_*')),
          root / 'ping-runtime/runtime/strict_wire_json.js',
          root / 'test/commissioning_admission.test.js', root / 'test/commissioning_crash_child.js',
+         root / 'test/legacy_write_authority.test.js',
+         root / 'ping-runtime/business/customer_authority.js',
+         root / 'ping-runtime/orchestration/mission_runtime.js', root / 'gateway/canonical_event_envelope.js',
+         root / 'database/canonical_events.sql',
+         root / 'gateway/routes/customers.js', root / 'gateway/routes/missions.js', root / 'gateway/routes/tenants.js',
          *[root / 'gateway' / name for name in ['test_verdict_authority.js', 'test_confidence_spine.js',
              'test_event_spine_time_authority.js', 'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js',
              'test_events_routes.js', 'test_tenant_spoof_ingress.js', 'test_events_recent.js', 'test_events_time_authority.js']],
@@ -94,6 +99,12 @@ try:
     code, text = run(['node', '--test', 'test/commissioning_admission.test.js'], 'proof-admission')
     if code: raise RuntimeError('Candidate admission/recovery tests failed')
     report['candidate_result'] = 'PASS'
+    code, text = run(['node', '--test', 'test/legacy_write_authority.test.js'], 'proof-legacy-write-authority')
+    report['legacy_write_authority_result'] = 'PASS' if code == 0 else 'FAIL'
+    legacy_evidence = evidence / 'legacy-write-authority.json'
+    if legacy_evidence.exists():
+        report['legacy_write_authority_evidence'] = str(legacy_evidence.relative_to(root))
+        report['legacy_write_authority_evidence_sha256'] = hashlib.sha256(legacy_evidence.read_bytes()).hexdigest()
     report['regression_result'] = 'PASS'
     for name in ['test_verdict_authority.js', 'test_confidence_spine.js', 'test_event_spine_time_authority.js',
                  'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js', 'test_events_routes.js',
@@ -105,7 +116,7 @@ try:
         report['ingest_baseline_failure_names'] = re.findall(r'^✗ (.+)$', baseline.read_text(), re.M)
         ingest = next(item for item in report['commands'] if item['log'] == 'artifacts/proof-test_ingest_boundary.js.log')
         report['ingest_failures_match_prior_baseline'] = ingest['failure_names'] == report['ingest_baseline_failure_names']
-    report['exit_code'] = 0 if report['regression_result'] == 'PASS' else 1
+    report['exit_code'] = 0 if report['regression_result'] == 'PASS' and report['legacy_write_authority_result'] == 'PASS' else 1
     report['result'] = 'Admission and gateway regression gate passed; merge remains HOLD' if report['exit_code'] == 0 else 'FAIL'
 except Exception as error:
     report['result'] = 'FAIL'

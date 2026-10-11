@@ -1,6 +1,6 @@
 # Commissioning admission candidate
 
-MERGE = HOLD. Production cutover = HOLD. No production routes, bootstrap,
+MERGE = HOLD. Production cutover = HOLD. No deployed routes, bootstrap,
 database, credentials, or frontend authority bindings have been changed.
 
 This branch extends TenantRegistry commands and the existing UnifiedEventRuntime
@@ -75,7 +75,8 @@ ignored local dependencies are not committed; this is tracked-source cleanliness
 It records one source SHA, source hashes, environment, exact commands,
 counts and exits in `artifacts/commissioning-proof.json`. It compiles the existing
 TypeScript reference and runs candidate admission/recovery tests plus nine existing
-gateway suites, including affected HTTP contracts and existing event read tests. It returns nonzero if any suite fails, including known baseline
+gateway suites, including affected HTTP contracts and existing event read tests.
+It also runs the legacy before-effect security requirements below. It returns nonzero if any suite fails, including known baseline
 failures; a candidate pass is not an all-repository pass.
 
 ## Holds that these tests cannot remove
@@ -154,6 +155,53 @@ tenant registry; unavailable metadata or different storage also keeps it closed.
 No tenant records are copied and no database privilege is granted. This is not
 an all-writer or full-bootstrap integration proof. No deployment can be promoted
 while any enabled mutation entrance remains uncovered.
+
+## Legacy before-effect requirements: BLOCKED, gate must remain red
+
+The next investigation found no compatible trusted command admission contract for
+CustomerAuthority, MissionRuntime or ordinary TenantRegistry writes. Commissioning
+grants currently support OBJECT_CREATED/OBJECT_UPDATED, not customer SQL, mission
+lifecycle changes, registry administration or provider calls. Authentication, a
+syntactically valid tenant and connector availability do not fill this gap.
+Reclassifying these effects as object creation would change the authority contract.
+Rejecting every existing caller would globally disable functioning operations.
+Under the user's compatibility boundary, runtime enforcement is therefore blocked.
+
+`test/legacy_write_authority.test.js` runs the production route factories and real
+authorities against fresh, process-owned schemas in the marked disposable database.
+It uses actual signed, scoped synthetic object grants and actual grant revocation;
+these are deliberately **not** invented business/mission/registry permissions.
+The authenticated fixture identity is resolved server-side. No provider is contacted.
+Only the external People adapter boundary is faked to count calls.
+
+The 15 requirements assert zero changed persisted rows for negative HTTP requests,
+zero committed state after event-store failure, and zero unauthorized provider calls.
+They are ordinary failing assertions, not skipped or expected-failure tests.
+All 12 HTTP probes currently return 200 and change rows: customer and mission
+creation each append unadmitted events; tenant registration changes registry rows
+without a receipt. Missing permission, a revoked object grant, a grant for another
+tenant and an object grant presented for an unsupported legacy command all bypass
+the commissioning boundary. These do not establish a revoked *legacy* permission
+contract; that contract remains absent.
+
+Two further probes use an actual empty PostgreSQL event-store schema: customer SQL
+survives its failed append, and mission creation returns its ID despite persistence
+failure in UnifiedEventRuntime. An unauthorized import reaches the fake provider
+once. All 15 requirements fail at the investigated baseline. The runner continues
+the existing regressions for independent evidence, but exits nonzero while these
+requirements fail. `artifacts/legacy-write-authority.json` records HTTP outcomes,
+changed tables/row counts, append acknowledgements and provider-call count, without
+credentials or customer data. Test schemas are removed after the suite.
+
+The scoped entrance census has 24 public route/action groups plus four internal
+mission caller/job groups: three conditionally admitted journal aliases, four
+explicitly rejected processing routes and 21 unproven groups. It excludes the
+additional registry/provider/legacy-journal callers listed above and is not a
+whole-repository completeness claim. Functional faults such as undefined registry
+storage or an invalid project-route wrapper do not count as authorization denials.
+No authorized legacy transition, receipt/replay guarantee or real FYD owner flow
+can be certified until an existing trusted command contract is reconciled before
+the first SQL/provider call, with the event and state mutation made consistent.
 
 ## Lock evidence
 
