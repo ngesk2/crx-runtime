@@ -193,12 +193,13 @@ requirements fail. `artifacts/legacy-write-authority.json` records HTTP outcomes
 changed tables/row counts, append acknowledgements and provider-call count, without
 credentials or customer data. Test schemas are removed after the suite.
 
-The scoped entrance census has 24 public route/action groups plus four internal
-mission caller/job groups: three conditionally admitted journal aliases, four
-explicitly rejected processing routes and 21 unproven groups. It excludes the
-additional registry/provider/legacy-journal callers listed above and is not a
+The scoped entrance census has 33 public route/action groups plus five internal
+caller/job groups: three conditionally admitted journal aliases, four explicitly
+rejected processing routes and 31 unproven groups. It includes the deployment and
+runtime registry routes and the boot-wired EventBridge. Additional provider and
+legacy-journal callers listed above are not included in this count; this is not a
 whole-repository completeness claim. Functional faults such as undefined registry
-storage or an invalid project-route wrapper do not count as authorization denials.
+storage do not count as authorization denials.
 No authorized legacy transition, receipt/replay guarantee or real FYD owner flow
 can be certified until an existing trusted command contract is reconciled before
 the first SQL/provider call, with the event and state mutation made consistent.
