@@ -1,0 +1,223 @@
+{
+  "backend_base": "92c97e12dbd22b3911d22e365e091027d5d3c0f6",
+  "fyd_head": "f95fe3fc221d1d60ef7d178cd1259eef2cbb5e83",
+  "live_image": "sha256:921ab529b6d1014e51b27c5756360adbe015d54aab1dbb9766b87a214839d74b",
+  "tag": "ping-gateway:p0b-gated-20261005",
+  "created": "2026-10-06T01:02:15.836919747Z",
+  "labels": null,
+  "live_source_hashes": {
+    "gateway/bootstrap/gateway_runtime.js": "42a52cbaad44a7206cd0fa94b995a48dfc6de2a889457a39e881db7a6d8e4a84",
+    "gateway/routes/events.js": "bb053520550db0ad547e7f1610db0e77ab0830cf1942649e812cba7af47c5473",
+    "gateway/routes/ingest.js": "f1c1abdaf7745fdda40f6efda985c36752dd3e509b105001348d46119c7b0e38",
+    "gateway/exterior_auth_middleware.js": "3d5b736d832b322709c57871fbb581b9c280902ad22481ebcd66abfe89f978b1",
+    "gateway/knowledge_ingest_adapter.js": "bc7c5cbbc751e873ff7c7edcd96e276e35c035df8b7a7c26327921c6538a428f",
+    "ping-runtime/runtime/tenant_registry.js": "63bc02cacf60db07dc094f1cd580f49ae8ac9ff9ed6a39d005c1ff8d84e25cb0"
+  },
+  "matching_source_candidates": [
+    {
+      "ref": "refs/heads/deploy/security-p0-combined-20261001",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "399269bff1cf95dc7c83aa560ff95b5407e0e9b6"
+    },
+    {
+      "ref": "refs/heads/fix/p0-tenants-auth",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "0b8b130c7a23ffef83057ec12b11827c3d7b508b"
+    },
+    {
+      "ref": "refs/heads/fix/p0b-p0c-auth-gates",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js",
+        "ping-runtime/runtime/tenant_registry.js"
+      ],
+      "commit": "df0689fc42dd34e63dd9b3597cb38f21ef1b6a34"
+    },
+    {
+      "ref": "refs/heads/fix/route-auth-p0-sweep",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "fcfc656ca6963092c137b6eadb231bce83ee59c3"
+    },
+    {
+      "ref": "refs/heads/fix/tenants-exterior-auth-p0",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "624220518c4977b976449dee5a7de9e60f93eaad"
+    },
+    {
+      "ref": "refs/heads/gateway/auth-repair-20260924",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "1266dc5dd8aa01a68bfd0fbd76f4247e3900f207"
+    },
+    {
+      "ref": "refs/heads/lane/ssrf-reproof-scratch",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "5db86f32582ab47cbd88a4c98625745d6c2f4265"
+    },
+    {
+      "ref": "refs/heads/research/intelligence-worker-p0",
+      "matching_files": [
+        "gateway/routes/events.js",
+        "gateway/routes/ingest.js",
+        "gateway/exterior_auth_middleware.js",
+        "gateway/knowledge_ingest_adapter.js"
+      ],
+      "commit": "01e139612a4eb6f5f9fdf926bb0ca756b31a4c13"
+    }
+  ],
+  "history": [
+    {
+      "id": "sha256:921ab529b6d1014e51b27c5756360adbe015d54aab1dbb9766b87a214839d74b",
+      "size": "0B",
+      "command_digest": "9c3dac06c6c5664f0820155e892f39a645690a3d96ad578c42f3877efded9ccd",
+      "kind": "CMD"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "c2316fbed5d4ec86cb1dc40f1b74171226251a0bc3923ca1c34f5747080b2713",
+      "kind": "ENV"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "714a942cb142f7b995385342c28269b5c55d2ce46857302271ea1376c3f6aa2e",
+      "kind": "EXPOSE"
+    },
+    {
+      "id": "<missing>",
+      "size": "44.4MB",
+      "command_digest": "d9ebdb1e687f65817619f1a335386442fe198faec7f78798c5e40e4fe2c54a6a",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "188kB",
+      "command_digest": "82fe41779330c00ccb17454fca516298371e8b0994e9fa14c9e526881f0dc06c",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "158MB",
+      "command_digest": "33ca30bb08713e0ea7f9996fd6c4a3e71337df4506a5a6d409cc60fa8d0e83b7",
+      "kind": "COPY"
+    },
+    {
+      "id": "<missing>",
+      "size": "4.35MB",
+      "command_digest": "1ffb13f4b34028d844347a69ef170ba4e3810ccabca76ec5c70325a02cd6c1a8",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "776MB",
+      "command_digest": "d6549459e01b16341c2590e83b307f2e1fe5d88efcdb0608d435f8aa326fe27e",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "188kB",
+      "command_digest": "f9cfa3bef146005f72cbb87c61fb179cd1f48b74d439b8606b9ae3bccaeb4682",
+      "kind": "COPY"
+    },
+    {
+      "id": "<missing>",
+      "size": "8.19kB",
+      "command_digest": "d8736a23cc3314514079a4b02ce742870ddbe178cfae8f7eb5507475bbae75ab",
+      "kind": "WORKDIR"
+    },
+    {
+      "id": "<missing>",
+      "size": "13.3MB",
+      "command_digest": "4c3719a9f35f2362ba09ba24ccc331154217b6833f1fc0af70a275dbe968a49e",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "80d2c6b996e4147496e932db7e6a6c64e68943e3d36c31ec6a78e212e52d1364",
+      "kind": "CMD"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "30d4033732295ecc1db2fe0c0bef7ef05610c8446448ccbbb86c6b151961641d",
+      "kind": "ENTRYPOINT"
+    },
+    {
+      "id": "<missing>",
+      "size": "20.5kB",
+      "command_digest": "2a89cd8a5874f4fef91c2a9c2b0a3141347caa66387af15e98df0c348b9f3dbd",
+      "kind": "COPY"
+    },
+    {
+      "id": "<missing>",
+      "size": "5.48MB",
+      "command_digest": "9ee366fb213088febaf7dc8781599f25cd3060b0a827ed0916dd7c37c45d91f4",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "5f722e2c22e54101dc22201de822982d6e1131d2bb7c042e475b2a524d2d974d",
+      "kind": "ENV"
+    },
+    {
+      "id": "<missing>",
+      "size": "165MB",
+      "command_digest": "9082b1d66e9b04cc8ecb6b9512645151e67cb2fc16a728ba42480661e3b68db0",
+      "kind": "RUN"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "929e3c1a6c28180f016a337c9cc76e721b94c188ec68c8bd1134121a35f3fbcc",
+      "kind": "ENV"
+    },
+    {
+      "id": "<missing>",
+      "size": "0B",
+      "command_digest": "612149a46cd95f9a6fa7d4f7409422ac7a622662ce4eda6a7e5187b4bd8c396e",
+      "kind": "CMD"
+    },
+    {
+      "id": "<missing>",
+      "size": "9.08MB",
+      "command_digest": "28e19b4a8bc8b6749342b78ca8005813d4579824bb32ae68848cb6cdfa970283",
+      "kind": "ADD"
+    }
+  ],
+  "status": "UNVERIFIED",
+  "reason": "File matches cannot establish full source revision, build context, dependencies or image provenance."
+}

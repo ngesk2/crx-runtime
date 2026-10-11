@@ -38,6 +38,8 @@ const { constitutionalTimeAuthority } = require('../authorities/constitutional_t
 // no ad-hoc canonical-JSON helpers on the acceptance path.
 const { identityAuthority } = require('../authorities/identity_authority.js');
 const { CanonicalBytes } = require('../authorities/canonical_authority.js');
+// Unforgeable by JSON request options. Only the opt-in commissioned admission method sets it.
+const COMMISSIONING_TRANSACTION = Symbol('commissioning-transaction');
 
 // ─── Verdict-class admission authority ─────────────────────────────────
 // A verdict-class event asserts an authoritative outcome (a replay verified,
@@ -107,6 +109,8 @@ class UnifiedEventRuntime {
     this._eventValidator = options.eventValidator || null;
     this._eventGovernance = options.eventGovernance || null;
     this._integrationManager = options.integrationManager || null;
+    // Candidate-only switch; existing production bootstrap is unchanged.
+    this._requireCommissioningForObjectWrites = options.requireCommissioningForObjectWrites === true;
     this._handlers = new Map();
     this._stats = { emitted: 0, persisted: 0, deduplicated: 0, dispatched: 0, failed: 0 };
   }
@@ -183,6 +187,12 @@ class UnifiedEventRuntime {
    * @param {object} options — { causation_id, correlation_id, metadata, namespace, logical_id }
    */
   async emit(eventType, source, payload, options = {}) {
+    if (this._requireCommissioningForObjectWrites &&
+        ['OBJECT_CREATED','OBJECT_UPDATED','RELATIONSHIP_CREATED'].includes(eventType) &&
+        !options[COMMISSIONING_TRANSACTION]) {
+      this._stats.failed++;
+      return {status:'error',error:'commissioning_required'};
+    }
     // 1. Generate deterministic event_id (content-based, no Date.now()).
     //    Identity material = { eventType, source, [namespace], [logical_id|payload] }.
     //    Namespace + logical_id are only included when provided, so legacy callers
@@ -278,6 +288,7 @@ class UnifiedEventRuntime {
       },
     };
 
+    let inserted = false;
     // 5. Persist - fail closed if no pool (never return ok without durability)
     if (!this._pool) {
       this._stats.failed++;
@@ -285,7 +296,8 @@ class UnifiedEventRuntime {
     }
     {
       try {
-        const result = await this._pool.query(
+        const persistence = options[COMMISSIONING_TRANSACTION]?.client || this._pool;
+        const result = await persistence.query(
           `INSERT INTO ping_events (event_id, event_type, source, timestamp, payload, metadata, namespace, tenant_id)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (event_id) DO NOTHING`,
           [event.event_id, event.event_type, event.source, event.timestamp,
@@ -293,10 +305,11 @@ class UnifiedEventRuntime {
         );
         // Only count actual inserts, not ON CONFLICT DO NOTHING no-ops
         if ((result.rowCount || 0) > 0) {
-          this._stats.persisted++;
+          inserted = true;
+          if (!options[COMMISSIONING_TRANSACTION]) this._stats.persisted++;
         } else {
           // CONFLICT: check if this is a true duplicate or a semantic collision
-          const existing = await this._pool.query(
+          const existing = await persistence.query(
             "SELECT payload FROM ping_events WHERE event_id = $1",
             [event.event_id]
           );
@@ -311,7 +324,7 @@ class UnifiedEventRuntime {
               return { status: "error", error: "Event ID collision: same event_id with different payload semantics", eventId };
             }
           }
-          this._stats.deduplicated++;
+          if (!options[COMMISSIONING_TRANSACTION]) this._stats.deduplicated++;
         }
       } catch (err) {
         this._stats.failed++;
@@ -319,6 +332,37 @@ class UnifiedEventRuntime {
       }
     }
 
+    if (options[COMMISSIONING_TRANSACTION]) return { status: 'ok', eventId, event, inserted };
+    await this._dispatchCommitted(event);
+    return { status: 'ok', eventId, event };
+  }
+
+  async admitCommissionedBytes(tenantRegistry,context,raw) {
+    return this.admitCommissionedEvent(tenantRegistry,context,
+      require('../runtime/commissioning_wire').parseCommissioningSubmission(raw));
+  }
+
+  async admitCommissionedEvent(tenantRegistry, context, submission) {
+    // No route/bootstrap is wired to this candidate. Reuses emit's one SQL writer.
+    if (tenantRegistry._commissioningPool !== this._pool) throw new Error('commissioning_pool_mismatch');
+    const result = await tenantRegistry.executeWithCommissioningGrant(context, submission, (client, data) =>
+      this.emit(data.intent.operation, `commissioned:${data.intent.authenticated_actor}`, data.payload, {
+        tenant_id: data.intent.tenant_id, namespace: `tenant::${data.intent.tenant_id}`,
+        logical_id: `${data.intent.authenticated_actor}:${data.intent.logical_operation_id}`,
+        metadata: { ...data.metadata, commissioning: { grant_id:data.intent.grant_id,
+          grant_revision:data.intent.grant_revision, operation_digest:data.operationDigest } },
+        [COMMISSIONING_TRANSACTION]: {client},
+      }));
+    // No derived state, handler, or integration can run before the receipt commits.
+    if (!result.duplicate) {
+      if (result.inserted) this._stats.persisted++;
+      await this._dispatchCommitted(result.event);
+    } else this._stats.deduplicated++;
+    return result;
+  }
+
+  async _dispatchCommitted(event) {
+    const eventType = event.event_type;
     // 6. Dispatch to handlers
     const handlers = this._handlers.get(eventType) || [];
     for (const handler of handlers) {
@@ -340,7 +384,6 @@ class UnifiedEventRuntime {
     }
 
     this._stats.emitted++;
-    return { status: 'ok', eventId, event };
   }
 
   /**

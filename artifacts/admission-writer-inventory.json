@@ -1,0 +1,254 @@
+{
+  "base_commit": "92c97e12dbd22b3911d22e365e091027d5d3c0f6",
+  "scope": [
+    "gateway",
+    "ping-runtime",
+    "runtime",
+    "brainos"
+  ],
+  "tracked_source_files_scanned": 927,
+  "oversized_files_not_scanned": [],
+  "sql_writer_hits": [
+    {
+      "path": "brainos/orchestration/src/constitutional/event_emitter.py",
+      "line": 106,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "17952796898801e144d39e7b56c942d8cf33f9616bc79735ac836e52543743aa"
+    },
+    {
+      "path": "brainos/orchestration/src/constitutional_retrieval.py",
+      "line": 107,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "7c07ae637f6609c548f81dc7e90bafad8f120915685ac9e6d862ae80c90aaa22"
+    },
+    {
+      "path": "brainos/orchestration/src/google_drive_ingestion.py",
+      "line": 121,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "2465a0f0ef80c351ef86869b2515ee2b96d3309eb56b3df1deb37a2de55f92ab"
+    },
+    {
+      "path": "brainos/orchestration/src/web_retrieval.py",
+      "line": 77,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "6b971bec4b0ac8b1bf319539778e019aae424a140d6fcd813e39426e460251ad"
+    },
+    {
+      "path": "gateway/append_orchestrator.js",
+      "line": 91,
+      "table": "repository_events",
+      "classification": "caller_trace_required",
+      "source_sha256": "9ff8552e3cdfd10080bfe331d247b260d9403ec8b9d985a35aa838aa0c27e2d4"
+    },
+    {
+      "path": "gateway/canonical_event_envelope.js",
+      "line": 201,
+      "table": "canonical_events",
+      "classification": "caller_trace_required",
+      "source_sha256": "14282583c197eb72f882a82f4302c0c9e4792c90c800ea0cd296cd2f3caba0df"
+    },
+    {
+      "path": "gateway/event_bus.js",
+      "line": 76,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "ddff55cc7501c2f0b026ba0fa0af1628ac28b8f11dba09929b75adac79c76f2a"
+    },
+    {
+      "path": "gateway/event_bus_convergence.test.js",
+      "line": 15,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "4099146bd1955cab245c0999ac81b825f965e12ff3a0d0d3cd00abf0ca651250"
+    },
+    {
+      "path": "gateway/event_bus_convergence.test.js",
+      "line": 42,
+      "table": "events",
+      "classification": "test_or_probe",
+      "source_sha256": "4099146bd1955cab245c0999ac81b825f965e12ff3a0d0d3cd00abf0ca651250"
+    },
+    {
+      "path": "gateway/event_bus_convergence.test.js",
+      "line": 77,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "4099146bd1955cab245c0999ac81b825f965e12ff3a0d0d3cd00abf0ca651250"
+    },
+    {
+      "path": "gateway/test_commissioning.js",
+      "line": 32,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "fe314c9a6566aee98150cfd0afd47a3f45cbab5f06978e669a478c2c8ff46218"
+    },
+    {
+      "path": "gateway/test_commissioning.js",
+      "line": 33,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "fe314c9a6566aee98150cfd0afd47a3f45cbab5f06978e669a478c2c8ff46218"
+    },
+    {
+      "path": "gateway/test_confidence_convergence.js",
+      "line": 23,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "40bf31e39981a2f9fae8c3ef2da720ae445b591cfbd98dd6cf5530a91edf79de"
+    },
+    {
+      "path": "gateway/test_constitutional_validation.js",
+      "line": 60,
+      "table": "canonical_events",
+      "classification": "test_or_probe",
+      "source_sha256": "86b1af22a19921ddca285589d34237564e06118b79041f681c767757723bcacf"
+    },
+    {
+      "path": "gateway/test_constitutional_validation.js",
+      "line": 61,
+      "table": "canonical_events",
+      "classification": "test_or_probe",
+      "source_sha256": "86b1af22a19921ddca285589d34237564e06118b79041f681c767757723bcacf"
+    },
+    {
+      "path": "gateway/test_kernel_pipeline.js",
+      "line": 38,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "03cdad6dd7011334275e949e2628585bfa92d4304ab19589535cda706b5248d7"
+    },
+    {
+      "path": "gateway/test_p001_p005.js",
+      "line": 28,
+      "table": "canonical_events",
+      "classification": "test_or_probe",
+      "source_sha256": "8a353907a34fbfcd685865eae1a9dd23c46eb2ab4e254dea061a58c51d82a851"
+    },
+    {
+      "path": "gateway/test_phase0_fixes.js",
+      "line": 61,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "73b55cdb03557f0ec3c9ec180a50de2027d80069804c205cbac2d629b2da0ad6"
+    },
+    {
+      "path": "gateway/test_trace_propagation.js",
+      "line": 76,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "d4d5c0187ac79317d0bfe0961eeb26484a53290bf3ae7a8cfc8715f741497181"
+    },
+    {
+      "path": "gateway/test_trace_propagation.js",
+      "line": 77,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "d4d5c0187ac79317d0bfe0961eeb26484a53290bf3ae7a8cfc8715f741497181"
+    },
+    {
+      "path": "ping-runtime/approval/approval_events.test.js",
+      "line": 49,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "c72aaa7b3ab726a6113b96cb11fff698e1c8e85ae14496154617375e786f9323"
+    },
+    {
+      "path": "ping-runtime/events/test_runtime_tenant.js",
+      "line": 38,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "714a80244c8e8b38082162279dbe90e5fc96024cd0cf1fedbb52929060210d82"
+    },
+    {
+      "path": "ping-runtime/events/test_runtime_tenant.js",
+      "line": 49,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "714a80244c8e8b38082162279dbe90e5fc96024cd0cf1fedbb52929060210d82"
+    },
+    {
+      "path": "ping-runtime/events/uer-spine-identity.test.js",
+      "line": 77,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "cf5b1ffe001c802062b420033f987afb1f3c6390a890d8c8ca6a9d7fe67a8f7e"
+    },
+    {
+      "path": "ping-runtime/events/unified_event_runtime.js",
+      "line": 301,
+      "table": "ping_events",
+      "classification": "caller_trace_required",
+      "source_sha256": "53b78ff04810302b3609a40b7fab85150eaa7e335fa8e725cc2c84bc7cd4cdc3"
+    },
+    {
+      "path": "runtime/adapters/google_drive/google_drive_ingestion_adapter.py",
+      "line": 269,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "5adbd62180a6958ee859182ab856a7d619bcd804c5db4b540667ca7f9bb16a6b"
+    },
+    {
+      "path": "runtime/adapters/postgres_event_store.ts",
+      "line": 89,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "dedfa76af1f61c2fb7c16abf79581433901f3bf85b6be7d0db26029889292da9"
+    },
+    {
+      "path": "runtime/constitutional/src/ping-projector.integration.test.ts",
+      "line": 74,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "b074e6ce2bdc060d7f91d6c3fdc4138e1ec6d93e107d591660d6e5da6bcad96f"
+    },
+    {
+      "path": "runtime/constitutional/src/ping-projector.integration.test.ts",
+      "line": 95,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "b074e6ce2bdc060d7f91d6c3fdc4138e1ec6d93e107d591660d6e5da6bcad96f"
+    },
+    {
+      "path": "runtime/constitutional/src/ping-projector.integration.test.ts",
+      "line": 120,
+      "table": "ping_events",
+      "classification": "test_or_probe",
+      "source_sha256": "b074e6ce2bdc060d7f91d6c3fdc4138e1ec6d93e107d591660d6e5da6bcad96f"
+    },
+    {
+      "path": "runtime/ingestion/drive_ingestor.py",
+      "line": 158,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "d365afb2c9450628b70aba7d9233f4658386c0c4615997bfb69e77fdaba8a5c0"
+    },
+    {
+      "path": "runtime/ingestion/drive_ingestor.py",
+      "line": 160,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "d365afb2c9450628b70aba7d9233f4658386c0c4615997bfb69e77fdaba8a5c0"
+    },
+    {
+      "path": "runtime/kernel/event_repository.js",
+      "line": 117,
+      "table": "repository_events",
+      "classification": "caller_trace_required",
+      "source_sha256": "bb60762cf43f6981b9349ec59bdaa1d4b62df8d98d7cb1802f725ce4f7c77ec7"
+    },
+    {
+      "path": "runtime/workers/github_worker.py",
+      "line": 116,
+      "table": "events",
+      "classification": "caller_trace_required",
+      "source_sha256": "04c2540dbbe2fab126c357b98e8ec50b7259234e14c37b4ebc2ffbc7a414d76b"
+    }
+  ],
+  "status": "STATIC INVENTORY ONLY; live source equivalence and reachability not established; not a zero-bypass claim",
+  "shared_parser_commit": "0eadf48aa4c2c6285fac727eda56eee74bb10b6f",
+  "method": "Tracked-source INSERT INTO scan for four known journal tables; dynamic SQL and runtime reachability not proven."
+}

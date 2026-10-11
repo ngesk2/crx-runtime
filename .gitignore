@@ -142,3 +142,7 @@ gateway/constitutional-dist/
 
 # Volatile runtime state: orchestration event queue (written and drained by the live runtime)
 ping-runtime/orchestration/event_queue/
+
+# Isolated admission/Rust proof tooling
+/.build-tools/
+/.test-database.json

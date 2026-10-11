@@ -1,0 +1,400 @@
+'use strict';
+const {test,before,after}=require('node:test');
+const assert=require('node:assert/strict');
+const crypto=require('node:crypto');
+const fs=require('node:fs');
+const path=require('node:path');
+const {Pool}=require('pg');
+const {TenantRegistry}=require('../ping-runtime/runtime/tenant_registry');
+const {UnifiedEventRuntime}=require('../ping-runtime/events/unified_event_runtime');
+const C=require('../ping-runtime/runtime/commissioning_contract');
+
+// Synthetic test-only authority and independently resolved receipts; NEVER an HPP grant.
+const root=path.resolve(__dirname,'..');
+const config=JSON.parse(fs.readFileSync(path.join(root,'.test-database.json'),'utf8'));
+assert.equal(config.database,'admission_proof');assert.equal(config.host,'127.0.0.1');
+const pool=new Pool(config);
+const issuerKeys=crypto.generateKeyPairSync('ed25519');
+const signerKeys=crypto.generateKeyPairSync('ed25519');
+const otherKeys=crypto.generateKeyPairSync('ed25519');
+const pem=k=>k.publicKey.export({format:'pem',type:'spki'}).toString();
+const contexts=new WeakMap();
+function context(actorId){const c={};contexts.set(c,{actor_id:actorId,verified:true});return c;}
+const admin=context('synthetic-operator'), owner=context('synthetic-owner'), agent=context('synthetic-agent'), stranger=context('synthetic-stranger');
+const records=new Map();
+const trust={issuers:new Map([['synthetic-designated-issuer',{actor_id:'synthetic-operator',public_key:pem(issuerKeys),active:true}]]),
+  allowedOidcIssuers:new Set(['https://synthetic-oidc.invalid']),resolveActor:async c=>contexts.get(c)||null,
+  resolveVerifiedOidcEvidence:async d=>records.get(d),resolveIndependentBusinessEvidence:async d=>records.get(d),
+  resolveCommissioningConsentEvidence:async d=>records.get(d)};
+const registry=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust});
+const runtime=new UnifiedEventRuntime({pool,requireCommissioningForObjectWrites:true,eventValidator:{isRegistered:x=>['OBJECT_CREATED','OBJECT_UPDATED'].includes(x)}});
+let derived=0;runtime.on('OBJECT_CREATED',async()=>{derived++;});
+let n=0;
+function record(value){const digest=C.digest(C.bytes(value));records.set(digest,{...value,digest,verified:true});return digest;}
+function signed(action,body,keys=issuerKeys,issuerId='synthetic-designated-issuer'){
+ return {issuer_id:issuerId,body,signature:crypto.sign(null,C.bytes({action,issuer_id:issuerId,body}),keys.privateKey).toString('base64')};
+}
+async function setup(suffix='t'+(++n),tenantRegistry=registry){
+ const tenant='proof-'+suffix;
+ await tenantRegistry.executeRegisterTenant({tenantId:tenant,name:'Synthetic '+suffix});
+ const identity=record({issuer:'https://synthetic-oidc.invalid',subject:'test-owner-subject',actor_id:'synthetic-owner'});
+ const business=record({method:'independent-operator-check',verified_by:'synthetic-designated-issuer',owner_actor_id:'synthetic-owner',tenant_id:tenant,controller_id:'controller-'+suffix});
+ const bindingBody={tenant_id:tenant,controller_id:'controller-'+suffix,identity_evidence_digest:identity,business_evidence_digest:business};
+ const binding=await tenantRegistry.executeBindVerifiedOwner(admin,signed('bind_owner',bindingBody));
+ const scope={tenant_id:tenant,controller_id:binding.controller_id,commissioning_project_id:'commission-'+suffix,
+  site_id:'site-'+suffix,resource_id:'object-'+suffix,delegated_actor:'synthetic-agent',authorized_signer:C.keyId(pem(signerKeys)),
+  operations:['OBJECT_CREATED','OBJECT_UPDATED'],purpose:'harvest-test',valid_from:new Date(Date.now()-60000).toISOString(),expires_at:new Date(Date.now()+3600000).toISOString()};
+ const consent=record({owner_binding_id:binding.binding_id,owner_actor_id:'synthetic-owner',scope_digest:C.digest(C.bytes(scope))});
+ const body={...scope,owner_binding_id:binding.binding_id,owner_binding_revision:binding.revision,signer_public_key:pem(signerKeys),consent_evidence_digest:consent};
+ const grant=await tenantRegistry.executeIssueCommissioningGrant(admin,signed('issue_grant',body));
+ return {binding,bindingBody,grant,grantBody:body};
+}
+function submission(f,changes={},keys=signerKeys){
+ const scope=Object.fromEntries(C.SCOPE.map(k=>[k,f.grant[k]]));
+ const payload={schema:'ping.knowledge.business@1',object_id:scope.resource_id,controller:scope.controller_id,content:{name:'Synthetic evidence-backed object',claim_basis:'website_statement'}};
+ const metadata={scope,provenance:{source_url:'https://synthetic.invalid/source',source_type:'website',observed_at:'2026-10-10T00:00:00Z'}};
+ const intent={protocol_version:C.PROTOCOL,authenticated_actor:'synthetic-agent',authorized_signer:f.grant.authorized_signer,grant_id:f.grant.grant_id,
+  grant_revision:f.grant.revision,...scope,operation:'OBJECT_CREATED',purpose:'harvest-test',payload_digest:'',logical_operation_id:'operation-1',...changes};
+ // Wrong-scope vectors remain internally consistent and correctly signed:
+ // rejection must come from the server-resolved grant, not an accidental payload mismatch.
+ for(const k of C.SCOPE)metadata.scope[k]=intent[k];
+ payload.controller=intent.controller_id;payload.object_id=intent.resource_id;
+ payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(payload);
+ intent.payload_digest=C.payloadDigest(payload,metadata);
+ return {intent,payload,metadata,signature:crypto.sign(null,C.bytes(intent),keys.privateKey).toString('base64')};
+}
+async function counts(){const r=await pool.query('SELECT (SELECT count(*)::int FROM ping_events) AS events,(SELECT count(*)::int FROM tenant_admission_receipts) AS receipts');return {...r.rows[0],derived};}
+async function denied(action){const before=await counts();await assert.rejects(action);assert.deepEqual(await counts(),before);}
+function resign(s){
+ s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);
+ s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
+ return s;
+}
+function updateSubmission(f,changes={name:'Corrected supported name'}){
+ const s=submission(f,{operation:'OBJECT_UPDATED',logical_operation_id:'update-1'});
+ s.payload={object_id:f.grant.resource_id,updated_by:f.grant.controller_id,changes};
+ s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
+ return resign(s);
+}
+async function waitingOn(client){
+ const pid=(await client.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+ for(let i=0;i<100;i++){
+  const r=await pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND $1=ANY(pg_blocking_pids(pid))",[pid]);
+  if(r.rows[0].n>0)return;
+  await new Promise(r=>setTimeout(r,10));
+ }
+ assert.fail('Expected a real PostgreSQL lock wait');
+}
+before(async()=>{
+ // Only the disposable database is reset. No production schema/data is touched.
+ assert.equal((await pool.query('SHOW cluster_name')).rows[0].cluster_name,'ping-admission-proof-20261010','Refuse schema reset without the dedicated test-cluster marker');
+ await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public');
+ await pool.query('CREATE TABLE tenant_registry(tenant_id VARCHAR(64) PRIMARY KEY,name TEXT,domains TEXT[],health_endpoint TEXT,metrics_endpoint TEXT,logs_endpoint TEXT,traces_endpoint TEXT,events_endpoint TEXT,capabilities TEXT[],metadata JSONB,updated_at TIMESTAMPTZ)');
+ await runtime.initialize();await registry.initializeCommissioning();
+});
+after(async()=>{await pool.end();});
+
+test('unconfigured default has no commissioning authority',async()=>{
+ const unconfigured=new TenantRegistry(pool);
+ await assert.rejects(()=>unconfigured.initializeCommissioning());
+ await denied(()=>unconfigured.executeBindVerifiedOwner(admin,signed('bind_owner',{})));
+});
+test('forged issuer and forged authenticated context produce no owner binding',async()=>{
+ const f=await setup();const count=(await pool.query('SELECT count(*)::int AS n FROM tenant_owner_bindings')).rows[0].n;
+ await assert.rejects(()=>registry.executeBindVerifiedOwner(admin,signed('bind_owner',f.bindingBody,otherKeys)));
+ await assert.rejects(()=>registry.executeBindVerifiedOwner({actor_id:'synthetic-operator',verified:true},signed('bind_owner',f.bindingBody)));
+ await assert.rejects(()=>registry.executeBindVerifiedOwner(admin,signed('bind_owner',f.bindingBody,otherKeys,'forged-issuer')));
+ assert.equal((await pool.query('SELECT count(*)::int AS n FROM tenant_owner_bindings')).rows[0].n,count);
+});
+test('OIDC login alone and caller attestation text confer no business ownership',async()=>{
+ const f=await setup();
+ await assert.rejects(()=>registry.executeBindVerifiedOwner(admin,signed('bind_owner',{...f.bindingBody,business_evidence_digest:C.digest(Buffer.from('invented owner label'))})));
+ const forged=record({method:'caller-attestation',verified_by:'synthetic-designated-issuer',owner_actor_id:'synthetic-owner',tenant_id:f.binding.tenant_id,controller_id:f.binding.controller_id});
+ await assert.rejects(()=>registry.executeBindVerifiedOwner(admin,signed('bind_owner',{...f.bindingBody,business_evidence_digest:forged})));
+});
+test('unauthorized delegation and mismatched consent are rejected',async()=>{
+ const f=await setup();const command=signed('issue_grant',f.grantBody);
+ await assert.rejects(()=>registry.executeIssueCommissioningGrant(agent,command));
+ await assert.rejects(()=>registry.executeIssueCommissioningGrant(admin,signed('issue_grant',{...f.grantBody,site_id:'other-site'})));
+});
+for(const [name,changes,ctx,keys] of [
+ ['missing grant',{grant_id:'absent'}],['wrong actor',{authenticated_actor:'synthetic-stranger'},stranger],
+ ['wrong signer',{authorized_signer:C.keyId(pem(otherKeys))},agent,otherKeys],['wrong tenant',{tenant_id:'other-tenant'}],
+ ['wrong controller',{controller_id:'other-controller'}],['wrong commissioning project',{commissioning_project_id:'other-commission'}],
+ ['wrong site',{site_id:'other-site'}],['wrong resource',{resource_id:'other-object'}],['wrong purpose',{purpose:'publish'}],
+ ['wrong operation',{operation:'WITNESS_CREATED'}],['stale revision',{grant_revision:2}],
+ ])test(name+' has zero canonical/receipt/derived writes',async()=>{const f=await setup();await denied(()=>runtime.admitCommissionedEvent(registry,ctx||agent,submission(f,changes,keys||signerKeys)));});
+test('tampered signed payload, altered outer scope, malformed signature fail closed',async()=>{
+ const f=await setup();const s=submission(f);s.payload.content.name='tampered';await denied(()=>runtime.admitCommissionedEvent(registry,agent,s));
+ const t=submission(f);t.metadata.scope.tenant_id='elsewhere';await denied(()=>runtime.admitCommissionedEvent(registry,agent,t));
+ const u=submission(f);u.signature='garbage';await denied(()=>runtime.admitCommissionedEvent(registry,agent,u));
+ const v=submission(f,{},otherKeys);await denied(()=>runtime.admitCommissionedEvent(registry,agent,v));
+});
+test('expired and not-yet-valid grants fail closed',async()=>{
+ const f=await setup();await pool.query("UPDATE tenant_commissioning_grants SET valid_from=clock_timestamp()-interval '2 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE grant_id=$1",[f.grant.grant_id]);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f)));
+ const g=await setup();await pool.query("UPDATE tenant_commissioning_grants SET valid_from=clock_timestamp()+interval '1 hour',expires_at=clock_timestamp()+interval '2 hours' WHERE grant_id=$1",[g.grant.grant_id]);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(g)));
+});
+test('scoped admission persists a receipt read back from the same store',async()=>{
+ const f=await setup();const before=await counts();const result=await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ assert.equal(result.duplicate,false);assert.deepEqual(await counts(),{events:before.events+1,receipts:before.receipts+1,derived:before.derived+1});
+ const stored=await pool.query('SELECT receipt FROM tenant_admission_receipts WHERE event_id=$1',[result.receipt.event_id]);assert.deepEqual(stored.rows[0].receipt,result.receipt);
+});
+
+test('correct signatures cannot admit an unknown schema, missing content or incorrect payload hash',async()=>{
+ const f=await setup();
+ for(const alter of [p=>{p.schema='ping.social.project@1';},p=>{delete p.content;},p=>{p.payload_hash='0'.repeat(64);},p=>{delete p.payload_hash;}]){
+  const s=submission(f);alter(s.payload);
+  if(s.payload.schema!=='ping.knowledge.business@1'||!s.payload.content)s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
+  await denied(()=>runtime.admitCommissionedEvent(registry,agent,resign(s)));
+ }
+});
+
+test('an update needs a prior journal object controlled by the granted controller',async()=>{
+ const f=await setup();await denied(()=>runtime.admitCommissionedEvent(registry,agent,updateSubmission(f)));
+ await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const wrong=updateSubmission(f);wrong.payload.updated_by='unrelated-controller';wrong.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(wrong.payload);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,resign(wrong)));
+ const malformed=updateSubmission(f);malformed.payload.changes=[];malformed.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(malformed.payload);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,resign(malformed)));
+ const accepted=await runtime.admitCommissionedEvent(registry,agent,updateSubmission(f));
+ assert.equal(accepted.duplicate,false);
+ assert.deepEqual((await pool.query('SELECT payload FROM ping_events WHERE event_id=$1',[accepted.receipt.event_id])).rows[0].payload.changes,{name:'Corrected supported name'});
+});
+test('concurrent duplicates return the identical receipt and dispatch only once',async()=>{
+ const f=await setup();const before=await counts();const s=submission(f);const results=await Promise.all(Array.from({length:8},()=>runtime.admitCommissionedEvent(registry,agent,s)));
+ assert.equal(results.filter(r=>!r.duplicate).length,1);for(const r of results)assert.deepEqual(r.receipt,results[0].receipt);
+ assert.deepEqual(await counts(),{events:before.events+1,receipts:before.receipts+1,derived:before.derived+1});
+});
+test('same logical operation with changed payload conflicts',async()=>{
+ const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const s=submission(f);s.payload.content.name='different';s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
+ const before=await counts();await assert.rejects(()=>runtime.admitCommissionedEvent(registry,agent,s),/idempotency_conflict/);assert.deepEqual(await counts(),before);
+});
+test('cross-tenant receipt probing does not return the existing receipt',async()=>{
+ const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{tenant_id:'unknown-other-tenant'})));
+});
+test('owner revocation increments revision and forbids both retry and fresh write',async()=>{
+ const f=await setup();const s=submission(f);await runtime.admitCommissionedEvent(registry,agent,s);
+ await assert.rejects(()=>registry.executeRevokeCommissioningGrant(stranger,{grant_id:f.grant.grant_id,reason_digest:'a'.repeat(64)}));
+ const revoked=await registry.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:'a'.repeat(64)});assert.equal(revoked.revision,2);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,s));await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'new-operation'})));
+});
+test('owner binding revocation invalidates all dependent grants',async()=>{
+ const f=await setup();await registry.executeRevokeOwnerBinding(owner,{binding_id:f.binding.binding_id});await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f)));
+});
+test('revocation commits first: blocked admission sees revoked row and writes nothing',async()=>{
+ const f=await setup();const holder=await pool.connect();await holder.query('BEGIN');await holder.query('SELECT * FROM tenant_owner_bindings WHERE binding_id=$1 FOR UPDATE',[f.binding.binding_id]);
+ await holder.query("UPDATE tenant_commissioning_grants SET status='revoked',revision=revision+1 WHERE grant_id=$1",[f.grant.grant_id]);
+ const before=await counts();const attempted=runtime.admitCommissionedEvent(registry,agent,submission(f));const rejected=assert.rejects(attempted);await waitingOn(holder);await holder.query('COMMIT');holder.release();await rejected;assert.deepEqual(await counts(),before);
+});
+test('admission commits first: competing revocation waits, then forbids subsequent writes',async()=>{
+ const f=await setup();let release,locked;const blocker=new Promise(r=>release=r),ready=new Promise(r=>locked=r);
+ const original=runtime.emit.bind(runtime);runtime.emit=async(...args)=>{locked();await blocker;return original(...args);};
+ const admission=runtime.admitCommissionedEvent(registry,agent,submission(f));await ready;
+ const revocation=registry.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:'b'.repeat(64)});
+ for(let i=0;i<100;i++){const r=await pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'");if(r.rows[0].n)break;if(i===99)assert.fail('Revocation did not block');await new Promise(r=>setTimeout(r,10));}
+ release();await admission;runtime.emit=original;await revocation;await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'later'})));
+});
+test('receipt write failure rolls back event and prevents derived dispatch',async()=>{
+ const f=await setup();await pool.query("ALTER TABLE tenant_admission_receipts ADD CONSTRAINT force_test_rollback CHECK(logical_operation_id<>'force-rollback')");
+ const before=await counts();const persistedBefore=runtime._stats.persisted;await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'force-rollback'})));assert.deepEqual(await counts(),before);assert.equal(runtime._stats.persisted,persistedBefore);
+ await pool.query('ALTER TABLE tenant_admission_receipts DROP CONSTRAINT force_test_rollback');
+});
+test('a different persistence pool is rejected before admission',async()=>{
+ const f=await setup();const wrong=new UnifiedEventRuntime({pool:{}});await denied(()=>wrong.admitCommissionedEvent(registry,agent,submission(f)));
+});
+test('expiry is re-evaluated after a genuine grant-lock wait',async()=>{
+ const f=await setup();const holder=await pool.connect();await holder.query('BEGIN');
+ await holder.query('SELECT * FROM tenant_owner_bindings WHERE binding_id=$1 FOR UPDATE',[f.binding.binding_id]);
+ await holder.query("UPDATE tenant_commissioning_grants SET expires_at=clock_timestamp()+interval '150 milliseconds' WHERE grant_id=$1",[f.grant.grant_id]);
+ const before=await counts();const attempt=assert.rejects(()=>runtime.admitCommissionedEvent(registry,agent,submission(f)));
+ await waitingOn(holder);await new Promise(r=>setTimeout(r,200));await holder.query('COMMIT');holder.release();await attempt;assert.deepEqual(await counts(),before);
+});
+test('small-order and noncanonical alias keys cannot become commissioning signers',async()=>{
+ const {SMALL_ORDER}=require('../ping-runtime/runtime/commissioning_key_policy');
+ for(const hex of SMALL_ORDER){
+  for(const signBit of [0,128]){
+   const raw=Buffer.from(hex,'hex');raw[31]|=signBit;
+   const key=crypto.createPublicKey({key:Buffer.concat([Buffer.from('302a300506032b6570032100','hex'),raw]),format:'der',type:'spki'});
+   assert.throws(()=>C.keyId(key.export({format:'pem',type:'spki'})),/weak_signer/);
+  }
+ }
+});
+test('numeric array boundaries and non-JSON values cannot bypass signed payload binding',async()=>{
+ const f=await setup();const s=submission(f);s.payload.content.values=[1,23];s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);
+ s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
+ const oldBytes=C.bytes(s.payload);s.payload.content.values=[12,3];assert.deepEqual(C.bytes(s.payload),oldBytes);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,s));
+ assert.throws(()=>C.payloadDigest({value:Infinity},{}),/invalid_json_payload/);
+ assert.throws(()=>C.payloadDigest({value:undefined},{}),/invalid_json_payload/);
+ assert.throws(()=>C.payloadDigest(JSON.parse('{"__proto__":{"forged":true}}'),{}),/invalid_json_payload/);
+});
+test('the enabled shared writer gate rejects raw/API/internal object writes and JSON-forged bypasses',async()=>{
+ const f=await setup();const s=submission(f);const before=await counts();
+ for(const source of ['api','internal','bridge']){
+  for(const eventType of ['OBJECT_CREATED','OBJECT_UPDATED','RELATIONSHIP_CREATED']){
+   const result=await runtime.emit(eventType,source,s.payload,{tenant_id:f.grant.tenant_id,_skipGovernance:true,commissioningTransaction:{client:pool}});
+   assert.equal(result.status,'error');assert.equal(result.error,'commissioning_required');
+  }
+ }
+ assert.deepEqual(await counts(),before);
+});
+test('input mutation while admission waits cannot change the signed persisted payload',async()=>{
+ const f=await setup();const holder=await pool.connect();await holder.query('BEGIN');
+ await holder.query('SELECT * FROM tenant_owner_bindings WHERE binding_id=$1 FOR UPDATE',[f.binding.binding_id]);
+ const s=submission(f);const expected=s.payload.content.name;const attempt=runtime.admitCommissionedEvent(registry,agent,s);
+ await waitingOn(holder);s.payload.content.name='mutated while waiting';await holder.query('COMMIT');holder.release();
+ const result=await attempt;const stored=await pool.query('SELECT payload FROM ping_events WHERE event_id=$1',[result.receipt.event_id]);assert.equal(stored.rows[0].payload.content.name,expected);
+});
+
+test('raw v2 admissions reject duplicate names, encoding aliases and wrong protocol before persistence',async()=>{
+ const {parseCommissioningSubmission:parse}=require('../ping-runtime/runtime/commissioning_wire');
+ const f=await setup(),s=submission(f),raw=JSON.stringify(s);
+ assert.deepEqual(parse(Buffer.from(raw)),s);
+ const before=await counts();
+ for(const bad of [raw.replace('"payload":','"payload":{},"payload":'),raw.replace('"name":','"name":"fake","name":'),
+  JSON.stringify({...s,unknown:true}),JSON.stringify({...s,intent:{...s.intent,protocol_version:'commissioning-admission@1'}}),
+  JSON.stringify({...s,signature:s.signature.replace(/==$/,'')}),Buffer.from([0xff,0xfe])])assert.throws(()=>parse(bad));
+ assert.deepEqual(await counts(),before);
+ await denied(()=>runtime.admitCommissionedBytes(registry,agent,raw.replace('"payload":','"payload":{},"payload":')));
+ const receipt=await runtime.admitCommissionedBytes(registry,agent,Buffer.from(raw));
+ assert.equal(receipt.duplicate,false);assert.equal(receipt.receipt.protocol_version,C.PROTOCOL);
+});
+
+test('FOR SHARE admission still conflicts with both owner and grant revocation updates',async()=>{
+ const shared=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningAdmissionLock:'share'});
+ for(const target of ['grant','owner']){
+  const f=await setup(),holder=await pool.connect();await holder.query('BEGIN');
+  if(target==='grant')await holder.query("UPDATE tenant_commissioning_grants SET status='revoked',revision=revision+1 WHERE grant_id=$1",[f.grant.grant_id]);
+  else await holder.query("UPDATE tenant_owner_bindings SET status='revoked',revision=revision+1 WHERE binding_id=$1",[f.binding.binding_id]);
+  const before=await counts(),attempt=assert.rejects(()=>runtime.admitCommissionedEvent(shared,agent,submission(f)));
+  await waitingOn(holder);await holder.query('COMMIT');holder.release();await attempt;assert.deepEqual(await counts(),before);
+ }
+});
+
+test('admission holding FOR SHARE forces the actual revocation command to wait',async()=>{
+ const shared=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningAdmissionLock:'share'}),f=await setup();
+ const original=runtime.emit;let release,readyResolve;const paused=new Promise(r=>release=r),ready=new Promise(r=>readyResolve=r);
+ runtime.emit=async function(...args){readyResolve();await paused;return original.apply(this,args);};
+ try{
+  const admission=runtime.admitCommissionedEvent(shared,agent,submission(f));await ready;
+  const revoke=registry.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:C.digest(Buffer.from('shared-lock race'))});
+  for(let i=0;i<100;i++){if((await pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'")).rows[0].n)break;if(i===99)assert.fail('Revocation did not wait');await new Promise(r=>setTimeout(r,10));}
+  release();await admission;await revoke;
+ }finally{release();runtime.emit=original;}
+ await denied(()=>runtime.admitCommissionedEvent(shared,agent,submission(f,{logical_operation_id:'after-shared-revoke'})));
+});
+
+test('owner-lock benchmark exercises real scoped admissions and captures database waits',async()=>{
+ const {performance}=require('node:perf_hooks');const f=await setup(),grants=[];
+ for(let i=0;i<8;i++){
+  const b={...f.grantBody,resource_id:'bench-resource-'+i};
+  const scope=Object.fromEntries([...C.SCOPE,'delegated_actor','authorized_signer','operations','purpose','valid_from','expires_at'].map(k=>[k,b[k]]));
+  b.consent_evidence_digest=record({owner_binding_id:f.binding.binding_id,owner_actor_id:'synthetic-owner',scope_digest:C.digest(C.bytes(scope))});
+  grants.push(await registry.executeIssueCommissioningGrant(admin,signed('issue_grant',b)));
+ }
+ const results=[];
+ for(const mode of ['update','share']){
+  const reg=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningAdmissionLock:mode}),rt=new UnifiedEventRuntime({pool,requireCommissioningForObjectWrites:true});
+  const original=rt.emit;rt.emit=async function(...args){await args[3][Object.getOwnPropertySymbols(args[3])[0]].client.query('SELECT pg_sleep(0.01)');return original.apply(this,args);};
+  const deadlocksBefore=Number((await pool.query('SELECT deadlocks FROM pg_stat_database WHERE datname=current_database()')).rows[0].deadlocks);
+  let next=0,waitSamples=0,maxWaiters=0,sampleRunning=false;
+  const monitor=setInterval(async()=>{if(sampleRunning)return;sampleRunning=true;try{
+   const row=(await pool.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'")).rows[0];waitSamples+=row.n;maxWaiters=Math.max(maxWaiters,row.n);
+  }finally{sampleRunning=false;}},5);
+  const latency=[],start=performance.now();
+  try{await Promise.all(Array.from({length:8},async()=>{while(next<64){const i=next++,s=submission({grant:grants[i%8]},{logical_operation_id:'bench-'+mode+'-'+i}),t=performance.now();await rt.admitCommissionedEvent(reg,agent,s);latency.push(performance.now()-t);}}));}
+  finally{clearInterval(monitor);while(sampleRunning)await new Promise(r=>setTimeout(r,5));}
+  const duration=performance.now()-start;latency.sort((a,b)=>a-b);
+  const percentile=p=>latency[Math.min(latency.length-1,Math.ceil(latency.length*p)-1)];
+  const deadlocksAfter=Number((await pool.query('SELECT deadlocks FROM pg_stat_database WHERE datname=current_database()')).rows[0].deadlocks);
+  results.push({mode,operations:64,concurrency:8,grants:8,p50_ms:percentile(.5),p95_ms:percentile(.95),p99_ms:percentile(.99),duration_ms:duration,operations_per_second:64000/duration,lock_waiter_samples:waitSamples,max_lock_waiters:maxWaiters,deadlocks_delta:deadlocksAfter-deadlocksBefore});
+  await reg.executeRevokeCommissioningGrant(owner,{grant_id:grants[0].grant_id,reason_digest:C.digest(Buffer.from('benchmark denial proof'))});
+  await denied(()=>rt.admitCommissionedEvent(reg,agent,submission({grant:grants[0]},{logical_operation_id:'after-bench-revocation-'+mode})));
+  // The second mode uses a separately consented grant for the revoked slot.
+  if(mode==='update'){const b={...f.grantBody,resource_id:'bench-replacement'};const sc=Object.fromEntries([...C.SCOPE,'delegated_actor','authorized_signer','operations','purpose','valid_from','expires_at'].map(k=>[k,b[k]]));b.consent_evidence_digest=record({owner_binding_id:f.binding.binding_id,owner_actor_id:'synthetic-owner',scope_digest:C.digest(C.bytes(sc))});grants[0]=await registry.executeIssueCommissioningGrant(admin,signed('issue_grant',b));}
+ }
+ fs.writeFileSync(path.join(root,'artifacts/owner-lock-benchmark.json'),JSON.stringify({scope:'Synthetic real admission transactions; shared owner, eight resources, 10ms injected database work per admission; not production throughput.',results},null,2)+'\n');
+ for(const r of results)assert.equal(r.deadlocks_delta,0);
+});
+
+test('the authorization decision timestamp is persisted and duplicate admission preserves it',async()=>{
+ const f=await setup(),s=submission(f),r=await runtime.admitCommissionedEvent(registry,agent,s);
+ const row=(await pool.query('SELECT authorization_decision_at FROM tenant_admission_receipts WHERE event_id=$1',[r.receipt.event_id])).rows[0];
+ assert.equal(row.authorization_decision_at.toISOString(),r.receipt.authorization_decision_at);
+ assert.equal(r.receipt.schema,'commissioning-admission-receipt@2');
+ assert.deepEqual((await runtime.admitCommissionedEvent(registry,agent,s)).receipt,r.receipt);
+});
+
+test('a decision before expiry may commit afterward but cannot authorize a later action',async()=>{
+ const f=await setup();
+ await pool.query("UPDATE tenant_commissioning_grants SET expires_at=clock_timestamp()+interval '150 milliseconds' WHERE grant_id=$1",[f.grant.grant_id]);
+ const expires=(await pool.query('SELECT expires_at FROM tenant_commissioning_grants WHERE grant_id=$1',[f.grant.grant_id])).rows[0].expires_at;
+ const original=runtime.emit;
+ runtime.emit=async function(...args){await args[3][Object.getOwnPropertySymbols(args[3])[0]].client.query('SELECT pg_sleep(0.25)');return original.apply(this,args);};
+ let r;try{r=await runtime.admitCommissionedEvent(registry,agent,submission(f));}finally{runtime.emit=original;}
+ assert.ok(Date.parse(r.receipt.authorization_decision_at)<expires.getTime());
+ assert.ok((await pool.query('SELECT clock_timestamp() AS now')).rows[0].now.getTime()>expires.getTime());
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'after-expiry'})));
+});
+
+test('bounded database work times out and rolls back both admission rows',async()=>{
+ const f=await setup();
+ const limited=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningTransactionMs:75});
+ const original=runtime.emit;
+ runtime.emit=async function(...args){await args[3][Object.getOwnPropertySymbols(args[3])[0]].client.query('SELECT pg_sleep(0.2)');return original.apply(this,args);};
+ try{await denied(()=>runtime.admitCommissionedEvent(limited,agent,submission(f)));}finally{runtime.emit=original;}
+});
+
+test('real process death after commit recovers using the existing PingProjector and no effect dispatch',async()=>{
+ const {spawnSync}=require('node:child_process');
+ const {PingProjector}=require('../gateway/constitutional-dist/ping-projector');
+ await pool.query('DROP SCHEMA IF EXISTS recovery_proof CASCADE; CREATE SCHEMA recovery_proof');
+ await pool.query('CREATE TABLE recovery_proof.tenant_registry (LIKE public.tenant_registry INCLUDING ALL)');
+ const recoveryConfig={...config,options:'-c search_path=recovery_proof'},rp=new Pool(recoveryConfig);
+ try{
+  const rr=new TenantRegistry(rp,{commissioningPool:rp,commissioningTrust:trust});
+  const rt=new UnifiedEventRuntime({pool:rp,requireCommissioningForObjectWrites:true});
+  await rt.initialize();await rr.initializeCommissioning();
+  // Empty test journal only: provision the existing projector's database-order
+  // contract. This is NOT a historical sequence migration or live schema proof.
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n,0);
+  await rp.query('ALTER TABLE ping_events ADD COLUMN sequence BIGSERIAL');
+  const db=await rp.connect();
+  try{await new PingProjector({db}).initialize(fs.readFileSync(path.join(root,'database/ping_objects.sql'),'utf8'));}finally{db.release();}
+  const f=await setup('crash',rr),s=submission(f);
+  s.payload={...s.payload,created_at:'2026-10-10T00:00:00.000Z',refs:[],visibility:'public',status:'active',metadata:s.metadata};
+  s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
+  s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);
+  s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
+  const interrupted=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,issuers:[...trust.issuers],submission:s,mode:'crash_before_receipt'}),encoding:'utf8',timeout:10000});
+  assert.equal(interrupted.signal,'SIGKILL',interrupted.stderr);
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n,0);
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM tenant_admission_receipts')).rows[0].n,0);
+  // The same request is now retried in a fresh process; the killed transaction
+  // did not leave a durable event without its authorization receipt.
+  const child=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,issuers:[...trust.issuers],submission:s}),encoding:'utf8',timeout:10000});
+  assert.equal(child.signal,'SIGKILL',child.stderr);
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM tenant_admission_receipts')).rows[0].n,1);
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n,1);
+  assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_objects')).rows[0].n,0);
+  let effects=0;rt.on('OBJECT_CREATED',async()=>{effects++;});
+  assert.equal((await rt.admitCommissionedEvent(rr,agent,s)).duplicate,true);
+  await rr.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:C.digest(Buffer.from('test revoke after accepted action'))});
+  const restarted=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,mode:'recover'}),encoding:'utf8',timeout:10000});
+  assert.equal(restarted.status,0,restarted.stderr);assert.deepEqual(JSON.parse(restarted.stdout),{objects:1,relationships:0,transitions:1});
+  const restartDb=await rp.connect();
+  try{
+   const projector=new PingProjector({db:restartDb});
+   const snapshot=async()=>C.digest(Buffer.from(JSON.stringify({objects:(await restartDb.query('SELECT object_id,schema,controller,content,refs,visibility,status,metadata FROM ping_objects ORDER BY object_id')).rows,
+    transitions:(await restartDb.query('SELECT * FROM ping_transitions ORDER BY object_id,sequence')).rows})));
+   const rebuilt=await projector.rebuildAll();assert.deepEqual(rebuilt,{objects:1,relationships:0,transitions:1});
+   assert.deepEqual((await restartDb.query('SELECT content FROM ping_objects WHERE object_id=$1',[s.payload.object_id])).rows[0].content,s.payload.content);
+   const first=await snapshot();await projector.rebuildAll();assert.equal(await snapshot(),first);
+  }finally{restartDb.release();}
+  assert.equal(effects,0);
+  await assert.rejects(()=>rt.admitCommissionedEvent(rr,agent,{...s,intent:{...s.intent,logical_operation_id:'revoked-new-action'}}));
+ }finally{await rp.end();}
+});

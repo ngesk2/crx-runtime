@@ -1,0 +1,23 @@
+# Harvested commissioning key policy
+
+The seven small-order public-key encodings in commissioning_key_policy.js come
+from libsodium 1.0.20-RELEASE ge25519_has_small_order. The sign bit is masked in the
+same manner. No field arithmetic or signature implementation is copied.
+
+Upstream: https://github.com/jedisct1/libsodium/tree/1.0.20-RELEASE
+
+ISC License
+
+Copyright (c) 2013-2024 Frank Denis <j at pureftpd dot org>
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
