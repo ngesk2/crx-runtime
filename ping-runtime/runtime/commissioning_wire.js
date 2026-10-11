@@ -2,7 +2,7 @@
 const C=require('./commissioning_contract');
 const {parseStrictJson,canonicalBase64,fields}=require('./strict_wire_json');
 // This receives original request bytes. Passing an Express-parsed object cannot
-// prove duplicate-field rejection and is deliberately unsupported. No route is wired.
+// prove duplicate-field rejection and is deliberately unsupported.
 function parseCommissioningSubmission(raw){
   const s=parseStrictJson(raw);
   C.requireThat(fields(s,['intent','payload','metadata','signature']), 'invalid_wire_fields');

@@ -40,7 +40,12 @@ paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-run
          *sorted((root / 'ping-runtime/runtime').glob('commissioning_*')),
          root / 'ping-runtime/runtime/strict_wire_json.js',
          root / 'test/commissioning_admission.test.js', root / 'test/commissioning_crash_child.js',
-         root / 'gateway/test_ingest_boundary.js', root / 'runtime/constitutional/src/ping-projector.ts', Path(__file__)]
+         *[root / 'gateway' / name for name in ['test_verdict_authority.js', 'test_confidence_spine.js',
+             'test_event_spine_time_authority.js', 'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js',
+             'test_events_routes.js', 'test_tenant_spoof_ingress.js', 'test_events_recent.js', 'test_events_time_authority.js']],
+         root / 'runtime/constitutional/src/ping-projector.ts',
+         root / 'gateway/route_middleware.js', root / 'gateway/bootstrap/gateway_runtime.js',
+         root / 'gateway/routes/events.js', root / 'gateway/routes/canonical_events.js', root / 'gateway/routes/ingest.js', Path(__file__)]
 for p in paths:
     report['sources'][str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -65,6 +70,8 @@ def run(command, label):
     if match: item.update(passed=int(match.group(1)), failed=0)
     match = re.search(r'(\d+) knowledge adapter tests passed', content)
     if match: item.update(passed=int(match.group(1)), failed=0)
+    if label == 'proof-test_events_recent.js' and result.returncode == 0 and content.startswith('PASS:'):
+        item.update(passed=1, failed=0)
     item['failure_names'] = re.findall(r'^✗ (.+)$', content, re.M)
     report['commands'].append(item)
     return result.returncode, content
@@ -89,13 +96,15 @@ try:
     report['candidate_result'] = 'PASS'
     report['regression_result'] = 'PASS'
     for name in ['test_verdict_authority.js', 'test_confidence_spine.js', 'test_event_spine_time_authority.js',
-                 'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js']:
+                 'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js', 'test_events_routes.js',
+                 'test_tenant_spoof_ingress.js', 'test_events_recent.js', 'test_events_time_authority.js']:
         code, text = run(['node', 'gateway/' + name], 'proof-' + name)
         if code: report['regression_result'] = 'FAIL'
     baseline = evidence / 'ingest-baseline.log'
     if baseline.exists():
         report['ingest_baseline_failure_names'] = re.findall(r'^✗ (.+)$', baseline.read_text(), re.M)
-        report['ingest_failures_match_prior_baseline'] = report['commands'][-1]['failure_names'] == report['ingest_baseline_failure_names']
+        ingest = next(item for item in report['commands'] if item['log'] == 'artifacts/proof-test_ingest_boundary.js.log')
+        report['ingest_failures_match_prior_baseline'] = ingest['failure_names'] == report['ingest_baseline_failure_names']
     report['exit_code'] = 0 if report['regression_result'] == 'PASS' else 1
     report['result'] = 'Admission and gateway regression gate passed; merge remains HOLD' if report['exit_code'] == 0 else 'FAIL'
 except Exception as error:

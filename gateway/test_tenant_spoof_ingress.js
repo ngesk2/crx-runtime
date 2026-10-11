@@ -1,22 +1,11 @@
 /**
- * HOSTILE TEST (P1): tenant spoof at the first protected PING ingress.
- *
- * Attack: an authenticated-or-not caller acting for Tenant A sends
- * tenant_id = Tenant B through body / query / header / mission payload.
- * REQUIRED: Tenant B is NEVER selected from untrusted request material.
- * Trusted routing (operator per-source map) or the server default resolves
- * the context instead.
- *
- * The ingress under test is POST /ingest, the single HTTP boundary for the
- * CanonicalizationService ("if it wasn't canonicalized, it doesn't exist").
- * Service-level tests use the REAL CanonicalizationService + REAL
- * UnifiedEventRuntime. HTTP tests use the REAL route + REAL service over
- * HTTP on an ephemeral port; the event runtime is a test double ONLY for
- * the persistence boundary (no database in this harness), which sits
- * downstream of namespace selection and is not the code under test.
+ * Tenant routing and unconfigured HTTP admission regression.
+ * Source maps are internal normalization context, not owner entitlement.
+ * These HTTP tests prove that caller tenant/source claims cannot open an
+ * unconfigured ingress or invoke its emitter. Authorized HTTP admission and
+ * persisted zero-mutation denials are tested in commissioning_admission.test.js.
  *
  * Run: cd gateway && node test_tenant_spoof_ingress.js
- * Exit 0 = spoof impossible. Exit 1 = Tenant B selectable (VULNERABLE).
  */
 
 const assert = require('assert');
@@ -67,7 +56,7 @@ function buildHttpService() {
     }),
   };
   const service = new CanonicalizationService({ eventRuntime: fakeRuntime, namespaces: OPERATOR_NAMESPACES });
-  return { service };
+  return { service, emissionCount: () => seq };
 }
 
 function startServer(service) {
@@ -107,8 +96,8 @@ async function run() {
     }
   }
   console.log('\n=== Summary: ' + passed + ' passed, ' + failed + ' failed ===');
-  console.log(failed > 0 ? 'VERDICT: VULNERABLE - Tenant B selectable from untrusted material'
-                         : 'VERDICT: SECURE - Tenant B never selected from untrusted material');
+  console.log(failed > 0 ? 'FAIL: ingress regression'
+                         : 'PASS: tested unconfigured ingress rejects caller tenant claims');
   process.exit(failed > 0 ? 1 : 0);
 }
 
@@ -153,168 +142,32 @@ test('resolveNamespace: falsy override (empty string) behaves as absent (byte-id
   assert.strictEqual(service.resolveNamespace('attacker-cli', ''), DEFAULT_NAMESPACE);
 });
 
-// ── HTTP ingress: POST /ingest ────────────────────────────────────────────
-
-test('POST /ingest: body namespace=Tenant B -> rejected, Tenant B never selected', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'spoof-body' },
-      namespace: TENANT_B,
-    });
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, TENANT_B, 'SPOOF: response carried Tenant B namespace');
-    assert.strictEqual(resp.status, 400, 'expected unbound override to be rejected at the route guard');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: second tenant id variant (tenant::other-corp) -> rejected', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'spoof-body-2' },
-      namespace: 'tenant::other-corp',
-    });
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, 'tenant::other-corp', 'SPOOF: response carried spoofed namespace');
-    assert.strictEqual(resp.status, 400);
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: tenant smuggled via query string -> ignored, trusted routing wins', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest?namespace=' + encodeURIComponent(TENANT_B), {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'spoof-query' },
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, TENANT_B);
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: tenant smuggled via header -> ignored, trusted routing wins', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'spoof-header' },
-    }, { 'x-tenant-id': TENANT_B });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, TENANT_B);
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: tenant smuggled via body tenant_id field -> ignored, trusted routing wins', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'spoof-tenant-id-field' },
-      tenant_id: TENANT_B,
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, TENANT_B);
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: tenant smuggled inside mission payload -> never influences namespace', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { mission: { tenant_id: TENANT_B, action: 'escalate' } },
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.notStrictEqual(body.namespace, TENANT_B);
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-// ── Legitimate single-tenant behavior stays byte-identical ─────────────────
-
-test('POST /ingest: no namespace supplied -> 201 with trusted per-source namespace', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'legit' },
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: bound explicit namespace -> 201, honored (byte-identical)', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: { probe: 'legit-bound' },
-      namespace: 'tenant::hpp',
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest: malformed namespace shape still 400', async () => {
-  const { service } = buildHttpService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: TENANT_A_SOURCE,
-      eventType: 'OBSERVATION_CREATED',
-      payload: {},
-      namespace: 'not-a-namespace',
-    });
-    assert.strictEqual(resp.status, 400);
-  } finally {
-    server.close();
-  }
-});
+// HTTP source labels do not substitute for the existing admission authority.
+const baseBody = { source: TENANT_A_SOURCE, eventType: 'OBSERVATION_CREATED', payload: { probe: 'untrusted' } };
+const httpCases = [
+  { name: 'body namespace', body: { ...baseBody, namespace: TENANT_B } },
+  { name: 'second tenant namespace', body: { ...baseBody, namespace: 'tenant::other-corp' } },
+  { name: 'query namespace', path: '/ingest?namespace=' + encodeURIComponent(TENANT_B), body: baseBody },
+  { name: 'header tenant', body: baseBody, headers: { 'x-tenant-id': TENANT_B } },
+  { name: 'body tenant', body: { ...baseBody, tenant_id: TENANT_B } },
+  { name: 'mission tenant', body: { ...baseBody, payload: { mission: { tenant_id: TENANT_B, action: 'escalate' } } } },
+  { name: 'no namespace', body: baseBody },
+  { name: 'matching source namespace', body: { ...baseBody, namespace: 'tenant::hpp' } },
+  { name: 'malformed namespace', body: { ...baseBody, namespace: 'not-a-namespace' } },
+];
+for (const request of httpCases) {
+  test(`POST /ingest: ${request.name} cannot authorize an unconfigured writer`, async () => {
+    const { service, emissionCount } = buildHttpService();
+    const { server, port } = await startServer(service);
+    try {
+      const response = await post(port, request.path || '/ingest', request.body, request.headers);
+      assert.strictEqual(response.status, 503);
+      assert.strictEqual((await response.json()).error, 'commissioning_unconfigured');
+      assert.strictEqual(emissionCount(), 0, 'no downstream emission before admission');
+    } finally {
+      await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    }
+  });
+}
 
 run();

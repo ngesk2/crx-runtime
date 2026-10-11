@@ -3,45 +3,19 @@
  * 
  * P001: HTTP interface for the Canonical Event Envelope Authority.
  * 
- * POST /canonical-events — Emit event
- * GET /canonical-events — Query events
+ * POST /canonical-events — Alias of commissioned writes to the PING journal
+ * GET /canonical-events — Query historical canonical_events (not new PING writes)
  * GET /canonical-events/stats — Event statistics
  * GET /canonical-events/unprocessed — Unprocessed events
- * POST /canonical-events/:id/processed — Mark processed
- * POST /canonical-events/:id/failed — Mark failed
+ * Processing mutations are rejected until their operation has admission support.
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, commissionedWriteHandler, denyUnadmittedMutation } = require('../route_middleware');
 
-function createCanonicalEventRoutes(canonicalEventEnvelope) {
-  router.post('/', asyncHandler('POST /canonical-events', async (req) => {
-    const {
-      tenant_id, event_type, source, actor, payload,
-      causation_id, correlation_id, metadata,
-    } = req.body;
-
-    if (!tenant_id || !event_type || !source || !actor || !payload) {
-      throw new Error('tenant_id, event_type, source, actor, and payload are required');
-    }
-    if (!/^[a-z0-9-]{1,64}$/.test(tenant_id)) {
-      throw new Error('tenant_id is invalid (tenant isolation fail-closed)');
-    }
-
-    const event = await canonicalEventEnvelope.executeEmitEvent({
-      tenantId: tenant_id,
-      eventType: event_type,
-      source,
-      actor,
-      payload,
-      causationId: causation_id,
-      correlationId: correlation_id,
-      metadata,
-    });
-
-    return { event };
-  }));
+function createCanonicalEventRoutes(canonicalEventEnvelope, { eventRuntime, tenantRegistry } = {}) {
+  const router = express.Router();
+  router.post('/', commissionedWriteHandler(eventRuntime, tenantRegistry));
 
   router.get('/', asyncHandler('GET /canonical-events', async (req) => {
     const {
@@ -87,19 +61,8 @@ function createCanonicalEventRoutes(canonicalEventEnvelope) {
     return { events, count: events.length };
   }));
 
-  router.post('/:id/processed', asyncHandler('POST /canonical-events/:id/processed', async (req) => {
-    const { id } = req.params;
-    const { worker } = req.body;
-    await canonicalEventEnvelope.executeMarkProcessed(id, worker || 'worker');
-    return { processed: true, event_id: id };
-  }));
-
-  router.post('/:id/failed', asyncHandler('POST /canonical-events/:id/failed', async (req) => {
-    const { id } = req.params;
-    const { worker, error } = req.body;
-    await canonicalEventEnvelope.executeMarkFailed(id, worker || 'worker', error || 'unknown');
-    return { failed: true, event_id: id };
-  }));
+  router.post('/:id/processed', denyUnadmittedMutation);
+  router.post('/:id/failed', denyUnadmittedMutation);
 
   return router;
 }

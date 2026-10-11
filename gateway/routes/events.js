@@ -6,14 +6,12 @@
  */
 
 const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../route_middleware');
+const { asyncHandler, commissionedWriteHandler, admissionReceiptHandler, denyUnadmittedMutation } = require('../route_middleware');
 const { constitutionalTimeAuthority } = require('../../ping-runtime/authorities/constitutional_time_authority.js');
 
 // ─── Lane L tenant isolation ─────────────────────────────────────────────
-// Mirrors the proven FYD journal gateway contract: reads require an explicit
-// ?tenant= (400 tenant_required); writes carry an immutable tenant_id
-// (400 tenant_required when missing, 400 tenant_mismatch on contradiction).
+// Reads require an explicit ?tenant=. New writes use the existing commissioned
+// byte boundary; an actor/tenant label in a parsed body is not entitlement.
 // The pattern extends the FYD slug shape to admit the mandated UNKNOWN
 // backfill marker for unattributable history.
 const TENANT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
@@ -47,7 +45,8 @@ function requireTenant(req, res) {
   return tenant;
 }
 
-function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
+function createEventRoutes(eventReadAuthority, eventRuntime, pool, { tenantRegistry } = {}) {
+  const router = express.Router();
   router.get('/', asyncHandler('/events', async (req, res) => {
     const tenant = requireTenant(req, res);
     if (!tenant) return;
@@ -141,150 +140,11 @@ function createEventRoutes(eventReadAuthority, eventRuntime, pool) {
     return { events, stream, count: events.length, limit, offset };
   }));
 
-  router.post('/', asyncHandler('/events', async (req, res) => {
-    // Lane L: immutable tenant_id on write. Required in the body; a missing
-    // or invalid tenant fails closed (400 tenant_required) and any
-    // contradiction between the declared tenant and the namespace or payload
-    // identity fails closed (400 tenant_mismatch). The tenant is stored once
-    // and never updated.
-    const writeTenant = req.body && req.body.tenant_id;
-    if (!isValidTenantId(writeTenant)) {
-      res.status(400).json({
-        error: 'tenant_required',
-        message: 'A valid tenant_id is required in the request body for tenant-isolated event writes.'
-      });
-      return;
-    }
-    const bodyNamespace = req.body && req.body.namespace;
-    if (typeof bodyNamespace === 'string' && bodyNamespace.startsWith('tenant::') &&
-        bodyNamespace.slice('tenant::'.length) !== writeTenant) {
-      res.status(400).json({
-        error: 'tenant_mismatch',
-        message: 'tenant_id contradicts the tenant:: namespace slug.'
-      });
-      return;
-    }
-    // Declared payload identity must agree with the write tenant (mirrors the
-    // FYD journal's spoof guard; siteId is FYD-specific and not checked here).
-    const payloadTenantClash = (eventData) => {
-      if (!eventData || typeof eventData !== 'object') return null;
-      for (const key of ['tenant_id', 'tenantId']) {
-        const v = eventData[key];
-        if (typeof v === 'string' && v && v !== writeTenant) return key;
-      }
-      return null;
-    };
-    // Website-BFF practice envelope: { type, payload, proof, metadata }.
-    // Normalized into canonical journal shape by the social ingest adapter
-    // (BFF signature verified; vocabulary enforced; ids minted by the ONE
-    // IdentityAuthority). Typed client errors return 400.
-    if (req.body && req.body.type && req.body.payload && !req.body.event_type) {
-      // Lane B (2026-09-21, additive): knowledge envelopes (payload.schema
-      // 'ping.knowledge.*') normalize through the knowledge ingest adapter;
-      // everything else keeps the proven social adapter. The social path is
-      // untouched.
-      const kSchema = req.body.payload && req.body.payload.schema;
-      const adapter =
-        typeof kSchema === 'string' && kSchema.startsWith('ping.knowledge.')
-          ? require('../knowledge_ingest_adapter')
-          : require('../social_ingest_adapter');
-      const normalize =
-        adapter.normalizeKnowledgeEnvelope || adapter.normalizeBffEnvelope;
-      let norm;
-      try {
-        norm = await normalize(req.body, pool);
-      } catch (e) {
-        const code = String(e.message || 'INGEST_ERROR').split(':')[0];
-        const client = /^(INVALID_|UNKNOWN_|MISSING_|UNSUPPORTED_|PREDICATE_|SECRET_|SIGNER_)/.test(code);
-        res.status(client ? 400 : 500).json({ error: code, message: e.message });
-        return;
-      }
-      const bffClash = payloadTenantClash(req.body.payload) || payloadTenantClash(norm.eventData);
-      if (bffClash) {
-        res.status(400).json({
-          error: 'tenant_mismatch',
-          message: `payload.${bffClash} contradicts the write tenant_id.`
-        });
-        return;
-      }
-      const bffResult = await eventRuntime.emit(norm.eventType, 'api', norm.eventData, {
-        metadata: { aggregate_id: norm.aggregateId, aggregate_type: norm.aggregateType },
-        tenant_id: writeTenant
-      });
-      if (bffResult.status !== 'ok') {
-        throw new Error(bffResult.error || 'Event rejected');
-      }
-      return {
-        event_id: bffResult.eventId,
-        id: bffResult.eventId, // BFF-reader compatibility: the website BFF reads `id`
-        event_type: norm.eventType,
-        aggregate_id: norm.aggregateId,
-        aggregate_type: norm.aggregateType,
-        status: 'ok'
-      };
-    }
-
-    const { event_type, aggregate_id, aggregate_type, event_data } = req.body;
-    if (!event_type || !aggregate_id || !aggregate_type || !event_data) {
-      throw new Error('event_type, aggregate_id, aggregate_type, and event_data are required');
-    }
-    const directClash = payloadTenantClash(event_data);
-    if (directClash) {
-      res.status(400).json({
-        error: 'tenant_mismatch',
-        message: `event_data.${directClash} contradicts the write tenant_id.`
-      });
-      return;
-    }
-    // Canonical spine: emit directly through UnifiedEventRuntime (ping_events),
-    // not through the kernel pipeline (repository_events). The kernel's reducer/projection
-    // registries are empty and EventBridge adds a 5s delay for no benefit.
-    const result = await eventRuntime.emit(event_type, 'api', event_data, {
-      metadata: { aggregate_id, aggregate_type },
-      tenant_id: writeTenant
-    });
-    if (result.status !== 'ok') {
-      throw new Error(result.error || 'Event rejected');
-    }
-    return { event_id: result.eventId, event_type, status: 'ok' };
-  }));
-
-  router.post('/processed', asyncHandler('/events/processed', async (req, res) => {
-    const tenant = requireTenant(req, res);
-    if (!tenant) return;
-    const { event_id, worker } = req.body;
-    if (!event_id) throw new Error('event_id is required');
-    // Lane L: cross-tenant mutation guard. An event known to ping_events under
-    // a different tenant is refused without touching it (typed refusal).
-    if (pool) {
-      const chk = await pool.query('SELECT tenant_id FROM ping_events WHERE event_id = $1', [event_id]);
-      if (chk.rows.length > 0 && chk.rows[0].tenant_id && chk.rows[0].tenant_id !== tenant) {
-        res.status(400).json({ error: 'tenant_mismatch', message: 'Event belongs to a different tenant; mutation refused.' });
-        return;
-      }
-    }
-    const ok = await eventReadAuthority.markProcessed(event_id, worker || 'worker_runtime');
-    if (!ok) throw new Error(`Failed to mark event processed: ${event_id}`);
-    return { processed: true, event_id };
-  }));
-
-  router.post('/failed', asyncHandler('/events/failed', async (req, res) => {
-    const tenant = requireTenant(req, res);
-    if (!tenant) return;
-    const { event_id, worker, error } = req.body;
-    if (!event_id) throw new Error('event_id is required');
-    // Lane L: cross-tenant mutation guard (see /processed).
-    if (pool) {
-      const chk = await pool.query('SELECT tenant_id FROM ping_events WHERE event_id = $1', [event_id]);
-      if (chk.rows.length > 0 && chk.rows[0].tenant_id && chk.rows[0].tenant_id !== tenant) {
-        res.status(400).json({ error: 'tenant_mismatch', message: 'Event belongs to a different tenant; mutation refused.' });
-        return;
-      }
-    }
-    const ok = await eventReadAuthority.markFailed(event_id, worker || 'worker_runtime', error || 'unknown');
-    if (!ok) throw new Error(`Failed to mark event failed: ${event_id}`);
-    return { failed: true, event_id };
-  }));
+  router.post('/', commissionedWriteHandler(eventRuntime, tenantRegistry));
+  // Receipt retrieval is a read of the original decision, never a new grant.
+  router.post('/receipt', admissionReceiptHandler(tenantRegistry));
+  router.post('/processed', denyUnadmittedMutation);
+  router.post('/failed', denyUnadmittedMutation);
 
 
   // Causal traversal endpoints — query the causal tree in ping_events

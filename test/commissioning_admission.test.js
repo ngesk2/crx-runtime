@@ -93,8 +93,164 @@ before(async()=>{
  await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public');
  await pool.query('CREATE TABLE tenant_registry(tenant_id VARCHAR(64) PRIMARY KEY,name TEXT,domains TEXT[],health_endpoint TEXT,metrics_endpoint TEXT,logs_endpoint TEXT,traces_endpoint TEXT,events_endpoint TEXT,capabilities TEXT[],metadata JSONB,updated_at TIMESTAMPTZ)');
  await runtime.initialize();await registry.initializeCommissioning();
+ // Acceptance ordering is provisioned only in this empty disposable journal;
+ // production migration/startup ordering remains a separate held gap.
+ await pool.query('ALTER TABLE ping_events ADD COLUMN sequence BIGSERIAL');
 });
 after(async()=>{await pool.end();});
+
+// HTTP proof uses the actual bootstrap middleware/mount. Identity resolution is
+// deliberately synthetic and server-side; no HPP entitlement is implied.
+async function startAdmissionHttp(boundary={eventRuntime:runtime,tenantRegistry:registry}){
+ const {GatewayRuntime}=require('../gateway/bootstrap/gateway_runtime');
+ const {CanonicalEventEnvelope}=require('../gateway/canonical_event_envelope');
+ const gateway=new GatewayRuntime(pool,{commissioningTrust:boundary.tenantRegistry?._commissioningTrust||null});
+ if(boundary.tenantRegistry===registry)boundary={...boundary,tenantRegistry:await gateway._initializeAdmissionRegistry(pool)};
+ gateway._app.use((req,res,next)=>{
+  const identity={'Bearer synthetic-agent':agent,'Bearer synthetic-stranger':stranger}[req.get('authorization')];
+  if(identity)contexts.set(req,contexts.get(identity));
+  next();
+ });
+ const legacy=new CanonicalEventEnvelope(pool);await legacy.initialize();
+ gateway._mountAdmissionRoutes({...boundary,unifiedEventRuntime:boundary.eventRuntime,canonicalEventEnvelope:legacy,eventReadAuthority:{},pool});
+ const server=await new Promise(resolve=>{const s=gateway._app.listen(0,'127.0.0.1',()=>resolve(s));});
+ return {server,url:'http://127.0.0.1:'+server.address().port};
+}
+async function postAdmission(http,route,body,authorization='Bearer synthetic-agent'){
+ return fetch(http.url+route,{method:'POST',headers:{'Content-Type':'application/json',...(authorization?{authorization}:{})},
+  body:typeof body==='string'?body:JSON.stringify(body)});
+}
+async function persistedSnapshot(){
+ const names=(await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows;
+ const rows={};for(const {tablename} of names){
+  assert.match(tablename,/^[a-z_]+$/);
+  rows[tablename]=(await pool.query(`SELECT row_to_json(t) AS row FROM "${tablename}" t ORDER BY row_to_json(t)::text`)).rows;
+ }
+ return {rows,derived};
+}
+async function closeHttp(http){await new Promise(resolve=>http.server.close(resolve));}
+
+for(const entrance of ['/canonical-events','/events','/ingest']){
+ test(entrance+' HTTP admission has zero-mutation authorization and byte-level denial proof',async()=>{
+  const f=await setup(),http=await startAdmissionHttp();
+  try{
+   const s=submission(f),legacy={tenant_id:f.grant.tenant_id,event_type:'REVIEW_RECEIVED',source:'claimed-owner',actor:'synthetic-agent',payload:{id:'spoof'},
+    aggregate_id:'spoof',aggregate_type:'review',event_data:{id:'spoof'},eventType:'REVIEW_RECEIVED'};
+   const attempts=[['unauthenticated',s,null],['unrelated actor',s,'Bearer synthetic-stranger'],['legacy caller claims',legacy,null],
+    ['missing entitlement',submission(f,{grant_id:'invented-grant'})],['wrong tenant',submission(f,{tenant_id:'other-business'})],
+    ['wrong controller',submission(f,{controller_id:'other-controller'})],['wrong project',submission(f,{commissioning_project_id:'other-project'})],
+    ['wrong site',submission(f,{site_id:'other-site'})],['wrong resource',submission(f,{resource_id:'other-object'})],
+    ['wrong purpose',submission(f,{purpose:'other-purpose'})],['wrong digest',{...s,payload:{...s.payload,content:{name:'tampered'}}}],
+    ['wrong signer',submission(f,{},otherKeys)],['duplicate JSON field',JSON.stringify(s).replace('"intent":{','"intent":{},"intent":{')]];
+   for(const [label,body,auth] of attempts){
+    const before=await persistedSnapshot(),res=await postAdmission(http,entrance,body,auth===undefined?'Bearer synthetic-agent':auth);
+    assert.ok(res.status>=400&&res.status<500,label+': '+res.status+' '+await res.text());
+    assert.deepEqual(await persistedSnapshot(),before,label);
+   }
+  }finally{await closeHttp(http);}
+ });
+ test(entrance+' HTTP authorized retry and recovery preserve one transition per operation',async()=>{
+  const f=await setup(),s=submission(f),http=await startAdmissionHttp();
+  try{
+   const before=await counts();
+   const first=await postAdmission(http,entrance,s);assert.equal(first.status,201,await first.clone().text());
+   const accepted=await first.json();
+   // All three aliases reach one decision and one event, never three journals.
+   for(const alias of ['/canonical-events','/events','/ingest']){
+    const retry=await postAdmission(http,alias,s);assert.equal(retry.status,201,await retry.clone().text());
+    assert.deepEqual((await retry.json()).receipt,accepted.receipt);
+   }
+   const update=updateSubmission(f,{name:'Authorized HTTP correction'});
+   const changed=await postAdmission(http,entrance,update);assert.equal(changed.status,201,await changed.clone().text());
+   const updateReceipt=(await changed.json()).receipt;
+   for(const alias of ['/canonical-events','/events','/ingest']){
+    const retry=await postAdmission(http,alias,update);assert.equal(retry.status,201);
+    assert.deepEqual((await retry.json()).receipt,updateReceipt);
+   }
+   assert.deepEqual(await counts(),{events:before.events+2,receipts:before.receipts+2,derived:before.derived+1});
+   assert.equal((await pool.query('SELECT count(*)::int AS n FROM canonical_events')).rows[0].n,0);
+   const {PingProjector}=require('../gateway/constitutional-dist/ping-projector');
+   const db=await pool.connect();
+   try{const projector=new PingProjector({db});await projector.initialize(fs.readFileSync(path.join(root,'database/ping_objects.sql'),'utf8'));await projector.rebuildAll();
+    assert.equal((await db.query('SELECT count(*)::int AS n FROM ping_transitions WHERE object_id=$1',[f.grant.resource_id])).rows[0].n,2);
+    assert.equal((await db.query('SELECT content FROM ping_objects WHERE object_id=$1',[f.grant.resource_id])).rows[0].content.name,'Authorized HTTP correction');
+    const firstProjection=(await db.query('SELECT transition_id,object_id,operation,sequence,previous_transition,payload_hash FROM ping_transitions ORDER BY object_id,sequence')).rows;
+    await projector.rebuildAll();assert.deepEqual((await db.query('SELECT transition_id,object_id,operation,sequence,previous_transition,payload_hash FROM ping_transitions ORDER BY object_id,sequence')).rows,firstProjection);
+   }finally{db.release();}
+   for(const target of ['grant','owner']){
+    if(target==='grant')await registry.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:C.digest(Buffer.from('HTTP revoke'))});
+    else await registry.executeRevokeOwnerBinding(owner,{binding_id:f.binding.binding_id});
+    const beforeDenied=await persistedSnapshot();
+    const denied=await postAdmission(http,entrance,submission(f,{logical_operation_id:'new-after-'+target}));assert.equal(denied.status,403);
+    const read=await postAdmission(http,'/events/receipt',receiptQuery(s));assert.equal(read.status,200,await read.clone().text());
+    assert.deepEqual(await read.json(),{status:'ACCEPTED',receipt:accepted.receipt});
+    const strangerRead=await postAdmission(http,'/events/receipt',receiptQuery(s),'Bearer synthetic-stranger');
+    assert.deepEqual(await strangerRead.json(),{status:'UNKNOWN'});
+    assert.deepEqual(await persistedSnapshot(),beforeDenied);
+   }
+  }finally{await closeHttp(http);}
+ });
+}
+
+test('HTTP missing authority or original bytes is closed before every writer',async()=>{
+ const f=await setup(),s=submission(f);
+ for(const boundary of [{},{eventRuntime:runtime,tenantRegistry:new TenantRegistry(pool)}]){
+  const http=await startAdmissionHttp(boundary);
+  try{for(const entrance of ['/canonical-events','/events','/ingest']){
+   const before=await persistedSnapshot(),res=await postAdmission(http,entrance,s);assert.equal(res.status,503);
+   assert.deepEqual(await persistedSnapshot(),before);
+  }}finally{await closeHttp(http);}
+ }
+ const {commissionedWriteHandler}=require('../gateway/route_middleware');
+ const handler=commissionedWriteHandler(runtime,registry),before=await persistedSnapshot();
+ const response={status(code){this.code=code;return this;},json(body){this.body=body;}};
+ await handler({body:s},response);assert.equal(response.code,400);assert.deepEqual(await persistedSnapshot(),before);
+});
+
+test('HTTP unadmitted processing mutations cannot change either event store',async()=>{
+ const http=await startAdmissionHttp();
+ try{for(const route of ['/canonical-events/00000000-0000-0000-0000-000000000000/processed',
+  '/canonical-events/00000000-0000-0000-0000-000000000000/failed','/events/processed?tenant=proof-one','/events/failed?tenant=proof-one']){
+  const before=await persistedSnapshot(),res=await postAdmission(http,route,{event_id:'invented',worker:'owner',error:'spoof'});
+  assert.equal(res.status,403);assert.deepEqual(await persistedSnapshot(),before);
+ }}finally{await closeHttp(http);}
+});
+
+test('shared object writer cannot disable admission through omitted or false options',async()=>{
+ const before=await persistedSnapshot();
+ for(const options of [{pool},{pool,requireCommissioningForObjectWrites:false}]){
+  const raw=new UnifiedEventRuntime(options);
+  for(const event of ['OBJECT_CREATED','OBJECT_UPDATED','RELATIONSHIP_CREATED']){
+   assert.equal((await raw.emit(event,'claimed-owner',{object_id:'bypass'})).error,'commissioning_required');
+  }
+ }
+ assert.deepEqual(await persistedSnapshot(),before);
+});
+
+test('bootstrap keeps admission closed across different physical tenant registries',async()=>{
+ const {GatewayRuntime}=require('../gateway/bootstrap/gateway_runtime');
+ await pool.query('CREATE SCHEMA admission_other_store; CREATE TABLE admission_other_store.tenant_registry(tenant_id TEXT PRIMARY KEY)');
+ const otherPool=new Pool({...config,options:'-c search_path=admission_other_store'});
+ try{
+  const gateway=new GatewayRuntime(pool,{commissioningTrust:trust});
+  const closed=await gateway._initializeAdmissionRegistry(otherPool);
+  assert.equal(closed._commissioningPool,null);
+  const f=await setup(),http=await startAdmissionHttp({eventRuntime:runtime,tenantRegistry:closed});
+  const scopedBefore=await persistedSnapshot();
+  try{for(const route of ['/events','/canonical-events','/ingest'])assert.equal((await postAdmission(http,route,submission(f))).status,503);}
+  finally{await closeHttp(http);}
+  assert.deepEqual(await persistedSnapshot(),scopedBefore);
+  assert.equal((await otherPool.query('SELECT count(*)::int AS n FROM tenant_registry')).rows[0].n,0);
+ }finally{await otherPool.end();await pool.query('DROP SCHEMA admission_other_store CASCADE');}
+});
+
+test('bootstrap missing storage-identity permission cannot enable admission',async()=>{
+ const {GatewayRuntime}=require('../gateway/bootstrap/gateway_runtime');
+ const gateway=new GatewayRuntime(pool,{commissioningTrust:trust}),before=await persistedSnapshot();
+ const closed=await gateway._initializeAdmissionRegistry({query:async()=>{throw new Error('metadata permission unavailable');}});
+ assert.equal(closed._commissioningPool,null);assert.equal(closed._commissioningTrust,null);
+ assert.deepEqual(await persistedSnapshot(),before);
+});
 
 test('unconfigured default has no commissioning authority',async()=>{
  const unconfigured=new TenantRegistry(pool);

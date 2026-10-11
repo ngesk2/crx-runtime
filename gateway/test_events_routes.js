@@ -7,7 +7,7 @@ function test(name, fn) {
   _tests.push({ name, fn });
 }
 
-// The module registers on its own express.Router() (stubbed to capture).
+// Each route factory registers on its own express.Router() (stubbed to capture).
 // createEventRoutes(authority, runtime, pool) returns that capturing router.
 
 function makeEventReadAuthority(overrides = {}) {
@@ -38,7 +38,7 @@ function makeRes() {
 
 function main() {
   return (async () => {
-  console.log('=== POST /events/processed and /events/failed failure surfacing ===');
+  console.log('=== POST /events/processed and /events/failed reject unsupported mutation ===');
 
   // Lane O: stub express.Router to capture registered handlers (the module
   // creates its own Router; without this stub router._routes is undefined).
@@ -49,183 +49,54 @@ function main() {
   Module._load = function (request, parent, isMain) { if (request === "express") return { Router: () => __fakeRouter }; return __origLoad.call(this, request, parent, isMain); };
   const createEventRoutes = require('./routes/events.js');
 
-  test('markProcessed success returns {processed:true}', async () => {
-    const router = createEventRoutes(makeEventReadAuthority(), null);
-    const handler = router._routes['POST /processed'];
-    assert.ok(handler, 'POST /events/processed registered');
-    let result = null;
-    await handler(
-      { body: { event_id: 'evt-1', worker: 'w1' }, query: { tenant: 'test-tenant' } },
-      { json: (b) => { result = b; }, headersSent: false }
-    );
-    assert.deepStrictEqual(result, { processed: true, event_id: 'evt-1' });
-  });
+  const mutationCases = [
+    { path: '/processed', body: { event_id: 'evt-1', worker: 'w1' }, query: { tenant: 'tenant-a' } },
+    { path: '/processed', body: { event_id: 'evt-1' }, query: {} },
+    { path: '/processed', body: { event_id: 'tenant-b-event' }, query: { tenant: 'tenant-a' } },
+    { path: '/processed', body: {}, query: { tenant: 'tenant-a' } },
+    { path: '/failed', body: { event_id: 'evt-1', error: 'retry' }, query: { tenant: 'tenant-a' } },
+    { path: '/failed', body: { event_id: 'evt-1' }, query: {} },
+    { path: '/failed', body: {}, query: { tenant: 'tenant-a' } },
+  ];
+  for (const [index, request] of mutationCases.entries()) {
+    test(`POST /events${request.path} case ${index + 1} rejects before authority or SQL`, async () => {
+      let mutations = 0, queries = 0;
+      const authority = makeEventReadAuthority({
+        markProcessed: async () => { mutations++; throw new Error('must not run'); },
+        markFailed: async () => { mutations++; throw new Error('must not run'); },
+      });
+      const pool = { query: async () => { queries++; throw new Error('must not query'); } };
+      const router = createEventRoutes(authority, null, pool);
+      const res = makeRes();
+      await router._routes['POST ' + request.path](request, res);
+      assert.strictEqual(res._status(), 403);
+      assert.strictEqual(res._body().error, 'commissioning_operation_unsupported');
+      assert.strictEqual(mutations, 0);
+      assert.strictEqual(queries, 0);
+    });
+  }
 
-  test('markProcessed without tenant returns 400 tenant_required', async () => {
-    const router = createEventRoutes(makeEventReadAuthority(), null);
-    const handler = router._routes['POST /processed'];
-    const res = makeRes();
-    await handler({ body: { event_id: 'evt-1' }, query: {} }, res);
-    assert.strictEqual(res._status(), 400);
-    assert.strictEqual(res._body().error, 'tenant_required');
-  });
-
-  test('markProcessed cross-tenant event is refused with tenant_mismatch', async () => {
-    const pool = {
-      async query(sql, params) {
-        assert.ok(sql.includes('tenant_id'), 'guard queries tenant_id');
-        return { rows: [{ tenant_id: 'tenant-b' }] };
-      }
-    };
-    const res = makeRes();
-    let marked = false;
-    const authority = makeEventReadAuthority({ markProcessed: async () => { marked = true; return true; } });
-    const router = createEventRoutes(authority, null, pool);
-    await router._routes['POST /processed'](
-      { body: { event_id: 'evt-1' }, query: { tenant: 'tenant-a' } }, res);
-    assert.strictEqual(res._status(), 400);
-    assert.strictEqual(res._body().error, 'tenant_mismatch');
-    assert.strictEqual(marked, false, 'must not touch a cross-tenant event');
-  });
-
-  test('markProcessed failure surfaces error (not masked as success)', async () => {
-    const authority = makeEventReadAuthority({ markProcessed: async () => false });
-    const router = createEventRoutes(authority, null);
-    const handler = router._routes['POST /processed'];
-    const res = makeRes();
-    await handler(
-      { body: { event_id: 'evt-1', worker: 'w1' }, query: { tenant: 'test-tenant' } },
-      res);
-    assert.strictEqual(res._status(), 500);
-    assert.match(res._body().error, /Failed to mark event processed/);
-  });
-
-  test('markFailed failure surfaces error (not masked as success)', async () => {
-    const authority = makeEventReadAuthority({ markFailed: async () => false });
-    const router = createEventRoutes(authority, null);
-    const handler = router._routes['POST /failed'];
-    const res = makeRes();
-    await handler(
-      { body: { event_id: 'evt-1', worker: 'w1', error: 'boom' }, query: { tenant: 'test-tenant' } },
-      res);
-    assert.strictEqual(res._status(), 500);
-    assert.match(res._body().error, /Failed to mark event failed/);
-  });
-
-  test('markFailed success returns {failed:true}', async () => {
-    const router = createEventRoutes(makeEventReadAuthority(), null);
-    const handler = router._routes['POST /failed'];
-    let result = null;
-    await handler(
-      { body: { event_id: 'evt-2' }, query: { tenant: 'test-tenant' } },
-      { json: (b) => { result = b; }, headersSent: false });
-    assert.deepStrictEqual(result, { failed: true, event_id: 'evt-2' });
-  });
-
-  test('missing event_id throws on processed route', async () => {
-    const router = createEventRoutes(makeEventReadAuthority(), null);
-    const handler = router._routes['POST /processed'];
-    let threw = null;
-    try {
-      await handler({ body: {}, query: { tenant: 'test-tenant' } }, { json: () => {}, headersSent: false });
-    } catch (e) {
-      threw = e;
-    }
-    assert.ok(threw, 'should throw when event_id missing');
-  });
-
-  console.log('\n=== POST /events convergence — routes through UnifiedEventRuntime ===');
-
-  test('POST /events routes through eventRuntime.emit, not kernel pipeline', async () => {
-    let emitCalls = [];
-    const fakeEventRuntime = {
-      emit: async (eventType, source, payload, options) => {
-        emitCalls.push({ eventType, source, payload, options });
-        return { status: 'ok', eventId: 'evt-abc', event: {} };
-      }
-    };
-    const router = createEventRoutes(null, fakeEventRuntime, null);
-    const handler = router._routes['POST /'];
-    assert.ok(handler, 'POST / registered');
-    let result = null;
-    await handler(
-      { body: { event_type: 'REVIEW_RECEIVED', aggregate_id: 'agg-1', aggregate_type: 'business', event_data: { text: 'great' }, tenant_id: 'tenant-a' } },
-      { json: (b) => { result = b; }, headersSent: false }
-    );
-    assert.strictEqual(emitCalls.length, 1);
-    assert.strictEqual(emitCalls[0].eventType, 'REVIEW_RECEIVED');
-    assert.strictEqual(emitCalls[0].source, 'api');
-    assert.deepStrictEqual(emitCalls[0].payload, { text: 'great' });
-    assert.deepStrictEqual(emitCalls[0].options.metadata, { aggregate_id: 'agg-1', aggregate_type: 'business' });
-    assert.strictEqual(emitCalls[0].options.tenant_id, 'tenant-a');
-    assert.deepStrictEqual(result, { event_id: 'evt-abc', event_type: 'REVIEW_RECEIVED', status: 'ok' });
-  });
-
-  test('POST /events without tenant_id returns 400 tenant_required', async () => {
-    let emitCalls = 0;
-    const router = createEventRoutes(null, { emit: async () => { emitCalls++; return { status: 'ok' }; } }, null);
-    const handler = router._routes['POST /'];
-    const res = makeRes();
-    await handler(
-      { body: { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: {} } },
-      res
-    );
-    assert.strictEqual(res._status(), 400);
-    assert.strictEqual(res._body().error, 'tenant_required');
-    assert.strictEqual(emitCalls, 0, 'must not emit without tenant');
-  });
-
-  test('POST /events with tenant/namespace contradiction returns 400 tenant_mismatch', async () => {
-    let emitCalls = 0;
-    const router = createEventRoutes(null, { emit: async () => { emitCalls++; return { status: 'ok' }; } }, null);
-    const handler = router._routes['POST /'];
-    const res = makeRes();
-    await handler(
-      { body: { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: {}, tenant_id: 'tenant-a', namespace: 'tenant::tenant-b' } },
-      res
-    );
-    assert.strictEqual(res._status(), 400);
-    assert.strictEqual(res._body().error, 'tenant_mismatch');
-    assert.strictEqual(emitCalls, 0, 'must not emit on mismatch');
-  });
-
-  test('POST /events with payload tenant contradiction returns 400 tenant_mismatch', async () => {
-    let emitCalls = 0;
-    const router = createEventRoutes(null, { emit: async () => { emitCalls++; return { status: 'ok' }; } }, null);
-    const handler = router._routes['POST /'];
-    const res = makeRes();
-    await handler(
-      { body: { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: { tenant_id: 'tenant-b' }, tenant_id: 'tenant-a' } },
-      res
-    );
-    assert.strictEqual(res._status(), 400);
-    assert.strictEqual(res._body().error, 'tenant_mismatch');
-    assert.strictEqual(emitCalls, 0, 'must not emit on mismatch');
-  });
-
-  test('POST /events surfaces missing required fields (not masked)', async () => {
-    const router = createEventRoutes(null, { emit: async () => ({ status: 'ok' }) }, null);
-    const handler = router._routes['POST /'];
-    const res = makeRes();
-    await handler({ body: { event_type: 'X', tenant_id: 'tenant-a' } }, res);
-    assert.strictEqual(res._status(), 500);
-    assert.match(res._body().error, /required/);
-  });
-
-  test('POST /events surfaces governance rejection', async () => {
-    const fakeEventRuntime = {
-      emit: async () => ({ status: 'error', error: 'unknown event_type: FAKE' })
-    };
-    const router = createEventRoutes(null, fakeEventRuntime, null);
-    const handler = router._routes['POST /'];
-    const res = makeRes();
-    await handler(
-      { body: { event_type: 'FAKE', aggregate_id: 'a', aggregate_type: 't', event_data: {}, tenant_id: 'tenant-a' } },
-      res
-    );
-    assert.strictEqual(res._status(), 500);
-    assert.match(res._body().error, /unknown event_type/);
-  });
+  console.log('\n=== POST /events requires a configured admission authority ===');
+  const legacyCases = [
+    { event_type: 'REVIEW_RECEIVED', aggregate_id: 'a', aggregate_type: 'business', event_data: {}, tenant_id: 'tenant-a' },
+    { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: {} },
+    { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: {}, tenant_id: 'tenant-a', namespace: 'tenant::tenant-b' },
+    { event_type: 'X', aggregate_id: 'a', aggregate_type: 't', event_data: { tenant_id: 'tenant-b' }, tenant_id: 'tenant-a' },
+    { event_type: 'X', tenant_id: 'tenant-a' },
+    { event_type: 'FAKE', aggregate_id: 'a', aggregate_type: 't', event_data: {}, tenant_id: 'tenant-a', actor_id: 'owner' },
+  ];
+  for (const [index, body] of legacyCases.entries()) {
+    test(`POST /events legacy case ${index + 1} rejects without raw emit`, async () => {
+      let emissions = 0;
+      const runtime = { emit: async () => { emissions++; throw new Error('must not emit'); } };
+      const router = createEventRoutes(null, runtime, null);
+      const res = makeRes();
+      await router._routes['POST /']({ body }, res);
+      assert.strictEqual(res._status(), 503);
+      assert.strictEqual(res._body().error, 'commissioning_unconfigured');
+      assert.strictEqual(emissions, 0);
+    });
+  }
 
   console.log('\n=== GET /events tenant isolation ===');
 

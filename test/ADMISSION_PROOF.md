@@ -31,8 +31,10 @@ and is not called by this admission candidate.
   pool/client; rejection and interrupted writes roll back both. A decision before
   expiry may commit afterward within the bounded transaction; subsequent actions
   cannot use an expired grant. The receipt preserves the decision timestamp.
-- Direct object writes through the *enabled candidate* shared writer are rejected,
-  including JSON-forged bypass metadata. This flag is not enabled in production.
+- Direct object/relationship writes through the shared writer require its private
+  admission transaction capability, including when the old opt-in flag is absent
+  or false. JSON-forged bypass metadata cannot open that writer. This candidate
+  is not merged or deployed.
   Relationship admission is deliberately unavailable without endpoint scope proof.
 - Duplicate admissions under a valid grant return the original receipt without
   dispatching again. `TenantRegistry.executeGetAdmissionReceipt` separately reads
@@ -72,8 +74,8 @@ if tracked sources change during the gate. Existing untracked proof artifacts an
 ignored local dependencies are not committed; this is tracked-source cleanliness.
 It records one source SHA, source hashes, environment, exact commands,
 counts and exits in `artifacts/commissioning-proof.json`. It compiles the existing
-TypeScript reference and runs candidate admission/recovery tests plus five existing
-gateway suites. It returns nonzero if any suite fails, including known baseline
+TypeScript reference and runs candidate admission/recovery tests plus nine existing
+gateway suites, including affected HTTP contracts and existing event read tests. It returns nonzero if any suite fails, including known baseline
 failures; a candidate pass is not an all-repository pass.
 
 ## Holds that these tests cannot remove
@@ -84,12 +86,14 @@ failures; a candidate pass is not an all-repository pass.
    or real HPP commissioning consent has been provisioned. FYD has real Google
    OIDC code, but login is not business entitlement; its current owner-mode demo
    identity is unverified. No real HPP grant has been issued.
-2. **All-writer convergence is UNPROVEN.** The static inventory records multiple
-   stores and writers. `/canonical-events` uses CanonicalEventEnvelope rather than
-   the shared writer; AppendOrchestrator, EventRepository, ConstitutionalEventBus
-   and older Python/TS paths require caller and deployment tracing. The knowledge
-   compiler actually publishes through ConstitutionalEventBus. Production bootstrap
-   remains unchanged and commissioning disabled. This is not a zero-bypass proof
+2. **All-writer convergence is UNPROVEN.** Three candidate HTTP journal entrances
+   now use the existing byte admission gate; four processing mutations reject
+   before SQL. Direct CanonicalEventEnvelope business callers, mission and registry
+   mutations, AppendOrchestrator, EventRepository, ConstitutionalEventBus and older
+   Python/TS paths remain uncovered. Some business authorities mutate their rows
+   before appending legacy events, so guarding that append alone is insufficient.
+   Non-object shared-writer events remain outside this gate. Production is untouched;
+   the default bootstrap lacks the trusted resolver root and keeps these POSTs closed. This is not a zero-bypass proof
    or a decision that any class owns universal event authority.
 3. **Object authority still needs convergence.** The candidate checks known
    vocabulary/hash/controller prerequisites and update ownership in the existing
@@ -116,7 +120,10 @@ The five ingest failures were reproduced at the original checkout: test fixtures
 constructed the existing runtime without persistence, which correctly rejected
 writes. The fixtures now use the marked disposable PostgreSQL database in their
 own `ingest_boundary_proof` schema. Exact retries must return success and leave
-exactly one persisted event; HTTP retries must return 201. Missing persistence
+exactly one persisted event. The old HTTP normalization body no longer authorizes
+a write: an unconfigured admission root returns 503 with no persisted change.
+Authorized v2 HTTP retries are proven separately against real disposable
+owner/grant tables and return the same immutable receipt across all three aliases. Missing persistence
 still rejects without handlers or rows. Timestamp differences retain the existing
 logical identity but cannot overwrite different accepted payload bytes: the
 second submission must report a collision. No runtime collision rule or historical
@@ -124,20 +131,29 @@ canonical byte format was changed. The schema is dropped after the suite.
 
 ## Source entrance evidence (not deployed enforcement)
 
-| Entrance | Existing write path | Remaining gap |
+| Entrance | Candidate behavior | Remaining gap |
 | --- | --- | --- |
-| Gateway `/events` and `/ingest` | Bootstrap constructs UnifiedEventRuntime without `requireCommissioningForObjectWrites` | Candidate gate is not enabled in the inspected bootstrap |
-| Gateway `/canonical-events` | Mounted route forwards caller `actor` and `tenant_id` to CanonicalEventEnvelope | No commissioning grant or trusted actor binding demonstrated at this entrance |
-| KnowledgeCompiler | Constructor creates ConstitutionalEventBus and publishing passes use it | Does not establish common commissioning-gate coverage |
-| Kernel GatewayAdapter | Constructor creates EventRepository | Deployed caller/reachability and common admission still unproven |
-| AppendOrchestrator and legacy Python/TS producers | Static INSERT inventory spans other existing journal stores | Each enabled caller needs tracing; absent callers in a targeted search do not prove incapability |
+| Gateway POST `/events`, `/ingest`, `/canonical-events` | Actual bootstrap mount uses the same original-byte admission handler, trusted actor resolver and event/receipt transaction | Synthetic owner proof only; default root is absent. `/canonical-events` GET still reads historical legacy rows, not the new receipt's journal |
+| Four processed/failed POSTs | Reject with 403 before authority callbacks or SQL | No authorized processing-status command is added |
+| Shared writer OBJECT/RELATIONSHIP events | Private admission transaction is mandatory; absent/false opt-in cannot bypass | Other event types and journals remain uncovered |
+| Business `/projects`, `/customers`, review mutations | Existing authority SQL/provider effects precede legacy event append | No tested admission or entitlement boundary for these effects |
+| `/missions`, `/tenants`, deployment/runtime registry mutations | Existing direct commands remain | Exact actor/tenant/resource entitlement and canonical-write coverage not proven |
+| KnowledgeCompiler / ConstitutionalEventBus | Existing publishing passes use a different event store | Does not establish common admission coverage |
+| Kernel GatewayAdapter / EventRepository | Existing repository journal writer | Deployed callers and admission still unproven |
+| AppendOrchestrator and legacy Python/TS producers | Static INSERT inventory spans other stores | Enabled caller tracing and before-mutation proof required |
+| FYD owner override API | Demo owner context and JSON owner-event log remain unchanged | Real entitlement and admitted PING-to-FYD customer projection are not certified |
 
-The static scan has 14 non-test hits, including one comment in
+The source scan has 14 non-test hits, including one comment in
 `runtime/ingestion/drive_ingestor.py`; this is 13 SQL write sites, not 14 proven
-enabled entrances. The candidate shared-writer rejection tests prove only that
-writer when its guard is enabled. No deployment can be promoted from this proof
-while any enabled entrance remains uncovered. Route removal or rejection must be
-tested against the actual deployment contract before production changes.
+enabled entrances. The new persisted-state tests cover three journal POSTs,
+four refused processing mutations, the mandatory shared object guard and
+same-store/bootstrap configuration checks. They invoke the actual bootstrap
+middleware and admission mount, without starting its other jobs or providers.
+The bootstrap keeps the root closed unless both pools identify the same physical
+tenant registry; unavailable metadata or different storage also keeps it closed.
+No tenant records are copied and no database privilege is granted. This is not
+an all-writer or full-bootstrap integration proof. No deployment can be promoted
+while any enabled mutation entrance remains uncovered.
 
 ## Lock evidence
 

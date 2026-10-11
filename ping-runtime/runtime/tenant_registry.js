@@ -18,7 +18,8 @@ const { validateRegistry, computeCanonicalHash } = require('../authorities/const
 class TenantRegistry {
   constructor(storage, options = {}) {
     this._storage = storage;
-    // Opt-in, deliberately unconfigured in existing bootstrap/call sites.
+    // Existing trusted resolvers/pool are injected by the server. Missing trust
+    // leaves admission closed; caller-provided owner labels cannot configure it.
     this._commissioningPool = options.commissioningPool || null;
     this._commissioningTrust = options.commissioningTrust || null;
     this._commissioningTransactionMs = options.commissioningTransactionMs ?? 5000;

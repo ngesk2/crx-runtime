@@ -288,88 +288,30 @@ function post(port, path, body) {
   });
 }
 
-test('POST /ingest returns 201 with eventId/objectId/canonicalHash/namespace', async () => {
-  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', {
-      source: 'review-authority',
-      eventType: 'REVIEW_RECEIVED',
-      payload: { review_id: 'r10', rating: 5 },
-    });
-    assert.strictEqual(resp.status, 201);
-    const body = await resp.json();
-    assert.strictEqual(body.status, 'ok');
-    assert.ok(body.eventId);
-    assert.ok(body.objectId);
-    assert.ok(body.canonicalHash);
-    assert.strictEqual(body.namespace, 'tenant::hpp');
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest idempotent replay → same eventId', async () => {
-  const { service } = buildService();
-  const { server, port } = await startServer(service);
-  try {
-    const payload = { source: 's', eventType: 'OBSERVATION_CREATED', payload: { id: 'obs-1' } };
-    const first = await post(port, '/ingest', payload), second = await post(port, '/ingest', payload);
-    assert.strictEqual(first.status, 201);
-    assert.strictEqual(second.status, 201);
-    const a = await first.json(), b = await second.json();
-    assert.strictEqual(a.eventId, b.eventId);
-    assert.strictEqual((await testPool.query('SELECT count(*)::int AS n FROM ping_events WHERE event_id=$1', [a.eventId])).rows[0].n, 1);
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest 400 on missing payload', async () => {
-  const { service } = buildService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', { source: 's', eventType: 'REVIEW_RECEIVED' });
-    assert.strictEqual(resp.status, 400);
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest 400 on unbound namespace override (tenant spoof rejected at guard)', async () => {
-  const { service } = buildService({ 'review-authority': 'tenant::hpp' });
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', { source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: {}, namespace: 'tenant::victim-b' });
-    assert.strictEqual(resp.status, 400);
-    const body = await resp.json();
-    assert.match(body.error, /not bound/);
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest 400 on invalid namespace', async () => {
-  const { service } = buildService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', { source: 's', eventType: 'REVIEW_RECEIVED', payload: {}, namespace: 'bad' });
-    assert.strictEqual(resp.status, 400);
-  } finally {
-    server.close();
-  }
-});
-
-test('POST /ingest 422 on unregistered event type', async () => {
-  const { service } = buildService();
-  const { server, port } = await startServer(service);
-  try {
-    const resp = await post(port, '/ingest', { source: 's', eventType: 'UNREGISTERED_TYPE', payload: {} });
-    assert.strictEqual(resp.status, 422);
-  } finally {
-    server.close();
-  }
-});
+// Legacy HTTP source/namespace assertions are no longer write authorization.
+// Authorized admission/replay is tested with real grants in commissioning_admission.
+for (const [name, body] of [
+  ['caller source', { source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: { review_id: 'r10', rating: 5 } }],
+  ['duplicate retry', { source: 's', eventType: 'OBSERVATION_CREATED', payload: { id: 'obs-1' } }],
+  ['missing payload', { source: 's', eventType: 'REVIEW_RECEIVED' }],
+  ['tenant spoof', { source: 'review-authority', eventType: 'REVIEW_RECEIVED', payload: {}, namespace: 'tenant::victim-b' }],
+  ['invalid namespace', { source: 's', eventType: 'REVIEW_RECEIVED', payload: {}, namespace: 'bad' }],
+  ['unregistered event', { source: 's', eventType: 'UNREGISTERED_TYPE', payload: {} }],
+]) {
+  test('POST /ingest unconfigured authority rejects ' + name + ' before persistence', async () => {
+    const { service } = buildService();
+    const { server, port } = await startServer(service);
+    try {
+      const before = (await testPool.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n;
+      for (let retry = 0; retry < 2; retry++) {
+        const response = await post(port, '/ingest', body);
+        assert.strictEqual(response.status, 503);
+        assert.strictEqual((await response.json()).error, 'commissioning_unconfigured');
+      }
+      assert.strictEqual((await testPool.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n, before);
+    } finally { server.close(); }
+  });
+}
 
 test('CANONICAL_VERSION constant is 1.0.0', () => {
   assert.strictEqual(CANONICAL_VERSION, '1.0.0');

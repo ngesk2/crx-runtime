@@ -105,18 +105,21 @@ const { HybridSearch } = require('../../ping-runtime/search/hybrid_search');
 const { verifyCanonicalObject } = require('../../ping-runtime/canonicalization/canonical_object');
 const createIngestRoutes = require('../routes/ingest');
 const { KernelReplayExecutionProvider } = require('../kernel_replay_execution_provider');
+const { captureCommissioningBytes } = require('../route_middleware');
 
 class GatewayRuntime {
-  constructor(pool) {
+  constructor(pool, { commissioningTrust = null } = {}) {
     this._app = express();
     this._pool = pool || null;
     this._storage = null;
+    // Operator-installed existing authority resolvers only. Never HTTP input.
+    this._commissioningTrust = commissioningTrust;
 
     this._setupMiddleware();
   }
 
   _setupMiddleware() {
-    this._app.use(express.json());
+    this._app.use(express.json({ verify: captureCommissioningBytes }));
     this._app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -410,7 +413,7 @@ class GatewayRuntime {
         canonicalEventEnvelope = new CanonicalEventEnvelope(this._storage, { repoRoot });
         await canonicalEventEnvelope.initialize();
 
-        tenantRegistry = new TenantRegistry(this._storage);
+        tenantRegistry = await this._initializeAdmissionRegistry(this._storage);
         deploymentRegistry = new DeploymentRegistry(this._storage);
         runtimeRegistry = new RuntimeRegistry(this._storage);
 
@@ -698,6 +701,40 @@ class GatewayRuntime {
     return services;
   }
 
+  async _initializeAdmissionRegistry(storage) {
+    const closed = () => new TenantRegistry(storage);
+    if (!this._commissioningTrust || !this._pool) return closed();
+    // The legacy adapter may point at a different database/schema. Never copy
+    // tenants or attach grants to a second registry to make admission succeed.
+    const identitySql = `SELECT current_database() AS database, inet_server_addr()::text AS address,
+      inet_server_port() AS port, to_regclass('tenant_registry')::oid AS registry_oid,
+      (SELECT system_identifier::text FROM pg_control_system()) AS cluster_identifier,
+      pg_postmaster_start_time()::text AS server_start, pg_is_in_recovery() AS replica,
+      current_setting('transaction_read_only') AS read_only`;
+    let journal, legacy;
+    try { [journal, legacy] = await Promise.all([this._pool.query(identitySql), storage.query(identitySql)]); }
+    catch (_) {
+      console.error('[GatewayRuntime] Commissioning closed: storage identity is unavailable');
+      return closed();
+    }
+    const j = journal.rows[0], s = legacy.rows[0];
+    if (!j?.registry_oid || !s?.registry_oid || j.replica || s.replica || j.read_only !== 'off' || s.read_only !== 'off' ||
+        !['database','address','port','registry_oid','cluster_identifier','server_start'].every(k => j[k] === s[k])) {
+      console.error('[GatewayRuntime] Commissioning closed: journal and tenant storage do not share a physical registry');
+      return closed();
+    }
+    const registry = new TenantRegistry(storage, { commissioningPool: this._pool, commissioningTrust: this._commissioningTrust });
+    await registry.initializeCommissioning();
+    return registry;
+  }
+
+  _mountAdmissionRoutes(services) {
+    const boundary = { eventRuntime: services.unifiedEventRuntime, tenantRegistry: services.tenantRegistry };
+    this._app.use('/events', createEventRoutes(services.eventReadAuthority, services.unifiedEventRuntime, services.pool, boundary));
+    this._app.use('/canonical-events', createCanonicalEventRoutes(services.canonicalEventEnvelope, boundary));
+    this._app.use('/ingest', createIngestRoutes(boundary));
+  }
+
   _mountRoutes(services) {
     const hasPG = !!services.eventReadAuthority;
 
@@ -706,16 +743,14 @@ class GatewayRuntime {
 
     // PG-dependent routes — only mount when Postgres is available
     if (hasPG) {
-      this._app.use('/events', createEventRoutes(services.eventReadAuthority, services.unifiedEventRuntime, services.pool));
+      this._mountAdmissionRoutes(services);
       this._app.use('/identities', createIdentityRoutes(services.unifiedEventRuntime, services.pool));
       this._app.use('/context', createContextRoutes(services.eventReadAuthority));
       this._app.use('/api/v1/repository', createRepositoryRoutes(services.repoStore));
       this._app.use('/system', createSystemRoutes(services.eventReadAuthority));
-      this._app.use('/canonical-events', createCanonicalEventRoutes(services.canonicalEventEnvelope));
       this._app.use('/tenants', createTenantRoutes(services.tenantRegistry));
       this._app.use('/deployments', createDeploymentRoutes(services.deploymentRegistry));
       this._app.use('/runtime', createRuntimeRoutes(services.runtimeRegistry));
-      this._app.use('/ingest', createIngestRoutes(services.canonicalizationService));
       // Mission Control cards: approve / reject / reorder (auth-guarded).
       this._app.use('/api/v1/missions',
         services.exteriorAuthMiddleware.middleware(),

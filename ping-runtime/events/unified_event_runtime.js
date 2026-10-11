@@ -109,8 +109,6 @@ class UnifiedEventRuntime {
     this._eventValidator = options.eventValidator || null;
     this._eventGovernance = options.eventGovernance || null;
     this._integrationManager = options.integrationManager || null;
-    // Candidate-only switch; existing production bootstrap is unchanged.
-    this._requireCommissioningForObjectWrites = options.requireCommissioningForObjectWrites === true;
     this._handlers = new Map();
     this._stats = { emitted: 0, persisted: 0, deduplicated: 0, dispatched: 0, failed: 0 };
   }
@@ -187,8 +185,9 @@ class UnifiedEventRuntime {
    * @param {object} options — { causation_id, correlation_id, metadata, namespace, logical_id }
    */
   async emit(eventType, source, payload, options = {}) {
-    if (this._requireCommissioningForObjectWrites &&
-        ['OBJECT_CREATED','OBJECT_UPDATED','RELATIONSHIP_CREATED'].includes(eventType) &&
+    // All object/relationship writes require the private transaction capability;
+    // a missing or false configuration flag cannot reopen the raw writer.
+    if (/^(OBJECT|RELATIONSHIP)_/.test(eventType) &&
         !options[COMMISSIONING_TRANSACTION]) {
       this._stats.failed++;
       return {status:'error',error:'commissioning_required'};
@@ -343,7 +342,7 @@ class UnifiedEventRuntime {
   }
 
   async admitCommissionedEvent(tenantRegistry, context, submission) {
-    // No route/bootstrap is wired to this candidate. Reuses emit's one SQL writer.
+    // HTTP and internal commissioned requests reuse emit's one SQL writer.
     if (tenantRegistry._commissioningPool !== this._pool) throw new Error('commissioning_pool_mismatch');
     const result = await tenantRegistry.executeWithCommissioningGrant(context, submission, (client, data) =>
       this.emit(data.intent.operation, `commissioned:${data.intent.authenticated_actor}`, data.payload, {
