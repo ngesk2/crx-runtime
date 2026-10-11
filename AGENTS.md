@@ -3721,3 +3721,7 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 - Hybrid search POST /knowledge/search ({"query":"greenfield smoke test","namespace":"tenant::hpp","limit":3} via body file) -> 200, total 3, stats semanticHits:5/kgHits:1/verified:1/rejected:4. Root REVIEW_RECEIVED verified:true (canonical_hash 7373d066... backed by ping_events, ollama embedding, score 0.7439517); downstream chain hits verified:false = documented LEDGER 54 behavior (only the canonicalization boundary carries canonical_hash), NOT a defect.
 
 **Next**: (1) optional cleanup docker rm ping-gateway-fresh; (2) LEDGER 54 canonical_hash propagation to downstream chain events = behavior change requiring explicit direction (no silent fix); (3) open program items unchanged: 68/69/70 ledger sections COMMIT-PENDING, Phase C 13-namespace classification, Phase D live probes. History rewrite stays HARD-BLOCKED pending user direction.
+
+### 2026-10-10 Isolated trust/proof lanes
+
+Optional exact-byte Rust verifier and native test adapter isolated from admission. Frozen Node/Rust vectors preserved; strict native UTF-16 rejection fixes a demonstrated mismatch. Reproducible offline proof runner added. No production callers; MERGE and production cutover HOLD.
