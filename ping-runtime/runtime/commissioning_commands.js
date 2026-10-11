@@ -151,6 +151,31 @@ module.exports = {
     });
   },
 
+  async executeGetAdmissionReceipt(context, query) {
+    const actorId = await C.actor(this._commissioningTrust, context);
+    C.requireThat(this._commissioningPool, 'commissioning_unconfigured');
+    C.requireThat(query && typeof query === 'object' && !Array.isArray(query), 'invalid_receipt_query');
+    query = structuredClone(query);
+    const fields = [...C.SCOPE, 'logical_operation_id', 'operation_digest'];
+    C.requireThat(Object.keys(query).length === fields.length && fields.every(k => Object.hasOwn(query, k)), 'invalid_receipt_query');
+    C.checkScope(query);
+    C.requireThat(C.text(query.logical_operation_id) && typeof query.operation_digest === 'string' && /^[a-f0-9]{64}$/.test(query.operation_digest), 'invalid_receipt_query');
+    // Read permission belongs to the original authenticated actor and accepted
+    // scope, not to a currently active write grant. Never call the admission
+    // command, mint a receipt, dispatch effects, or reinterpret the decision.
+    const result = await this._commissioningPool.query(`SELECT receipt FROM tenant_admission_receipts
+      WHERE tenant_id=$1 AND actor_id=$2 AND logical_operation_id=$3 AND operation_digest=$4
+        AND receipt->>'controller_id'=$5 AND receipt->>'commissioning_project_id'=$6
+        AND receipt->>'site_id'=$7 AND receipt->>'resource_id'=$8`,
+    [query.tenant_id, actorId, query.logical_operation_id, query.operation_digest,
+      query.controller_id, query.commissioning_project_id, query.site_id, query.resource_id]);
+    // Absence is not proof of rejection: an interrupted/unknown request may
+    // still need reconciliation. Do not authorize a retry or disclose another
+    // actor's receipt when any part of the scope differs.
+    if (!result.rows.length) return { status: 'UNKNOWN' };
+    return { status: 'ACCEPTED', receipt: result.rows[0].receipt };
+  },
+
   async executeWithCommissioningGrant(context, submission, writeEvent) {
     submission = structuredClone(submission);
     const actorId = await C.actor(this._commissioningTrust, context);

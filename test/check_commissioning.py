@@ -35,10 +35,12 @@ report = {'source_sha': output(['git', 'rev-parse', 'HEAD']),
           'platform': platform.platform(), 'node': output(['node', '--version']),
           'scope': 'Synthetic owner authority and disposable persisted-state tests only',
           'merge': 'HOLD', 'production_cutover': 'HOLD', 'commands': [], 'sources': {}}
+report['tracked_changes_before'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
 paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-runtime/runtime/tenant_registry.js',
          *sorted((root / 'ping-runtime/runtime').glob('commissioning_*')),
          root / 'ping-runtime/runtime/strict_wire_json.js',
-         root / 'test/commissioning_admission.test.js', root / 'test/commissioning_crash_child.js', Path(__file__)]
+         root / 'test/commissioning_admission.test.js', root / 'test/commissioning_crash_child.js',
+         root / 'gateway/test_ingest_boundary.js', root / 'runtime/constitutional/src/ping-projector.ts', Path(__file__)]
 for p in paths:
     report['sources'][str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -68,6 +70,8 @@ def run(command, label):
     return result.returncode, content
 
 try:
+    if report['tracked_changes_before']:
+        raise RuntimeError('Refuse dirty tracked sources; record the candidate on its isolated branch before the full gate')
     code, text = run(['node', '-e',
         "const fs=require('fs'),{Pool}=require('pg'); const p=new Pool(JSON.parse(fs.readFileSync('.test-database.json','utf8')));"
         "(async()=>{try{console.log(JSON.stringify((await p.query(\"SELECT version() AS version,current_setting('cluster_name') AS cluster_name,current_database() AS database\")).rows[0]));}finally{await p.end();}})().catch(e=>{console.error(e.message);process.exitCode=1;});"], 'proof-database-environment')
@@ -93,13 +97,15 @@ try:
         report['ingest_baseline_failure_names'] = re.findall(r'^✗ (.+)$', baseline.read_text(), re.M)
         report['ingest_failures_match_prior_baseline'] = report['commands'][-1]['failure_names'] == report['ingest_baseline_failure_names']
     report['exit_code'] = 0 if report['regression_result'] == 'PASS' else 1
-    report['result'] = 'Candidate proof passed; merge remains HOLD'
+    report['result'] = 'Admission and gateway regression gate passed; merge remains HOLD' if report['exit_code'] == 0 else 'FAIL'
 except Exception as error:
     report['result'] = 'FAIL'
     report['error'] = str(error)
     report['exit_code'] = 1
 finally:
     report['tracked_changes'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
+    if not report['tracked_changes_before'] and report['tracked_changes']:
+        report.update(result='FAIL', error='Tracked sources changed during the gate', exit_code=1)
     (evidence / 'commissioning-proof.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({'source_sha': report['source_sha'], 'result': report['result'],
                   'exit_code': report['exit_code'], 'proof': str(evidence / 'commissioning-proof.json')}))

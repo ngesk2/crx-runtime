@@ -34,11 +34,20 @@ and is not called by this admission candidate.
 - Direct object writes through the *enabled candidate* shared writer are rejected,
   including JSON-forged bypass metadata. This flag is not enabled in production.
   Relationship admission is deliberately unavailable without endpoint scope proof.
-- Duplicate admissions return the original receipt without dispatching again.
-  A real child process is killed after event insertion/before receipt and again
-  after commit/before dispatch. The existing PingProjector rebuilds accepted
-  history in a fresh process and on repeated runs after grant revocation. Recovery
-  does not invoke external effect handlers.
+- Duplicate admissions under a valid grant return the original receipt without
+  dispatching again. `TenantRegistry.executeGetAdmissionReceipt` separately reads
+  an accepted outcome after grant expiry, grant revocation or owner revocation.
+  It resolves the original authenticated actor and matches tenant, controller,
+  project, site, resource, logical operation and operation digest against the
+  persisted receipt. It does not authorize a new write or invoke handlers.
+  A missing or mismatched receipt returns UNKNOWN, not permission to retry.
+- Real child processes are killed at four boundaries: after authorization/before
+  append, after event insertion/before receipt, after commit/before dispatch and
+  inside the existing projector transaction after object insertion. Interrupted
+  writes roll back; an interrupted rebuild preserves its prior projection.
+  Fresh-process and repeated PingProjector rebuilds after grant revocation produce
+  the same object and transition, preserving journal and receipt bytes without
+  invoking external effect handlers.
 
 ## Reproduce
 
@@ -58,7 +67,10 @@ The cluster's source archive SHA-256 is
 `c1575341fa7bd40f5274ea465b34390f4dc64cdd0770af327005caaeb9f6b7ed`.
 The source is available at [PostgreSQL's official file browser](https://www.postgresql.org/ftp/source/v16.15/).
 
-The runner records one source SHA, source hashes, environment, exact commands,
+The runner refuses dirty tracked sources before touching the database and fails
+if tracked sources change during the gate. Existing untracked proof artifacts and
+ignored local dependencies are not committed; this is tracked-source cleanliness.
+It records one source SHA, source hashes, environment, exact commands,
 counts and exits in `artifacts/commissioning-proof.json`. It compiles the existing
 TypeScript reference and runs candidate admission/recovery tests plus five existing
 gateway suites. It returns nonzero if any suite fails, including known baseline
@@ -93,10 +105,39 @@ failures; a candidate pass is not an all-repository pass.
    labels/source mounts. No inspected source revision matches all six sampled
    critical image files. Docker was subsequently shut down; it was not restarted
    by this proof. The snapshot is not evidence of the current live state.
-6. **Existing regression failures remain.** Ingest boundary has five failures
-   reproduced at the original checkout. They remain failures and do not waive
-   pre-merge verification. Held FYD tests/browser checks remain unexecuted by this
-   backend-only candidate.
+6. **Customer verification remains separate.** Held FYD tests/browser checks
+   remain unexecuted by this backend-only candidate. The latest full admission
+   gate must pass at the recorded clean source SHA before any green gate claim;
+   that pass still cannot certify the actual FYD customer surface.
+
+## Ingest fixture contract
+
+The five ingest failures were reproduced at the original checkout: test fixtures
+constructed the existing runtime without persistence, which correctly rejected
+writes. The fixtures now use the marked disposable PostgreSQL database in their
+own `ingest_boundary_proof` schema. Exact retries must return success and leave
+exactly one persisted event; HTTP retries must return 201. Missing persistence
+still rejects without handlers or rows. Timestamp differences retain the existing
+logical identity but cannot overwrite different accepted payload bytes: the
+second submission must report a collision. No runtime collision rule or historical
+canonical byte format was changed. The schema is dropped after the suite.
+
+## Source entrance evidence (not deployed enforcement)
+
+| Entrance | Existing write path | Remaining gap |
+| --- | --- | --- |
+| Gateway `/events` and `/ingest` | Bootstrap constructs UnifiedEventRuntime without `requireCommissioningForObjectWrites` | Candidate gate is not enabled in the inspected bootstrap |
+| Gateway `/canonical-events` | Mounted route forwards caller `actor` and `tenant_id` to CanonicalEventEnvelope | No commissioning grant or trusted actor binding demonstrated at this entrance |
+| KnowledgeCompiler | Constructor creates ConstitutionalEventBus and publishing passes use it | Does not establish common commissioning-gate coverage |
+| Kernel GatewayAdapter | Constructor creates EventRepository | Deployed caller/reachability and common admission still unproven |
+| AppendOrchestrator and legacy Python/TS producers | Static INSERT inventory spans other existing journal stores | Each enabled caller needs tracing; absent callers in a targeted search do not prove incapability |
+
+The static scan has 14 non-test hits, including one comment in
+`runtime/ingestion/drive_ingestor.py`; this is 13 SQL write sites, not 14 proven
+enabled entrances. The candidate shared-writer rejection tests prove only that
+writer when its guard is enabled. No deployment can be promoted from this proof
+while any enabled entrance remains uncovered. Route removal or rejection must be
+tested against the actual deployment contract before production changes.
 
 ## Lock evidence
 

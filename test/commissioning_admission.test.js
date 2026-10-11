@@ -64,6 +64,8 @@ function submission(f,changes={},keys=signerKeys){
  return {intent,payload,metadata,signature:crypto.sign(null,C.bytes(intent),keys.privateKey).toString('base64')};
 }
 async function counts(){const r=await pool.query('SELECT (SELECT count(*)::int FROM ping_events) AS events,(SELECT count(*)::int FROM tenant_admission_receipts) AS receipts');return {...r.rows[0],derived};}
+function receiptQuery(s){return {...Object.fromEntries(C.SCOPE.map(k=>[k,s.intent[k]])),
+ logical_operation_id:s.intent.logical_operation_id,operation_digest:C.digest(C.bytes(s.intent))};}
 async function denied(action){const before=await counts();await assert.rejects(action);assert.deepEqual(await counts(),before);}
 function resign(s){
  s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);
@@ -348,7 +350,44 @@ test('bounded database work times out and rolls back both admission rows',async(
  try{await denied(()=>runtime.admitCommissionedEvent(limited,agent,submission(f)));}finally{runtime.emit=original;}
 });
 
-test('real process death after commit recovers using the existing PingProjector and no effect dispatch',async()=>{
+test('receipt recovery after expiry returns the original outcome without admitting a new action',async()=>{
+ const f=await setup(),s=submission(f),accepted=await runtime.admitCommissionedEvent(registry,agent,s);
+ await pool.query("UPDATE tenant_commissioning_grants SET valid_from=clock_timestamp()-interval '2 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE grant_id=$1",[f.grant.grant_id]);
+ const before=await counts();
+ assert.deepEqual(await registry.executeGetAdmissionReceipt(agent,receiptQuery(s)),{status:'ACCEPTED',receipt:accepted.receipt});
+ assert.deepEqual(await counts(),before);
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,s));
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'expired-new-action'})));
+});
+
+test('receipt recovery survives grant and owner revocation without authorizing effects',async()=>{
+ for(const target of ['grant','owner']){
+  const f=await setup(),s=submission(f),accepted=await runtime.admitCommissionedEvent(registry,agent,s);
+  if(target==='grant')await registry.executeRevokeCommissioningGrant(owner,{grant_id:f.grant.grant_id,reason_digest:C.digest(Buffer.from('revoke after acceptance'))});
+  else await registry.executeRevokeOwnerBinding(owner,{binding_id:f.binding.binding_id});
+  const before=await counts();
+  assert.deepEqual(await registry.executeGetAdmissionReceipt(agent,receiptQuery(s)),{status:'ACCEPTED',receipt:accepted.receipt});
+  assert.deepEqual(await counts(),before);
+  await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'revoked-new-action'})));
+ }
+});
+
+test('receipt recovery requires the original authenticated actor and complete accepted scope',async()=>{
+ const f=await setup(),s=submission(f);await runtime.admitCommissionedEvent(registry,agent,s);
+ const q=receiptQuery(s),before=await counts();
+ assert.deepEqual(await registry.executeGetAdmissionReceipt(stranger,q),{status:'UNKNOWN'});
+ for(const key of [...C.SCOPE,'logical_operation_id','operation_digest']){
+  const value=key==='operation_digest'?'0'.repeat(64):'unrelated-'+key.replaceAll('_','-');
+  assert.deepEqual(await registry.executeGetAdmissionReceipt(agent,{...q,[key]:value}),{status:'UNKNOWN'});
+ }
+ await assert.rejects(()=>registry.executeGetAdmissionReceipt({actor_id:'synthetic-agent',verified:true},q));
+ for(const invalid of [null,{...q,extra:true},{...q,resource_id:undefined},{...q,operation_digest:[q.operation_digest]}]){
+  await assert.rejects(()=>registry.executeGetAdmissionReceipt(agent,invalid));
+ }
+ assert.deepEqual(await counts(),before);
+});
+
+test('real process death at all four boundaries recovers through the existing projector without effects',async()=>{
  const {spawnSync}=require('node:child_process');
  const {PingProjector}=require('../gateway/constitutional-dist/ping-projector');
  await pool.query('DROP SCHEMA IF EXISTS recovery_proof CASCADE; CREATE SCHEMA recovery_proof');
@@ -369,10 +408,12 @@ test('real process death after commit recovers using the existing PingProjector 
   s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
   s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);
   s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
-  const interrupted=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,issuers:[...trust.issuers],submission:s,mode:'crash_before_receipt'}),encoding:'utf8',timeout:10000});
-  assert.equal(interrupted.signal,'SIGKILL',interrupted.stderr);
-  assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n,0);
-  assert.equal((await rp.query('SELECT count(*)::int AS n FROM tenant_admission_receipts')).rows[0].n,0);
+  for(const mode of ['crash_before_append','crash_before_receipt']){
+   const interrupted=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,issuers:[...trust.issuers],submission:s,mode}),encoding:'utf8',timeout:10000});
+   assert.equal(interrupted.signal,'SIGKILL',mode+': '+interrupted.stderr);
+   assert.equal((await rp.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n,0,mode);
+   assert.equal((await rp.query('SELECT count(*)::int AS n FROM tenant_admission_receipts')).rows[0].n,0,mode);
+  }
   // The same request is now retried in a fresh process; the killed transaction
   // did not leave a durable event without its authorization receipt.
   const child=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,issuers:[...trust.issuers],submission:s}),encoding:'utf8',timeout:10000});
@@ -393,6 +434,16 @@ test('real process death after commit recovers using the existing PingProjector 
    const rebuilt=await projector.rebuildAll();assert.deepEqual(rebuilt,{objects:1,relationships:0,transitions:1});
    assert.deepEqual((await restartDb.query('SELECT content FROM ping_objects WHERE object_id=$1',[s.payload.object_id])).rows[0].content,s.payload.content);
    const first=await snapshot();await projector.rebuildAll();assert.equal(await snapshot(),first);
+   const journalBefore=(await rp.query('SELECT event_id,payload,metadata FROM ping_events ORDER BY event_id')).rows;
+   const receiptsBefore=(await rp.query('SELECT receipt FROM tenant_admission_receipts ORDER BY event_id')).rows;
+   const interrupted=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,mode:'crash_during_projection'}),encoding:'utf8',timeout:10000});
+   assert.equal(interrupted.signal,'SIGKILL',interrupted.stderr);
+   assert.equal(await snapshot(),first,'interrupted projection rolls back to its prior checkpoint');
+   const recovered=spawnSync(process.execPath,[path.join(__dirname,'commissioning_crash_child.js')],{input:JSON.stringify({config:recoveryConfig,mode:'recover'}),encoding:'utf8',timeout:10000});
+   assert.equal(recovered.status,0,recovered.stderr);assert.equal(await snapshot(),first);
+   assert.deepEqual((await rp.query('SELECT event_id,payload,metadata FROM ping_events ORDER BY event_id')).rows,journalBefore);
+   assert.deepEqual((await rp.query('SELECT receipt FROM tenant_admission_receipts ORDER BY event_id')).rows,receiptsBefore);
+   assert.deepEqual(await rr.executeGetAdmissionReceipt(agent,receiptQuery(s)),{status:'ACCEPTED',receipt:receiptsBefore[0].receipt});
   }finally{restartDb.release();}
   assert.equal(effects,0);
   await assert.rejects(()=>rt.admitCommissionedEvent(rr,agent,{...s,intent:{...s.intent,logical_operation_id:'revoked-new-action'}}));

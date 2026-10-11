@@ -14,6 +14,9 @@
 const assert = require('assert');
 const express = require('express');
 const http = require('http');
+const fs = require('node:fs');
+const path = require('node:path');
+const { Pool } = require('pg');
 
 const { UnifiedEventRuntime } = require('../ping-runtime/events/unified_event_runtime');
 const { CanonicalizationService, DEFAULT_NAMESPACE, CANONICAL_VERSION } = require('../ping-runtime/canonicalization/canonicalization_service');
@@ -23,26 +26,41 @@ const createIngestRoutes = require('./routes/ingest');
 // ── Test runner (async) ───────────────────────────────────────────────
 let passed = 0, failed = 0;
 const tests = [];
+let testPool;
 function test(name, fn) { tests.push({ name, fn }); }
 
 async function run() {
-  console.log('=== Canonical Boundary Tests ===\n');
-  for (const { name, fn } of tests) {
-    try {
-      await fn();
-      console.log(`✓ ${name}`);
-      passed++;
-    } catch (err) {
-      console.log(`✗ ${name}`);
-      console.log(`  ${err.message}`);
-      failed++;
+  const config = JSON.parse(fs.readFileSync(path.join(__dirname, '../.test-database.json'), 'utf8'));
+  assert.strictEqual(config.host, '127.0.0.1');
+  assert.strictEqual(config.database, 'admission_proof');
+  testPool = new Pool({ ...config, options: '-c search_path=ingest_boundary_proof' });
+  let initialized = false;
+  try {
+    assert.strictEqual((await testPool.query('SHOW cluster_name')).rows[0].cluster_name, 'ping-admission-proof-20261010');
+    await testPool.query('DROP SCHEMA IF EXISTS ingest_boundary_proof CASCADE; CREATE SCHEMA ingest_boundary_proof');
+    initialized = true;
+    await new UnifiedEventRuntime({ pool: testPool }).initialize();
+    console.log('=== Canonical Boundary Tests ===\n');
+    for (const { name, fn } of tests) {
+      try {
+        await fn();
+        console.log(`✓ ${name}`);
+        passed++;
+      } catch (err) {
+        console.log(`✗ ${name}`);
+        console.log(`  ${err.message}`);
+        failed++;
+      }
     }
+    console.log(`\n=== Summary ===`);
+    console.log(`Passed: ${passed}`);
+    console.log(`Failed: ${failed}`);
+    console.log(`Total: ${passed + failed}`);
+    process.exitCode = failed > 0 ? 1 : 0;
+  } finally {
+    if (initialized) await testPool.query('DROP SCHEMA ingest_boundary_proof CASCADE');
+    await testPool.end();
   }
-  console.log(`\n=== Summary ===`);
-  console.log(`Passed: ${passed}`);
-  console.log(`Failed: ${failed}`);
-  console.log(`Total: ${passed + failed}`);
-  process.exit(failed > 0 ? 1 : 0);
 }
 
 // ── Fixtures ──────────────────────────────────────────────────────────
@@ -56,8 +74,8 @@ class MockValidator {
 
 const ACCEPTED_TYPES = ['REVIEW_RECEIVED', 'CUSTOMER_CREATED', 'PROJECT_CREATED', 'OBSERVATION_CREATED'];
 
-function buildService(namespaces) {
-  const runtime = new UnifiedEventRuntime({ eventValidator: new MockValidator(ACCEPTED_TYPES) });
+function buildService(namespaces, { pool = testPool } = {}) {
+  const runtime = new UnifiedEventRuntime({ pool, eventValidator: new MockValidator(ACCEPTED_TYPES) });
   const service = new CanonicalizationService({ eventRuntime: runtime, namespaces });
   return { runtime, service };
 }
@@ -104,11 +122,14 @@ test('same logical event twice → identical event_id (idempotent retry)', async
   };
   const first = await service.canonicalizeAndEmit(input);
   const second = await service.canonicalizeAndEmit(input);
+  assert.strictEqual(first.status, 'ok');
+  assert.strictEqual(second.status, 'ok');
   assert.strictEqual(first.eventId, second.eventId);
   assert.strictEqual(first.objectId, second.objectId);
+  assert.strictEqual((await testPool.query('SELECT count(*)::int AS n FROM ping_events WHERE event_id=$1', [first.eventId])).rows[0].n, 1);
 });
 
-test('payloads differing only in timestamps → identical event_id', async () => {
+test('changed timestamp payload retains logical ID but cannot replace accepted bytes', async () => {
   const { service } = buildService();
   const a = await service.canonicalizeAndEmit({
     source: 'project-authority',
@@ -120,7 +141,12 @@ test('payloads differing only in timestamps → identical event_id', async () =>
     eventType: 'PROJECT_CREATED',
     payload: { project_id: 'p1', paid_at: '2026-01-02T00:00:00Z', timestamp: '2026-01-02T00:00:00Z' },
   });
+  assert.strictEqual(a.status, 'ok');
+  assert.strictEqual(b.status, 'error');
+  assert.match(b.error, /collision/);
   assert.strictEqual(a.eventId, b.eventId);
+  const stored = (await testPool.query('SELECT payload FROM ping_events WHERE event_id=$1', [a.eventId])).rows[0].payload;
+  assert.strictEqual(stored.paid_at, '2026-01-01T00:00:00Z');
 });
 
 test('payloads with different meaningful content → different event_id', async () => {
@@ -218,6 +244,18 @@ test('duck-typed emit() works for existing emitters (compat path)', async () => 
   assert.strictEqual(result.envelope.authority, 'review-authority');
 });
 
+test('missing persistence rejects admission and dispatches no handlers', async () => {
+  const { service, runtime } = buildService(undefined, { pool: null });
+  let dispatched = 0;
+  runtime.on('REVIEW_RECEIVED', () => { dispatched++; });
+  const before = (await testPool.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n;
+  const result = await service.canonicalizeAndEmit({ source: 's', eventType: 'REVIEW_RECEIVED', payload: { review_id: 'no-pool' } });
+  assert.strictEqual(result.status, 'error');
+  assert.match(result.error, /No persistence available/);
+  assert.strictEqual(dispatched, 0);
+  assert.strictEqual((await testPool.query('SELECT count(*)::int AS n FROM ping_events')).rows[0].n, before);
+});
+
 test('emitted event carries namespace + canonical metadata', async () => {
   const { service, runtime } = buildService({ 'customer-authority': 'tenant::hpp' });
   let captured = null;
@@ -276,9 +314,12 @@ test('POST /ingest idempotent replay → same eventId', async () => {
   const { server, port } = await startServer(service);
   try {
     const payload = { source: 's', eventType: 'OBSERVATION_CREATED', payload: { id: 'obs-1' } };
-    const a = await (await post(port, '/ingest', payload)).json();
-    const b = await (await post(port, '/ingest', payload)).json();
+    const first = await post(port, '/ingest', payload), second = await post(port, '/ingest', payload);
+    assert.strictEqual(first.status, 201);
+    assert.strictEqual(second.status, 201);
+    const a = await first.json(), b = await second.json();
     assert.strictEqual(a.eventId, b.eventId);
+    assert.strictEqual((await testPool.query('SELECT count(*)::int AS n FROM ping_events WHERE event_id=$1', [a.eventId])).rows[0].n, 1);
   } finally {
     server.close();
   }
@@ -342,4 +383,4 @@ test('envelope verifies after canonicalize (tamper detection intact)', async () 
   assert.strictEqual(verifyCanonicalObject(env).valid, false);
 });
 
-run();
+run().catch(error => { console.error(error.message); process.exitCode = 1; });
