@@ -56,10 +56,25 @@ def run(command, label):
     for field in ['Passed', 'Failed', 'Total']:
         match = re.search(r'^' + field + r': (\d+)$', content, re.M)
         if match: item[field.lower()] = int(match.group(1))
+    for pattern in [r'PASSED: (\d+), FAILED: (\d+)', r'(\d+) passed, (\d+) failed']:
+        match = re.search(pattern, content)
+        if match: item.update(passed=int(match.group(1)), failed=int(match.group(2)))
+    match = re.search(r'All (\d+) confidence spine tests PASS', content)
+    if match: item.update(passed=int(match.group(1)), failed=0)
+    match = re.search(r'(\d+) knowledge adapter tests passed', content)
+    if match: item.update(passed=int(match.group(1)), failed=0)
+    item['failure_names'] = re.findall(r'^✗ (.+)$', content, re.M)
     report['commands'].append(item)
     return result.returncode, content
 
 try:
+    code, text = run(['node', '-e',
+        "const fs=require('fs'),{Pool}=require('pg'); const p=new Pool(JSON.parse(fs.readFileSync('.test-database.json','utf8')));"
+        "(async()=>{try{console.log(JSON.stringify((await p.query(\"SELECT version() AS version,current_setting('cluster_name') AS cluster_name,current_database() AS database\")).rows[0]));}finally{await p.end();}})().catch(e=>{console.error(e.message);process.exitCode=1;});"], 'proof-database-environment')
+    if code: raise RuntimeError('Disposable database metadata query failed')
+    report['database'] = json.loads(text)
+    if report['database']['cluster_name'] != 'ping-admission-proof-20261010':
+        raise RuntimeError('Refuse unmarked database')
     code, text = run(['node', str(args.tools_root / 'node-typescript/node_modules/typescript/bin/tsc'),
          'runtime/constitutional/src/ping-projector.ts', '--module', 'commonjs', '--target', 'es2020',
          '--esModuleInterop', '--skipLibCheck', '--outDir', 'gateway/constitutional-dist',
@@ -73,6 +88,10 @@ try:
                  'test_knowledge_ingest_adapter.js', 'test_ingest_boundary.js']:
         code, text = run(['node', 'gateway/' + name], 'proof-' + name)
         if code: report['regression_result'] = 'FAIL'
+    baseline = evidence / 'ingest-baseline.log'
+    if baseline.exists():
+        report['ingest_baseline_failure_names'] = re.findall(r'^✗ (.+)$', baseline.read_text(), re.M)
+        report['ingest_failures_match_prior_baseline'] = report['commands'][-1]['failure_names'] == report['ingest_baseline_failure_names']
     report['exit_code'] = 0 if report['regression_result'] == 'PASS' else 1
     report['result'] = 'Candidate proof passed; merge remains HOLD'
 except Exception as error:

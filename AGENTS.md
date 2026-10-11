@@ -3725,3 +3725,5 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 ### 2026-10-10 Isolated trust/proof lanes
 
 Isolated commissioning candidate extends TenantRegistry and the existing writer; synthetic authority only, production unchanged. Rust moved to its own review branch. Persisted-state proof runner added; final committed-SHA checks pending. MERGE and production cutover HOLD.
+
+2026-10-10 | Candidate admission/recovery proof passed 42/42, including kills before receipt and after commit. Four existing suites passed; ingest retained five baseline failures. Proof package records database environment and counts; production owner root, all-writer convergence and provenance remain unproven.
