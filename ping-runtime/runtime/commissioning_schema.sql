@@ -60,3 +60,67 @@ CREATE TABLE IF NOT EXISTS tenant_admission_receipts (
 );
 -- Historical receipts have no proven decision time; never invent a backfill.
 ALTER TABLE tenant_admission_receipts ADD COLUMN IF NOT EXISTS authorization_decision_at TIMESTAMPTZ;
+-- Append-only enforcement (Oracle parity, 2026-10-11; Q143/Q144).
+-- Mirrors Oracle crx_runtime.public.ping_events exactly:
+--   trigger trg_ping_events_append_only            BEFORE DELETE OR UPDATE -> ping_events_no_mutation()
+--   trigger trg_ping_events_append_only_truncate   BEFORE TRUNCATE         -> ping_events_no_mutation()
+-- and extends the same standard to tenant_admission_receipts (Oracle has no
+-- receipts table; the candidate must not be weaker than Oracle here).
+-- Storage-layer guarantee: INSERT is allowed; UPDATE, DELETE and TRUNCATE are
+-- rejected by the database itself, independent of application code.
+-- Re-application is idempotent (CREATE OR REPLACE FUNCTION + DROP TRIGGER IF EXISTS).
+--
+-- Ordering note: the lane-L backfill in UnifiedEventRuntime.initialize()
+-- (UPDATE ping_events SET tenant_id='UNKNOWN' WHERE tenant_id IS NULL) runs
+-- BEFORE initializeCommissioning() applies this file, so in steady state the
+-- backfill matches zero rows and the row triggers never fire. Do NOT run
+-- initialize() against legacy NULL-tenant rows AFTER these triggers exist;
+-- the backfill would fail closed. Backfill first, then install triggers.
+CREATE OR REPLACE FUNCTION ping_events_no_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+  IF TG_OP = 'TRUNCATE' THEN
+    RAISE EXCEPTION '% is append-only: TRUNCATE not permitted', TG_TABLE_NAME;
+  END IF;
+  RAISE EXCEPTION
+    '% is append-only: % not permitted (event_id=%)',
+    TG_TABLE_NAME,
+    TG_OP,
+    COALESCE(OLD.event_id, NEW.event_id);
+  RETURN NULL;
+END;
+$function$;
+CREATE OR REPLACE FUNCTION tenant_admission_receipts_no_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+  IF TG_OP = 'TRUNCATE' THEN
+    RAISE EXCEPTION '% is append-only: TRUNCATE not permitted', TG_TABLE_NAME;
+  END IF;
+  RAISE EXCEPTION
+    '% is append-only: % not permitted (event_id=%)',
+    TG_TABLE_NAME,
+    TG_OP,
+    COALESCE(OLD.event_id, NEW.event_id);
+  RETURN NULL;
+END;
+$function$;
+DROP TRIGGER IF EXISTS trg_ping_events_append_only ON ping_events;
+CREATE TRIGGER trg_ping_events_append_only
+  BEFORE DELETE OR UPDATE ON ping_events
+  FOR EACH ROW EXECUTE FUNCTION ping_events_no_mutation();
+DROP TRIGGER IF EXISTS trg_ping_events_append_only_truncate ON ping_events;
+CREATE TRIGGER trg_ping_events_append_only_truncate
+  BEFORE TRUNCATE ON ping_events
+  FOR EACH STATEMENT EXECUTE FUNCTION ping_events_no_mutation();
+DROP TRIGGER IF EXISTS trg_tenant_admission_receipts_append_only ON tenant_admission_receipts;
+CREATE TRIGGER trg_tenant_admission_receipts_append_only
+  BEFORE DELETE OR UPDATE ON tenant_admission_receipts
+  FOR EACH ROW EXECUTE FUNCTION tenant_admission_receipts_no_mutation();
+DROP TRIGGER IF EXISTS trg_tenant_admission_receipts_append_only_truncate ON tenant_admission_receipts;
+CREATE TRIGGER trg_tenant_admission_receipts_append_only_truncate
+  BEFORE TRUNCATE ON tenant_admission_receipts
+  FOR EACH STATEMENT EXECUTE FUNCTION tenant_admission_receipts_no_mutation();
