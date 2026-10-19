@@ -87,6 +87,8 @@ try:
          '--outDir', 'gateway/constitutional-dist', '--typeRoots',
          str(args.tools_root / 'node-typescript/node_modules/@types')])
     run(['cargo', 'test', '--locked', '--offline', '--manifest-path', 'proof-kernel/Cargo.toml'])
+    for manifest in ['proof-kernel/Cargo.toml', 'proof-kernel/native/Cargo.toml']:
+        run(['cargo', 'clippy', '--locked', '--offline', '--all-targets', '--manifest-path', manifest, '--', '-D', 'warnings'])
     run(['cargo', 'build', '--locked', '--offline', '--manifest-path', 'proof-kernel/Cargo.toml'])
     run(['cargo', 'build', '--locked', '--offline', '--release', '--manifest-path',
          'proof-kernel/native/Cargo.toml'])

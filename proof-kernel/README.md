@@ -80,3 +80,23 @@ Direct pure-crate pins: sha2 0.10.9 (MIT/Apache-2.0), ed25519-dalek 2.2.0
 napi 3.3.0 and napi-derive 3.2.5 (MIT). Cargo lockfiles retain package checksums.
 No private key storage, networking, database client, scheduler, or authority
 framework is introduced.
+
+## Component and boundary measurements
+
+`node --expose-gc proof-kernel/native/stage-benchmark.js` runs each stage in a
+fresh child process against identical public requests. It records full-wire
+Node/native latency distributions, CPU and memory, alongside separate JSON,
+base64, digest and cached-public-key verification components. Component results
+are not end-to-end comparisons. No private key is persisted or emitted.
+
+`cargo run --locked --offline --release --manifest-path proof-kernel/Cargo.toml
+--example digest_cost` measures the exported digest formatter independently.
+Replacing per-byte allocated strings with GenericArray's existing LowerHex
+formatter preserves the digest and avoids 32 temporary strings. Alternating
+local component runs reduced empty-input digest formatting from roughly 1.1us
+to 0.09us and 1KiB from roughly 1.7us to 0.63us. At 64KiB, hashing dominates and
+the samples did not show a consistent material improvement. These are component
+measurements, not claims of equivalent application speedups.
+
+No key-entitlement cache, new binary protocol, worker pool or production native
+caller was added. Further boundary/dispatch work requires actual workload evidence.

@@ -20,7 +20,9 @@ pub enum Outcome {
 }
 
 pub fn sha256_hex(exact_bytes: &[u8]) -> String {
-    Sha256::digest(exact_bytes).iter().map(|b| format!("{b:02x}")).collect()
+    // GenericArray's existing LowerHex formatter writes into one output String,
+    // avoiding a temporary allocated String for each of the 32 digest bytes.
+    format!("{:x}", Sha256::digest(exact_bytes))
 }
 
 fn valid_digest(s: &str) -> bool {
