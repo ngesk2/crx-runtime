@@ -1,6 +1,7 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
 use crate::{EvidenceRef, ImmutableRef, Outcome};
 use serde::Deserialize;
+pub const MAX_WIRE_BYTES: usize = 1024 * 1024;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -13,6 +14,7 @@ enum Request {
     Evidence { claim_refs:Vec<EvidenceRef>, immutable_refs:Vec<WireRef> },
 }
 pub fn verify_request(line: &str) -> Outcome {
+    if line.len() > MAX_WIRE_BYTES { return Outcome::MalformedInput; }
     let Ok(request)=serde_json::from_str::<Request>(line) else { return Outcome::MalformedInput };
     evaluate(request)
 }
@@ -47,7 +49,7 @@ enum RequestV2 {
     Evidence { version:String, claim_refs:Vec<EvidenceRef>, immutable_refs:Vec<WireRef> },
 }
 pub fn verify_request_v2(line: &str) -> Outcome {
-    if line.len() > 1024*1024 { return Outcome::MalformedInput; }
+    if line.len() > MAX_WIRE_BYTES { return Outcome::MalformedInput; }
     let Ok(request)=serde_json::from_str::<RequestV2>(line) else { return Outcome::MalformedInput };
     let (version, legacy)=match request {
         RequestV2::Signature{version,bytes_base64,public_key_base64,signature_base64} =>

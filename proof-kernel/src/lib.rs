@@ -1,6 +1,7 @@
 //! Pure verification of supplied exact bytes. Never canonicalizes, issues IDs,
 //! establishes ownership, stores keys, resolves URLs, or writes canonical state.
 pub mod wire;
+pub mod input;
 
 use ed25519_dalek::{Signature, VerifyingKey, Verifier};
 use serde::{Deserialize, Serialize};

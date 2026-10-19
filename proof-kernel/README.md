@@ -26,6 +26,19 @@ Whitespace and field order in the envelope do not change the opaque signed bytes
 The v2 input limit is one MiB. The original proof interface remains available
 only for compatibility tests.
 
+Both native exports now borrow the JS string handle and query its UTF-16 and
+UTF-8 lengths before allocating a Rust conversion buffer. The v2 conversion still
+rejects unpaired surrogates; no replacement character is introduced. Both CLI
+envelopes have the same one-MiB resource cap. Signed base64 bytes and historical
+mathematical outcomes remain unchanged within that cap.
+
+The CLI frames input with bounded fill_buf/consume reads, excluding LF or CRLF
+delimiters from the limit. It accepts a final bounded frame at EOF. On overflow,
+it immediately emits malformed_input and terminates the stream even if stdin is
+still open: an oversized unterminated tail cannot be reinterpreted as another
+request. At most one additional CR byte is retained while distinguishing a CRLF
+delimiter. Empty stdin produces no output; an empty frame is malformed.
+
 The supplied evidence-reference bytes are not automatically trustworthy evidence:
 their acquisition, immutability, rights, and authoritative resolution must be
 established outside this crate. Likewise, preserving a historical weak-key math

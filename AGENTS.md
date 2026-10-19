@@ -3727,3 +3727,5 @@ ew ConnectorRegistry/CapabilityRegistry/OAuthFlowManager/IntegrationManager = si
 Optional exact-byte Rust verifier and native test adapter isolated from admission. Frozen Node/Rust vectors preserved; strict native UTF-16 rejection fixes a demonstrated mismatch. Reproducible offline proof runner added. No production callers; MERGE and production cutover HOLD.
 
 2026-10-10 | Rust proof passed on WSL x86-64: two unit tests, 52 historical vectors, 433 versioned/curve vectors and four raw UTF-16 native cases; zero observed parity differences. Windows/Oracle and production authorization remain HOLD. Final proof package records its local source SHA.
+
+2026-10-19 | P0 Rust resource safety: reproduced unterminated input waiting beyond the byte cap. Bounded framing now rejects overflow before EOF, and native exports inspect borrowed JS lengths before bounded conversion. Four Rust unit tests, three resource boundary tests, 52 historical vectors, 433 versioned/curve vectors and four raw UTF-16 cases passed. No authority or production caller added; Windows/Oracle remain unproven. | Next: fresh commit/tree-bound full proof and measured optimizations only.
