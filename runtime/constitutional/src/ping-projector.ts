@@ -41,6 +41,11 @@ export interface ProjectorDb {
   query<T = any>(text: string, params?: any[]): Promise<{ rows: T[]; rowCount: number | null }>;
 }
 
+/** Optional pool seam; the driver remains outside this package. */
+export interface ProjectorPool extends ProjectorDb {
+  connect(): Promise<ProjectorDb & { release(destroy?: boolean): void }>;
+}
+
 export interface PingProjectorConfig {
   db: ProjectorDb;
 }
@@ -117,33 +122,62 @@ export class PingProjector {
    * append-only row guard stays intact. ping_events itself is never touched.
    */
   async rebuildAll(): Promise<RebuildCounts> {
-    const db = this.config.db;
-    await db.query('BEGIN');
-    try {
-      await this.assertNoNullSequences(db);
-      const conflicts = await this.detectConflicts();
-      if (conflicts.length > 0) {
-        throw new Error(
-          'PingProjector: FAIL CLOSED: same-ID/different-semantics collision in ping_events for ' +
-            conflicts.map((c) => c.object_id).join(', ') +
-            '; refusing to project an ambiguous journal. Reject the colliding event at ingestion governance.'
-        );
+    const configured = this.config.db;
+    let leased: (ProjectorDb & { release(destroy?: boolean): void }) | undefined;
+    // A pg.Pool must never distribute BEGIN/SELECT/TRUNCATE/COMMIT across
+    // connections. Leased clients and minimal injected sessions already own one.
+    if (typeof (configured as ProjectorPool).connect === 'function' &&
+        typeof (configured as any).release !== 'function') {
+      leased = await (configured as ProjectorPool).connect();
+      if (!leased || typeof leased.query !== 'function' || typeof leased.release !== 'function') {
+        if (typeof leased?.release === 'function') leased.release(true);
+        throw new Error('PingProjector: a pool must return a releasable transaction connection');
       }
-
-      await db.query('TRUNCATE TABLE ping_objects');
-      await db.query('TRUNCATE TABLE ping_relationships');
-      await db.query('TRUNCATE TABLE ping_transitions');
-
-      const objects = await this.rebuildObjects(db);
-      const relationships = await this.rebuildRelationships(db);
-      const transitions = await this.rebuildTransitions(db);
-
-      await db.query('COMMIT');
-      return { objects, relationships, transitions };
-    } catch (error) {
-      await db.query('ROLLBACK');
-      throw error;
     }
+    const db = leased ?? configured;
+    let broken = false;
+    try {
+      // Only this safe, entirely database-local rebuild is retried. No external
+      // handler/provider runs here, and every attempt owns a new full snapshot.
+      for (let attempt = 0; ; attempt++) {
+        try { return await this.rebuildSnapshot(db); }
+        catch (error) {
+          try { await db.query('ROLLBACK'); }
+          catch (_) { broken = true; throw error; }
+          const code = (error as { code?: string }).code;
+          if (attempt >= 2 || !['40001', '40P01'].includes(code ?? '')) throw error;
+        }
+      }
+    } finally { leased?.release(broken); }
+  }
+
+  private async rebuildSnapshot(db: ProjectorDb): Promise<RebuildCounts> {
+    await db.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+    // LOCK is a utility command: acquire projection ownership before the first
+    // journal SELECT establishes the MVCC snapshot. Concurrent rebuilds therefore
+    // cannot publish an older snapshot after a newer rebuild. Admissions continue
+    // appending to the journal; these are projection locks, not journal locks.
+    await db.query('LOCK TABLE ping_objects, ping_relationships, ping_transitions IN ACCESS EXCLUSIVE MODE');
+    await this.assertNoNullSequences(db);
+    const conflicts = await this.detectConflicts(db);
+    if (conflicts.length > 0) {
+      throw new Error(
+        'PingProjector: FAIL CLOSED: same-ID/different-semantics collision in ping_events for ' +
+          conflicts.map((c) => c.object_id).join(', ') +
+          '; refusing to project an ambiguous journal. Reject the colliding event at ingestion governance.'
+      );
+    }
+
+    await db.query('TRUNCATE TABLE ping_objects');
+    await db.query('TRUNCATE TABLE ping_relationships');
+    await db.query('TRUNCATE TABLE ping_transitions');
+
+    const objects = await this.rebuildObjects(db);
+    const relationships = await this.rebuildRelationships(db);
+    const transitions = await this.rebuildTransitions(db);
+
+    await db.query('COMMIT');
+    return { objects, relationships, transitions };
   }
 
   /**
@@ -357,8 +391,8 @@ export class PingProjector {
    * payload_hash. Collisions must be rejected at ingestion governance; this
    * is the projection-side detector for the fail-before collision proof.
    */
-  async detectConflicts(): Promise<Array<{ object_id: string; distinct_hashes: number; event_ids: string[] }>> {
-    const result = await this.config.db.query(`
+  async detectConflicts(db: ProjectorDb = this.config.db): Promise<Array<{ object_id: string; distinct_hashes: number; event_ids: string[] }>> {
+    const result = await db.query(`
       SELECT payload->>'object_id' AS object_id,
              COUNT(DISTINCT payload->>'payload_hash') AS distinct_hashes,
              array_agg(event_id ORDER BY sequence ASC NULLS LAST) AS event_ids
