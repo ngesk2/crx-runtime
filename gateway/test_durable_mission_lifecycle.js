@@ -216,8 +216,16 @@ class MockPool {
     // lease reaper — reclaim expired assigned/running → created
     if (S.includes('lease_until')) {
       const now = this._now();
+      const expired = this._tables.ping_missions.filter(m => m.lease_until &&
+        new Date(m.lease_until).getTime() < now && ['assigned', 'running'].includes(m.status));
+      // Candidate discovery is a read; it must not reclaim rows before the
+      // subsequent transactional, conditional UPDATE and evidence append.
+      if (S.startsWith('SELECT mission_id')) {
+        return { rows: expired.map(m => ({ mission_id: m.mission_id })), rowCount: expired.length };
+      }
       let n = 0;
       for (const m of this._tables.ping_missions) {
+        if (params[0] && m.mission_id !== params[0]) continue;
         if (m.lease_until && new Date(m.lease_until).getTime() < now && ['assigned', 'running'].includes(m.status)) {
           m.status = 'created';
           m.assigned_to = null;
@@ -259,6 +267,21 @@ function fakeEventRuntime(pool) {
     async dispatchMissionCreated(result) {
       emitted.push({ event_type: result.event.event_type, payload: result.event.payload });
       for (const handler of handlers.get('MISSION_CREATED') || []) await handler(result.event);
+    },
+    // Fixture for the already-required transactional transition seam. Runtime
+    // behavior and every lifecycle assertion below remain unchanged; real SQL
+    // rollback/append failures are covered by p2_mission_transition_atomicity.
+    async appendMissionTransitionInTransaction(client, eventType, payload, options = {}) {
+      const eventId = `evt-${emitted.length + 1}`;
+      const inserted = await client.query(`INSERT INTO ping_events
+        (event_id,event_type,source,tenant_id,payload) VALUES($1,$2,$3,$4,$5) ON CONFLICT(event_id) DO NOTHING`,
+      [eventId, eventType, 'mission-runtime', options.tenant_id, JSON.stringify(payload)]);
+      return { status: 'ok', eventId, inserted: inserted.rowCount === 1,
+        event: { event_id: eventId, event_type: eventType, source: 'mission-runtime', tenant_id: options.tenant_id, payload } };
+    },
+    async dispatchMissionTransition(result) {
+      emitted.push({ event_type: result.event.event_type, payload: result.event.payload });
+      for (const handler of handlers.get(result.event.event_type) || []) await handler(result.event);
     },
   };
 }

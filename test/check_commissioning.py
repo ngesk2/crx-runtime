@@ -31,11 +31,14 @@ def output(command):
     return subprocess.check_output(command, cwd=root, env=env, text=True).strip()
 
 report = {'source_sha': output(['git', 'rev-parse', 'HEAD']),
+          'tree_sha': output(['git', 'rev-parse', 'HEAD^{tree}']),
           'branch': output(['git', 'branch', '--show-current']),
           'platform': platform.platform(), 'node': output(['node', '--version']),
           'scope': 'Synthetic owner authority, disposable persisted-state tests and legacy before-effect requirements only',
           'merge': 'HOLD', 'production_cutover': 'HOLD', 'commands': [], 'sources': {}}
 report['tracked_changes_before'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
+report['dependencies'] = json.loads(output(['node', '-e',
+    "console.log(JSON.stringify({pg:require('pg/package.json').version,express:require('express/package.json').version,openssl:process.versions.openssl}))"]))
 paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-runtime/runtime/tenant_registry.js',
          *sorted((root / 'ping-runtime/runtime').glob('commissioning_*')),
          root / 'ping-runtime/runtime/strict_wire_json.js',
@@ -54,6 +57,11 @@ paths = [root / 'ping-runtime/events/unified_event_runtime.js', root / 'ping-run
          root / 'runtime/constitutional/src/ping-projector.ts',
          root / 'gateway/route_middleware.js', root / 'gateway/bootstrap/gateway_runtime.js',
          root / 'gateway/routes/events.js', root / 'gateway/routes/canonical_events.js', root / 'gateway/routes/ingest.js', Path(__file__)]
+additional_suites = ['commissioning_signature_regression', 'p2_admitted_entrances', 'p2_http_tenant_gate',
+                     'p2_mission_transition_atomicity', 'p3_write_authority_denials', 'append_only_constraints',
+                     'projector_snapshot']
+paths.extend(root / 'test' / (name + '.test.js') for name in additional_suites)
+paths.extend(root / 'test' / name for name in ['OBJECT_CREATION_CONTRACT.md', 'REPLAY_SNAPSHOT_CONTRACT.md'])
 for p in paths:
     report['sources'][str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -64,7 +72,8 @@ def run(command, label):
     log = evidence / (label + '.log')
     log.write_text(content)
     item = {'command': command, 'exit_code': result.returncode,
-            'seconds': time.monotonic() - start, 'log': str(log.relative_to(root))}
+            'seconds': time.monotonic() - start, 'log': str(log.relative_to(root)),
+            'output_sha256': hashlib.sha256(log.read_bytes()).hexdigest()}
     for field in ['tests', 'pass', 'fail']:
         match = re.search(r'^# ' + field + r' (\d+)$', content, re.M)
         if match: item[field] = int(match.group(1))
@@ -109,7 +118,7 @@ try:
         report['legacy_write_authority_evidence'] = str(legacy_evidence.relative_to(root))
         report['legacy_write_authority_evidence_sha256'] = hashlib.sha256(legacy_evidence.read_bytes()).hexdigest()
     report['command_result'] = 'PASS'
-    for name in ['admitted_commands', 'mission_atomicity']:
+    for name in ['admitted_commands', 'mission_atomicity', *additional_suites]:
         code, text = run(['node', '--test', 'test/' + name + '.test.js'], 'proof-' + name)
         if code: report['command_result'] = 'FAIL'
     report['regression_result'] = 'PASS'
@@ -131,9 +140,13 @@ except Exception as error:
     report['error'] = str(error)
     report['exit_code'] = 1
 finally:
+    report['build_artifacts'] = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted((root / 'gateway/constitutional-dist').glob('*.js'))}
     report['tracked_changes'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
     if not report['tracked_changes_before'] and report['tracked_changes']:
         report.update(result='FAIL', error='Tracked sources changed during the gate', exit_code=1)
+    if output(['git', 'rev-parse', 'HEAD']) != report['source_sha']:
+        report.update(result='FAIL', error='HEAD changed during the gate', exit_code=1)
     (evidence / 'commissioning-proof.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({'source_sha': report['source_sha'], 'result': report['result'],
                   'exit_code': report['exit_code'], 'proof': str(evidence / 'commissioning-proof.json')}))
