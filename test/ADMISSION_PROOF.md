@@ -264,7 +264,8 @@ The suite records p50/p95/p99, throughput, waiter samples and deadlocks for 64 r
 scoped admissions, eight concurrent callers/resources, one shared owner and 10ms
 of injected database work. It exercises both UPDATE and SHARE locks plus real
 revocation races. SHARE conflicts with ordinary revocation UPDATEs; KEY SHARE is
-not used. The default remains UPDATE. Results are environment-specific synthetic
+not used. The historical checkpoint used UPDATE; the current candidate uses
+SHARE after the resource uniqueness and mixed-concurrency gates below. Results are environment-specific synthetic
 measurements, not production capacity claims or authorization to change the lock.
 
 Review the recorded results before promotion. Neither the Rust lane nor these

@@ -25,7 +25,10 @@ class TenantRegistry {
     this._commissioningTransactionMs = options.commissioningTransactionMs ?? 5000;
     this._commissioningMaxPending = options.commissioningMaxPending ?? 64;
     this._commissioningPending = 0;
-    this._commissioningAdmissionLock = options.commissioningAdmissionLock ?? 'update';
+    // Shared admission locks preserve revocation UPDATE conflicts while allowing
+    // independent resources to proceed. Logical/resource locks and SQL UNIQUE
+    // constraints separately serialize idempotency and object establishment.
+    this._commissioningAdmissionLock = options.commissioningAdmissionLock ?? 'share';
     if (!['update','share'].includes(this._commissioningAdmissionLock)) throw new Error('invalid_commissioning_lock_mode');
     if (!Number.isSafeInteger(this._commissioningTransactionMs) || this._commissioningTransactionMs < 25 || this._commissioningTransactionMs > 60000) {
       throw new Error('invalid_commissioning_transaction_budget');

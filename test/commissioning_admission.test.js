@@ -623,13 +623,14 @@ test('records actual pool, SQL, lock, transaction and dispatch costs for fresh a
    }
   }};
  }};
- const reg=new TenantRegistry(timedPool,{commissioningPool:timedPool,commissioningTrust:trust}),rt=new UnifiedEventRuntime({pool:timedPool});
+ const reg=new TenantRegistry(timedPool,{commissioningPool:timedPool,commissioningTrust:trust,
+  ...(process.env.PROOF_ADMISSION_LOCK_MODE?{commissioningAdmissionLock:process.env.PROOF_ADMISSION_LOCK_MODE}:{})}),rt=new UnifiedEventRuntime({pool:timedPool});
  const original=rt._dispatchCommitted.bind(rt);rt._dispatchCommitted=async event=>{const t=performance.now();try{return await original(event);}finally{dispatch.push(performance.now()-t);}};
  const f=await setup(),fixtures=[];for(let i=0;i<16;i++)fixtures.push(await resourceGrant(f,{resource_id:'metrics-'+f.grant.tenant_id+'-'+i}));
  const latency=[];let next=0;
  await Promise.all(Array.from({length:4},async()=>{while(next<fixtures.length){const current=fixtures[next++],t=performance.now();await rt.admitCommissionedEvent(reg,agent,submission(current,{logical_operation_id:'metrics-'+current.grant.resource_id}));latency.push(performance.now()-t);}}));
  const summary=values=>{const s=[...values].sort((a,b)=>a-b);return {samples:s.length,p50_ms:s[Math.ceil(s.length*.5)-1]??null,p95_ms:s[Math.ceil(s.length*.95)-1]??null,p99_ms:s[Math.ceil(s.length*.99)-1]??null};};
- const report={scope:'Synthetic sixteen fresh objects, one owner, four concurrent callers; no production capacity claim',operations:16,
+ const report={scope:'Synthetic sixteen fresh objects, one owner, four concurrent callers; no production capacity claim',operations:16,lock_mode:reg._commissioningAdmissionLock,admission_samples_ms:latency,
   pool_wait:summary(samples),transaction:summary(transactions),admission:summary(latency),dispatch:summary(dispatch),query_count:queries.length,
   query_stages:Object.fromEntries([...new Set(queries.map(q=>q.kind))].map(kind=>[kind,summary(queries.filter(q=>q.kind===kind).map(q=>q.ms))]))};
  fs.writeFileSync(path.join(root,'artifacts/admission-transaction-metrics.json'),JSON.stringify(report,null,2)+'\n');

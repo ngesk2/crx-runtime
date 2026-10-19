@@ -61,7 +61,7 @@ additional_suites = ['commissioning_signature_regression', 'p2_admitted_entrance
                      'p2_mission_transition_atomicity', 'p3_write_authority_denials', 'append_only_constraints',
                      'projector_snapshot']
 paths.extend(root / 'test' / (name + '.test.js') for name in additional_suites)
-paths.extend(root / 'test' / name for name in ['OBJECT_CREATION_CONTRACT.md', 'REPLAY_SNAPSHOT_CONTRACT.md'])
+paths.extend(root / 'test' / name for name in ['OBJECT_CREATION_CONTRACT.md', 'REPLAY_SNAPSHOT_CONTRACT.md', 'ADMISSION_PERFORMANCE_CONTRACT.md'])
 for p in paths:
     report['sources'][str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -140,6 +140,9 @@ except Exception as error:
     report['error'] = str(error)
     report['exit_code'] = 1
 finally:
+    report['generated_evidence'] = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in [evidence / 'owner-lock-benchmark.json', evidence / 'admission-transaction-metrics.json',
+                  evidence / 'p3-denial-evidence.json', evidence / 'legacy-write-authority.json'] if p.exists()}
     report['build_artifacts'] = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
         for p in sorted((root / 'gateway/constitutional-dist').glob('*.js'))}
     report['tracked_changes'] = output(['git', '-c', 'core.filemode=false', 'status', '--porcelain', '--untracked-files=no'])
