@@ -8,8 +8,26 @@ const C = require('./commissioning_contract');
 
 async function transaction(registry, action) {
   C.requireThat(registry._commissioningPool, 'commissioning_unconfigured');
-  const client = await registry._commissioningPool.connect();
   const started = performance.now();
+  C.requireThat(registry._commissioningPending < registry._commissioningMaxPending, 'commissioning_overloaded');
+  registry._commissioningPending++;
+  let acquisitionExpired = false, acquisitionTimer;
+  // pg.Pool has no per-call cancellation API. Bound caller latency and the
+  // number of outstanding acquisitions, retain timed-out slots until they
+  // settle, and release a late client without issuing BEGIN or any mutation.
+  const connecting = Promise.resolve().then(()=>registry._commissioningPool.connect()).then(client=>{
+    if (!acquisitionExpired) return client;
+    try { client.release(); } catch (_) { console.error('[Commissioning] Late client release failed'); }
+  }).finally(()=>{registry._commissioningPending--;});
+  let client;
+  try {
+    client = await Promise.race([connecting,new Promise((_,reject)=>{
+      acquisitionTimer=setTimeout(()=>{
+        acquisitionExpired=true;
+        const error=new Error('commissioning_transaction_timeout');error.code='commissioning_transaction_timeout';reject(error);
+      },registry._commissioningTransactionMs);
+    })]);
+  } finally { clearTimeout(acquisitionTimer); }
   let broken = false, committing = false;
   const onClientError = () => { broken = true; };
   client.on('error', onClientError);
@@ -23,6 +41,7 @@ async function transaction(registry, action) {
     return client.query(...args);
   }};
   try {
+    C.requireThat(performance.now()-started < registry._commissioningTransactionMs,'commissioning_transaction_timeout');
     await client.query('BEGIN');
     const value = await action(bounded);
     committing = true;

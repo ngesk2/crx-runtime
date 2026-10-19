@@ -20,7 +20,7 @@ function admissionError(res, error) {
   const code = error.code || (error.message === 'malformed_input' ? error.message : null);
   if (!code || /^\d+$/.test(code)) return res.status(503).json({ status: 'UNKNOWN', error: 'admission_unavailable' });
   if (/outcome_unknown|evidence_unproven/.test(code)) return res.status(503).json({status:'UNKNOWN',error:code});
-  const status = /unconfigured|pool_mismatch/.test(code) ? 503 : code === 'unauthenticated_actor' ? 401
+  const status = /unconfigured|pool_mismatch|commissioning_overloaded|commissioning_transaction_timeout/.test(code) ? 503 : code === 'unauthenticated_actor' ? 401
     : /^(invalid_|malformed_input|unsupported_protocol_version)/.test(code) ? 400 : 403;
   return res.status(status).json({ status: 'error', error: code });
 }

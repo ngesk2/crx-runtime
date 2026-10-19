@@ -23,10 +23,15 @@ class TenantRegistry {
     this._commissioningPool = options.commissioningPool || null;
     this._commissioningTrust = options.commissioningTrust || null;
     this._commissioningTransactionMs = options.commissioningTransactionMs ?? 5000;
+    this._commissioningMaxPending = options.commissioningMaxPending ?? 64;
+    this._commissioningPending = 0;
     this._commissioningAdmissionLock = options.commissioningAdmissionLock ?? 'update';
     if (!['update','share'].includes(this._commissioningAdmissionLock)) throw new Error('invalid_commissioning_lock_mode');
     if (!Number.isSafeInteger(this._commissioningTransactionMs) || this._commissioningTransactionMs < 25 || this._commissioningTransactionMs > 60000) {
       throw new Error('invalid_commissioning_transaction_budget');
+    }
+    if (!Number.isSafeInteger(this._commissioningMaxPending) || this._commissioningMaxPending < 1 || this._commissioningMaxPending > 10000) {
+      throw new Error('invalid_commissioning_pending_limit');
     }
     this._dependencies = ['storage'];
     this._authorityVersion = '1.0.0';

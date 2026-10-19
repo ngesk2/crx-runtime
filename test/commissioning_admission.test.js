@@ -593,6 +593,49 @@ test('bounded database work times out and rolls back both admission rows',async(
  try{await denied(()=>runtime.admitCommissionedEvent(limited,agent,submission(f)));}finally{runtime.emit=original;}
 });
 
+test('the admission deadline includes pool wait and late acquisition cannot mutate or leak a client',async()=>{
+ const f=await setup(),small=new Pool({...config,max:1,connectionTimeoutMillis:2000}),holder=await small.connect();
+ const limited=new TenantRegistry(small,{commissioningPool:small,commissioningTrust:trust,commissioningTransactionMs:75,commissioningMaxPending:1});
+ const rt=new UnifiedEventRuntime({pool:small});let released=false;const before=await counts();
+ const release=()=>{if(!released){released=true;holder.release();}};
+ const timer=setTimeout(release,300);
+ try{
+  await assert.rejects(()=>rt.admitCommissionedEvent(limited,agent,submission(f)),/commissioning_transaction_timeout/);
+  assert.equal(released,false,'deadline must expire before the held connection becomes available');
+  await assert.rejects(()=>rt.admitCommissionedEvent(limited,agent,submission(f,{logical_operation_id:'queue-overflow'})),/commissioning_overloaded/);
+  release();
+  for(let i=0;i<100&&small.waitingCount;i++)await new Promise(r=>setTimeout(r,5));
+  const probe=await small.connect();try{assert.equal((await probe.query('SELECT 1 AS ok')).rows[0].ok,1);}finally{probe.release();}
+  assert.deepEqual(await counts(),before,'expired queued work never starts a mutation');
+ }finally{clearTimeout(timer);release();await small.end();}
+});
+
+test('records actual pool, SQL, lock, transaction and dispatch costs for fresh admissions',async()=>{
+ const {performance}=require('node:perf_hooks'),samples=[],queries=[],transactions=[],dispatch=[];
+ const timedPool={query:pool.query.bind(pool),connect:async()=>{
+  const waiting=performance.now(),client=await pool.connect();samples.push(performance.now()-waiting);let begun;
+  return {on:client.on.bind(client),removeListener:client.removeListener.bind(client),release:client.release.bind(client),query:async(...args)=>{
+   const text=String(args[0]),start=performance.now();if(text==='BEGIN')begun=start;
+   try{return await client.query(...args);}finally{
+    const kind=text.startsWith('SELECT set_config(')?'timeout_setup':text.includes('tenant_owner_bindings')&&text.includes('FOR ')?'owner_lock':
+     text.includes('tenant_commissioning_grants')&&text.includes('FOR ')?'grant_lock':text.includes('pg_advisory_xact_lock')?'logical_or_resource_lock':text==='ROLLBACK'?'rollback':'other';
+    queries.push({kind,ms:performance.now()-start});if(text==='COMMIT'&&begun)transactions.push(performance.now()-begun);
+   }
+  }};
+ }};
+ const reg=new TenantRegistry(timedPool,{commissioningPool:timedPool,commissioningTrust:trust}),rt=new UnifiedEventRuntime({pool:timedPool});
+ const original=rt._dispatchCommitted.bind(rt);rt._dispatchCommitted=async event=>{const t=performance.now();try{return await original(event);}finally{dispatch.push(performance.now()-t);}};
+ const f=await setup(),fixtures=[];for(let i=0;i<16;i++)fixtures.push(await resourceGrant(f,{resource_id:'metrics-'+f.grant.tenant_id+'-'+i}));
+ const latency=[];let next=0;
+ await Promise.all(Array.from({length:4},async()=>{while(next<fixtures.length){const current=fixtures[next++],t=performance.now();await rt.admitCommissionedEvent(reg,agent,submission(current,{logical_operation_id:'metrics-'+current.grant.resource_id}));latency.push(performance.now()-t);}}));
+ const summary=values=>{const s=[...values].sort((a,b)=>a-b);return {samples:s.length,p50_ms:s[Math.ceil(s.length*.5)-1]??null,p95_ms:s[Math.ceil(s.length*.95)-1]??null,p99_ms:s[Math.ceil(s.length*.99)-1]??null};};
+ const report={scope:'Synthetic sixteen fresh objects, one owner, four concurrent callers; no production capacity claim',operations:16,
+  pool_wait:summary(samples),transaction:summary(transactions),admission:summary(latency),dispatch:summary(dispatch),query_count:queries.length,
+  query_stages:Object.fromEntries([...new Set(queries.map(q=>q.kind))].map(kind=>[kind,summary(queries.filter(q=>q.kind===kind).map(q=>q.ms))]))};
+ fs.writeFileSync(path.join(root,'artifacts/admission-transaction-metrics.json'),JSON.stringify(report,null,2)+'\n');
+ assert.equal(transactions.length,16);assert.equal(dispatch.length,16);
+});
+
 test('receipt recovery after expiry returns the original outcome without admitting a new action',async()=>{
  const f=await setup(),s=submission(f),accepted=await runtime.admitCommissionedEvent(registry,agent,s);
  await pool.query("UPDATE tenant_commissioning_grants SET valid_from=clock_timestamp()-interval '2 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE grant_id=$1",[f.grant.grant_id]);
