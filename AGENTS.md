@@ -3729,3 +3729,5 @@ Optional exact-byte Rust verifier and native test adapter isolated from admissio
 2026-10-10 | Rust proof passed on WSL x86-64: two unit tests, 52 historical vectors, 433 versioned/curve vectors and four raw UTF-16 native cases; zero observed parity differences. Windows/Oracle and production authorization remain HOLD. Final proof package records its local source SHA.
 
 2026-10-19 | P0 Rust resource safety: reproduced unterminated input waiting beyond the byte cap. Bounded framing now rejects overflow before EOF, and native exports inspect borrowed JS lengths before bounded conversion. Four Rust unit tests, three resource boundary tests, 52 historical vectors, 433 versioned/curve vectors and four raw UTF-16 cases passed. No authority or production caller added; Windows/Oracle remain unproven. | Next: fresh commit/tree-bound full proof and measured optimizations only.
+
+2026-10-19 | Proof runner now refuses dirty tracked sources, records exact tree/compiler/reference-source/output/binary hashes and executes resource-boundary tests in addition to frozen differential vectors. Full committed proof pending; no production caller or entitlement claim.
