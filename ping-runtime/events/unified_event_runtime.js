@@ -342,6 +342,9 @@ class UnifiedEventRuntime {
         }
       } catch (err) {
         this._stats.failed++;
+        if(err.code==='23505' && err.constraint==='uq_ping_events_object_created') {
+          return {status:'error',error:'object_creation_conflict',eventId};
+        }
         return { status: 'error', error: `Persist failed: ${err.message}`, eventId };
       }
     }
@@ -368,8 +371,8 @@ class UnifiedEventRuntime {
         [COMMISSIONING_TRANSACTION]: {client},
       }));
     // No derived state, handler, or integration can run before the receipt commits.
-    if (!result.duplicate) {
-      if (result.inserted) this._stats.persisted++;
+    if (!result.duplicate && result.inserted) {
+      this._stats.persisted++;
       await this._dispatchCommitted(result.event);
     } else this._stats.deduplicated++;
     return result;

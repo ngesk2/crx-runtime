@@ -95,7 +95,32 @@ async function executeLockedGrant(registry,actorId,submission,writeEvent) {
       C.requireThat(prior.rows[0].operation_digest===operationDigest, 'idempotency_conflict');
       return {receipt:prior.rows[0].receipt,duplicate:true,commandResult:prior.rows[0].receipt.command_result};
     }
-    const result = await writeEvent(client, {intent,payload,metadata,operationDigest});
+    let result;
+    if(intent.operation==='OBJECT_CREATED') {
+      // ping_objects has a global object_id key. Tenant-local locking alone
+      // would let two tenants poison that same projection identity. Reuse the
+      // existing transactional advisory-lock pattern, backed by the journal's
+      // partial UNIQUE index (which also protects uncovered direct writers).
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1),hashtext($2))',
+        ['ping-object-create',intent.resource_id]);
+      const existing=await client.query(`SELECT e.*,r.receipt AS creation_receipt
+        FROM ping_events e LEFT JOIN tenant_admission_receipts r
+          ON r.event_id=e.event_id AND r.operation_digest=e.metadata->'commissioning'->>'operation_digest'
+        WHERE e.event_type='OBJECT_CREATED' AND e.payload->>'object_id'=$1`,[intent.resource_id]);
+      if(existing.rows.length) {
+        const original=existing.rows[0],receipt=original.creation_receipt;
+        // A new logical request can observe the identical original creation,
+        // but cannot reinterpret its tenant, controller, grant or provenance.
+        // A renewed/different grant must update, never re-create the object.
+        C.requireThat(existing.rows.length===1 && receipt &&
+          C.INTENT.filter(k=>k!=='logical_operation_id').every(k=>receipt[k]===intent[k]) &&
+          original.tenant_id===intent.tenant_id && C.payloadDigest(original.payload,metadata)===intent.payload_digest,
+          'object_creation_conflict');
+        result={status:'ok',eventId:original.event_id,event:original,inserted:false};
+      }
+    }
+    if(!result)result=await writeEvent(client, {intent,payload,metadata,operationDigest});
+    C.requireThat(result.error!=='object_creation_conflict','object_creation_conflict');
     C.requireThat(result.status==='ok', 'event_persistence_failed');
     if(C.COMMAND_OPERATIONS.has(intent.operation)) {
       const key=intent.operation==='CUSTOMER_UPSERT'?'customer_id':'mission_id';

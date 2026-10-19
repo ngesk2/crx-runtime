@@ -78,6 +78,18 @@ function updateSubmission(f,changes={name:'Corrected supported name'}){
  s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
  return resign(s);
 }
+async function resourceGrant(f,overrides={}){
+ const body={...f.grantBody,...overrides};
+ const scope=Object.fromEntries([...C.SCOPE,'delegated_actor','authorized_signer','operations','purpose','valid_from','expires_at'].map(k=>[k,body[k]]));
+ body.consent_evidence_digest=record({owner_binding_id:f.binding.binding_id,owner_actor_id:'synthetic-owner',scope_digest:C.digest(C.bytes(scope))});
+ return {...f,grant:await registry.executeIssueCommissioningGrant(admin,signed('issue_grant',body))};
+}
+function changedCreation(f,operation,name){
+ const s=submission(f,{logical_operation_id:operation,purpose:f.grant.purpose});
+ s.payload.content.name=name;
+ s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);
+ return resign(s);
+}
 async function waitingOn(client){
  const pid=(await client.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
  for(let i=0;i<100;i++){
@@ -329,6 +341,81 @@ test('same logical operation with changed payload conflicts',async()=>{
  const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));
  const s=submission(f);s.payload.content.name='different';s.payload.payload_hash=require('../gateway/knowledge_ingest_adapter').computePayloadHash(s.payload);s.intent.payload_digest=C.payloadDigest(s.payload,s.metadata);s.signature=crypto.sign(null,C.bytes(s.intent),signerKeys.privateKey).toString('base64');
  const before=await counts();await assert.rejects(()=>runtime.admitCommissionedEvent(registry,agent,s),/idempotency_conflict/);assert.deepEqual(await counts(),before);
+});
+
+test('a second logical create cannot change an existing resource or poison its journal',async()=>{
+ const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const before=await counts();
+ await assert.rejects(()=>runtime.admitCommissionedEvent(registry,agent,changedCreation(f,'second-create','Conflicting semantics')),/object_creation_conflict/);
+ assert.deepEqual(await counts(),before);
+ await runtime.admitCommissionedEvent(registry,agent,updateSubmission(f));
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,changedCreation(f,'create-instead-of-update','Another conflicting value')));
+});
+
+test('identical creation under another logical operation reuses the original event without redispatch',async()=>{
+ const f=await setup(),first=await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const before=await counts(),second=await runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'same-create-new-request'}));
+ assert.equal(second.receipt.event_id,first.receipt.event_id);
+ assert.equal(second.duplicate,false,'a distinct signed logical operation has its own receipt');
+ assert.deepEqual(await counts(),{...before,receipts:before.receipts+1});
+ assert.deepEqual((await runtime.admitCommissionedEvent(registry,agent,submission(f,{logical_operation_id:'same-create-new-request'}))).receipt,second.receipt);
+});
+
+test('different grants, scope or tenants cannot recreate the same globally projected object id',async()=>{
+ const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const otherGrant=await resourceGrant(f,{purpose:'other-purpose'});
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(otherGrant,{purpose:'other-purpose'})));
+ const otherScope=await resourceGrant(f,{site_id:'different-site'});
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(otherScope)));
+ const tenant=await setup(),crossTenant=await resourceGrant(tenant,{resource_id:f.grant.resource_id});
+ await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(crossTenant)));
+});
+
+test('concurrent conflicting creates under SHARE locks accept exactly one event and receipt',async()=>{
+ const f=await setup(),shared=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningAdmissionLock:'share'}),before=await counts();
+ const results=await Promise.allSettled(Array.from({length:8},(_,i)=>runtime.admitCommissionedEvent(shared,agent,changedCreation(f,'race-'+i,'Distinct semantic value '+i))));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+ for(const r of results.filter(r=>r.status==='rejected'))assert.match(r.reason.message,/object_creation_conflict/);
+ assert.deepEqual(await counts(),{events:before.events+1,receipts:before.receipts+1,derived:before.derived+1});
+});
+
+test('concurrent identical creates with distinct logical ids reuse one event',async()=>{
+ const f=await setup(),shared=new TenantRegistry(pool,{commissioningPool:pool,commissioningTrust:trust,commissioningAdmissionLock:'share'}),before=await counts();
+ const results=await Promise.all(Array.from({length:8},(_,i)=>runtime.admitCommissionedEvent(shared,agent,submission(f,{logical_operation_id:'identical-race-'+i}))));
+ assert.equal(new Set(results.map(r=>r.receipt.event_id)).size,1);
+ assert.deepEqual(await counts(),{events:before.events+1,receipts:before.receipts+8,derived:before.derived+1});
+});
+
+test('concurrent cross-tenant grants cannot establish the same projection identity twice',async()=>{
+ const f=await setup(),other=await setup(),g=await resourceGrant(other,{resource_id:f.grant.resource_id}),before=await counts();
+ const results=await Promise.allSettled([runtime.admitCommissionedEvent(registry,agent,submission(f)),runtime.admitCommissionedEvent(registry,agent,submission(g))]);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+ assert.match(results.find(r=>r.status==='rejected').reason.message,/object_creation_conflict/);
+ assert.deepEqual(await counts(),{events:before.events+1,receipts:before.receipts+1,derived:before.derived+1});
+});
+
+test('the database rejects raw conflicting creates and permits exact event retry',async()=>{
+ const f=await setup(),first=await runtime.admitCommissionedEvent(registry,agent,submission(f));
+ const row=(await pool.query('SELECT * FROM ping_events WHERE event_id=$1',[first.receipt.event_id])).rows[0],before=await counts();
+ const columns='event_id,event_type,source,timestamp,payload,metadata,namespace,tenant_id';
+ const args=[row.event_id,row.event_type,row.source,row.timestamp,row.payload,row.metadata,row.namespace,row.tenant_id];
+ assert.equal((await pool.query(`INSERT INTO ping_events (${columns}) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(event_id) DO NOTHING`,args)).rowCount,0);
+ await assert.rejects(()=>pool.query(`INSERT INTO ping_events (${columns}) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,['raw-recreate',...args.slice(1)]),/object_creation_conflict|uq_ping_events_object_created/);
+ assert.deepEqual(await counts(),before);
+});
+
+test('database uniqueness serializes conflicting raw creates even at Repeatable Read',async()=>{
+ const f=await setup(),s=submission(f),a=await pool.connect(),b=await pool.connect();
+ const sql="INSERT INTO ping_events(event_id,event_type,source,timestamp,payload,metadata,namespace,tenant_id) VALUES($1,'OBJECT_CREATED','raw-constraint-proof',clock_timestamp(),$2,'{}',$3,$4)";
+ const values=[s.payload,'tenant::'+f.grant.tenant_id,f.grant.tenant_id],before=await counts();
+ try{
+  await a.query('BEGIN ISOLATION LEVEL REPEATABLE READ');await b.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+  await b.query('SELECT count(*) FROM ping_events');
+  await a.query(sql,['raw-unique-a',...values]);
+  const rejected=assert.rejects(b.query(sql,['raw-unique-b',...values]),e=>['23505','40001'].includes(e.code));
+  await waitingOn(a);await a.query('COMMIT');await rejected;await b.query('ROLLBACK');
+  assert.deepEqual(await counts(),{...before,events:before.events+1});
+ }finally{await a.query('ROLLBACK');await b.query('ROLLBACK');a.release();b.release();}
 });
 test('cross-tenant receipt probing does not return the existing receipt',async()=>{
  const f=await setup();await runtime.admitCommissionedEvent(registry,agent,submission(f));await denied(()=>runtime.admitCommissionedEvent(registry,agent,submission(f,{tenant_id:'unknown-other-tenant'})));

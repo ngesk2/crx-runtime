@@ -60,6 +60,13 @@ CREATE TABLE IF NOT EXISTS tenant_admission_receipts (
 );
 -- Historical receipts have no proven decision time; never invent a backfill.
 ALTER TABLE tenant_admission_receipts ADD COLUMN IF NOT EXISTS authorization_decision_at TIMESTAMPTZ;
+-- The existing projector keys objects globally, not by tenant. Exactly one
+-- creation event may establish that identity. Admission reuses its event for
+-- compatible new logical requests; a content change is OBJECT_UPDATED.
+-- This is deliberately not a history repair. Existing duplicate creations
+-- make index installation fail closed and require explicit operator review.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_ping_events_object_created
+  ON ping_events ((payload->>'object_id')) WHERE event_type='OBJECT_CREATED';
 -- Append-only enforcement (Oracle parity, 2026-10-11; Q143/Q144).
 -- Mirrors Oracle crx_runtime.public.ping_events exactly:
 --   trigger trg_ping_events_append_only            BEFORE DELETE OR UPDATE -> ping_events_no_mutation()
