@@ -51,9 +51,13 @@ async function transaction(registry, action) {
     if(committing) { broken=true; C.deny('admission_outcome_unknown'); }
     let timer;
     try {
-      const ok=await Promise.race([client.query('ROLLBACK').then(()=>true,()=>false),
-        new Promise(resolve=>{timer=setTimeout(()=>resolve(false),1000);})]);
-      if(!ok) broken=true;
+      const remaining=Math.floor(registry._commissioningTransactionMs-(performance.now()-started));
+      if(remaining<=0) broken=true;
+      else {
+        const ok=await Promise.race([client.query('ROLLBACK').then(()=>true,()=>false),
+          new Promise(resolve=>{timer=setTimeout(()=>resolve(false),remaining);})]);
+        if(!ok) broken=true;
+      }
     } finally { if(timer) clearTimeout(timer); }
     throw e;
   }

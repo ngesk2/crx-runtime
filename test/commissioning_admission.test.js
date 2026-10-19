@@ -610,6 +610,21 @@ test('the admission deadline includes pool wait and late acquisition cannot muta
  }finally{clearTimeout(timer);release();await small.end();}
 });
 
+test('rollback cleanup uses the remaining budget and destroys a client whose rollback stalls',async()=>{
+ const f=await setup();let lateRollback=false,destroyed=false;
+ const stalledPool={query:pool.query.bind(pool),connect:async()=>{
+  const client=await pool.connect();
+  return {on:client.on.bind(client),removeListener:client.removeListener.bind(client),release:broken=>{destroyed=broken;client.release(broken);},
+   query:(text,...args)=>text==='ROLLBACK'?new Promise((resolve,reject)=>setTimeout(()=>{lateRollback=true;client.query(text,...args).then(resolve,reject);},300)):client.query(text,...args)};
+ }};
+ const limited=new TenantRegistry(stalledPool,{commissioningPool:stalledPool,commissioningTrust:trust,commissioningTransactionMs:100}),rt=new UnifiedEventRuntime({pool:stalledPool});
+ const original=rt.emit.bind(rt);rt.emit=async(...args)=>{await original(...args);throw new Error('injected post-insert failure');};
+ const before=await counts();await assert.rejects(()=>rt.admitCommissionedEvent(limited,agent,submission(f)),/injected post-insert failure/);
+ assert.equal(lateRollback,false,'cleanup must not wait beyond the request budget');assert.equal(destroyed,true);
+ assert.deepEqual(await counts(),before);
+ await new Promise(r=>setTimeout(r,320));assert.deepEqual(await counts(),before,'delayed cleanup cannot commit the abandoned transaction');
+});
+
 test('records actual pool, SQL, lock, transaction and dispatch costs for fresh admissions',async()=>{
  const {performance}=require('node:perf_hooks'),samples=[],queries=[],transactions=[],dispatch=[];
  const timedPool={query:pool.query.bind(pool),connect:async()=>{

@@ -9,6 +9,10 @@ per-call cancellation seam, so those pending slots cannot be silently freed and
 reused while abandoned connection requests remain queued. Overload and deadline
 errors return 503; an ambiguous COMMIT still returns UNKNOWN. Body upload/parsing
 and authentication are separate ingress concerns, not claimed inside this budget.
+Rollback cleanup uses only that same remaining budget. If none remains or a
+rollback stalls beyond it, the pooled connection is destroyed rather than given
+an additional one-second cleanup allowance. A failed COMMIT acknowledgement still
+remains UNKNOWN; no automatic replay or claim of rollback is invented.
 
 Default admission owner/grant locks are now FOR SHARE, with UPDATE retained as an
 explicit operator option. Grant/owner revocation and issuance still take UPDATE
